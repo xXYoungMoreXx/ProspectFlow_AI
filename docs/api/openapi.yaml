@@ -1,0 +1,147 @@
+openapi: 3.1.0
+info:
+  title: AgentePro API
+  version: 1.0.0
+  description: >
+    API REST para a plataforma de orquestração de Agentes Autônomos de IA.
+    A arquitetura é baseada em CQRS e desenhada sob a ótica Security-First.
+servers:
+  - url: http://localhost:3001/api/v1
+    description: Local development server
+paths:
+  /auth/login:
+    post:
+      summary: Autenticação de operador
+      description: Endpoint de autenticação com mitigação de enumeração.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Sucesso (Retorna JWT)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Erro genérico de credenciais
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /agents:
+    get:
+      summary: Lista agentes do operador logado
+      responses:
+        '200':
+          description: Retorna array paginado de agentes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentListResponse'
+    post:
+      summary: Cria um novo agente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAgentCommand'
+      responses:
+        '201':
+          description: Agente criado com sucesso
+  /hitl/pending:
+    get:
+      summary: Busca todas as aprovações pendentes (HITL)
+      responses:
+        '200':
+          description: Sucesso
+  /hitl/{id}/approve:
+    post:
+      summary: Aprova uma ação parada no HITL
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ação aprovada e despachada para o Agente
+components:
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            accessToken:
+              type: string
+            refreshToken:
+              type: string
+        meta:
+          $ref: '#/components/schemas/MetaBlock'
+    ErrorEnvelope:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              message:
+                type: string
+              requestId:
+                type: string
+    MetaBlock:
+      type: object
+      properties:
+        requestId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    CreateAgentCommand:
+      type: object
+      required: [name, persona, llmProvider, llmModel]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 50
+        persona:
+          type: string
+          enum: [HUNTER, CLOSER, BUILDER, QA]
+        llmProvider:
+          type: string
+          enum: [OLLAMA, OPENAI, ANTHROPIC, GROQ, CUSTOM]
+        llmModel:
+          type: string
+    AgentListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+            limit:
+              type: integer

@@ -1,0 +1,39 @@
+[project]
+name = "agentepro-runtime"
+version = "0.1.0"
+description = "AgentePro AI Agent Runtime — CrewAI orchestration for Hunter, Closer, Builder, and QA agents"
+requires-python = ">=3.12"
+license = {text = "UNLICENSED"}
+
+dependencies = [
+    "crewai>=0.86.0",
+    "litellm>=1.60.0",
+    "chromadb>=0.6.0",
+    "redis>=5.2.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.34.0",
+    "httpx>=0.28.0",
+    "anthropic>=0.42.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.25.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.9.0",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "SIM", "TCH"]
+ignore = ["S101"]  # Allow assert in tests
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

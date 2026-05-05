@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'agentepro-api'
+    static_configs:
+      # Use host.docker.internal to scrape the Node.js API running on the host machine
+      - targets: ['host.docker.internal:3001']
