@@ -1,0 +1,86 @@
+asyncapi: 3.0.0
+info:
+  title: AgentePro Domain Events
+  version: 1.0.0
+  description: >
+    Contratos dos Eventos de Domínio do AgentePro trafegados assincronamente (Redis/BullMQ).
+    Esses eventos orquestram a comunicação desacoplada entre os Bounded Contexts.
+channels:
+  domainEvents:
+    address: 'agentepro.domain.events'
+    messages:
+      LeadQualified:
+        $ref: '#/components/messages/LeadQualified'
+      DealClosed:
+        $ref: '#/components/messages/DealClosed'
+      HitlApprovalRequested:
+        $ref: '#/components/messages/HitlApprovalRequested'
+
+components:
+  messages:
+    LeadQualified:
+      summary: Emitido quando o Agente Hunter qualifica positivamente um Lead.
+      payload:
+        type: object
+        required: [eventId, eventType, aggregateId, payload]
+        properties:
+          eventId:
+            type: string
+            format: uuid
+          eventType:
+            type: string
+            const: LeadQualified
+          aggregateId:
+            type: string
+          correlationId:
+            type: string
+            format: uuid
+          payload:
+            type: object
+            properties:
+              leadId:
+                type: string
+              qualificationScore:
+                type: integer
+              sourceAgentId:
+                type: string
+    DealClosed:
+      summary: Emitido quando o Agente Closer recebe o aceite final do cliente (pós aprovação HITL).
+      payload:
+        type: object
+        properties:
+          eventId:
+            type: string
+          eventType:
+            type: string
+            const: DealClosed
+          payload:
+            type: object
+            properties:
+              dealId:
+                type: string
+              leadId:
+                type: string
+              serviceType:
+                type: string
+              totalCents:
+                type: integer
+    HitlApprovalRequested:
+      summary: Emitido quando qualquer Agente tenta realizar uma ação externa sem aprovação prévia.
+      payload:
+        type: object
+        properties:
+          eventType:
+            type: string
+            const: HitlApprovalRequested
+          payload:
+            type: object
+            properties:
+              hitlId:
+                type: string
+              actionType:
+                type: string
+              agentId:
+                type: string
+              redactedPayload:
+                type: object
