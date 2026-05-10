@@ -72,8 +72,8 @@ export class NotFoundError extends DomainError {
 }
 
 export class AuthenticationError extends DomainError {
-  constructor() {
-    super('AUTHENTICATION_ERROR', 'Credenciais inválidas');
+  constructor(message = 'Credenciais inválidas') {
+    super('AUTHENTICATION_ERROR', message);
     this.name = 'AuthenticationError';
   }
 }
