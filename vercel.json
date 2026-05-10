@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm turbo run build --filter=@agentepro/web...",
-  "installCommand": "pnpm install",
+  "buildCommand": "npx turbo run build --filter=@agentepro/web...",
+  "installCommand": "npm install",
   "framework": "nextjs",
   "outputDirectory": "apps/web/.next"
 }
