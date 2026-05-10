@@ -72,6 +72,8 @@ export const api = {
       request<{ data: any; meta: any }>(`/leads/${id}`, { token }),
     create: (data: any, token: string) =>
       request<{ data: any; meta: any }>('/leads', { method: 'POST', body: JSON.stringify(data), token }),
+    update: (id: string, data: any, token: string) =>
+      request<{ data: any; meta: any }>(`/leads/${id}`, { method: 'PATCH', body: JSON.stringify(data), token }),
   },
 
   deals: {

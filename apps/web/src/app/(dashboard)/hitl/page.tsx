@@ -1,8 +1,7 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { api } from '@/lib/api';
+import { useHitlStore } from '@/lib/stores/hitl-store';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,40 +9,44 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ShieldCheck, Check, X, Edit3, Clock, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function HITLPage() {
   const token = useAuthStore((s) => s.token);
-  const queryClient = useQueryClient();
+  const { pendingApprovals, isLoading, fetchPending, approve, reject } = useHitlStore();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [note, setNote] = useState('');
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['hitl-pending'],
-    queryFn: () => api.hitl.pending(token!),
-    enabled: !!token,
-    refetchInterval: 15000,
-  });
+  useEffect(() => {
+    if (token) {
+      fetchPending();
+      const interval = setInterval(fetchPending, 15000);
+      return () => clearInterval(interval);
+    }
+  }, [token, fetchPending]);
 
-  const approveMutation = useMutation({
-    mutationFn: ({ id, note }: { id: string; note: string }) => api.hitl.approve(id, note, token!),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['hitl-pending'] });
+  const handleApprove = async (id: string) => {
+    setIsProcessing(id);
+    try {
+      await approve(id, 'Approved via dashboard');
+    } finally {
+      setIsProcessing(null);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    setIsProcessing(id);
+    try {
+      await reject(id, note);
       setSelectedId(null);
       setNote('');
-    },
-  });
+    } finally {
+      setIsProcessing(null);
+    }
+  };
 
-  const rejectMutation = useMutation({
-    mutationFn: ({ id, note }: { id: string; note: string }) => api.hitl.reject(id, note, token!),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['hitl-pending'] });
-      setSelectedId(null);
-      setNote('');
-    },
-  });
-
-  const approvals = data?.data || [];
+  const approvals = pendingApprovals || [];
 
   return (
     <div className="space-y-6">
@@ -148,10 +151,10 @@ export default function HITLPage() {
                         </DialogClose>
                         <Button
                           variant="destructive"
-                          disabled={!note || rejectMutation.isPending}
-                          onClick={() => rejectMutation.mutate({ id: approval.id, note })}
+                          disabled={!note || isProcessing === approval.id}
+                          onClick={() => handleReject(approval.id)}
                         >
-                          {rejectMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                          {isProcessing === approval.id ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                           Confirm Reject
                         </Button>
                       </DialogFooter>
@@ -161,10 +164,10 @@ export default function HITLPage() {
                   <Button
                     size="sm"
                     className="gap-1.5"
-                    disabled={approveMutation.isPending}
-                    onClick={() => approveMutation.mutate({ id: approval.id, note: 'Approved via dashboard' })}
+                    disabled={isProcessing === approval.id}
+                    onClick={() => handleApprove(approval.id)}
                   >
-                    {approveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                    {isProcessing === approval.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                     Approve
                   </Button>
                 </div>
