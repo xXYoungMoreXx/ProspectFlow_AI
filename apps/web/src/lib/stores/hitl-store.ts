@@ -23,7 +23,7 @@ interface HitlState {
   reject: (id: string, note?: string) => Promise<void>;
 }
 
-export const useHitlStore = create<HitlState>((set, get) => ({
+export const useHitlStore = create<HitlState>((set, _get) => ({
   pendingApprovals: [],
   isLoading: false,
   error: null,

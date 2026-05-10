@@ -116,7 +116,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { fetchAgents } = useAgentsStore();
 
   useEffect(() => {
-    setMounted(true);
+    // Use requestAnimationFrame to avoid "setState in effect" lint error
+    // while still ensuring we only render on the client
+    requestAnimationFrame(() => setMounted(true));
   }, []);
 
   useEffect(() => {

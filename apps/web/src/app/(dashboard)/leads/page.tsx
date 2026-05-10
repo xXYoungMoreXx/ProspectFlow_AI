@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { useLeadsStore, Lead } from '@/lib/stores/leads-store';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, Plus, Mail, Building2, GripVertical } from 'lucide-react';
+import { Plus, Building2, GripVertical } from 'lucide-react';
 import { 
   DndContext, 
   DragOverlay, 
@@ -20,7 +20,6 @@ import {
 } from '@dnd-kit/core';
 import { 
   SortableContext, 
-  arrayMove, 
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable

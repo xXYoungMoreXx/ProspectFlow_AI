@@ -50,7 +50,7 @@ export const useLeadsStore = create<LeadsState>((set, get) => ({
 
     try {
       await api.leads.update(id, { status }, token);
-    } catch (error) {
+    } catch {
       // Revert on failure
       set({ leads: previousLeads, error: 'Failed to update lead status' });
     }

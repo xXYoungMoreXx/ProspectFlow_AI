@@ -20,7 +20,7 @@ interface AgentsState {
   updateAgentStatus: (id: string, status: Agent['status']) => void;
 }
 
-export const useAgentsStore = create<AgentsState>((set, get) => ({
+export const useAgentsStore = create<AgentsState>((set, _get) => ({
   agents: [],
   isLoading: false,
   error: null,

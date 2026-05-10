@@ -5,7 +5,7 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FolderKanban, ExternalLink, ArrowRight } from 'lucide-react';
+import { FolderKanban, ExternalLink } from 'lucide-react';
 
 const statusColors: Record<string, string> = {
   PENDING: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
