@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth-store';
+import { useHitlStore } from '@/lib/stores/hitl-store';
+import { useLeadsStore } from '@/lib/stores/leads-store';
+import { useAgentsStore } from '@/lib/stores/agents-store';
 import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -108,12 +111,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const [mounted, setMounted] = useState(false);
 
+  const { fetchPending } = useHitlStore();
+  const { fetchLeads } = useLeadsStore();
+  const { fetchAgents } = useAgentsStore();
+
   useEffect(() => {
     setMounted(true);
-    if (!isAuthenticated) {
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [mounted, isAuthenticated, router]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const eventSource = new EventSource('/api/events');
+      
+      eventSource.addEventListener('heartbeat', () => {
+        fetchPending();
+        fetchLeads();
+        fetchAgents();
+      });
+
+      return () => {
+        eventSource.close();
+      };
+    }
+  }, [isAuthenticated, fetchPending, fetchLeads, fetchAgents]);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);

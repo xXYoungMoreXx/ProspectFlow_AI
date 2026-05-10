@@ -84,7 +84,7 @@ export function createContainer(): Container {
   const emailWorker = new EmailWorker(queue, email);
 
   const agentRepo = new DrizzleAgentRepository(db);
-  const agentExecutionService = new AgentExecutionService(agentRepo, llm, rag, queue);
+  const agentExecutionService = new AgentExecutionService(agentRepo, queue);
 
   return {
     db,

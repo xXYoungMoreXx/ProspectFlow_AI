@@ -1,14 +1,34 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { api } from '@/lib/api';
+import { useLeadsStore, Lead } from '@/lib/stores/leads-store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Plus, Mail, Phone, Building2, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import { Users, Plus, Mail, Building2, GripVertical } from 'lucide-react';
+import { 
+  DndContext, 
+  DragOverlay, 
+  closestCorners, 
+  KeyboardSensor, 
+  PointerSensor, 
+  useSensor, 
+  useSensors,
+  DragStartEvent,
+  DragEndEvent
+} from '@dnd-kit/core';
+import { 
+  SortableContext, 
+  arrayMove, 
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+const COLUMNS = ['NEW', 'CONTACTED', 'QUALIFIED', 'CONVERTED', 'LOST'] as const;
+type ColumnType = typeof COLUMNS[number];
 
 const statusColors: Record<string, string> = {
   NEW: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
@@ -18,25 +38,126 @@ const statusColors: Record<string, string> = {
   LOST: 'bg-destructive/10 text-destructive border-destructive/20',
 };
 
-export default function LeadsPage() {
-  const token = useAuthStore((s) => s.token);
+// Sortable Item Component
+function SortableLeadCard({ lead }: { lead: Lead }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: lead.id, data: { type: 'Lead', lead } });
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['leads'],
-    queryFn: () => api.leads.list(token!),
-    enabled: !!token,
-  });
-
-  const leads = data?.data || [];
-  const statuses = ['ALL', 'NEW', 'CONTACTED', 'QUALIFIED', 'CONVERTED', 'LOST'];
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-3 cursor-grab active:cursor-grabbing">
+      <Card className="group border-border/50 hover:border-primary/30 hover:shadow-sm transition-all bg-card/50 backdrop-blur-sm relative">
+        <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <GripVertical className="w-4 h-4 text-muted-foreground/40" />
+        </div>
+        <CardContent className="py-3 px-4 pl-6">
+          <div className="flex flex-col gap-2">
+            <p className="font-medium text-sm">{lead.contactName || 'Unknown'}</p>
+            <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+              {lead.contactCompany && (
+                <span className="flex items-center gap-1.5"><Building2 className="w-3 h-3" />{lead.contactCompany}</span>
+              )}
+            </div>
+            <div className="mt-1 flex justify-end">
+              <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${statusColors[lead.status] || ''}`}>
+                {lead.status}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function LeadsPage() {
+  const token = useAuthStore((s) => s.token);
+  const { leads, isLoading, fetchLeads, updateLeadStatus } = useLeadsStore();
+  const [activeLead, setActiveLead] = useState<Lead | null>(null);
+
+  useEffect(() => {
+    if (token) {
+      fetchLeads();
+    }
+  }, [token, fetchLeads]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const lead = leads.find(l => l.id === active.id);
+    if (lead) setActiveLead(lead as Lead);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveLead(null);
+    const { active, over } = event;
+    
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    const activeLeadData = leads.find(l => l.id === activeId);
+    
+    // Check if we dragged over a column container or another item
+    const isOverColumn = COLUMNS.includes(overId as ColumnType);
+    
+    let targetStatus: Lead['status'];
+    
+    if (isOverColumn) {
+      targetStatus = overId as Lead['status'];
+    } else {
+      const overLeadData = leads.find(l => l.id === overId);
+      if (!overLeadData) return;
+      targetStatus = overLeadData.status;
+    }
+
+    if (activeLeadData && activeLeadData.status !== targetStatus) {
+      // Optimitistic update + API call
+      updateLeadStatus(activeId, targetStatus);
+    }
+  };
+
+  if (isLoading && leads.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="animate-pulse flex space-x-4">
+          <div className="w-12 h-12 bg-muted rounded-full"></div>
+          <div className="space-y-2">
+            <div className="h-4 bg-muted rounded w-[200px]"></div>
+            <div className="h-4 bg-muted rounded w-[150px]"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-8rem)]">
+      <div className="flex flex-shrink-0 items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Leads Pipeline</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Track and manage your prospects
+            Drag and drop leads to update their status
           </p>
         </div>
         <Button className="gap-2">
@@ -45,90 +166,74 @@ export default function LeadsPage() {
         </Button>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {['NEW', 'CONTACTED', 'QUALIFIED', 'CONVERTED', 'LOST'].map((status) => {
-          const count = leads.filter((l: any) => l.status === status).length;
-          return (
-            <Card key={status} className="border-border/50">
-              <CardContent className="py-3 px-4">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">{status}</p>
-                <p className="text-2xl font-bold mt-1">{count}</p>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      <Tabs defaultValue="ALL">
-        <TabsList className="bg-muted/50">
-          {statuses.map((s) => (
-            <TabsTrigger key={s} value={s} className="text-xs">
-              {s === 'ALL' ? 'All' : s}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {statuses.map((filterStatus) => (
-          <TabsContent key={filterStatus} value={filterStatus} className="mt-4">
-            {isLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="py-4">
-                      <div className="h-4 w-40 bg-muted rounded" />
-                    </CardContent>
-                  </Card>
-                ))}
+      <DndContext 
+        sensors={sensors} 
+        collisionDetection={closestCorners} 
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex-1 flex gap-4 overflow-x-auto pb-4">
+          {COLUMNS.map((col) => {
+            const columnLeads = leads.filter(l => l.status === col);
+            
+            return (
+              <div key={col} className="flex flex-col flex-shrink-0 w-80 bg-muted/30 rounded-xl border border-border/50">
+                <div className="p-3 border-b border-border/50 flex items-center justify-between bg-card/50 rounded-t-xl">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${statusColors[col]?.split(' ')[0] || 'bg-muted'}`} />
+                    <h3 className="font-semibold text-sm tracking-tight">{col}</h3>
+                  </div>
+                  <Badge variant="secondary" className="bg-background">{columnLeads.length}</Badge>
+                </div>
+                
+                {/* Column Drop Zone */}
+                <div className="flex-1 p-3 overflow-y-auto">
+                  <SortableContext 
+                    id={col}
+                    items={columnLeads.map(l => l.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="min-h-[200px]">
+                      {columnLeads.map((lead) => (
+                        <SortableLeadCard key={lead.id} lead={lead as Lead} />
+                      ))}
+                      {columnLeads.length === 0 && (
+                        <div className="h-full min-h-[100px] flex items-center justify-center border-2 border-dashed border-border/50 rounded-lg">
+                          <p className="text-xs text-muted-foreground text-center px-4">Drop leads here</p>
+                        </div>
+                      )}
+                    </div>
+                  </SortableContext>
+                </div>
               </div>
-            ) : (
-              <div className="space-y-2">
-                {(filterStatus === 'ALL' ? leads : leads.filter((l: any) => l.status === filterStatus)).length === 0 ? (
-                  <Card className="border-dashed">
-                    <CardContent className="flex flex-col items-center justify-center py-12 space-y-3">
-                      <Users className="w-10 h-10 text-muted-foreground/50" />
-                      <p className="text-sm text-muted-foreground">No leads found</p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  (filterStatus === 'ALL' ? leads : leads.filter((l: any) => l.status === filterStatus)).map((lead: any) => (
-                    <Link href={`/leads/${lead.id}`} key={lead.id} className="block">
-                      <Card className="group hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer h-full">
-                        <CardContent className="py-3 px-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted text-muted-foreground">
-                                <Users className="w-5 h-5" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-sm">{lead.contact?.name || lead.contactName || 'Unknown'}</p>
-                                <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
-                                  {lead.contact?.email && (
-                                    <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{lead.contact.email}</span>
-                                  )}
-                                  {lead.contact?.company && (
-                                    <span className="flex items-center gap-1"><Building2 className="w-3 h-3" />{lead.contact.company}</span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Badge variant="outline" className={`text-[10px] ${statusColors[lead.status] || ''}`}>
-                                {lead.status}
-                              </Badge>
-                              <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  ))
-                )}
-              </div>
-            )}
-          </TabsContent>
-        ))}
-      </Tabs>
+            );
+          })}
+        </div>
+
+        <DragOverlay>
+          {activeLead ? (
+            <div className="w-80 opacity-90 rotate-2 scale-105 transition-transform cursor-grabbing shadow-xl">
+               <Card className="border-primary/50 bg-card">
+                <CardContent className="py-3 px-4 pl-6">
+                  <div className="flex flex-col gap-2">
+                    <p className="font-medium text-sm">{activeLead.contactName || 'Unknown'}</p>
+                    <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                      {activeLead.contactCompany && (
+                        <span className="flex items-center gap-1.5"><Building2 className="w-3 h-3" />{activeLead.contactCompany}</span>
+                      )}
+                    </div>
+                    <div className="mt-1 flex justify-end">
+                      <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${statusColors[activeLead.status] || ''}`}>
+                        {activeLead.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }

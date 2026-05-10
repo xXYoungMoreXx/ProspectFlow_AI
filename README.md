@@ -48,9 +48,13 @@ Todo o ciclo de vida do Agente e da API possui rastreio (Tracing) transparente e
 - **Logging Estruturado (Pino)**: Logs de alto desempenho em formato JSON compatível com agregadores modernos (ELK/Datadog).
 - **Métricas Node.js & Prometheus**: Todas as instâncias Fastify expõem uma rota `/api/v1/metrics` coletando dados vitais como uso do Event Loop, Active Handles, Memory Heap e RPS.
 - **OpenTelemetry (OTel)**: Geração de Distributed Traces detalhados permitindo visualizar (via **Jaeger** ou **Grafana**) precisamente onde uma requisição de disparo no WhatsApp gargalou – se foi no acesso ao DB, na Fila Redis ou no LLM.
-- **Grafana Loki (Logs Centralizados)**: Agregação unificada de logs de todos os containers estruturados via Promtail, indexados e consultáveis diretamente no Grafana.
+- **Grafana Loki v3 (Logs Centralizados)**: Agregação unificada de logs de todos os containers estruturados via Promtail, usando schema `tsdb` para buscas eficientes, indexados e consultáveis diretamente no Grafana.
 
 ---
+
+## 📝 Prompt-as-Code (Docs/Agents)
+
+Nossos agentes evoluem através de código. Todos os comportamentos, regras de HITL, checklists de segurança (ex: OWASP, WCAG) e tons de voz estão versionados no diretório `docs/agents/prompts/`. Cada atualização (como a versão robusta do `qa-v1.md`) é documentada em um CHANGELOG estrito. Nunca alteramos comportamento de IA sem revisão de código e merge request.
 
 ## ⚙️ Guia Rápido: Do Zero ao Funcionamento
 
@@ -104,8 +108,11 @@ Na nuvem, as _Github Actions_ validam a integridade de qualquer PR garantindo ao
 
 Para testar localmente na sua máquina:
 ```bash
-# Executa todos os testes de unidade e integração (Fastify e Workers)
-npm run test
+# Executa apenas testes unitários de domínio (Rápido, sem dependência de Docker)
+npm run test:unit -w apps/api
+
+# Executa testes de integração (Exige DB, Redis e infra rodando via Docker)
+npm run test:integration -w apps/api
 
 # Executa cirurgicamente os testes de cibersegurança e Bypass Validation
 npm run test:security -w apps/api

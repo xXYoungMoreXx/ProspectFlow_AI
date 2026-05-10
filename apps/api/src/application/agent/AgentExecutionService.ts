@@ -1,8 +1,6 @@
 import type { Job } from 'bullmq';
 import type { AgentRepository } from '../../domain/agent/AgentRepository.js';
-import type { LLMRouter, LLMCompletionRequest } from '../../infrastructure/llm/LLMRouter.js';
 import type { BullMQAdapter } from '../../infrastructure/queue/BullMQAdapter.js';
-import type { ChromaDBAdapter } from '../../infrastructure/rag/ChromaDBAdapter.js';
 import { agentTokensConsumedTotal } from '../../infrastructure/metrics/registry.js';
 
 /**
@@ -41,8 +39,6 @@ export interface AgentTaskResult {
 export class AgentExecutionService {
   constructor(
     private readonly agentRepo: AgentRepository,
-    private readonly llm: LLMRouter,
-    private readonly rag: ChromaDBAdapter,
     private readonly queue: BullMQAdapter,
   ) {}
 
@@ -70,86 +66,77 @@ export class AgentExecutionService {
       throw new Error(`Agent ${agent.name} is ${agent.status}, cannot execute tasks`);
     }
 
-    // 3. Build messages array
-    const messages: LLMCompletionRequest['messages'] = [];
-
-    // System prompt from agent config
-    if (agent.llmConfig.systemPrompt) {
-      messages.push({ role: 'system', content: agent.llmConfig.systemPrompt });
-    }
-
-    // 4. RAG enrichment (if enabled)
-    let ragContextUsed = false;
-    if (agent.ragEnabled && agent.ragCollection) {
-      try {
-        const ragResults = await this.rag.query(
-          agent.ragCollection,
-          payload.userPrompt,
-          agent.ragTopK,
-        );
-
-        if (ragResults.length > 0) {
-          const contextBlock = ragResults
-            .map((r, i) => `[Source ${i + 1}]: ${r.document}`)
-            .join('\n\n');
-
-          messages.push({
-            role: 'system',
-            content: `Relevant context from knowledge base:\n\n${contextBlock}\n\nUse this context to inform your response when relevant.`,
-          });
-          ragContextUsed = true;
-        }
-      } catch (error) {
-        // RAG failure is non-fatal — log and continue without context
-        console.warn(`[AgentExecutionService] RAG query failed for agent ${agent.id}:`, error);
-      }
-    }
-
-    // 5. Add user prompt
-    messages.push({ role: 'user', content: payload.userPrompt });
-
-    // 6. Execute LLM call
-    const llmResponse = await this.llm.complete({
-      provider: agent.llmConfig.provider,
-      model: agent.llmConfig.model,
-      baseUrl: agent.llmConfig.baseUrl,
-      apiKeyRef: agent.llmConfig.apiKeyRef,
-      messages,
-      temperature: agent.llmConfig.temperature,
-      maxTokens: agent.llmConfig.maxTokens,
-    });
-
-    // 7. Consume tokens from budget
-    const budgetResult = agent.consumeTokens(llmResponse.tokensUsed);
-    if (budgetResult.isErr()) {
-      // Token budget exhausted — pause agent automatically
-      agent.pause('Token budget exhausted');
-      await this.agentRepo.save(agent);
-      throw new Error(`Agent ${agent.name}: ${budgetResult.error.message}`);
-    }
-
-    // 8. Record completion
-    const durationMs = Math.round(performance.now() - startTime);
-    agent.recordTaskCompleted(payload.taskType, durationMs, llmResponse.tokensUsed);
+    // 3. Delegate to Python Runtime
+    const runtimeUrl = process.env['PYTHON_RUNTIME_URL'] || 'http://localhost:8001';
     
-    agentTokensConsumedTotal.inc(
-      { persona: agent.persona, provider: agent.llmConfig.provider },
-      llmResponse.tokensUsed
-    );
+    try {
+      const response = await fetch(`${runtimeUrl}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task_type: payload.taskType,
+          agent_id: payload.agentId,
+          correlation_id: payload.correlationId,
+          payload: {
+            ...payload.metadata,
+            user_message: payload.userPrompt,
+            llm_config: agent.llmConfig,
+            rag_enabled: agent.ragEnabled,
+            rag_collection: agent.ragCollection,
+          }
+        }),
+      });
 
-    // 9. Persist updated agent state
-    await this.agentRepo.save(agent);
+      if (!response.ok) {
+        throw new Error(`Python Runtime returned ${response.status}: ${await response.text()}`);
+      }
 
-    // 10. Update job progress for observability
-    await job.updateProgress({
-      output: llmResponse.content.slice(0, 500),
-      tokensUsed: llmResponse.tokensUsed,
-      durationMs,
-      ragContextUsed,
-    });
+      const result = await response.json() as any;
+      
+      // Handle HITL Pause
+      if (result.status === 'pending_hitl') {
+        agent.pause('Awaiting human approval (HITL)');
+        await this.agentRepo.save(agent);
+        await job.updateProgress({ status: 'pending_hitl', error: result.error });
+        throw new Error(`Agent Task paused for HITL: ${result.error}`);
+      }
+      
+      // Simulate token consumption (CrewAI metrics are not directly returned in this mock, but we can assume usage)
+      // In a real app, the Python backend would return exact token usage in the response payload.
+      const simulatedTokens = 500;
+      const budgetResult = agent.consumeTokens(simulatedTokens);
+      if (budgetResult.isErr()) {
+        agent.pause('Token budget exhausted');
+        await this.agentRepo.save(agent);
+        throw new Error(`Agent ${agent.name}: ${budgetResult.error.message}`);
+      }
 
-    console.info(
-      `[AgentExecutionService] Task completed — agent=${agent.name} type=${payload.taskType} tokens=${llmResponse.tokensUsed} duration=${durationMs}ms`,
-    );
+      // 4. Record completion
+      const durationMs = Math.round(performance.now() - startTime);
+      agent.recordTaskCompleted(payload.taskType, durationMs, simulatedTokens);
+      
+      agentTokensConsumedTotal.inc(
+        { persona: agent.persona, provider: agent.llmConfig.provider },
+        simulatedTokens
+      );
+
+      // 5. Persist updated agent state
+      await this.agentRepo.save(agent);
+
+      // 6. Update job progress for observability
+      await job.updateProgress({
+        output: result.result?.raw_output || result.result?.html || result.result?.audit_report,
+        tokensUsed: simulatedTokens,
+        durationMs,
+        ragContextUsed: agent.ragEnabled,
+      });
+
+      console.info(
+        `[AgentExecutionService] Task completed — agent=${agent.name} type=${payload.taskType} duration=${durationMs}ms`,
+      );
+    } catch (error) {
+      console.error(`[AgentExecutionService] Failed to execute task for agent ${agent.id}:`, error);
+      throw error;
+    }
   }
 }
