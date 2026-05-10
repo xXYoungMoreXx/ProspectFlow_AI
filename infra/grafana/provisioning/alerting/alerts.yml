@@ -1,0 +1,64 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: "AgentePro Alerts"
+    folder: "Production Alerts"
+    interval: 1m
+    rules:
+      - uid: hitl_backlog_alert
+        title: HITLBacklog
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: sum(agentepro_hitl_pending) > 10
+              intervalMs: 1000
+              maxDataPoints: 43200
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: "High HITL Backlog: {{ $values.A.Value }}"
+          description: "There are more than 10 pending HITL approvals."
+        labels:
+          severity: warning
+
+      - uid: security_bruteforce_alert
+        title: SecurityBruteForce
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: rate(agentepro_auth_failures_total[1m]) * 60 > 10
+              intervalMs: 1000
+              maxDataPoints: 43200
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: "Potential Brute Force Attack"
+          description: "More than 10 auth failures per minute detected."
+        labels:
+          severity: critical
+
+      - uid: agent_high_error_rate_alert
+        title: AgentHighErrorRate
+        condition: A
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            model:
+              expr: rate(agentepro_agent_sessions_total{status="failed"}[1m]) * 60 > 0.2
+              intervalMs: 1000
+              maxDataPoints: 43200
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          summary: "High Agent Error Rate"
+          description: "Agent execution failures exceed 0.2 per minute."
+        labels:
+          severity: critical

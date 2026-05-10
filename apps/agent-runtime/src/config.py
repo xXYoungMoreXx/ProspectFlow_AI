@@ -33,6 +33,7 @@ class RuntimeConfig(BaseSettings):
 
     # ── API Bridge ───────────────────────────────────────────────────────
     api_url: str = "http://localhost:3001"
+    api_token: str | None = None
     runtime_port: int = 8001
     runtime_host: str = "0.0.0.0"
 

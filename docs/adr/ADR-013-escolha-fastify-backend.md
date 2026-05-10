@@ -1,4 +1,8 @@
-# ADR-002: Escolha do Framework Backend HTTP (Fastify vs Express)
+# ADR-013: Escolha do Framework Backend HTTP (Fastify vs Express)
+
+**Status:** Aceito | Implementado ✅
+**Data original:** 2026-05-01
+**Nota:** Fastify 5 com Zod está em produção em `apps/api`. Decisão consolidada e sem plano de revisão.
 
 ## Contexto
 O núcleo de aplicação do AgentePro, que lida com autenticação, CRM, e interface com os clientes e operadores, necessita de um backend robusto em Node.js para atuar como o principal servidor da API.

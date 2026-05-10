@@ -19,6 +19,7 @@ export const LLMProvider = {
   OLLAMA: 'OLLAMA',
   OPENAI: 'OPENAI',
   ANTHROPIC: 'ANTHROPIC',
+  GOOGLE: 'GOOGLE',
   GROQ: 'GROQ',
   CUSTOM: 'CUSTOM',
 } as const;

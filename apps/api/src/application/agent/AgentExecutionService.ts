@@ -3,6 +3,7 @@ import type { AgentRepository } from '../../domain/agent/AgentRepository.js';
 import type { LLMRouter, LLMCompletionRequest } from '../../infrastructure/llm/LLMRouter.js';
 import type { BullMQAdapter } from '../../infrastructure/queue/BullMQAdapter.js';
 import type { ChromaDBAdapter } from '../../infrastructure/rag/ChromaDBAdapter.js';
+import { agentTokensConsumedTotal } from '../../infrastructure/metrics/registry.js';
 
 /**
  * AgentExecutionService — Core orchestration worker that processes
@@ -130,6 +131,11 @@ export class AgentExecutionService {
     // 8. Record completion
     const durationMs = Math.round(performance.now() - startTime);
     agent.recordTaskCompleted(payload.taskType, durationMs, llmResponse.tokensUsed);
+    
+    agentTokensConsumedTotal.inc(
+      { persona: agent.persona, provider: agent.llmConfig.provider },
+      llmResponse.tokensUsed
+    );
 
     // 9. Persist updated agent state
     await this.agentRepo.save(agent);

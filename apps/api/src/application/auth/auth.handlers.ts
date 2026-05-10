@@ -6,6 +6,7 @@ import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '../../infrastructure/db/schema.js';
 import { config } from '../../config.js';
 import { AuthenticationError, ok, err, type Result } from '../../domain/shared/Result.js';
+import { authFailuresTotal } from '../../infrastructure/metrics/registry.js';
 
 // Argon2id config per PRD §11.1 (mCost 64MB)
 const ARGON2_OPTIONS: Options = {
@@ -51,6 +52,7 @@ export class LoginHandler {
     const isValid = await verify(hashToVerify, password).catch(() => false);
 
     if (!operator || !isValid || !operator.isActive) {
+      authFailuresTotal.inc({ reason: 'invalid_credentials' });
       return err(new AuthenticationError());
     }
 

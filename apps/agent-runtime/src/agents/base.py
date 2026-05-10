@@ -4,13 +4,16 @@ Provides standard wrappers and utility methods for all AgentePro personas.
 """
 from __future__ import annotations
 
+from typing import Any, Optional, Type
 import logging
-from typing import Any
+from pydantic import BaseModel
 
 from crewai import Agent, Task
 from litellm import completion
 
 from src.config import config
+from src.agents.schemas import AgentPersona
+from src.agents.callbacks import SecureToolWrapper, agent_step_callback
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +34,8 @@ class BaseAgentePro:
         
     def create_agent(self, role: str, goal: str, backstory: str, tools: list | None = None, use_small_model: bool = False) -> Agent:
         """
-        Creates a CrewAI agent with standard configurations.
+        Creates a CrewAI agent with standard configurations (Legacy string-based).
+        Injects ADK Guardrails (SecureToolWrapper and step_callback).
         """
         llm = self._get_llm(use_small_model)
         
@@ -41,12 +45,45 @@ class BaseAgentePro:
             f"You are operating within the AgentePro platform on behalf of Operator ID: {self.operator_id}."
         )
         
+        from src.agents.state import AgentSessionManager
+        # Register session start
+        AgentSessionManager.get_session(self.agent_id)
+        
+        # Wrap tools with Security Callbacks (SSRF/Argument validation)
+        # Assuming we can differentiate HITL tools later, for now we wrap in SecureToolWrapper
+        secure_tools = [SecureToolWrapper(t) for t in (tools or [])]
+        
         return Agent(
             role=role,
             goal=goal,
             backstory=full_backstory,
             verbose=True,
             allow_delegation=False,
-            tools=tools or [],
-            llm=llm
+            tools=secure_tools,
+            llm=llm,
+            step_callback=agent_step_callback
+        )
+
+    def create_structured_agent(self, persona: AgentPersona, tools: list | None = None, use_small_model: bool = False) -> Agent:
+        """
+        Creates a CrewAI agent using the new Structured AgentPersona V2.
+        """
+        return self.create_agent(
+            role=persona.identity.role,
+            goal=persona.mission.primary_goal,
+            backstory=persona.to_backstory(),
+            tools=tools,
+            use_small_model=use_small_model
+        )
+
+    def create_structured_task(self, description: str, expected_output: str, agent: Agent, output_pydantic: Optional[Type[BaseModel]] = None) -> Task:
+        """
+        Creates a CrewAI Task that enforces Structured Output (JSON Schema) via Pydantic model.
+        This aligns with ADK/Ollama Best Practices for V2.
+        """
+        return Task(
+            description=description,
+            expected_output=expected_output,
+            agent=agent,
+            output_pydantic=output_pydantic
         )

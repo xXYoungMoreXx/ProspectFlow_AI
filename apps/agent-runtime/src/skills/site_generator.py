@@ -7,6 +7,7 @@ import anthropic
 import os
 import httpx
 from typing import Type
+import chromadb
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
@@ -58,8 +59,26 @@ class SiteGeneratorTool(BaseTool):
         
         Retorne APENAS o código HTML completo.
         """
-        
+
         try:
+            # Consult ChromaDB for builder knowledge
+            rag_context = ""
+            try:
+                chroma_client = chromadb.PersistentClient(path="./chroma_db")
+                collection = chroma_client.get_collection(name="builder_knowledge")
+                
+                # Search based on the category and general best practices
+                results = collection.query(
+                    query_texts=[category, "guideline"],
+                    n_results=3
+                )
+                
+                if results['documents'] and results['documents'][0]:
+                    rag_context = "\nCONHECIMENTO EXTRAÍDO (RAG / Templates / Diretrizes):\n" + "\n---\n".join(results['documents'][0])
+                    prompt += f"\n\n{rag_context}\n"
+            except Exception as e:
+                logging.warning(f"Failed to query ChromaDB: {e}")
+                
             client = anthropic.Anthropic(api_key=api_key)
             resp = client.messages.create(
                 model="claude-3-haiku-20240307",

@@ -3,7 +3,8 @@ import { authMiddleware } from '../middleware/auth.middleware.js';
 import { CreateLeadSchema, UpdateLeadStatusSchema, ListLeadsQuery } from '../schemas/leads.schemas.js';
 import { CreateLeadHandler, UpdateLeadStatusHandler, GetLeadsHandler, GetLeadByIdHandler } from '../../application/lead/lead.handlers.js';
 import type { LeadStatus } from '@agentepro/shared-types';
-
+import { CheckOptOutHandler } from '../../application/lead/CheckOptOutHandler.js';
+import { z } from 'zod';
 export async function leadRoutes(app: FastifyInstance): Promise<void> {
   app.addHook('preHandler', authMiddleware);
 
@@ -38,6 +39,31 @@ export async function leadRoutes(app: FastifyInstance): Promise<void> {
       data: result.value.toJSON(),
       meta: { requestId: request.requestId, timestamp: new Date().toISOString() },
     });
+  });
+
+  const CheckOptOutQuery = z.object({
+    phone: z.string().optional(),
+    email: z.string().optional(),
+  }).refine(data => data.phone || data.email, { message: 'Must provide either phone or email' });
+
+  app.get('/optout/check', async (request, reply) => {
+    const parsed = CheckOptOutQuery.safeParse(request.query);
+    if (!parsed.success) {
+      return reply.status(400).send({ errors: parsed.error.issues.map(i => ({ code: 'VALIDATION_ERROR', message: i.message })) });
+    }
+
+    const handler = new CheckOptOutHandler(app.container.optOutRepo);
+    const result = await handler.execute({
+      operatorId: request.operatorId,
+      phoneRaw: parsed.data.phone,
+      emailRaw: parsed.data.email,
+    });
+
+    if (result.isErr()) {
+      return reply.status(500).send({ errors: [{ code: 'INTERNAL_ERROR', message: result.error.message }] });
+    }
+
+    return reply.status(200).send({ isBlocked: result.value });
   });
 
   app.post('/', async (request, reply) => {

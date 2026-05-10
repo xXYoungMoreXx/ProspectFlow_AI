@@ -1,4 +1,8 @@
-# ADR-005: Estratégia de Versionamento de Prompts (Prompt-as-Code)
+# ADR-014: Estratégia de Versionamento de Prompts (Prompt-as-Code)
+
+**Status:** Aceito | Implementado ✅
+**Data original:** 2026-05-01
+**Nota:** Prompts baseline versionados em `docs/agents/prompts/` (hunter-v1, closer-v1, builder-v1, qa-v1). CHANGELOG em `docs/agents/prompts/CHANGELOG.md`.
 
 ## Contexto
 O comportamento dos agentes no CrewAI e LiteLLM é governado primordialmente pelos *System Prompts*. Alterações nesses prompts podem ter efeitos colaterais drásticos. Tratar prompts como "configuração de banco de dados" impede auditoria clara e rollback seguro.

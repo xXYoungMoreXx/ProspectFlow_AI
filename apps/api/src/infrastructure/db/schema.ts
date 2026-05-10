@@ -21,7 +21,7 @@ import {
 
 export const agentPersonaEnum = pgEnum('agent_persona', ['HUNTER', 'CLOSER', 'BUILDER', 'QA']);
 export const agentStatusEnum = pgEnum('agent_status', ['ACTIVE', 'INACTIVE', 'PAUSED']);
-export const llmProviderEnum = pgEnum('llm_provider', ['OLLAMA', 'OPENAI', 'ANTHROPIC', 'GROQ', 'CUSTOM']);
+export const llmProviderEnum = pgEnum('llm_provider', ['OLLAMA', 'OPENAI', 'ANTHROPIC', 'GOOGLE', 'GROQ', 'CUSTOM']);
 export const leadSourceEnum = pgEnum('lead_source', ['MANUAL', 'SCRAPED', 'REFERRAL']);
 export const leadStatusEnum = pgEnum('lead_status', ['NEW', 'CONTACTED', 'QUALIFIED', 'CONVERTED', 'LOST']);
 export const messageDirectionEnum = pgEnum('message_direction', ['INBOUND', 'OUTBOUND']);
@@ -53,6 +53,17 @@ export const refreshTokens = pgTable('refresh_tokens', {
   revokedAt: timestamp('revoked_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const pricingConfig = pgTable('pricing_config', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  operatorId: uuid('operator_id').notNull().references(() => operators.id, { onDelete: 'cascade' }),
+  serviceType: serviceTypeEnum('service_type').notNull(),
+  basePriceCents: bigint('base_price_cents', { mode: 'number' }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  operatorServiceIdx: index('idx_pricing_config_operator_service').on(table.operatorId, table.serviceType)
+}));
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // AGENT MANAGEMENT CONTEXT
@@ -181,6 +192,37 @@ export const deals = pgTable('deals', {
   index('idx_deals_status').on(table.status, table.operatorId),
 ]);
 
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPLIANCE & CLICKWRAP CONTEXT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const contractAcceptances = pgTable('contract_acceptances', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  dealId: uuid('deal_id').notNull().references(() => deals.id),
+  contractHash: text('contract_hash').notNull(),
+  acceptedAt: timestamp('accepted_at', { withTimezone: true }).notNull().defaultNow(),
+  ipHash: text('ip_hash').notNull(),
+  userAgentHash: text('user_agent_hash').notNull(),
+  sessionId: text('session_id').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  // Append-only: no UPDATE/DELETE
+}, (table) => [
+  index('idx_contract_acceptances_deal').on(table.dealId),
+]);
+
+export const prospectOptouts = pgTable('prospect_optouts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  operatorId: uuid('operator_id').notNull().references(() => operators.id),
+  phoneHash: text('phone_hash'),
+  emailHash: text('email_hash'),
+  optedOutAt: timestamp('opted_out_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('idx_optouts_operator_phone').on(table.operatorId, table.phoneHash),
+  index('idx_optouts_operator_email').on(table.operatorId, table.emailHash),
+]);
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // DELIVERY & DEVELOPMENT CONTEXT
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -216,6 +258,7 @@ export const hitlApprovals = pgTable('hitl_approvals', {
   id: uuid('id').primaryKey().defaultRandom(),
   operatorId: uuid('operator_id').notNull().references(() => operators.id),
   agentId: uuid('agent_id').notNull().references(() => agents.id),
+  hitlLevel: text('hitl_level').notNull().default('HITL-1'),
   actionType: text('action_type').notNull(),
   contextType: text('context_type').notNull(),     // LEAD | DEAL | PROJECT
   contextId: uuid('context_id').notNull(),
@@ -228,6 +271,7 @@ export const hitlApprovals = pgTable('hitl_approvals', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
   index('idx_hitl_pending').on(table.operatorId, table.status),
+  index('idx_hitl_level_status').on(table.hitlLevel, table.status),
 ]);
 
 // ═══════════════════════════════════════════════════════════════════════════════

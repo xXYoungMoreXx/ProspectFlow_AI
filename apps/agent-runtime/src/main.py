@@ -8,10 +8,24 @@ from __future__ import annotations
 import logging
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+import time
 
 from src.config import config
+
+# Prometheus Metrics
+agent_sessions_total = Counter(
+    "agentepro_agent_sessions_total",
+    "Total number of agent sessions executed",
+    ["persona", "status"]
+)
+agent_session_duration_seconds = Histogram(
+    "agentepro_agent_session_duration_seconds",
+    "Duration of agent sessions in seconds",
+    ["persona"]
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -42,9 +56,25 @@ class TaskResponse(BaseModel):
     correlation_id: str
 
 
+class TaskApprovalRequest(BaseModel):
+    """Request from Node.js API to approve a paused HITL task."""
+    session_id: str
+    approval_id: str
+    operator_id: str
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "service": "agent-runtime", "version": "0.1.0"}
+
+
+@app.get("/metrics")
+async def metrics():
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+
+from src.agents.callbacks import RequiresApprovalException
+from src.agents.state import AgentSessionManager
 
 
 @app.post("/tasks", response_model=TaskResponse)
@@ -62,6 +92,8 @@ async def execute_task(request: TaskRequest):
 
     # Route to the appropriate agent
     domain, action = request.task_type.split(".", maxsplit=1)
+    persona = domain
+    start_time = time.time()
 
     try:
         if domain == "hunter":
@@ -90,6 +122,8 @@ async def execute_task(request: TaskRequest):
             raw_result = str(output)
             
             # Since expected output is a JSON array, we can return it inside the result
+            agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+            agent_sessions_total.labels(persona=persona, status="completed").inc()
             return TaskResponse(
                 status="completed",
                 result={"raw_output": raw_result},
@@ -125,6 +159,8 @@ async def execute_task(request: TaskRequest):
             output = crew.kickoff()
             raw_result = str(output)
             
+            agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+            agent_sessions_total.labels(persona=persona, status="completed").inc()
             return TaskResponse(
                 status="completed",
                 result={"raw_output": raw_result},
@@ -152,6 +188,8 @@ async def execute_task(request: TaskRequest):
             output = crew.kickoff()
             raw_html = str(output)
             
+            agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+            agent_sessions_total.labels(persona=persona, status="completed").inc()
             return TaskResponse(
                 status="completed",
                 result={"html": raw_html},
@@ -178,6 +216,8 @@ async def execute_task(request: TaskRequest):
             output = crew.kickoff()
             raw_result = str(output)
             
+            agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+            agent_sessions_total.labels(persona=persona, status="completed").inc()
             return TaskResponse(
                 status="completed",
                 result={"audit_report": raw_result},
@@ -186,15 +226,45 @@ async def execute_task(request: TaskRequest):
         else:
             raise HTTPException(status_code=400, detail=f"Unknown agent domain: {domain}")
 
+    except RequiresApprovalException as e:
+        logger.warning("Task paused for HITL approval: %s", str(e))
+        agent_sessions_total.labels(persona=persona, status="pending_hitl").inc()
+        return TaskResponse(
+            status="pending_hitl",
+            error=str(e),
+            correlation_id=request.correlation_id,
+        )
     except HTTPException:
         raise
     except Exception as e:
         logger.error("Task failed: %s", e, exc_info=True)
+        agent_sessions_total.labels(persona=persona, status="failed").inc()
         return TaskResponse(
             status="failed",
             error=str(e),
             correlation_id=request.correlation_id,
         )
+
+
+@app.post("/tasks/approve")
+async def approve_task(request: TaskApprovalRequest):
+    """
+    Called by the Node.js API when a human operator approves a pending tool.
+    This unblocks the state so the task can be safely retried.
+    """
+    logger.info("Received approval for session %s, tool/approval %s from operator %s", 
+                request.session_id, request.approval_id, request.operator_id)
+                
+    success = AgentSessionManager.grant_approval(
+        session_id=request.session_id,
+        approval_id=request.approval_id,
+        operator_id=request.operator_id
+    )
+    
+    if not success:
+        raise HTTPException(status_code=404, detail="Pending approval not found or already approved.")
+        
+    return {"status": "approved", "session_id": request.session_id}
 
 
 if __name__ == "__main__":

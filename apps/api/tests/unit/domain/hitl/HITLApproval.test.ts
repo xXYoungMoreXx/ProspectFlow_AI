@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { HITLApproval } from '../../../../src/domain/hitl/HITLApproval.js';
+import { HITLLevel } from '../../../../src/domain/hitl/HITLLevel.js';
 
 describe('HITLApproval Entity', () => {
   it('should create a valid approval and emit requested event', () => {
@@ -7,6 +8,7 @@ describe('HITLApproval Entity', () => {
       id: 'hitl-1',
       operatorId: 'op-1',
       agentId: 'agent-1',
+      hitlLevel: HITLLevel.HITL_1,
       actionType: 'SEND_PROPOSAL',
       contextType: 'DEAL',
       contextId: 'deal-1',
@@ -29,6 +31,7 @@ describe('HITLApproval Entity', () => {
       id: 'hitl-1',
       operatorId: 'op-1',
       agentId: 'agent-1',
+      hitlLevel: HITLLevel.HITL_1,
       actionType: 'SEND_PROPOSAL',
       contextType: 'DEAL',
       contextId: 'deal-1',
@@ -44,6 +47,7 @@ describe('HITLApproval Entity', () => {
       id: 'hitl-1',
       operatorId: 'op-1',
       agentId: 'agent-1',
+      hitlLevel: HITLLevel.HITL_1,
       actionType: 'SEND_PROPOSAL',
       contextType: 'DEAL',
       contextId: 'deal-1',
@@ -66,6 +70,7 @@ describe('HITLApproval Entity', () => {
       id: 'hitl-1',
       operatorId: 'op-1',
       agentId: 'agent-1',
+      hitlLevel: HITLLevel.HITL_1,
       actionType: 'SEND_PROPOSAL',
       contextType: 'DEAL',
       contextId: 'deal-1',
@@ -88,6 +93,7 @@ describe('HITLApproval Entity', () => {
       id: 'hitl-1',
       operatorId: 'op-1',
       agentId: 'agent-1',
+      hitlLevel: HITLLevel.HITL_1,
       actionType: 'SEND_PROPOSAL',
       contextType: 'DEAL',
       contextId: 'deal-1',
@@ -105,7 +111,8 @@ describe('HITLApproval Entity', () => {
 
     approval.expire();
     expect(approval.status).toBe('EXPIRED');
-    expect(approval.domainEvents.length).toBe(0);
+    expect(approval.domainEvents.length).toBe(1);
+    expect(approval.domainEvents[0].eventType).toBe('hitl.auto_expired');
 
     vi.useRealTimers();
   });
