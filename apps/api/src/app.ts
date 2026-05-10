@@ -3,7 +3,7 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import metricsPlugin from 'fastify-metrics';
-// @ts-ignore
+// @ts-expect-error - fastify-opentelemetry types are not updated for Fastify v5
 import openTelemetryPlugin from 'fastify-opentelemetry';
 import { config } from './config.js';
 import { authRoutes } from './http/routes/auth.routes.js';

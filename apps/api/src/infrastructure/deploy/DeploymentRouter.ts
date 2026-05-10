@@ -36,7 +36,7 @@ export class DeploymentRouter {
       
       // Primary provider
       return await this.vercel.deploy(options);
-    } catch (error) {
+    } catch (_error) {
       // If quota check fails, try Vercel as best effort, then Netlify if it fails
       const vercelResult = await this.vercel.deploy(options);
       if (vercelResult.isOk()) {
