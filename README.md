@@ -1,6 +1,19 @@
 # AgentePro (ex-ProspectFlow AI) 🚀
 
-O **AgentePro** é uma plataforma corporativa orientada a eventos (*Event-Driven*) focada em prospecção B2B automatizada. Utilizando orquestração de múltiplos agentes de Inteligência Artificial (via CrewAI), ele pesquisa, qualifica, negocia e gera resultados práticos (como websites) para prospects de forma completamente autônoma, operando através de integrações como WhatsApp (Evolution API) e e-mail.
+> **"E se o seu melhor vendedor nunca dormisse, falasse todos os idiomas e qualificasse mil leads antes do seu café da manhã?"** ☕🤖
+
+O **AgentePro** nasceu de uma dor real: o "grind" insuportável da prospecção manual. Enquanto times comerciais perdiam horas filtrando planilhas, nós decidimos construir um ecossistema onde a Inteligência Artificial não apenas ajuda, mas **lidera** o processo. 
+
+Abaixo, você encontrará a jornada de como transformamos esse desafio em uma plataforma *Event-Driven* de ultra-alta performance.
+
+---
+
+## 🏛️ Manifesto: Por que o AgentePro?
+
+Vender é humano, mas prospectar é, muitas vezes, mecânico. O AgentePro é o nosso compromisso com a eficiência radical:
+- **Zero Ruído**: Agentes que qualificam leads com base em dados reais, não apenas palavras-chave.
+- **Negociação com Alma**: IA que entende contexto, gerencia objeções e avança o funil.
+- **Escala Infinita**: De 10 a 10.000 leads sem aumentar o seu overhead.
 
 ---
 
