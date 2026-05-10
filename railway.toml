@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+watchPatterns = ["apps/api/**", "packages/**"]
+
+[deploy]
+startCommand = "npm run start --workspace=@agentepro/api"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
