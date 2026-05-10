@@ -63,7 +63,7 @@ Respond strictly in JSON format with the following structure:
       // Clean up markdown block if present
       const cleanJson = llmResponseText.replace(/```json/g, '').replace(/```/g, '').trim();
       parsed = JSON.parse(cleanJson);
-    } catch (_e) {
+    } catch {
       return err(new ValidationError('Failed to parse LLM quote output as JSON'));
     }
 

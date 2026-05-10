@@ -8,13 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ShieldCheck, Check, X, Edit3, Clock, Loader2 } from 'lucide-react';
+import { ShieldCheck, Check, X, Clock, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function HITLPage() {
   const token = useAuthStore((s) => s.token);
   const { pendingApprovals, isLoading, fetchPending, approve, reject } = useHitlStore();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [note, setNote] = useState('');
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
@@ -39,7 +38,6 @@ export default function HITLPage() {
     setIsProcessing(id);
     try {
       await reject(id, note);
-      setSelectedId(null);
       setNote('');
     } finally {
       setIsProcessing(null);
@@ -122,7 +120,7 @@ export default function HITLPage() {
                           variant="destructive"
                           size="sm"
                           className="gap-1.5"
-                          onClick={() => { setSelectedId(approval.id); setNote(''); }}
+                          onClick={() => { setNote(''); }}
                         />
                       }
                     >
