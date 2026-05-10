@@ -15,6 +15,20 @@
       "when": 1778376910783,
       "tag": "0001_mushy_ghost_rider",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778431263545,
+      "tag": "0002_majestic_chronomancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778439061443,
+      "tag": "0003_remarkable_lester",
+      "breakpoints": true
     }
   ]
 }

@@ -7,6 +7,8 @@ import * as schema from '../../infrastructure/db/schema.js';
 import { config } from '../../config.js';
 import { AuthenticationError, ok, err, type Result } from '../../domain/shared/Result.js';
 import { authFailuresTotal } from '../../infrastructure/metrics/registry.js';
+import { AuthEmailService } from './auth-email.service.js';
+import { randomBytes, createHash, timingSafeEqual } from 'node:crypto';
 
 // Argon2id config per PRD §11.1 (mCost 64MB)
 const ARGON2_OPTIONS: Options = {
@@ -31,6 +33,249 @@ async function getPrivateKey() {
   return privateKey;
 }
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function generateSecureToken(): { token: string; tokenHash: string } {
+  const token = randomBytes(32).toString('hex'); // 64 chars
+  const tokenHash = createHash('sha256').update(token).digest('hex');
+  return { token, tokenHash };
+}
+
+function verifyTokenHash(providedToken: string, storedHash: string): boolean {
+  try {
+    const providedHash = createHash('sha256').update(providedToken).digest('hex');
+    const providedBuffer = Buffer.from(providedHash, 'hex');
+    const storedBuffer = Buffer.from(storedHash, 'hex');
+    if (providedBuffer.length !== storedBuffer.length) return false;
+    return timingSafeEqual(providedBuffer, storedBuffer);
+  } catch {
+    return false;
+  }
+}
+
+// ── Handlers ─────────────────────────────────────────────────────────────────
+
+export class RegisterHandler {
+  constructor(
+    private readonly db: PostgresJsDatabase<typeof schema>,
+    private readonly authEmailService: AuthEmailService
+  ) {}
+
+  async execute(input: { name: string; email: string; password: string }): Promise<Result<void, Error>> {
+    const emailLower = input.email.toLowerCase().trim();
+    
+    // Hash password immediately
+    const passwordHash = await hash(input.password, ARGON2_OPTIONS);
+
+    try {
+      const [operator] = await this.db.insert(schema.operators).values({
+        name: input.name,
+        email: emailLower,
+        passwordHash,
+        isActive: true,
+        emailVerified: false,
+      }).returning();
+
+      if (!operator) return err(new Error('Failed to create user'));
+
+      // Generate verification token
+      const { token, tokenHash } = generateSecureToken();
+      
+      await this.db.insert(schema.emailVerifications).values({
+        operatorId: operator.id,
+        tokenHash,
+        type: 'EMAIL_VERIFICATION',
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      });
+
+      // Send email
+      await this.authEmailService.sendVerificationEmail(operator.email, operator.name, token);
+
+      return ok(undefined);
+    } catch (e: any) {
+      // If email already exists (unique constraint violation)
+      // Anti-enumeration: We return OK, but we do NOT send the verification email.
+      // Alternatively, we could send a "you already have an account" email, but for now we just return OK.
+      if (e.code === '23505') {
+        return ok(undefined); 
+      }
+      return err(e);
+    }
+  }
+}
+
+export class VerifyEmailHandler {
+  constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
+
+  async execute(token: string): Promise<Result<void, Error>> {
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+
+    const [verification] = await this.db
+      .select()
+      .from(schema.emailVerifications)
+      .where(
+        and(
+          eq(schema.emailVerifications.tokenHash, tokenHash),
+          eq(schema.emailVerifications.type, 'EMAIL_VERIFICATION')
+        )
+      )
+      .limit(1);
+
+    if (!verification) {
+      return err(new Error('Invalid token'));
+    }
+
+    if (verification.usedAt || new Date() > verification.expiresAt) {
+      return err(new Error('Token expired or already used'));
+    }
+
+    // Verify constant time just to be safe, though db query already matched it
+    if (!verifyTokenHash(token, verification.tokenHash)) {
+      return err(new Error('Invalid token'));
+    }
+
+    // Mark user as verified and token as used
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(schema.operators)
+        .set({ emailVerified: true })
+        .where(eq(schema.operators.id, verification.operatorId));
+
+      await tx
+        .update(schema.emailVerifications)
+        .set({ usedAt: new Date() })
+        .where(eq(schema.emailVerifications.id, verification.id));
+    });
+
+    return ok(undefined);
+  }
+}
+
+export class ResendVerificationHandler {
+  constructor(
+    private readonly db: PostgresJsDatabase<typeof schema>,
+    private readonly authEmailService: AuthEmailService
+  ) {}
+
+  async execute(email: string): Promise<Result<void, Error>> {
+    const emailLower = email.toLowerCase().trim();
+
+    const [operator] = await this.db
+      .select()
+      .from(schema.operators)
+      .where(eq(schema.operators.email, emailLower))
+      .limit(1);
+
+    // Anti-enumeration: Return ok even if user doesn't exist or is already verified
+    if (!operator || operator.emailVerified) {
+      return ok(undefined);
+    }
+
+    const { token, tokenHash } = generateSecureToken();
+    
+    await this.db.insert(schema.emailVerifications).values({
+      operatorId: operator.id,
+      tokenHash,
+      type: 'EMAIL_VERIFICATION',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+    });
+
+    await this.authEmailService.sendVerificationEmail(operator.email, operator.name, token);
+
+    return ok(undefined);
+  }
+}
+
+export class ForgotPasswordHandler {
+  constructor(
+    private readonly db: PostgresJsDatabase<typeof schema>,
+    private readonly authEmailService: AuthEmailService
+  ) {}
+
+  async execute(email: string): Promise<Result<void, Error>> {
+    const emailLower = email.toLowerCase().trim();
+
+    const [operator] = await this.db
+      .select()
+      .from(schema.operators)
+      .where(eq(schema.operators.email, emailLower))
+      .limit(1);
+
+    // Anti-enumeration: Return ok even if user doesn't exist
+    if (!operator || !operator.isActive) {
+      return ok(undefined);
+    }
+
+    const { token, tokenHash } = generateSecureToken();
+    
+    await this.db.insert(schema.emailVerifications).values({
+      operatorId: operator.id,
+      tokenHash,
+      type: 'PASSWORD_RESET',
+      expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1 hour
+    });
+
+    await this.authEmailService.sendPasswordResetEmail(operator.email, operator.name, token);
+
+    return ok(undefined);
+  }
+}
+
+export class ResetPasswordHandler {
+  constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
+
+  async execute(token: string, password: string): Promise<Result<void, Error>> {
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+
+    const [verification] = await this.db
+      .select()
+      .from(schema.emailVerifications)
+      .where(
+        and(
+          eq(schema.emailVerifications.tokenHash, tokenHash),
+          eq(schema.emailVerifications.type, 'PASSWORD_RESET')
+        )
+      )
+      .limit(1);
+
+    if (!verification || verification.usedAt || new Date() > verification.expiresAt) {
+      // Provide generic error
+      return err(new Error('Invalid or expired token'));
+    }
+
+    if (!verifyTokenHash(token, verification.tokenHash)) {
+      return err(new Error('Invalid token'));
+    }
+
+    const passwordHash = await hash(password, ARGON2_OPTIONS);
+
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(schema.operators)
+        .set({ passwordHash })
+        .where(eq(schema.operators.id, verification.operatorId));
+
+      await tx
+        .update(schema.emailVerifications)
+        .set({ usedAt: new Date() })
+        .where(eq(schema.emailVerifications.id, verification.id));
+        
+      // Revoke all existing refresh tokens
+      await tx
+        .update(schema.refreshTokens)
+        .set({ revokedAt: new Date() })
+        .where(
+          and(
+            eq(schema.refreshTokens.operatorId, verification.operatorId),
+            eq(schema.refreshTokens.revokedAt, null as unknown as Date)
+          )
+        );
+    });
+
+    return ok(undefined);
+  }
+}
+
 export class LoginHandler {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
@@ -53,7 +298,12 @@ export class LoginHandler {
 
     if (!operator || !isValid || !operator.isActive) {
       authFailuresTotal.inc({ reason: 'invalid_credentials' });
-      return err(new AuthenticationError());
+      return err(new AuthenticationError('Credenciais inválidas'));
+    }
+    
+    if (!operator.emailVerified) {
+      authFailuresTotal.inc({ reason: 'email_not_verified' });
+      return err(new AuthenticationError('E-mail não verificado. Por favor, verifique sua caixa de entrada.'));
     }
 
     // Generate tokens
@@ -134,7 +384,7 @@ export class RefreshTokenHandler {
       .where(eq(schema.operators.id, matchedToken.operatorId))
       .limit(1);
 
-    if (!operator || !operator.isActive) {
+    if (!operator || !operator.isActive || !operator.emailVerified) {
       return err(new AuthenticationError());
     }
 

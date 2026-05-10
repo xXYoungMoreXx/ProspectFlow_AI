@@ -30,6 +30,7 @@ export const dealStatusEnum = pgEnum('deal_status', ['PROPOSED', 'NEGOTIATING', 
 export const serviceTypeEnum = pgEnum('service_type', ['WEBSITE', 'TRAFFIC', 'SOCIAL_MEDIA', 'OTHER']);
 export const projectStatusEnum = pgEnum('project_status', ['PLANNING', 'IN_PROGRESS', 'REVIEW', 'DELIVERED', 'REVISION', 'CANCELLED']);
 export const hitlStatusEnum = pgEnum('hitl_status', ['PENDING', 'APPROVED', 'REJECTED', 'EXPIRED', 'EDITED_APPROVED']);
+export const verificationTypeEnum = pgEnum('verification_type', ['EMAIL_VERIFICATION', 'PASSWORD_RESET']);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // IAM CONTEXT
@@ -41,6 +42,7 @@ export const operators = pgTable('operators', {
   passwordHash: text('password_hash').notNull(),     // Argon2id
   name: text('name').notNull(),
   isActive: boolean('is_active').notNull().default(true),
+  emailVerified: boolean('email_verified').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -53,6 +55,18 @@ export const refreshTokens = pgTable('refresh_tokens', {
   revokedAt: timestamp('revoked_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const emailVerifications = pgTable('email_verifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  operatorId: uuid('operator_id').notNull().references(() => operators.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull().unique(),
+  type: verificationTypeEnum('type').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('idx_email_verifications_operator_type').on(table.operatorId, table.type),
+]);
 
 export const pricingConfig = pgTable('pricing_config', {
   id: uuid('id').primaryKey().defaultRandom(),
