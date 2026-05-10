@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE = '/api/v1';
 
 interface RequestOptions extends RequestInit {
   token?: string | null;
@@ -51,6 +51,31 @@ export const api = {
       request<{ data: { accessToken: string; refreshToken: string } }>('/auth/refresh', {
         method: 'POST',
         body: JSON.stringify({ refreshToken }),
+      }),
+    register: (data: any) =>
+      request<{ meta: any }>('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    verifyEmail: (token: string) =>
+      request<{ meta: any }>('/auth/verify-email', {
+        method: 'POST',
+        body: JSON.stringify({ token }),
+      }),
+    resendVerification: (email: string) =>
+      request<{ meta: any }>('/auth/resend-verification', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      }),
+    forgotPassword: (email: string) =>
+      request<{ meta: any }>('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      }),
+    resetPassword: (data: any) =>
+      request<{ meta: any }>('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify(data),
       }),
   },
 

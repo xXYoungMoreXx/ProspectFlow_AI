@@ -6,6 +6,14 @@
     "memory": {
       "command": "E:\\cache\\npm-global\\mcp-server-memory.cmd",
       "args": []
+    },
+    "docker": {
+      "command": "E:\\cache\\npm-global\\docker-mcp-server.cmd",
+      "args": []
+    },
+    "brasil": {
+      "command": "C:\\Users\\morek\\.local\\bin\\uvx.exe",
+      "args": ["--from", "mcp-brasil", "python", "-m", "mcp_brasil.server"]
     }
   }
 }

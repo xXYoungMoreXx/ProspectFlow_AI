@@ -1,24 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '@/lib/stores/auth-store';
 import { api, ApiError } from '@/lib/api';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Loader2, AlertCircle } from 'lucide-react';
+import { Bot, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 
-export default function LoginPage() {
-  const router = useRouter();
-  const setAuth = useAuthStore((s) => s.setAuth);
-
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,12 +21,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result = await api.auth.login(email, password);
-      setAuth(result.data.accessToken, email);
-      router.push('/agents');
+      await api.auth.forgotPassword(email);
+      setSuccess(true);
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.errors[0]?.message || 'Credenciais inválidas');
+        setError(err.errors[0]?.message || 'Erro ao solicitar redefinição');
       } else {
         setError('Não foi possível conectar ao servidor');
       }
@@ -40,21 +34,41 @@ export default function LoginPage() {
     }
   };
 
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
+        <Card className="w-full max-w-md mx-4 border-border/50 bg-card/80 backdrop-blur-sm shadow-2xl">
+          <CardContent className="pt-6 text-center space-y-4">
+            <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 text-green-500">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <CardTitle>Solicitação enviada</CardTitle>
+            <CardDescription>
+              Se o e-mail <strong>{email}</strong> estiver cadastrado em nossa base, 
+              você receberá um link para redefinir sua senha.
+            </CardDescription>
+            <div className="pt-4 flex">
+              <Link href="/login" className={buttonVariants({ variant: 'default', className: 'w-full' })}>
+                Voltar para o Login
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
-      {/* Gradient background orbs */}
-      <div className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-primary/10 blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/4 -right-32 w-96 h-96 rounded-full bg-chart-2/10 blur-3xl animate-pulse delay-1000" />
-
-      <Card className="w-full max-w-md mx-4 border-border/50 bg-card/80 backdrop-blur-sm shadow-2xl">
+      <Card className="w-full max-w-md mx-4 border-border/50 bg-card/80 backdrop-blur-sm shadow-2xl z-10">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20">
             <Bot className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold tracking-tight">AgentePro</CardTitle>
+            <CardTitle className="text-2xl font-bold tracking-tight">Recuperar Senha</CardTitle>
             <CardDescription className="text-muted-foreground mt-1">
-              Faça login para gerenciar seus agentes de IA
+              Digite seu e-mail para receber um link de redefinição
             </CardDescription>
           </div>
         </CardHeader>
@@ -77,26 +91,6 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                autoComplete="email"
-                className="h-11"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Senha</Label>
-                <Link href="/forgot-password" className="text-sm font-medium text-primary hover:underline">
-                  Esqueceu a senha?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
                 className="h-11"
               />
             </div>
@@ -105,17 +99,16 @@ export default function LoginPage() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Entrando...
+                  Enviando...
                 </>
               ) : (
-                'Entrar'
+                'Enviar link de redefinição'
               )}
             </Button>
             
             <div className="text-center text-sm text-muted-foreground mt-4">
-              Não tem uma conta?{' '}
-              <Link href="/register" className="font-medium text-primary hover:underline">
-                Cadastre-se
+              <Link href="/login" className="font-medium text-primary hover:underline">
+                Voltar para o login
               </Link>
             </div>
           </form>

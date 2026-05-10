@@ -7,6 +7,7 @@ const envSchema = z.object({
   HOST: z.string().default('0.0.0.0'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
+  FRONTEND_URL: z.string().default('http://localhost:3000'),
 
   // Database
   DATABASE_URL: z.string().min(1),

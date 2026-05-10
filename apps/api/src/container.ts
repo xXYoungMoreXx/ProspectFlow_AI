@@ -24,6 +24,7 @@ import { ChromaDBAdapter } from './infrastructure/rag/ChromaDBAdapter.js';
 import { HITLExpirationWorker } from './infrastructure/queue/HITLExpirationWorker.js';
 import { EmailWorker } from './infrastructure/queue/EmailWorker.js';
 import { AgentExecutionService } from './application/agent/AgentExecutionService.js';
+import { AuthEmailService } from './application/auth/auth-email.service.js';
 
 // ── Database ──────────────────────────────────────────────────────────────────
 
@@ -70,6 +71,9 @@ export interface Container {
   hitlWorker: HITLExpirationWorker;
   emailWorker: EmailWorker;
   agentExecutionService: AgentExecutionService;
+  
+  // Application Services
+  authEmailService: AuthEmailService;
 }
 
 export function createContainer(): Container {
@@ -106,6 +110,7 @@ export function createContainer(): Container {
     hitlWorker,
     emailWorker,
     agentExecutionService,
+    authEmailService: new AuthEmailService(queue),
   };
 }
 
