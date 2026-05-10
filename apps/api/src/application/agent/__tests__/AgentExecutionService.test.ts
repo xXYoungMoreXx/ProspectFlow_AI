@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mocked } from 'vitest';
 import { AgentExecutionService } from '../AgentExecutionService.js';
 import type { AgentRepository } from '../../../domain/agent/AgentRepository.js';
 import type { BullMQAdapter } from '../../../infrastructure/queue/BullMQAdapter.js';
 import { Agent } from '../../../domain/agent/Agent.js';
 
 describe('AgentExecutionService', () => {
-  let agentRepo: vi.Mocked<AgentRepository>;
-  let queue: vi.Mocked<BullMQAdapter>;
+  let agentRepo: Mocked<AgentRepository>;
+  let queue: Mocked<BullMQAdapter>;
   let service: AgentExecutionService;
 
   beforeEach(() => {
@@ -27,7 +27,7 @@ describe('AgentExecutionService', () => {
 
   it('should process a task and call the Python runtime over HTTP', async () => {
     // 1. Arrange
-    const agent = new Agent({
+    const agent = Agent.reconstitute({
       id: 'agent-123',
       operatorId: 'operator-123',
       name: 'Test Hunter',
@@ -42,7 +42,12 @@ describe('AgentExecutionService', () => {
       tokenBudgetTotal: 100000,
       tokenBudgetRemaining: 100000,
       ragEnabled: false,
-      hitlConfig: { timeoutMinutes: 60, notifyChannel: 'email' },
+      ragTopK: 5,
+      ragThreshold: 0.7,
+      hitlTimeoutMinutes: 60,
+      hitlNotifyChannel: 'email',
+      skills: [],
+      rules: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -105,7 +110,7 @@ describe('AgentExecutionService', () => {
 
   it('should pause agent if Python returns pending_hitl', async () => {
     // 1. Arrange
-    const agent = new Agent({
+    const agent = Agent.reconstitute({
       id: 'agent-123',
       operatorId: 'operator-123',
       name: 'Test Closer',
@@ -120,7 +125,12 @@ describe('AgentExecutionService', () => {
       tokenBudgetTotal: 100000,
       tokenBudgetRemaining: 100000,
       ragEnabled: false,
-      hitlConfig: { timeoutMinutes: 60, notifyChannel: 'email' },
+      ragTopK: 5,
+      ragThreshold: 0.7,
+      hitlTimeoutMinutes: 60,
+      hitlNotifyChannel: 'email',
+      skills: [],
+      rules: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     });
