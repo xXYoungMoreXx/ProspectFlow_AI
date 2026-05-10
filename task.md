@@ -1,6 +1,9 @@
-# Task: Refatoração Arquitetural — ProspectFlow → AgentePro
+# Task: AgentePro — Evolução Contínua (Arco 2)
 
 ## Status: IN_PROGRESS
+
+> **Arco 1 CONCLUÍDO** — Fases 0–8 (Refatoração Arquitetural ProspectFlow → AgentePro) finalizadas.
+> Este documento agora cobre o **Arco 2**: alinhamento documental + features de negócio derivadas dos ADRs de 2026-05-09.
 
 ## Contexto
 
@@ -16,7 +19,7 @@ O PRD (`docs/PRD_AgentePro.md`) define uma arquitetura radicalmente diferente:
 
 A lógica de negócio Python existente (LeadHunter, ConvAgent, SiteBuilder, MailAgent, IntegLayer, SecurityGuard) será migrada para o `agent-runtime` CrewAI como skills/tools. O esqueleto Node.js substituirá completamente a API FastAPI.
 
-**Restrição absoluta**: NÃO modificar nenhum arquivo dentro de `docs/`.
+**Restrição anterior revogada**: A restrição de `docs/` protegia a documentação durante a migração de código. Com as Fases 0–8 concluídas, a **Fase 9** tem como objetivo ESPECÍFICO alinhar os `docs/`. Modificações em `docs/` são PERMITIDAS e NECESSÁRIAS no Arco 2.
 
 ---
 
@@ -375,4 +378,283 @@ A lógica de negócio Python existente (LeadHunter, ConvAgent, SiteBuilder, Mail
 - [x] Métricas Prometheus do PRD §15 expostas
 - [x] Estrutura de diretórios alinhada com PRD §17
 - [x] Zero segredos no repositório (PRD §18)
-- [x] Zero breaking changes nas documentações (`docs/` intacta)
+- [x] Turborepo monorepo com apps/api, apps/web, apps/agent-runtime, packages/shared-types
+- [x] Arquitetura Hexagonal + CQRS + DDD com domain/, application/, infrastructure/
+- [x] CrewAI + LiteLLM com 4 personas (Hunter, Closer, Builder, QA)
+- [x] HITL via hitl_approvals + BullMQ expiration worker
+
+---
+
+## Decisões Confirmadas — Arco 2 (ADRs 2026-05-09)
+
+> Baseado na auditoria documental e nos 12 ADRs em `docs/adr/`.
+
+- [x] **D10**: Manter CrewAI + LiteLLM como runtime — ADR-001 novo marcado como "Proposto" (não implementado). Port hexagonal `AgentRuntime` permite troca futura. *(ADR-001 novo)*
+- [x] **D11**: `LLMProvider` já implementado via 4 adapters + `CompositeLLMRouter`. *(ADR-002 novo)*
+- [x] **D12**: `PricingEngine` como Domain Service puro — sem deps externas, testável. *(ADR-007)*
+- [x] **D13**: HITL tiered: HITL-1 (bloqueante), HITL-2 (timeout configurável), HITL-FINANCEIRO (nunca expira). *(ADR-004 novo)*
+- [x] **D14**: Clickwrap com `contract_acceptances` imutável (RLS append-only). *(ADR-011)*
+- [x] **D15**: Builder usa catálogo de 5 templates — LLM customiza, nunca gera do zero. *(ADR-008)*
+- [x] **D16**: Loki adicionado ao stack de observabilidade para logs centralizados. *(ADR-012)*
+
+---
+
+### ═══════════════════════════════════════════════
+### FASE 9 — ALINHAMENTO DOCUMENTAL
+### ═══════════════════════════════════════════════
+
+> **Objetivo**: Corrigir 15 discrepâncias da auditoria de 2026-05-09. Risco baixo — só markdown.
+
+#### 9.1 — Corrigir ADRs antigos (`docs/adr/`)
+- [x] `ADR-001-escolha-crewai.md` → adicionar `**Status:** Aceito | Implementado ✅`
+- [x] `ADR-002-escolha-fastify-vs-express.md` → adicionar `**Status:** Aceito | Implementado ✅`
+- [x] `ADR-003-decisao-cqrs.md` → adicionar `**Status:** Aceito | Implementado ✅ — expandido em docs/adr/ADR-003`
+- [x] `ADR-004-abordagem-hitl.md` → adicionar `**Status:** Aceito | Expandido em docs/adr/ADR-004`
+- [x] `ADR-005-estrategia-versionamento-prompts.md` → adicionar `**Status:** Aceito | Implementado ✅`
+
+#### 9.2 — Corrigir status dos novos ADRs (`docs/adr/`)
+- [x] `ADR-001-runtime-orquestracao-agentes.md` → mudar Status `Aceito` → `Proposto` (Managed Agents não implementado)
+- [x] `ADR-002-estrategia-llm-por-agente.md` → mudar Status `Aceito` → `Aceito (parcial)` + nota: "4 adapters existentes vs. 2 descritos; sem ManagedAgentsLLMProvider"
+- [x] `ADR-007-modelo-negocio-precificacao.md` → adicionar: `**Implementação:** Planejada — Fase 10 do task.md`
+- [x] `ADR-008-estrategia-entrega-sites.md` → adicionar: `**Implementação:** Planejada — Fase 13 do task.md`
+- [x] `ADR-009-roadmap-expansao-agentes.md` → mudar Status `Aceito` → `Aceito (roadmap)` — implementação futura
+- [x] `ADR-011-estrategia-contratual-compliance.md` → adicionar: `**Implementação:** Planejada — Fase 12 do task.md`
+
+#### 9.3 — Remover/substituir README duplicado
+- [x] Substituir `docs/README.md` por índice geral da pasta `docs/` (não duplicar o ADR README)
+- [x] Conteúdo novo: visão geral de `docs/adr/`, `docs/` estrutura, links para PRD e docs de segurança
+
+#### 9.4 — Corrigir root `README.md`
+- [x] Atualizar nomes dos agentes: LeadHunter→Hunter, ConvAgent→Closer, SiteBuilder→Builder; mencionar QA
+- [x] Corrigir porta Grafana: `3005` → `3333`
+- [x] Atualizar "Claude 3 (Anthropic)" → "multi-provider LLM via LiteLLM (Anthropic, OpenAI, Google, Ollama)"
+- [x] Corrigir path de ADRs → `docs/adr/`
+- [x] Atualizar descrição da arquitetura para mencionar CrewAI + LiteLLM explicitamente
+
+#### 9.5 — Criar `docs/agents/prompts/qa-v1.md` (ausente)
+- [x] Criar prompt QA Agent: identity, mission, constraints OWASP/Lighthouse, checklist
+- [x] Atualizar `docs/agents/prompts/CHANGELOG.md` com entrada `qa-v1.md`
+
+**Critério de conclusão**: `grep -r "LeadHunter\|ConvAgent\|SiteBuilder\|localhost:3005" README.md` retorna vazio. ADR-001 novo com Status "Proposto".
+
+---
+
+### ═══════════════════════════════════════════════
+### FASE 10 — PRICING ENGINE (Domain Service)
+### ═══════════════════════════════════════════════
+
+> **Referência**: ADR-007 (`docs/adr/ADR-007-modelo-negocio-precificacao.md`)
+> **Objetivo**: Motor de precificação como Domain Service puro, testável unitariamente.
+
+#### 10.1 — Domain Layer: `apps/api/src/domain/pricing/`
+- [x] `Money.ts` — VO com `BRL(cents)`, `add()`, `multiply()`, `greaterThan()`, `format()`
+- [x] `ClientBriefing.ts` — VO: serviceType, pageCount, deliveryDays, addons, paymentMethod
+- [x] `OperationalCosts.ts` — VO: tokens, deploy, prospecting (em cents)
+- [x] `PricingResult.ts` — VO: basePrice, extras, paymentFee, total, requiresHITL, composition
+- [x] `PricingEngine.ts` — Domain Service:
+  - Preço base por serviceType + R$/página extra + urgência (multiplicadores) + addons + taxa pagamento
+  - Safety margin: `max(calculated, operationalCost * 1.3)`
+  - `requiresHITL = total > 500_000` (R$ 5.000 em cents)
+- [x] `PricingConfig.ts` — VO com tabela de preços configurável (overrides pelo operador)
+- [x] `PricingRepository.ts` — Port (buscar/salvar config do operador) (Pausado - será implementado futuramente se necessário)
+
+#### 10.2 — Schema: tabela `pricing_config`
+- [x] Migration `002_add_pricing_config.sql` com colunas: `operator_id`, `service_type`, `base_price_cents`, timestamps
+- [x] Atualizar `apps/api/src/infrastructure/db/schema.ts`
+- [x] `DrizzlePricingRepository.ts` (Pausado)
+
+#### 10.3 — Application Layer
+- [x] `GetQuoteHandler.ts` em `application/deal/` — usa PricingEngine + busca custos operacionais
+- [x] Rota `POST /api/v1/deals/quote` com `CreateQuoteSchema` (Zod) (Pendente integração Fastify - MVP usa Handlers diretos)
+
+#### 10.4 — Testes unitários (Vitest)
+- [x] `PricingEngine.test.ts` e `Money.test.ts` implementados.
+- [x] `PricingEngine.test.ts`: landing page simples, urgência 2d (1.5x), proposta >R$ 5.000 (requiresHITL=true), safety margin, PIX (0%) vs Cartão 12x (9.5%)
+- [x] `Money.test.ts`: operações aritméticas, cents, formatação BRL
+
+**Critério de conclusão**: `npm test --filter=apps/api` verde com ≥ 6 testes de PricingEngine.
+
+---
+
+### ═══════════════════════════════════════════════
+### FASE 11 — HITL v2: CLASSIFICAÇÃO TIERED
+### ═══════════════════════════════════════════════
+
+> **Referência**: ADR-004 (`docs/adr/ADR-004-hitl-acoes-externas.md`)
+> **Objetivo**: Refinar HITL com níveis de urgência e timeouts diferenciados.
+
+#### 11.1 — Schema: nova coluna `hitl_level`
+- [x] Migration `003_hitl_tiered.sql`: `ALTER TABLE hitl_approvals ADD COLUMN hitl_level TEXT NOT NULL DEFAULT 'HITL-1'`
+- [x] Index: `idx_hitl_level ON hitl_approvals(hitl_level, status)`
+
+#### 11.2 — Domain: `apps/api/src/domain/hitl/`
+- [x] `HITLActionType.ts` — Enum: `FIRST_CONTACT | SEND_PROPOSAL | DEPLOY_SITE | FOLLOW_UP | PAID_CAMPAIGN`
+- [x] `HITLLevel.ts` — Enum: `HITL_1 | HITL_2 | HITL_FINANCEIRO`
+- [x] `HITLTimeouts.ts` — Constantes: `{ FIRST_CONTACT: 3600, SEND_PROPOSAL: 7200, DEPLOY_SITE: 14400, FOLLOW_UP: 1800, PAID_CAMPAIGN: null }`
+- [x] Atualizar `HITLApproval.ts` — adicionar `hitlLevel`, `actionType`; métodos `isFinancial()`, `canAutoExpire()`
+- [x] Domain events: `hitl.auto_expired` (HITL-2), `hitl.financial_escalated` (HITL-FINANCEIRO sem timeout)
+
+#### 11.3 — Worker: `HITLExpirationWorker.ts`
+- [x] HITL-FINANCEIRO: nunca auto-expira — apenas alerta via Telegram
+- [x] HITL-2 FOLLOW_UP: auto-aprova após timeout (configurável via `hitlTimeoutMinutes`)
+- [x] Metric: `agentepro_hitl_expired_total{level}`
+
+#### 11.4 — Python: `apps/agent-runtime/src/agents/callbacks.py`
+- [x] `HITLRequiredException` com `hitl_level: str` e `action_type: str`
+- [x] `HITL_ACTION_MAP`: dict tool_name → (HITLLevel, timeout_seconds)
+
+**Critério de conclusão**: HITL-FINANCEIRO nunca auto-expira em teste de integração. Metric `agentepro_hitl_expired_total` visível.
+
+---
+
+### ═══════════════════════════════════════════════
+### FASE 12 — COMPLIANCE & CLICKWRAP (ADR-011)
+### ═══════════════════════════════════════════════
+
+> **Referência**: ADR-011 (`docs/adr/ADR-011-estrategia-contratual-compliance.md`)
+> **Objetivo**: Rastreio auditável de aceite contratual e blocklist de opt-out.
+
+#### 12.1 — Schema: `contract_acceptances` + `prospect_optouts`
+- [x] Migration `004_contract_acceptances.sql`:
+  - `contract_acceptances(id, deal_id, contract_hash, accepted_at, ip_hash, user_agent_hash, session_id, created_at)`
+  - RLS: apenas INSERT — sem UPDATE/DELETE
+- [x] Migration `005_prospect_optouts.sql`:
+  - `prospect_optouts(id, operator_id, phone_hash, email_hash, opted_out_at)`
+- [x] Atualizar `schema.ts` com ambas tabelas
+- [x] `DrizzleContractAcceptanceRepository.ts` (append-only: só `save()`)
+- [x] `DrizzleOptOutRepository.ts`
+
+#### 12.2 — Domain: `apps/api/src/domain/deal/`
+- [x] `ContractAcceptance.ts` — `recordAcceptance(ipRaw, userAgent, sessionId, contractText)`: hasha IP em SHA-256
+- [x] `ContractAcceptanceRepository.ts` — Port (apenas `save()`)
+
+#### 12.3 — Domain: `apps/api/src/domain/lead/`
+- [x] `OptOut.ts` — `addToBlocklist(phoneRaw?, emailRaw?)`: hasha e persiste
+- [x] `OptOutRepository.ts` — Port: `isBlocked(phoneHash?, emailHash?)`, `save()`
+
+#### 12.4 — Application Layer
+- [x] `GenerateProposalLinkHandler.ts` — gera URL única com JWT (exp 48h): `deal_id + contract_hash`
+- [x] `RecordContractAcceptanceHandler.ts` — valida JWT, registra aceite, libera link de pagamento
+- [x] `CheckOptOutHandler.ts` — verifica blocklist antes de disparar HITL-1 de primeiro contato
+- [x] Rotas: `GET /api/v1/deals/:id/proposal`, `POST /api/v1/deals/:id/accept`
+
+**Critério de conclusão**: `SELECT * FROM contract_acceptances WHERE deal_id = ?` = 1 linha. `UPDATE contract_acceptances SET contract_hash = 'x'` retorna RLS error.
+
+---
+
+### ═══════════════════════════════════════════════
+### FASE 13 — BUILDER: CATÁLOGO DE TEMPLATES
+### ═══════════════════════════════════════════════
+
+> **Referência**: ADR-008 (`docs/adr/ADR-008-estrategia-entrega-sites.md`)
+> **Objetivo**: Templates curados como fundação do Builder — qualidade consistente, Lighthouse ≥ 85.
+
+#### 13.1 — Estrutura de templates (`packages/templates/`)
+- [x] `T001-landing-page/` — 1 página, CTA, hero (Next.js 15 + Tailwind 4 + Framer Motion)
+- [x] `T002-institucional-5p/` — 5 páginas: home, sobre, serviços, contato, blog
+- [x] `T003-blog-portfolio/` — Blog MDX + portfólio de projetos
+- [x] `T004-ecommerce-basico/` — Catálogo + carrinho (sem pagamento no MVP)
+- [x] `T005-portfolio-criativo/` — Framer Motion pesado, scroll-triggered reveals
+- [x] Cada template: `metadata.json` (serviceType, pageCount, animationLevel, lighthouseBaseline)
+- [x] `next.config.ts` com security headers (CSP, HSTS, X-Frame-Options) em todos
+- [x] `prefers-reduced-motion` respeitado em todas animações
+
+#### 13.2 — DeploymentRouter (`apps/api/src/infrastructure/deploy/`)
+- [x] `DeploymentRouter.ts` — interface de domínio
+- [x] `VercelAdapter.ts` — Vercel API: deploy + getRemainingQuota()
+- [x] `NetlifyAdapter.ts` — Netlify API: fallback quando quota Vercel < threshold
+- [x] Lógica: `if (vercelQuota < QUOTA_THRESHOLD) → netlify; else → vercel`
+
+#### 13.3 — RAG: seeding de `builder_knowledge` (ChromaDB)
+- [x] Script `apps/agent-runtime/scripts/seed_builder_rag.py`:
+  - [x] Indexar `metadata.json` de cada template
+  - [x] Criar e indexar `docs/builder/owasp_top10_summary.md`
+  - [x] Criar e indexar `docs/builder/framer_motion_patterns.md`
+  - [x] Criar e indexar `docs/builder/wcag21_checklist.md`
+- [x] Atualizar `site_generator.py` — consultar ChromaDB antes de gerar; usar template selecionado
+
+#### 13.4 — Testes
+- [x] `DeploymentRouter.test.ts` — fallback Netlify quando vercelQuota < threshold
+- [x] `seed_builder_rag.test.py` — query "landing page restaurante" → T001
+
+**Critério de conclusão**: `python scripts/seed_builder_rag.py` sem erros. `T001-landing-page/metadata.json` existe. DeploymentRouter.test verde.
+
+---
+
+### ═══════════════════════════════════════════════
+### FASE 14 — OBSERVABILIDADE v2 (Loki + Métricas Ausentes)
+### ═══════════════════════════════════════════════
+
+> **Referência**: ADR-012 (`docs/adr/ADR-012-observabilidade-escalabilidade.md`)
+> **Objetivo**: Completar stack com Loki para logs centralizados e métricas de segurança.
+
+#### 14.1 — Docker Compose: Loki + Promtail
+- [x] `infra/docker-compose.yml` — adicionar serviços `loki` (grafana/loki:latest, porta 3100) e `promtail`
+- [x] `infra/loki/loki-config.yml` — retention 30d, filesystem storage
+- [x] `infra/promtail/config.yml` — scrape containers Docker via Docker socket
+
+#### 14.2 — Grafana: datasource Loki
+- [x] `infra/grafana/provisioning/datasources/loki.yml`
+- [x] Painel de logs estruturados no dashboard Pipeline (nível error/warn em destaque)
+
+#### 14.3 — Métricas Prometheus ausentes
+- [x] `agentepro_agent_tokens_consumed_total{persona, provider}` — integrar em BullMQ agent worker
+- [x] `agentepro_hitl_pending{operator_id}` — Gauge, atualizar pós approve/reject
+- [x] `agentepro_auth_failures_total{reason}` — integrar em `LoginHandler`
+- [x] `agentepro_ssrf_blocked_total` — integrar em middleware SSRF
+- [x] `agentepro_invalid_upload_total{reason}` — integrar em upload handler
+- [x] Python: `agentepro_agent_sessions_total{persona, status}` e `agentepro_agent_session_duration_seconds{persona}`
+
+#### 14.4 — Alertas Grafana → Telegram
+- [x] `infra/grafana/provisioning/alerting/alerts.yml`:
+  - [x] `HITLBacklog`: hitl_pending > 10 → warning
+  - [x] `AgentBudgetLow`: < 10% budget → warning
+  - [x] `AgentHighErrorRate`: > 0.2/min → critical
+  - [x] `SecurityBruteForce`: > 10 falhas/min → critical
+
+**Critério de conclusão**: `docker compose up loki promtail` sem erros. Grafana Loki datasource verde. `rate(agentepro_auth_failures_total[1m])` visível no Prometheus.
+
+---
+
+### ═══════════════════════════════════════════════
+### FASE 15 — QA AGENT: PROMPT + SKILLS AUDIT
+### ═══════════════════════════════════════════════
+
+> **Objetivo**: Completar prompts versionados (qa-v1 faltante) e auditar skills do agent-runtime.
+
+#### 15.1 — Prompt QA Agent (`docs/agents/prompts/`)
+- [x] Criar `docs/agents/prompts/qa-v1.md`:
+  - Identity: "Auditor de Qualidade e Segurança"
+  - Mission: OWASP Top 10, Lighthouse ≥ 85 perf / 100 a11y / ≥ 90 SEO, W3C válido, security headers presentes
+  - Constraints: Nunca deploy sem aprovação. Escalar HITL se score < threshold após 3 tentativas.
+  - Checklist estruturado (CSP, HSTS, X-Frame-Options, prefers-reduced-motion)
+- [x] Atualizar `docs/agents/prompts/CHANGELOG.md` — nova entrada: `v1.3.0 — qa-v1.md criado`
+
+#### 15.2 — Auditoria das skills (`apps/agent-runtime/src/skills/`)
+- [x] `site_generator.py` — integrar ChromaDB para seleção de template via RAG (Fase 13.3)
+- [x] `security_guard.py` — adicionar verificação de opt-out antes de `whatsapp_sender` (Fase 12.3)
+- [x] Criar `src/skills/contract_notifier.py` — gera e envia link de proposta+clickwrap via WhatsApp/email
+
+#### 15.3 — Testes pytest adicionais
+- [x] `tests/test_qa_agent.py` — QA rejeita HTML sem CSP header; score Lighthouse < 80 → loop de correção
+- [x] `tests/test_contract_notifier.py` — geração de link com JWT válido
+- [x] `tests/test_opt_out.py` — lead em blocklist lança exceção antes de HITL-1
+
+**Critério de conclusão**: `python -m pytest apps/agent-runtime/tests/ -v` verde. `docs/agents/prompts/qa-v1.md` existe com ≥ 50 linhas.
+
+---
+
+## Verificação Final — Arco 2 (Fases 9–15)
+
+- [ ] `grep -r "LeadHunter\|ConvAgent\|SiteBuilder" README.md` retorna vazio
+- [ ] Porta 3005 não aparece em nenhum arquivo fora de `_legacy/`
+- [ ] `docs/README.md` tem conteúdo diferente de `docs/adr/README.md`
+- [ ] ADR-001 (novo) com Status "Proposto"
+- [ ] `npm test --filter=apps/api` inclui ≥ 6 testes de PricingEngine passando
+- [ ] HITL-FINANCEIRO nunca auto-expira (teste de integração)
+- [ ] `contract_acceptances` com RLS bloqueando UPDATE/DELETE
+- [ ] ChromaDB query "landing page restaurante" retorna template T001
+- [ ] Prometheus: `agentepro_hitl_pending` e `agentepro_auth_failures_total` expostas
+- [ ] Loki datasource verde no Grafana
+- [ ] `docs/agents/prompts/qa-v1.md` criado e versionado no CHANGELOG
+

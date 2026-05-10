@@ -151,12 +151,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <header className="flex items-center justify-between h-14 px-4 lg:px-6 border-b border-border bg-background/80 backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <Sheet>
-              <SheetTrigger
-                render={
-                  <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(true)} />
-                }
-              >
-                <Menu className="w-5 h-5" />
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMobileOpen(true)}>
+                  <Menu className="w-5 h-5" />
+                </Button>
               </SheetTrigger>
             </Sheet>
             <h1 className="text-sm font-semibold text-foreground capitalize">
@@ -170,16 +168,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Button>
 
             <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full" />
-                }
-              >
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <div className="px-2 py-1.5">

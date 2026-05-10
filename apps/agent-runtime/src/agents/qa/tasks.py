@@ -11,17 +11,19 @@ def create_qa_audit_task(agent: Agent, html_code: str) -> Task:
 
     return Task(
         description=(
-            f"Audite o código HTML abaixo. Verifique os seguintes pontos críticos:\n"
-            f"1. SEO: Tem a tag <title> e as meta tags corretas (description, viewport)?\n"
-            f"2. Responsividade: Usa media queries CSS, CSS Grid ou Flexbox corretamente para mobile?\n"
-            f"3. Segurança: Existem scripts inseridos que não são de fontes confiáveis (CDNs comuns como Google Fonts)? Existem links de phishing?\n"
-            f"4. Estrutura Semântica: O HTML5 está sendo usado corretamente (header, main, section, footer)?\n\n"
+            f"Audite o código HTML/Configurações abaixo com foco rígido nas diretrizes do OWASP Top 10, WCAG 2.1 e Lighthouse.\n"
+            f"Verifique os seguintes pontos críticos:\n"
+            f"1. Acessibilidade (WCAG): Contraste mínimo de cores (4.5:1), tags semânticas, atributos aria onde necessário.\n"
+            f"2. Responsividade (Lighthouse): Usa media queries, CSS Grid ou Flexbox para mobile-first.\n"
+            f"3. Segurança (OWASP): Existem vulnerabilidades XSS? O Content Security Policy (CSP) está ativado e restrito? "
+            f"HSTS está ativo? X-Frame-Options está configurado para DENY ou SAMEORIGIN?\n"
+            f"4. Performance & UX: Animações respeitam prefers-reduced-motion?\n\n"
             f"CÓDIGO HTML A AUDITAR:\n"
             f"```html\n{preview}\n```\n\n"
             "Retorne APENAS um objeto JSON com o resultado da sua auditoria contendo as chaves:\n"
             "- 'status': 'approved' ou 'rejected'\n"
-            "- 'issues': array de strings com os problemas encontrados (ou array vazio se tudo estiver perfeito)\n"
-            "- 'score': inteiro de 0 a 100 avaliando a qualidade geral do código."
+            "- 'issues': array de strings com os problemas encontrados.\n"
+            "- 'score': inteiro de 0 a 100 avaliando a qualidade."
         ),
         expected_output="A JSON object containing keys: 'status', 'issues', and 'score'.",
         agent=agent,

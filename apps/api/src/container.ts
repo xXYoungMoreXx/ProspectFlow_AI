@@ -11,6 +11,8 @@ import { DrizzleDealRepository } from './infrastructure/db/repositories/DrizzleD
 import { DrizzleProjectRepository } from './infrastructure/db/repositories/DrizzleProjectRepository.js';
 import { DrizzleHITLRepository } from './infrastructure/db/repositories/DrizzleHITLRepository.js';
 import { DrizzleAuditLogRepository } from './infrastructure/db/repositories/DrizzleAuditLogRepository.js';
+import { DrizzleContractAcceptanceRepository } from './infrastructure/db/repositories/DrizzleContractAcceptanceRepository.js';
+import { DrizzleOptOutRepository } from './infrastructure/db/repositories/DrizzleOptOutRepository.js';
 
 // Infrastructure Adapters
 import { EnvSecretsAdapter } from './infrastructure/secrets/SecretsProvider.js';
@@ -53,6 +55,8 @@ export interface Container {
   projectRepo: DrizzleProjectRepository;
   hitlRepo: DrizzleHITLRepository;
   auditRepo: DrizzleAuditLogRepository;
+  contractAcceptanceRepo: DrizzleContractAcceptanceRepository;
+  optOutRepo: DrizzleOptOutRepository;
 
   // Infrastructure Services
   secrets: EnvSecretsAdapter;
@@ -91,6 +95,8 @@ export function createContainer(): Container {
     projectRepo: new DrizzleProjectRepository(db),
     hitlRepo: new DrizzleHITLRepository(db),
     auditRepo: new DrizzleAuditLogRepository(db),
+    contractAcceptanceRepo: new DrizzleContractAcceptanceRepository(db),
+    optOutRepo: new DrizzleOptOutRepository(db),
     secrets,
     llm,
     queue,

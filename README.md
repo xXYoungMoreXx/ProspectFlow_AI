@@ -8,10 +8,11 @@ O **AgentePro** é uma plataforma corporativa orientada a eventos (*Event-Driven
 
 O fluxo do AgentePro é construído para eliminar o trabalho manual de uma agência ou time comercial na busca por novos clientes:
 
-1. **LeadHunter (Busca e Qualificação)**: O agente busca estabelecimentos na web (ex: "clínicas odontológicas em São Paulo") através da API do Google Places. Ele aplica regras de pontuação (score) baseadas em metadados reais (número de avaliações, existência de um site próprio, nota geral) para qualificar o prospect.
-2. **ConvAgent (Contato e Negociação)**: Um agente treinado em negociação de 6 etapas interage com o prospect pelo WhatsApp. Todo o funil de vendas é gerido automaticamente.
-3. **SiteBuilder (Entrega de Valor)**: Quando o prospect avança no funil de negociação, o agente gera dinamicamente um protótipo ou site real utilizando Claude 3 (Anthropic) e realiza um deploy automatizado via Vercel ou armazenamento local.
-4. **Supervisão Humana (HITL)**: A plataforma conta com um CRM Next.js. O operador humano pode intervir nas conversas ou aprovar/rejeitar ações críticas dos agentes (Human-In-The-Loop).
+1. **Hunter (Busca e Qualificação)**: O agente busca estabelecimentos na web (ex: "clínicas odontológicas em São Paulo") através da API do Google Places. Ele aplica regras de pontuação (score) baseadas em metadados reais (número de avaliações, existência de um site próprio, nota geral) para qualificar o prospect.
+2. **Closer (Contato e Negociação)**: Um agente treinado em negociação de 6 etapas interage com o prospect pelo WhatsApp. Todo o funil de vendas é gerido automaticamente.
+3. **Builder (Entrega de Valor)**: Quando o prospect avança no funil de negociação, o agente gera dinamicamente um site utilizando os templates curados e realiza um deploy automatizado.
+4. **QA (Qualidade e Segurança)**: Agente auditor que garante o cumprimento de OWASP Top 10, Core Web Vitals (Lighthouse ≥ 85) e WCAG 2.1 antes de liberar o deploy.
+5. **Supervisão Humana (HITL)**: A plataforma conta com um CRM Next.js. O operador humano pode intervir nas conversas ou aprovar/rejeitar ações críticas dos agentes (Human-In-The-Loop) via aprovação baseada em tiers.
 
 ---
 
@@ -22,7 +23,7 @@ O sistema abandonou o monólito legado em favor de uma **Arquitetura Hexagonal (
 ### Estrutura do Monorepo
 - **`apps/api` (Backend Node.js/Fastify)**: API de ultra-alta performance. Cuida de toda a persistência de dados utilizando o **Drizzle ORM** (PostgreSQL) e o sistema de filas robusto **BullMQ** (via Redis) para processar webhooks e envios de background (mensagens, e-mails, execuções de agentes).
 - **`apps/web` (Frontend Next.js)**: Painel CRM interativo, implementado utilizando **TailwindCSS** e **shadcn/ui**, permitindo acompanhamento do Pipeline (Kanban) e gestão de aprovações em tempo real.
-- **`apps/agent-runtime` (Serviço Python/CrewAI)**: Um microserviço dedicado que orquestra os cérebros de IA. Utiliza **CrewAI**, LiteLLM, ChromaDB (para RAG contextual) e integra-se com APIs externas como Anthropic, OpenAI e Google Gemini de forma totalmente tipada através do `pydantic`.
+- **`apps/agent-runtime` (Serviço Python/CrewAI)**: Um microserviço dedicado que orquestra os cérebros de IA. Utiliza **CrewAI**, LiteLLM, ChromaDB (para RAG contextual) e integra-se com APIs externas de múltiplos provedores (Anthropic, OpenAI, Google, Ollama local) de forma totalmente tipada através do `pydantic`. A porta `LLMRouter` permite desacoplamento total por agente.
 - **`packages/*`**: Repositórios compartilhados de tipos TS (`shared-types`), schemas (`database`) e configurações de linting/build, garantindo consistência em toda a base de código.
 
 A infraestrutura foi pensada para rodar de forma descentralizada. Os *Workers* do BullMQ garantem que milhares de requisições de mensagens ou acionamentos de agentes escalem de modo seguro na nuvem, sem bloquear o _Event Loop_ principal da API.
@@ -46,7 +47,8 @@ Todo o ciclo de vida do Agente e da API possui rastreio (Tracing) transparente e
 
 - **Logging Estruturado (Pino)**: Logs de alto desempenho em formato JSON compatível com agregadores modernos (ELK/Datadog).
 - **Métricas Node.js & Prometheus**: Todas as instâncias Fastify expõem uma rota `/api/v1/metrics` coletando dados vitais como uso do Event Loop, Active Handles, Memory Heap e RPS.
-- **OpenTelemetry (OTel)**: Geração de Distributed Traces detalhados permitindo visualizar (via **Jaeger** ou **Grafana**) precisamente onde uma requisição de disparo no WhatsApp gargalou – se foi no acesso ao DB, na Fila Redis ou no LLM Anthropic.
+- **OpenTelemetry (OTel)**: Geração de Distributed Traces detalhados permitindo visualizar (via **Jaeger** ou **Grafana**) precisamente onde uma requisição de disparo no WhatsApp gargalou – se foi no acesso ao DB, na Fila Redis ou no LLM.
+- **Grafana Loki (Logs Centralizados)**: Agregação unificada de logs de todos os containers estruturados via Promtail, indexados e consultáveis diretamente no Grafana.
 
 ---
 
@@ -91,7 +93,7 @@ Pronto! Seus painéis ficarão online nas seguintes portas:
 - 💻 **Dashboard CRM (Next.js)**: `http://localhost:3000`
 - ⚙️ **API Gateway**: `http://localhost:3001`
 - 🤖 **Agent Runtime (FastAPI + Python)**: `http://localhost:8001`
-- 📈 **Grafana Metrics**: `http://localhost:3005` (usuário configurado no seu `.env`)
+- 📈 **Grafana Metrics**: `http://localhost:3333` (usuário configurado no seu `.env`)
 
 ---
 

@@ -10,12 +10,14 @@ import { authRoutes } from './http/routes/auth.routes.js';
 import { agentRoutes } from './http/routes/agents.routes.js';
 import { leadRoutes } from './http/routes/leads.routes.js';
 import { dealRoutes } from './http/routes/deals.routes.js';
+import { publicDealRoutes } from './http/routes/deals.public.routes.js';
 import { projectRoutes } from './http/routes/projects.routes.js';
 import { hitlRoutes } from './http/routes/hitl.routes.js';
 import { systemRoutes } from './http/routes/system.routes.js';
 import { uploadRoutes } from './http/routes/upload.routes.js';
 import { errorHandler } from './http/middleware/errorHandler.js';
 import { requestIdHook } from './http/middleware/requestId.middleware.js';
+import { ssrfMiddleware } from './http/middleware/ssrf.middleware.js';
 import { createContainer } from './container.js';
 
 export async function buildApp(opts = {}): Promise<FastifyInstance> {
@@ -57,6 +59,7 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
 
   // ── Global Hooks ────────────────────────────────────────────────────────
   app.addHook('onRequest', requestIdHook);
+  app.addHook('preHandler', ssrfMiddleware);
   app.setErrorHandler(errorHandler);
 
   // ── DI Container ─────────────────────────────────────────────────────────
@@ -73,6 +76,7 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
   await app.register(authRoutes, { prefix: '/api/v1/auth' });
   await app.register(agentRoutes, { prefix: '/api/v1/agents' });
   await app.register(leadRoutes, { prefix: '/api/v1/leads' });
+  await app.register(publicDealRoutes, { prefix: '/api/v1/deals' }); // Note: Register public before protected if paths conflict, but here they don't
   await app.register(dealRoutes, { prefix: '/api/v1/deals' });
   await app.register(projectRoutes, { prefix: '/api/v1/projects' });
   await app.register(hitlRoutes, { prefix: '/api/v1/hitl' });

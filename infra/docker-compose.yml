@@ -117,6 +117,31 @@ services:
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
 
+  # ── Loki (Log Aggregation) ─────────────────────────────────────────────────
+  loki:
+    image: grafana/loki:latest
+    container_name: agentepro-loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+
+  # ── Promtail (Log Scraper) ─────────────────────────────────────────────────
+  promtail:
+    image: grafana/promtail:latest
+    container_name: agentepro-promtail
+    restart: unless-stopped
+    volumes:
+      - ./promtail/config.yml:/etc/promtail/config.yml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+
 volumes:
   postgres_data:
   redis_data:
@@ -124,3 +149,4 @@ volumes:
   n8n_data:
   grafana_data:
   prometheus_data:
+  loki_data:

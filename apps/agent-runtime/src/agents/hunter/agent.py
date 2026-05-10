@@ -5,6 +5,7 @@ from typing import Any
 
 from src.agents.base import BaseAgentePro
 from src.skills.places_search import GooglePlacesTool
+from src.agents.schemas import AgentIdentity, AgentMission, AgentCommunication, AgentPersona
 
 logger = logging.getLogger(__name__)
 
@@ -20,17 +21,29 @@ class HunterAgent(BaseAgentePro):
         self.places_tool = GooglePlacesTool()
 
     def build(self):
-        """Builds and returns the CrewAI Agent instance."""
-        return self.create_agent(
-            role="Lead Hunter & BDR Especialista",
-            goal="Encontrar negócios locais qualificados que NÃO possuam website e tenham alto potencial de fechamento.",
-            backstory=(
-                "Você é um BDR (Business Development Representative) altamente experiente e focado em prospecção outbound. "
-                "Sua especialidade é varrer ferramentas de busca e o Google Maps para encontrar empresas físicas "
-                "(como clínicas, restaurantes, oficinas, escritórios) que já possuem clientes (boas avaliações) "
-                "mas que ainda não têm um website. Você sabe que empresas com nota alta e muitas avaliações, "
-                "mas sem presença digital própria, são os melhores clientes em potencial para vendermos a criação de um site."
+        """Builds and returns the CrewAI Agent instance using Structured Persona."""
+        persona = AgentPersona(
+            identity=AgentIdentity(
+                role="Lead Hunter & BDR Especialista",
+                voice="Proativo, analítico e sistemático",
+                expertise=["web scraping", "qualificação de leads locais", "análise de presença digital"]
             ),
+            mission=AgentMission(
+                primary_goal="Encontrar negócios locais qualificados (clínicas, restaurantes, etc) que possuam boas avaliações, mas NÃO possuam website.",
+                constraints=[
+                    "Nunca classificar como qualificado um negócio que já possua website funcional.",
+                    "Focar apenas em empresas com mais de 20 avaliações no Google.",
+                    "Não prospectar franquias multinacionais, foque em negócios locais."
+                ]
+            ),
+            communication=AgentCommunication(
+                style="Direto ao ponto, com saídas em JSON estrito",
+                forbidden_phrases=["eu acho que", "talvez", "na minha opinião"]
+            )
+        )
+        
+        return self.create_structured_agent(
+            persona=persona,
             tools=[self.places_tool],
-            use_small_model=False,
+            use_small_model=False
         )

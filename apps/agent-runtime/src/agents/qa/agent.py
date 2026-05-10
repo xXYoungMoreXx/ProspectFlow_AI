@@ -5,6 +5,8 @@ from typing import Any
 
 from src.agents.base import BaseAgentePro
 
+from src.agents.schemas import AgentIdentity, AgentMission, AgentCommunication, AgentPersona
+
 logger = logging.getLogger(__name__)
 
 class QAAgent(BaseAgentePro):
@@ -21,16 +23,28 @@ class QAAgent(BaseAgentePro):
         """Builds and returns the CrewAI Agent instance."""
         brand_name = self.payload.get("brand_name", "AgentePro")
         
-        return self.create_agent(
-            role="Auditor de Qualidade e Segurança Web",
-            goal="Revisar e validar códigos HTML gerados, garantindo que não existam vulnerabilidades óbvias (como links maliciosos) e assegurando a qualidade de UI/UX e SEO.",
-            backstory=(
-                f"Você é o engenheiro de QA sênior da {brand_name}. "
-                "Sua missão é atuar como a última linha de defesa antes de um site ir para produção. "
-                "Você é especialista em identificar problemas de responsividade, quebras de layout CSS, "
-                "falta de tags de SEO (title, meta tags), e vulnerabilidades de segurança como XSS ou links "
-                "para sites maliciosos. Você é minucioso, direto ao ponto e não deixa passar erros primários."
+        persona = AgentPersona(
+            identity=AgentIdentity(
+                role="Auditor de Qualidade e Segurança",
+                voice="Rígido, detalhista e guiado exclusivamente por dados, normas e best-practices globais.",
+                expertise=["OWASP Top 10", "Lighthouse", "WCAG 2.1", "SEO", "W3C"]
             ),
+            mission=AgentMission(
+                primary_goal="Garantir que não existem vulnerabilidades de XSS e assegurar métricas severas: Performance ≥ 85, Acessibilidade 100/100, SEO ≥ 90.",
+                constraints=[
+                    "Nunca emitir sinal verde de deploy se um critério do checklist estruturado falhar.",
+                    "Escalar HITL se score < threshold após 3 tentativas.",
+                    "Verificar CSP, HSTS, X-Frame-Options e prefers-reduced-motion."
+                ]
+            ),
+            communication=AgentCommunication(
+                style="Direto ao ponto, listando os problemas e retornando relatórios JSON estritos",
+                forbidden_phrases=["parece bom no geral", "talvez devêssemos", "eu não tenho certeza"]
+            )
+        )
+        
+        return self.create_structured_agent(
+            persona=persona,
             tools=[],  # In the future, we could add a LightHouse tool or Security Scanner tool
-            use_small_model=False,
+            use_small_model=False
         )

@@ -2,6 +2,7 @@ import { eq, and, desc, gt, lte, sql } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '../schema.js';
 import { HITLApproval, type HITLApprovalProps } from '../../../domain/hitl/HITLApproval.js';
+import { HITLLevel } from '../../../domain/hitl/HITLLevel.js';
 import type { HITLApprovalRepository, HITLFilters, HITLListResult } from '../../../domain/hitl/HITLApprovalRepository.js';
 import type { HITLStatus } from '@agentepro/shared-types';
 
@@ -83,6 +84,7 @@ export class DrizzleHITLRepository implements HITLApprovalRepository {
         id: json.id,
         operatorId: json.operatorId,
         agentId: json.agentId,
+        hitlLevel: json.hitlLevel,
         actionType: json.actionType,
         contextType: json.contextType,
         contextId: json.contextId,
@@ -110,6 +112,7 @@ export class DrizzleHITLRepository implements HITLApprovalRepository {
       id: row.id,
       operatorId: row.operatorId,
       agentId: row.agentId,
+      hitlLevel: row.hitlLevel as HITLLevel,
       actionType: row.actionType,
       contextType: row.contextType,
       contextId: row.contextId,

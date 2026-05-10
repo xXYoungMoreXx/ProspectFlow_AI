@@ -5,6 +5,16 @@ O formato baseia-se em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0
 
 ## [Unreleased]
 
+## [v1.3.1] - 2026-05-10
+### Expandido
+- `qa-v1.md`: Prompt expandido de 25 → 81 linhas. Adicionado: Workflow Operacional (3 passos), checklist completo por categoria (Segurança/Performance/Acessibilidade/SEO/Compliance LGPD), template de Relatório de Auditoria, constraint ZERO TOLERÂNCIA A SECRETS, regra de escalada HITL-FINANCEIRO.
+
+## [v1.3.0] - 2026-05-09
+### Adicionado
+- `qa-v1.md`: Criação inicial do prompt base para o QA Agent. Define critérios estritos baseados no OWASP Top 10, WCAG 2.1 e Lighthouse, com regra de HITL após 3 iterações falhas.
+
+## [v1.1.0] - 2026-05-09
+
 ## [1.0.0] - 2026-05-01
 ### Adicionado
 - `hunter-v1.md`: Criação inicial do prompt base para o agente de prospecção, focando em extração de critérios, presença digital e score (0-100). Regra estrita de bloqueio de envio externo.

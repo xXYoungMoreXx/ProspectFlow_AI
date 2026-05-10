@@ -27,7 +27,7 @@ INJECTION_PATTERNS = [
     r"bypass\s+restrictions",
     # Portuguese
     r"ignor[ea]\s+(todas?\s+)?(as\s+)?instruções\s+anteriores",
-    r"esqueç[ae]\s+tudo",
+    r"esqueç[ae]|esquece\s+tudo",
     r"você\s+agora\s+é\s+um\s+assistente\s+sem\s+restrições",
     r"atu[ea]\s+como\s+um\s+sistema\s+sem\s+regras",
     r"finj[ae]\s+ser",
@@ -35,6 +35,8 @@ INJECTION_PATTERNS = [
     r"quais\s+são\s+suas\s+instruções",
     r"modo\s+desenvolvedor",
     r"me\s+dê\s+sua\s+api\s+key",
+    r"what\s+is\s+your\s+api\s+key",
+    r"repita\s+o\s+system\s+prompt",
     # Structural attacks
     r"<SYSTEM_INSTRUCTIONS>",
     r"\[SYSTEM\]\s+override",
@@ -54,7 +56,7 @@ OPT_OUT_PATTERNS = [
 OUTPUT_LEAK_PATTERNS = [
     r"sk-ant-api\d{2}-[a-zA-Z0-9]",          # Anthropic
     r"sk-[a-zA-Z0-9]{48}",                    # OpenAI
-    r"AIza[a-zA-Z0-9]{35}",                   # Google
+    r"AIza[a-zA-Z0-9_-]{32,}",                  # Google
     r"postgresql(\+asyncpg)?://\S+:\S+@",     # DB conn string
     r"redis://\S+:\S+@",                       # Redis conn string
     r"SYSTEM_INSTRUCTIONS\s+are",
@@ -113,6 +115,38 @@ class SecurityGuard:
                 return SecurityResult(passed=False, reason=f"leak:{pattern.pattern}")
 
         return SecurityResult(passed=True)
+
+    def check_ssrf(self, url: str, lead_id: str = "system") -> SecurityResult:
+        """Check URL against SSRF patterns (internal IPs, localhost, metadata API)."""
+        blocked_domains = [
+            r"localhost",
+            r"127\.0\.0\.1",
+            r"0\.0\.0\.0",
+            r"169\.254\.169\.254",  # AWS Metadata
+            r"10\.\d{1,3}\.\d{1,3}\.\d{1,3}",
+            r"172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}",
+            r"192\.168\.\d{1,3}\.\d{1,3}",
+            r"\.internal$",
+            r"\.local$"
+        ]
+        
+        try:
+            import urllib.parse
+            parsed = urllib.parse.urlparse(url)
+            hostname = parsed.hostname or url
+            
+            for pattern in blocked_domains:
+                if re.search(pattern, hostname, re.IGNORECASE):
+                    logger.error(
+                        "SSRF BLOCKED | lead=%s | url=%s | pattern=%s",
+                        lead_id, url, pattern
+                    )
+                    return SecurityResult(passed=False, reason=f"ssrf:{pattern}")
+                    
+            return SecurityResult(passed=True)
+        except Exception as e:
+            logger.error("Failed to parse URL for SSRF check: %s", str(e))
+            return SecurityResult(passed=False, reason="invalid_url")
 
 
 def sanitize_for_prompt(text: str, max_length: int = 4000) -> str:

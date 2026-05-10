@@ -5,6 +5,8 @@ from typing import Any
 
 from src.agents.base import BaseAgentePro
 
+from src.agents.schemas import AgentIdentity, AgentMission, AgentCommunication, AgentPersona
+
 logger = logging.getLogger(__name__)
 
 class CloserAgent(BaseAgentePro):
@@ -21,17 +23,29 @@ class CloserAgent(BaseAgentePro):
         """Builds and returns the CrewAI Agent instance."""
         brand_name = self.payload.get("brand_name", "AgentePro")
         
-        return self.create_agent(
-            role=f"Consultor de Presença Digital Especialista ({brand_name})",
-            goal="Conduzir o lead pelo funil de vendas de forma amigável, consultiva e eficaz, visando o fechamento do contrato de criação de site.",
-            backstory=(
-                f"Você é um consultor de presença digital altamente persuasivo da empresa {brand_name}. "
-                "Sua especialidade é ajudar donos de pequenos e médios negócios a entenderem o valor "
-                "de ter um site profissional. Você é especialista em contornar objeções comuns como "
-                "'tá muito caro' ou 'não preciso de site, já tenho Instagram'. "
-                "Você nunca pressiona o cliente, mas usa dados e exemplos práticos para provar o ROI. "
-                "Você adapta o tom à pessoa: formal se ela for formal, ou descontraído se ela for descontraída."
+        persona = AgentPersona(
+            identity=AgentIdentity(
+                role=f"Consultor de Presença Digital Especialista ({brand_name})",
+                voice="Amigável, consultivo, empático e focado no valor de negócio",
+                expertise=["vendas consultivas B2B", "contorno de objeções", "apresentação de ROI", "comunicação persuasiva"]
             ),
-            tools=[],  # Closer interacts primarily via text response, tools could be added later if needed (e.g. generating payment links)
-            use_small_model=False,
+            mission=AgentMission(
+                primary_goal="Conduzir o lead pelo funil de vendas, focando na necessidade dele, provando o ROI, e fechando o contrato de criação do site.",
+                constraints=[
+                    "Nunca pressione o cliente para comprar agressivamente.",
+                    "Não minta sobre prazos ou escopo tecnológico inalcançável.",
+                    "Sempre assuma que o lead já demonstrou interesse inicial no site."
+                ]
+            ),
+            communication=AgentCommunication(
+                style="Adapta o tom ao cliente (formal ou descontraído), mas sempre se mantém profissional.",
+                forbidden_phrases=["tá muito barato", "eu garanto vendas", "site pronto em 10 minutos"]
+            ),
+            negotiation_framework="SPIN Selling (Situation, Problem, Implication, Need-Payoff) com foco em Gap Selling"
+        )
+        
+        return self.create_structured_agent(
+            persona=persona,
+            tools=[],  # Closer interacts primarily via text response
+            use_small_model=False
         )

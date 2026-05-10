@@ -12,6 +12,7 @@ export interface QueueConfig {
  */
 export class BullMQAdapter {
   private readonly queues: Map<string, Queue> = new Map();
+  private readonly workers: Map<string, Worker> = new Map();
 
   constructor(private readonly config: QueueConfig) {}
 
@@ -63,15 +64,26 @@ export class BullMQAdapter {
   }
 
   createWorker(queueName: string, processor: (job: Job) => Promise<void>): Worker {
-    return new Worker(queueName, processor, {
+    const worker = new Worker(queueName, processor, {
       connection: this.config.connection,
       concurrency: 5,
     });
+    this.workers.set(queueName, worker);
+    return worker;
   }
 
   async close(): Promise<void> {
+    // Close workers first — waits for in-progress jobs to finish
+    for (const worker of this.workers.values()) {
+      await worker.close();
+    }
+    this.workers.clear();
+
+    // Then close queues
     for (const queue of this.queues.values()) {
       await queue.close();
     }
+    this.queues.clear();
   }
 }
+

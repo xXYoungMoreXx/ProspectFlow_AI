@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import multipart from '@fastify/multipart';
 import { fileTypeFromBuffer } from 'file-type';
 import { authMiddleware } from '../middleware/auth.middleware.js';
+import { invalidUploadTotal } from '../../infrastructure/metrics/registry.js';
 
 export async function uploadRoutes(app: FastifyInstance): Promise<void> {
   // Register multipart with limits (10MB)
@@ -17,6 +18,7 @@ export async function uploadRoutes(app: FastifyInstance): Promise<void> {
     const data = await request.file();
     
     if (!data) {
+      invalidUploadTotal.inc({ reason: 'no_file' });
       return reply.status(400).send({
         errors: [{ code: 'VALIDATION_ERROR', message: 'No file uploaded', requestId: request.requestId }]
       });
@@ -28,11 +30,13 @@ export async function uploadRoutes(app: FastifyInstance): Promise<void> {
     try {
       buffer = await data.toBuffer();
       if (data.file.truncated) {
+        invalidUploadTotal.inc({ reason: 'size_limit_exceeded' });
         return reply.status(413).send({
           errors: [{ code: 'PAYLOAD_TOO_LARGE', message: 'File size exceeds 10MB limit', requestId: request.requestId }]
         });
       }
     } catch (err: any) {
+      invalidUploadTotal.inc({ reason: 'size_limit_exceeded' });
       return reply.status(413).send({
         errors: [{ code: 'PAYLOAD_TOO_LARGE', message: 'File size exceeds 10MB limit', requestId: request.requestId }]
       });
@@ -43,6 +47,7 @@ export async function uploadRoutes(app: FastifyInstance): Promise<void> {
     
     // If we can't determine type from magic bytes, and it's not a known text type
     if (!type && !data.filename.endsWith('.csv') && !data.filename.endsWith('.txt')) {
+      invalidUploadTotal.inc({ reason: 'unknown_type' });
       return reply.status(400).send({
         errors: [{ code: 'VALIDATION_ERROR', message: 'Could not determine file type', requestId: request.requestId }]
       });
@@ -50,6 +55,7 @@ export async function uploadRoutes(app: FastifyInstance): Promise<void> {
 
     // Verify if it's an executable masquerading as something else
     if (type && (type.ext === 'exe' || type.mime === 'application/x-msdownload')) {
+      invalidUploadTotal.inc({ reason: 'executable_file' });
       return reply.status(400).send({
         errors: [{ code: 'SECURITY_ERROR', message: 'Executable files are not allowed', requestId: request.requestId }]
       });
@@ -59,6 +65,7 @@ export async function uploadRoutes(app: FastifyInstance): Promise<void> {
     const isAllowed = type && allowedMimeTypes.includes(type.mime) || data.filename.endsWith('.csv') || data.filename.endsWith('.txt');
     
     if (!isAllowed) {
+      invalidUploadTotal.inc({ reason: 'blocked_mime_type' });
       return reply.status(400).send({
         errors: [{ code: 'SECURITY_ERROR', message: 'Invalid or blocked file type', requestId: request.requestId }]
       });
