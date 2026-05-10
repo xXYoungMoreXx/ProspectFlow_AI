@@ -35,7 +35,7 @@ export async function uploadRoutes(app: FastifyInstance): Promise<void> {
           errors: [{ code: 'PAYLOAD_TOO_LARGE', message: 'File size exceeds 10MB limit', requestId: request.requestId }]
         });
       }
-    } catch (err: any) {
+    } catch (_err: any) {
       invalidUploadTotal.inc({ reason: 'size_limit_exceeded' });
       return reply.status(413).send({
         errors: [{ code: 'PAYLOAD_TOO_LARGE', message: 'File size exceeds 10MB limit', requestId: request.requestId }]

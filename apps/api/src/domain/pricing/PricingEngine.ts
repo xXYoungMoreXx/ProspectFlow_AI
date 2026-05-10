@@ -53,7 +53,7 @@ export class PricingEngine {
       Money.BRL(0)
     );
     
-    let extras = extraPagesCost.add(addonsCost);
+    const extras = extraPagesCost.add(addonsCost);
 
     // 3. Multiplicador de Urgência
     const multiplier = briefing.deliveryDays <= 2 
