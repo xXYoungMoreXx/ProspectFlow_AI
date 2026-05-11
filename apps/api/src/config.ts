@@ -36,10 +36,15 @@ const envSchema = z.object({
   WEBHOOK_URL: z.string().optional(),
   WEBHOOK_SECRET: z.string().optional(),
 
+  // LLM Providers
+  ANTHROPIC_API_KEY: z.string().optional(),
+  OPENAI_API_KEY: z.string().optional(),
+
   // Messaging - WhatsApp (Evolution API)
   EVOLUTION_API_URL: z.string().optional(),
   EVOLUTION_API_KEY: z.string().optional(),
-  
+  WPP_INSTANCE: z.string().optional(),
+
   // Messaging - Email (Brevo)
   BREVO_API_KEY: z.string().optional(),
   EMAIL_FROM_ADDRESS: z.string().default('noreply@agentepro.com'),
