@@ -16,9 +16,9 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "devDependencies": {
-    "turbo": "^2.5.0",
+    "turbo": "^2.9.12",
     "prettier": "^3.5.0",
-    "typescript": "^5.8.0"
+    "typescript": "^6.0.3"
   },
   "packageManager": "npm@10.9.0",
   "engines": {
