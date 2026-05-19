@@ -1,13 +1,13 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
-import { buildApp } from '../../src/app.js';
-import type { FastifyInstance } from 'fastify';
-import { SignJWT, importPKCS8 } from 'jose';
-import { ulid } from 'ulid';
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from "vitest";
+import { buildApp } from "../../src/app.js";
+import type { FastifyInstance } from "fastify";
+import { SignJWT, importPKCS8 } from "jose";
+import { ulid } from "ulid";
 
-describe('Deals Endpoints Integration', () => {
+describe("Deals Endpoints Integration", () => {
   let app: FastifyInstance;
   let validToken: string;
-  
+
   const mockDealRepo = {
     save: vi.fn(),
     findById: vi.fn(),
@@ -15,14 +15,14 @@ describe('Deals Endpoints Integration', () => {
   };
 
   beforeAll(async () => {
-    const keyStr = process.env.JWT_PRIVATE_KEY || 'dummy';
-    const key = await importPKCS8(keyStr.replace(/\\n/g, '\n'), 'RS256');
-    validToken = await new SignJWT({ sub: 'op-123', email: 'test@example.com' })
-      .setProtectedHeader({ alg: 'RS256', typ: 'JWT' })
+    const keyStr = process.env.JWT_PRIVATE_KEY || "dummy";
+    const key = await importPKCS8(keyStr.replace(/\\n/g, "\n"), "RS256");
+    validToken = await new SignJWT({ sub: "op-123", email: "test@example.com" })
+      .setProtectedHeader({ alg: "RS256", typ: "JWT" })
       .setIssuedAt()
-      .setExpirationTime('1h')
-      .setIssuer('agentepro.local')
-      .setAudience('agentepro-api')
+      .setExpirationTime("1h")
+      .setIssuer("agentepro.local")
+      .setAudience("agentepro-api")
       .setJti(ulid())
       .sign(key);
   });
@@ -33,12 +33,20 @@ describe('Deals Endpoints Integration', () => {
     app.container.dealRepo = mockDealRepo as any;
   });
 
-  it('should return empty list of deals', async () => {
-    mockDealRepo.findMany.mockResolvedValueOnce({ deals: [], total: 0, nextCursor: null });
+  afterEach(async () => {
+    if (app) await app.close();
+  });
+
+  it("should return empty list of deals", async () => {
+    mockDealRepo.findMany.mockResolvedValueOnce({
+      deals: [],
+      total: 0,
+      nextCursor: null,
+    });
 
     const response = await app.inject({
-      method: 'GET',
-      url: '/api/v1/deals',
+      method: "GET",
+      url: "/api/v1/deals",
       headers: { authorization: `Bearer ${validToken}` },
     });
 
@@ -48,23 +56,23 @@ describe('Deals Endpoints Integration', () => {
     expect(mockDealRepo.findMany).toHaveBeenCalled();
   });
 
-  it('should return 404 when canceling unknown deal', async () => {
+  it("should return 404 when canceling unknown deal", async () => {
     mockDealRepo.findById.mockResolvedValueOnce(null);
 
     const response = await app.inject({
-      method: 'POST',
-      url: '/api/v1/deals/deal-123/cancel',
+      method: "POST",
+      url: "/api/v1/deals/deal-123/cancel",
       headers: { authorization: `Bearer ${validToken}` },
-      payload: { reason: 'Client changed mind' },
+      payload: { reason: "Client changed mind" },
     });
 
     expect(response.statusCode).toBe(404);
   });
 
-  it('should return 400 validation error when cancel reason is missing', async () => {
+  it("should return 400 validation error when cancel reason is missing", async () => {
     const response = await app.inject({
-      method: 'POST',
-      url: '/api/v1/deals/deal-123/cancel',
+      method: "POST",
+      url: "/api/v1/deals/deal-123/cancel",
       headers: { authorization: `Bearer ${validToken}` },
       payload: {},
     });

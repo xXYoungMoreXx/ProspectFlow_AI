@@ -1,7 +1,13 @@
-import { eq, and, desc, gt, sql } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as schema from '../schema.js';
-import { Agent, type AgentProps, type LLMConfiguration, type AgentSkill, type AgentRule } from '../../../domain/agent/Agent.js';
+import { eq, and, desc, gt, sql } from "drizzle-orm";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import * as schema from "../schema.js";
+import {
+  Agent,
+  type AgentProps,
+  type LLMConfiguration,
+  type AgentSkill,
+  type AgentRule,
+} from "../../../domain/agent/Agent.js";
 import type {
   AgentRepository,
   AgentFilters,
@@ -10,8 +16,12 @@ import type {
   UpdateSkillData,
   CreateRuleData,
   UpdateRuleData,
-} from '../../../domain/agent/AgentRepository.js';
-import type { AgentPersona, AgentStatus, LLMProvider } from '@agentepro/shared-types';
+} from "../../../domain/agent/AgentRepository.js";
+import type {
+  AgentPersona,
+  AgentStatus,
+  LLMProvider,
+} from "@agentepro/shared-types";
 
 export class DrizzleAgentRepository implements AgentRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
@@ -20,7 +30,9 @@ export class DrizzleAgentRepository implements AgentRepository {
     const [row] = await this.db
       .select()
       .from(schema.agents)
-      .where(and(eq(schema.agents.id, id), eq(schema.agents.operatorId, operatorId)))
+      .where(
+        and(eq(schema.agents.id, id), eq(schema.agents.operatorId, operatorId)),
+      )
       .limit(1);
 
     if (!row) return null;
@@ -40,8 +52,10 @@ export class DrizzleAgentRepository implements AgentRepository {
 
   async findMany(filters: AgentFilters): Promise<AgentListResult> {
     const conditions = [eq(schema.agents.operatorId, filters.operatorId)];
-    if (filters.status) conditions.push(eq(schema.agents.status, filters.status));
-    if (filters.persona) conditions.push(eq(schema.agents.persona, filters.persona));
+    if (filters.status)
+      conditions.push(eq(schema.agents.status, filters.status));
+    if (filters.persona)
+      conditions.push(eq(schema.agents.persona, filters.persona));
     if (filters.cursor) conditions.push(gt(schema.agents.id, filters.cursor));
 
     const limit = filters.limit ?? 20;
@@ -63,8 +77,14 @@ export class DrizzleAgentRepository implements AgentRepository {
 
     const domainAgents = await Promise.all(
       agents.map(async (row) => {
-        const skills = await this.db.select().from(schema.agentSkills).where(eq(schema.agentSkills.agentId, row.id));
-        const rules = await this.db.select().from(schema.agentRules).where(eq(schema.agentRules.agentId, row.id));
+        const skills = await this.db
+          .select()
+          .from(schema.agentSkills)
+          .where(eq(schema.agentSkills.agentId, row.id));
+        const rules = await this.db
+          .select()
+          .from(schema.agentRules)
+          .where(eq(schema.agentRules.agentId, row.id));
         return this.toDomain(row, skills, rules);
       }),
     );
@@ -133,7 +153,9 @@ export class DrizzleAgentRepository implements AgentRepository {
   async delete(id: string, operatorId: string): Promise<boolean> {
     const result = await this.db
       .delete(schema.agents)
-      .where(and(eq(schema.agents.id, id), eq(schema.agents.operatorId, operatorId)));
+      .where(
+        and(eq(schema.agents.id, id), eq(schema.agents.operatorId, operatorId)),
+      );
     return (result as unknown as { rowCount: number }).rowCount > 0;
   }
 
@@ -160,18 +182,27 @@ export class DrizzleAgentRepository implements AgentRepository {
     };
   }
 
-  async updateSkill(skillId: string, agentId: string, data: UpdateSkillData): Promise<AgentSkill | null> {
+  async updateSkill(
+    skillId: string,
+    agentId: string,
+    data: UpdateSkillData,
+  ): Promise<AgentSkill | null> {
     const updates: Record<string, unknown> = {};
-    if (data.name !== undefined) updates['name'] = data.name;
-    if (data.skillType !== undefined) updates['skillType'] = data.skillType;
-    if (data.config !== undefined) updates['config'] = data.config;
-    if (data.isEnabled !== undefined) updates['isEnabled'] = data.isEnabled;
+    if (data.name !== undefined) updates["name"] = data.name;
+    if (data.skillType !== undefined) updates["skillType"] = data.skillType;
+    if (data.config !== undefined) updates["config"] = data.config;
+    if (data.isEnabled !== undefined) updates["isEnabled"] = data.isEnabled;
 
     if (Object.keys(updates).length === 0) {
       const [existing] = await this.db
         .select()
         .from(schema.agentSkills)
-        .where(and(eq(schema.agentSkills.id, skillId), eq(schema.agentSkills.agentId, agentId)))
+        .where(
+          and(
+            eq(schema.agentSkills.id, skillId),
+            eq(schema.agentSkills.agentId, agentId),
+          ),
+        )
         .limit(1);
       if (!existing) return null;
       return {
@@ -186,7 +217,12 @@ export class DrizzleAgentRepository implements AgentRepository {
     const rows = await this.db
       .update(schema.agentSkills)
       .set(updates)
-      .where(and(eq(schema.agentSkills.id, skillId), eq(schema.agentSkills.agentId, agentId)))
+      .where(
+        and(
+          eq(schema.agentSkills.id, skillId),
+          eq(schema.agentSkills.agentId, agentId),
+        ),
+      )
       .returning();
 
     if (rows.length === 0) return null;
@@ -203,7 +239,12 @@ export class DrizzleAgentRepository implements AgentRepository {
   async removeSkill(skillId: string, agentId: string): Promise<boolean> {
     const result = await this.db
       .delete(schema.agentSkills)
-      .where(and(eq(schema.agentSkills.id, skillId), eq(schema.agentSkills.agentId, agentId)));
+      .where(
+        and(
+          eq(schema.agentSkills.id, skillId),
+          eq(schema.agentSkills.agentId, agentId),
+        ),
+      );
     return (result as unknown as { rowCount: number }).rowCount > 0;
   }
 
@@ -247,19 +288,28 @@ export class DrizzleAgentRepository implements AgentRepository {
     };
   }
 
-  async updateRule(ruleId: string, agentId: string, data: UpdateRuleData): Promise<AgentRule | null> {
+  async updateRule(
+    ruleId: string,
+    agentId: string,
+    data: UpdateRuleData,
+  ): Promise<AgentRule | null> {
     const updates: Record<string, unknown> = {};
-    if (data.name !== undefined) updates['name'] = data.name;
-    if (data.condition !== undefined) updates['condition'] = data.condition;
-    if (data.action !== undefined) updates['action'] = data.action;
-    if (data.priority !== undefined) updates['priority'] = data.priority;
-    if (data.isEnabled !== undefined) updates['isEnabled'] = data.isEnabled;
+    if (data.name !== undefined) updates["name"] = data.name;
+    if (data.condition !== undefined) updates["condition"] = data.condition;
+    if (data.action !== undefined) updates["action"] = data.action;
+    if (data.priority !== undefined) updates["priority"] = data.priority;
+    if (data.isEnabled !== undefined) updates["isEnabled"] = data.isEnabled;
 
     if (Object.keys(updates).length === 0) {
       const [existing] = await this.db
         .select()
         .from(schema.agentRules)
-        .where(and(eq(schema.agentRules.id, ruleId), eq(schema.agentRules.agentId, agentId)))
+        .where(
+          and(
+            eq(schema.agentRules.id, ruleId),
+            eq(schema.agentRules.agentId, agentId),
+          ),
+        )
         .limit(1);
       if (!existing) return null;
       return {
@@ -275,7 +325,12 @@ export class DrizzleAgentRepository implements AgentRepository {
     const rows = await this.db
       .update(schema.agentRules)
       .set(updates)
-      .where(and(eq(schema.agentRules.id, ruleId), eq(schema.agentRules.agentId, agentId)))
+      .where(
+        and(
+          eq(schema.agentRules.id, ruleId),
+          eq(schema.agentRules.agentId, agentId),
+        ),
+      )
       .returning();
 
     if (rows.length === 0) return null;
@@ -293,7 +348,12 @@ export class DrizzleAgentRepository implements AgentRepository {
   async removeRule(ruleId: string, agentId: string): Promise<boolean> {
     const result = await this.db
       .delete(schema.agentRules)
-      .where(and(eq(schema.agentRules.id, ruleId), eq(schema.agentRules.agentId, agentId)));
+      .where(
+        and(
+          eq(schema.agentRules.id, ruleId),
+          eq(schema.agentRules.agentId, agentId),
+        ),
+      );
     return (result as unknown as { rowCount: number }).rowCount > 0;
   }
 
@@ -360,7 +420,7 @@ export class DrizzleAgentRepository implements AgentRepository {
       ragEnabled: row.ragEnabled,
       ragCollection: row.ragCollection ?? undefined,
       ragTopK: row.ragTopK ?? 5,
-      ragThreshold: Number(row.ragThreshold ?? '0.7'),
+      ragThreshold: Number(row.ragThreshold ?? "0.7"),
       hitlTimeoutMinutes: row.hitlTimeoutMinutes,
       hitlNotifyChannel: row.hitlNotifyChannel,
       skills: domainSkills,

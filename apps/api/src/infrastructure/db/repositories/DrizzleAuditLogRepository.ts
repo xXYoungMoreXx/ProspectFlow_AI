@@ -1,8 +1,11 @@
-import { ulid } from 'ulid';
-import { eq, and, desc } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as schema from '../schema.js';
-import type { AuditEntry, AuditLogRepository } from '../../../domain/shared/AuditLogRepository.js';
+import { ulid } from "ulid";
+import { eq, and, desc } from "drizzle-orm";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import * as schema from "../schema.js";
+import type {
+  AuditEntry,
+  AuditLogRepository,
+} from "../../../domain/shared/AuditLogRepository.js";
 
 /**
  * Append-only audit log repository.
@@ -26,11 +29,19 @@ export class DrizzleAuditLogRepository implements AuditLogRepository {
     });
   }
 
-  async findByResource(resourceType: string, resourceId: string): Promise<AuditEntry[]> {
+  async findByResource(
+    resourceType: string,
+    resourceId: string,
+  ): Promise<AuditEntry[]> {
     const rows = await this.db
       .select()
       .from(schema.auditLog)
-      .where(and(eq(schema.auditLog.resourceType, resourceType), eq(schema.auditLog.resourceId, resourceId)))
+      .where(
+        and(
+          eq(schema.auditLog.resourceType, resourceType),
+          eq(schema.auditLog.resourceId, resourceId),
+        ),
+      )
       .orderBy(desc(schema.auditLog.timestamp))
       .limit(100);
 
@@ -51,7 +62,7 @@ export class DrizzleAuditLogRepository implements AuditLogRepository {
   private toAuditEntry(row: typeof schema.auditLog.$inferSelect): AuditEntry {
     return {
       id: row.id,
-      actor: row.actor as AuditEntry['actor'],
+      actor: row.actor as AuditEntry["actor"],
       actorId: row.actorId,
       action: row.action,
       resourceType: row.resourceType,

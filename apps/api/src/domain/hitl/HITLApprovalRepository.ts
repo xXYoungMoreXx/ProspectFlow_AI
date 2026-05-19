@@ -1,5 +1,5 @@
-import type { HITLApproval } from './HITLApproval.js';
-import type { HITLStatus } from '@agentepro/shared-types';
+import type { HITLApproval } from "./HITLApproval.js";
+import type { HITLStatus } from "@agentepro/shared-types";
 
 export interface HITLFilters {
   operatorId: string;

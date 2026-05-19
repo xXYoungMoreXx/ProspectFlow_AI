@@ -142,6 +142,31 @@ services:
     depends_on:
       - loki
 
+  # ── Ollama (Local LLM Runtime) ─────────────────────────────────────────────
+  # GPU auto-detection: uses NVIDIA runtime when docker nvidia-ctk is configured.
+  # Without GPU, runs on CPU. Managed via Settings Hub UI.
+  ollama:
+    image: ollama/ollama:latest
+    container_name: agentepro-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
 volumes:
   postgres_data:
   redis_data:
@@ -150,3 +175,4 @@ volumes:
   grafana_data:
   prometheus_data:
   loki_data:
+  ollama_data:

@@ -1,5 +1,9 @@
-import type { LLMRouter, LLMCompletionRequest, LLMCompletionResponse } from './LLMRouter.js';
-import type { SecretsProvider } from '../secrets/SecretsProvider.js';
+import type {
+  LLMRouter,
+  LLMCompletionRequest,
+  LLMCompletionResponse,
+} from "./LLMRouter.js";
+import type { SecretsProvider } from "../secrets/SecretsProvider.js";
 
 /**
  * OpenAI-compatible adapter — works with OpenAI API and any OpenAI-compatible endpoint (Groq, etc).
@@ -7,19 +11,21 @@ import type { SecretsProvider } from '../secrets/SecretsProvider.js';
 export class OpenAIAdapter implements LLMRouter {
   constructor(private readonly secrets: SecretsProvider) {}
 
-  async complete(request: LLMCompletionRequest): Promise<LLMCompletionResponse> {
+  async complete(
+    request: LLMCompletionRequest,
+  ): Promise<LLMCompletionResponse> {
     const apiKey = request.apiKeyRef
       ? await this.secrets.get(request.apiKeyRef)
-      : await this.secrets.get('OPENAI_API_KEY');
+      : await this.secrets.get("OPENAI_API_KEY");
 
-    const baseUrl = request.baseUrl ?? 'https://api.openai.com/v1';
+    const baseUrl = request.baseUrl ?? "https://api.openai.com/v1";
     const start = performance.now();
 
     const response = await fetch(`${baseUrl}/chat/completions`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: request.model,
@@ -46,14 +52,14 @@ export class OpenAIAdapter implements LLMRouter {
     return {
       content: choice.message.content,
       tokensUsed: data.usage.total_tokens,
-      finishReason: choice.finish_reason === 'stop' ? 'stop' : 'length',
+      finishReason: choice.finish_reason === "stop" ? "stop" : "length",
       latencyMs,
     };
   }
 
   async isAvailable(): Promise<boolean> {
     try {
-      const apiKey = await this.secrets.getOptional('OPENAI_API_KEY');
+      const apiKey = await this.secrets.getOptional("OPENAI_API_KEY");
       return !!apiKey;
     } catch {
       return false;

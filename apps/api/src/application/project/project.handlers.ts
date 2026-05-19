@@ -1,6 +1,15 @@
-import type { ProjectRepository, ProjectFilters, ProjectListResult } from '../../domain/project/ProjectRepository.js';
-import { NotFoundError, ok, err, type Result } from '../../domain/shared/Result.js';
-import type { Project } from '../../domain/project/Project.js';
+import type {
+  ProjectRepository,
+  ProjectFilters,
+  ProjectListResult,
+} from "../../domain/project/ProjectRepository.js";
+import {
+  NotFoundError,
+  ok,
+  err,
+  type Result,
+} from "../../domain/shared/Result.js";
+import type { Project } from "../../domain/project/Project.js";
 
 export class GetProjectsHandler {
   constructor(private readonly repo: ProjectRepository) {}
@@ -13,9 +22,12 @@ export class GetProjectsHandler {
 export class GetProjectByIdHandler {
   constructor(private readonly repo: ProjectRepository) {}
 
-  async execute(projectId: string, operatorId: string): Promise<Result<Project, NotFoundError>> {
+  async execute(
+    projectId: string,
+    operatorId: string,
+  ): Promise<Result<Project, NotFoundError>> {
     const project = await this.repo.findById(projectId, operatorId);
-    if (!project) return err(new NotFoundError('Project', projectId));
+    if (!project) return err(new NotFoundError("Project", projectId));
     return ok(project);
   }
 }
@@ -23,9 +35,13 @@ export class GetProjectByIdHandler {
 export class RequestRevisionHandler {
   constructor(private readonly repo: ProjectRepository) {}
 
-  async execute(projectId: string, operatorId: string, notes: string): Promise<Result<Project, Error>> {
+  async execute(
+    projectId: string,
+    operatorId: string,
+    notes: string,
+  ): Promise<Result<Project, Error>> {
     const project = await this.repo.findById(projectId, operatorId);
-    if (!project) return err(new NotFoundError('Project', projectId));
+    if (!project) return err(new NotFoundError("Project", projectId));
 
     const result = project.requestRevision(notes);
     if (result.isErr()) return result;

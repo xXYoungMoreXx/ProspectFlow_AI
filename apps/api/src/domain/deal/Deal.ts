@@ -1,7 +1,7 @@
-import { AggregateRoot } from '../shared/AggregateRoot.js';
-import { createDomainEvent } from '../shared/DomainEvent.js';
-import { ValidationError, ok, err, type Result } from '../shared/Result.js';
-import type { DealStatus, ServiceType } from '@agentepro/shared-types';
+import { AggregateRoot } from "../shared/AggregateRoot.js";
+import { createDomainEvent } from "../shared/DomainEvent.js";
+import { ValidationError, ok, err, type Result } from "../shared/Result.js";
+import type { DealStatus, ServiceType } from "@agentepro/shared-types";
 
 export interface Addon {
   readonly name: string;
@@ -43,7 +43,12 @@ export class Deal extends AggregateRoot {
     basePriceCents: number;
   }): Result<Deal, ValidationError> {
     if (input.basePriceCents < 0) {
-      return err(new ValidationError('Base price cannot be negative', 'base_price_cents'));
+      return err(
+        new ValidationError(
+          "Base price cannot be negative",
+          "base_price_cents",
+        ),
+      );
     }
 
     const now = new Date();
@@ -53,18 +58,18 @@ export class Deal extends AggregateRoot {
       operatorId: input.operatorId,
       agentId: input.agentId,
       serviceType: input.serviceType,
-      status: 'PROPOSED',
+      status: "PROPOSED",
       briefing: input.briefing,
       basePriceCents: input.basePriceCents,
       addons: [],
       discountPct: 0,
-      currency: 'BRL',
+      currency: "BRL",
       createdAt: now,
       updatedAt: now,
     });
 
     deal.addDomainEvent(
-      createDomainEvent('deal.proposed', 'Deal', input.id, {
+      createDomainEvent("deal.proposed", "Deal", input.id, {
         dealId: input.id,
         leadId: input.leadId,
         totalCents: input.basePriceCents,
@@ -78,41 +83,72 @@ export class Deal extends AggregateRoot {
     return new Deal(props);
   }
 
-  get id(): string { return this.props.id; }
-  get leadId(): string { return this.props.leadId; }
-  get operatorId(): string { return this.props.operatorId; }
-  get agentId(): string | undefined { return this.props.agentId; }
-  get serviceType(): ServiceType { return this.props.serviceType; }
-  get status(): DealStatus { return this.props.status; }
-  get briefing(): Record<string, unknown> { return this.props.briefing; }
-  get proposalText(): string | undefined { return this.props.proposalText; }
-  get basePriceCents(): number { return this.props.basePriceCents; }
-  get addons(): ReadonlyArray<Addon> { return this.props.addons; }
-  get discountPct(): number { return this.props.discountPct; }
-  get currency(): string { return this.props.currency; }
-  get createdAt(): Date { return this.props.createdAt; }
-  get updatedAt(): Date { return this.props.updatedAt; }
+  get id(): string {
+    return this.props.id;
+  }
+  get leadId(): string {
+    return this.props.leadId;
+  }
+  get operatorId(): string {
+    return this.props.operatorId;
+  }
+  get agentId(): string | undefined {
+    return this.props.agentId;
+  }
+  get serviceType(): ServiceType {
+    return this.props.serviceType;
+  }
+  get status(): DealStatus {
+    return this.props.status;
+  }
+  get briefing(): Record<string, unknown> {
+    return this.props.briefing;
+  }
+  get proposalText(): string | undefined {
+    return this.props.proposalText;
+  }
+  get basePriceCents(): number {
+    return this.props.basePriceCents;
+  }
+  get addons(): ReadonlyArray<Addon> {
+    return this.props.addons;
+  }
+  get discountPct(): number {
+    return this.props.discountPct;
+  }
+  get currency(): string {
+    return this.props.currency;
+  }
+  get createdAt(): Date {
+    return this.props.createdAt;
+  }
+  get updatedAt(): Date {
+    return this.props.updatedAt;
+  }
 
   /** Total in cents after addons + discount */
   get totalCents(): number {
-    const addonsTotal = this.props.addons.reduce((sum, a) => sum + a.priceCents, 0);
+    const addonsTotal = this.props.addons.reduce(
+      (sum, a) => sum + a.priceCents,
+      0,
+    );
     const subtotal = this.props.basePriceCents + addonsTotal;
     const discount = Math.round(subtotal * (this.props.discountPct / 100));
     return subtotal - discount;
   }
 
   close(): Result<void, ValidationError> {
-    if (this.props.status === 'CLOSED') {
-      return err(new ValidationError('Deal is already closed'));
+    if (this.props.status === "CLOSED") {
+      return err(new ValidationError("Deal is already closed"));
     }
-    if (this.props.status === 'CANCELLED') {
-      return err(new ValidationError('Cannot close a cancelled deal'));
+    if (this.props.status === "CANCELLED") {
+      return err(new ValidationError("Cannot close a cancelled deal"));
     }
-    this.props.status = 'CLOSED';
+    this.props.status = "CLOSED";
     this.props.closedAt = new Date();
     this.props.updatedAt = new Date();
     this.addDomainEvent(
-      createDomainEvent('deal.closed', 'Deal', this.props.id, {
+      createDomainEvent("deal.closed", "Deal", this.props.id, {
         dealId: this.props.id,
         leadId: this.props.leadId,
         totalCents: this.totalCents,
@@ -123,17 +159,17 @@ export class Deal extends AggregateRoot {
   }
 
   cancel(reason: string): Result<void, ValidationError> {
-    if (this.props.status === 'CANCELLED') {
-      return err(new ValidationError('Deal is already cancelled'));
+    if (this.props.status === "CANCELLED") {
+      return err(new ValidationError("Deal is already cancelled"));
     }
-    if (this.props.status === 'CLOSED') {
-      return err(new ValidationError('Cannot cancel a closed deal'));
+    if (this.props.status === "CLOSED") {
+      return err(new ValidationError("Cannot cancel a closed deal"));
     }
-    this.props.status = 'CANCELLED';
+    this.props.status = "CANCELLED";
     this.props.closedReason = reason;
     this.props.updatedAt = new Date();
     this.addDomainEvent(
-      createDomainEvent('deal.cancelled', 'Deal', this.props.id, {
+      createDomainEvent("deal.cancelled", "Deal", this.props.id, {
         dealId: this.props.id,
         reason,
       }),
@@ -154,7 +190,12 @@ export class Deal extends AggregateRoot {
 
   setDiscount(pct: number): Result<void, ValidationError> {
     if (pct < 0 || pct > 100) {
-      return err(new ValidationError('Discount must be between 0 and 100', 'discount_pct'));
+      return err(
+        new ValidationError(
+          "Discount must be between 0 and 100",
+          "discount_pct",
+        ),
+      );
     }
     this.props.discountPct = pct;
     this.props.updatedAt = new Date();

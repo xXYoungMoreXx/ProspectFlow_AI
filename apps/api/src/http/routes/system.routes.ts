@@ -1,4 +1,4 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from "fastify";
 
 /**
  * System routes — health check and metrics.
@@ -6,16 +6,16 @@ import type { FastifyInstance } from 'fastify';
  * GET /api/v1/metrics
  */
 export async function systemRoutes(app: FastifyInstance): Promise<void> {
-  app.get('/health', async (_request, reply) => {
+  app.get("/health", async (_request, reply) => {
     // TODO: Check database, Redis, ChromaDB connectivity
     const healthStatus = {
-      status: 'ok',
+      status: "ok",
       timestamp: new Date().toISOString(),
-      version: '0.1.0',
+      version: "0.1.0",
       services: {
-        database: 'ok',
-        redis: 'ok',
-        chromadb: 'ok',
+        database: "ok",
+        redis: "ok",
+        chromadb: "ok",
       },
     };
 

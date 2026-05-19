@@ -1,10 +1,10 @@
-import { importSPKI, jwtVerify, type JWTPayload } from 'jose';
-import type { FastifyRequest, FastifyReply } from 'fastify';
-import { config } from '../../config.js';
+import { importSPKI, jwtVerify, type JWTPayload } from "jose";
+import type { FastifyRequest, FastifyReply } from "fastify";
+import { config } from "../../config.js";
 
 type JoseKey = Awaited<ReturnType<typeof importSPKI>>;
 
-declare module 'fastify' {
+declare module "fastify" {
   interface FastifyRequest {
     operatorId: string;
     jwtPayload: JWTPayload;
@@ -15,7 +15,10 @@ let publicKey: JoseKey | null = null;
 
 async function getPublicKey(): Promise<JoseKey> {
   if (!publicKey) {
-    publicKey = await importSPKI(config.JWT_PUBLIC_KEY.replace(/\\n/g, '\n'), 'RS256');
+    publicKey = await importSPKI(
+      config.JWT_PUBLIC_KEY.replace(/\\n/g, "\n"),
+      "RS256",
+    );
   }
   return publicKey;
 }
@@ -30,9 +33,15 @@ export async function authMiddleware(
   reply: FastifyReply,
 ): Promise<void> {
   const authHeader = request.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
+  if (!authHeader?.startsWith("Bearer ")) {
     void reply.status(401).send({
-      errors: [{ code: 'AUTHENTICATION_ERROR', message: 'Missing or invalid Authorization header', requestId: request.requestId }],
+      errors: [
+        {
+          code: "AUTHENTICATION_ERROR",
+          message: "Missing or invalid Authorization header",
+          requestId: request.requestId,
+        },
+      ],
     });
     return;
   }
@@ -44,12 +53,18 @@ export async function authMiddleware(
     const { payload } = await jwtVerify(token, key, {
       issuer: config.JWT_ISSUER,
       audience: config.JWT_AUDIENCE,
-      algorithms: ['RS256'],
+      algorithms: ["RS256"],
     });
 
     if (!payload.sub) {
       void reply.status(401).send({
-        errors: [{ code: 'AUTHENTICATION_ERROR', message: 'Invalid token: missing subject', requestId: request.requestId }],
+        errors: [
+          {
+            code: "AUTHENTICATION_ERROR",
+            message: "Invalid token: missing subject",
+            requestId: request.requestId,
+          },
+        ],
       });
       return;
     }
@@ -58,7 +73,13 @@ export async function authMiddleware(
     request.jwtPayload = payload;
   } catch {
     void reply.status(401).send({
-      errors: [{ code: 'AUTHENTICATION_ERROR', message: 'Invalid or expired token', requestId: request.requestId }],
+      errors: [
+        {
+          code: "AUTHENTICATION_ERROR",
+          message: "Invalid or expired token",
+          requestId: request.requestId,
+        },
+      ],
     });
   }
 }

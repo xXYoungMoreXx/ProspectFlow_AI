@@ -6,11 +6,15 @@
 export type Result<T, E = Error> = Ok<T> | Err<E>;
 
 export class Ok<T> {
-  readonly _tag = 'Ok' as const;
+  readonly _tag = "Ok" as const;
   constructor(readonly value: T) {}
 
-  isOk(): this is Ok<T> { return true; }
-  isErr(): this is never { return false; }
+  isOk(): this is Ok<T> {
+    return true;
+  }
+  isErr(): this is never {
+    return false;
+  }
 
   map<U>(fn: (value: T) => U): Result<U, never> {
     return new Ok(fn(this.value));
@@ -20,16 +24,24 @@ export class Ok<T> {
     return fn(this.value);
   }
 
-  unwrap(): T { return this.value; }
-  unwrapOr(_fallback: T): T { return this.value; }
+  unwrap(): T {
+    return this.value;
+  }
+  unwrapOr(_fallback: T): T {
+    return this.value;
+  }
 }
 
 export class Err<E> {
-  readonly _tag = 'Err' as const;
+  readonly _tag = "Err" as const;
   constructor(readonly error: E) {}
 
-  isOk(): this is never { return false; }
-  isErr(): this is Err<E> { return true; }
+  isOk(): this is never {
+    return false;
+  }
+  isErr(): this is Err<E> {
+    return true;
+  }
 
   map<U>(_fn: (value: never) => U): Result<U, E> {
     return this as unknown as Result<U, E>;
@@ -39,12 +51,20 @@ export class Err<E> {
     return this as unknown as Result<never, E | E2>;
   }
 
-  unwrap(): never { throw this.error; }
-  unwrapOr<T>(fallback: T): T { return fallback; }
+  unwrap(): never {
+    throw this.error;
+  }
+  unwrapOr<T>(fallback: T): T {
+    return fallback;
+  }
 }
 
-export function ok<T>(value: T): Ok<T> { return new Ok(value); }
-export function err<E>(error: E): Err<E> { return new Err(error); }
+export function ok<T>(value: T): Ok<T> {
+  return new Ok(value);
+}
+export function err<E>(error: E): Err<E> {
+  return new Err(error);
+}
 
 // Domain-specific error types
 export class DomainError extends Error {
@@ -53,48 +73,51 @@ export class DomainError extends Error {
     message: string,
   ) {
     super(message);
-    this.name = 'DomainError';
+    this.name = "DomainError";
   }
 }
 
 export class ValidationError extends DomainError {
-  constructor(message: string, readonly field?: string) {
-    super('VALIDATION_ERROR', message);
-    this.name = 'ValidationError';
+  constructor(
+    message: string,
+    readonly field?: string,
+  ) {
+    super("VALIDATION_ERROR", message);
+    this.name = "ValidationError";
   }
 }
 
 export class NotFoundError extends DomainError {
   constructor(resource: string, id: string) {
-    super('NOT_FOUND', `${resource} with id '${id}' not found`);
-    this.name = 'NotFoundError';
+    super("NOT_FOUND", `${resource} with id '${id}' not found`);
+    this.name = "NotFoundError";
   }
 }
 
 export class AuthenticationError extends DomainError {
-  constructor(message = 'Credenciais inválidas') {
-    super('AUTHENTICATION_ERROR', message);
-    this.name = 'AuthenticationError';
+  constructor(message = "Credenciais inválidas") {
+    super("AUTHENTICATION_ERROR", message);
+    this.name = "AuthenticationError";
   }
 }
 
 export class AuthorizationError extends DomainError {
-  constructor(message = 'Acesso não autorizado') {
-    super('AUTHORIZATION_ERROR', message);
-    this.name = 'AuthorizationError';
+  constructor(message = "Acesso não autorizado") {
+    super("AUTHORIZATION_ERROR", message);
+    this.name = "AuthorizationError";
   }
 }
 
 export class ConflictError extends DomainError {
   constructor(message: string) {
-    super('CONFLICT', message);
-    this.name = 'ConflictError';
+    super("CONFLICT", message);
+    this.name = "ConflictError";
   }
 }
 
 export class InsufficientBudgetError extends DomainError {
-  constructor(message = 'Token budget exceeded') {
-    super('INSUFFICIENT_BUDGET', message);
-    this.name = 'InsufficientBudgetError';
+  constructor(message = "Token budget exceeded") {
+    super("INSUFFICIENT_BUDGET", message);
+    this.name = "InsufficientBudgetError";
   }
 }

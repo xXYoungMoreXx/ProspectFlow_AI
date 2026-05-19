@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { DealStatus } from '@agentepro/shared-types';
+import { z } from "zod";
+import { DealStatus } from "@agentepro/shared-types";
 
 const dealStatusValues = Object.values(DealStatus) as [string, ...string[]];
 

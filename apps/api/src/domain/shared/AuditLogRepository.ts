@@ -1,6 +1,6 @@
 export interface AuditEntry {
   id: string;
-  actor: 'operator' | 'agent' | 'system';
+  actor: "operator" | "agent" | "system";
   actorId: string;
   action: string;
   resourceType: string;
@@ -17,6 +17,9 @@ export interface AuditEntry {
  */
 export interface AuditLogRepository {
   append(entry: AuditEntry): Promise<void>;
-  findByResource(resourceType: string, resourceId: string): Promise<AuditEntry[]>;
+  findByResource(
+    resourceType: string,
+    resourceId: string,
+  ): Promise<AuditEntry[]>;
   findByCorrelation(correlationId: string): Promise<AuditEntry[]>;
 }

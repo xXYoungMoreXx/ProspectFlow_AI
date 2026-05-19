@@ -1,9 +1,0 @@
-[build]
-builder = "nixpacks"
-buildCommand = "npx turbo run build --filter=@agentepro/api..."
-watchPatterns = ["apps/api/**", "packages/**"]
-
-[deploy]
-startCommand = "npm run start --workspace=@agentepro/api"
-restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 10

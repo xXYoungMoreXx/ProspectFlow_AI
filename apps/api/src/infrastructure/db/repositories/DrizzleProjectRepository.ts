@@ -1,9 +1,17 @@
-import { eq, and, desc, gt, sql } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as schema from '../schema.js';
-import { Project, type ProjectProps, type LighthouseScores } from '../../../domain/project/Project.js';
-import type { ProjectRepository, ProjectFilters, ProjectListResult } from '../../../domain/project/ProjectRepository.js';
-import type { ProjectStatus } from '@agentepro/shared-types';
+import { eq, and, desc, gt, sql } from "drizzle-orm";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import * as schema from "../schema.js";
+import {
+  Project,
+  type ProjectProps,
+  type LighthouseScores,
+} from "../../../domain/project/Project.js";
+import type {
+  ProjectRepository,
+  ProjectFilters,
+  ProjectListResult,
+} from "../../../domain/project/ProjectRepository.js";
+import type { ProjectStatus } from "@agentepro/shared-types";
 
 export class DrizzleProjectRepository implements ProjectRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
@@ -12,7 +20,12 @@ export class DrizzleProjectRepository implements ProjectRepository {
     const [row] = await this.db
       .select()
       .from(schema.projects)
-      .where(and(eq(schema.projects.id, id), eq(schema.projects.operatorId, operatorId)))
+      .where(
+        and(
+          eq(schema.projects.id, id),
+          eq(schema.projects.operatorId, operatorId),
+        ),
+      )
       .limit(1);
 
     if (!row) return null;
@@ -21,7 +34,8 @@ export class DrizzleProjectRepository implements ProjectRepository {
 
   async findMany(filters: ProjectFilters): Promise<ProjectListResult> {
     const conditions = [eq(schema.projects.operatorId, filters.operatorId)];
-    if (filters.status) conditions.push(eq(schema.projects.status, filters.status));
+    if (filters.status)
+      conditions.push(eq(schema.projects.status, filters.status));
     if (filters.cursor) conditions.push(gt(schema.projects.id, filters.cursor));
 
     const limit = filters.limit ?? 20;

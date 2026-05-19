@@ -34,18 +34,18 @@ Todos os serviços emitem logs JSON com campos obrigatórios:
 
 ```typescript
 interface StructuredLog {
-  level: 'debug' | 'info' | 'warn' | 'error' | 'fatal'
-  timestamp: string        // ISO 8601
-  service: string          // 'api' | 'agent-runtime' | 'builder' | etc.
-  traceId: string          // OpenTelemetry trace ID
-  spanId: string
-  correlationId: string    // Atravessa todo o fluxo de uma venda
-  agentId?: string
-  persona?: AgentPersona
-  action?: string
-  durationMs?: number
-  message: string
-  error?: { message: string; code: string; stack?: string }
+  level: "debug" | "info" | "warn" | "error" | "fatal";
+  timestamp: string; // ISO 8601
+  service: string; // 'api' | 'agent-runtime' | 'builder' | etc.
+  traceId: string; // OpenTelemetry trace ID
+  spanId: string;
+  correlationId: string; // Atravessa todo o fluxo de uma venda
+  agentId?: string;
+  persona?: AgentPersona;
+  action?: string;
+  durationMs?: number;
+  message: string;
+  error?: { message: string; code: string; stack?: string };
   // NUNCA: email, telefone, mensagens brutas, API keys
 }
 ```
@@ -100,18 +100,22 @@ Cada request recebe `traceId` que percorre toda a stack:
 
 ```typescript
 // OpenTelemetry — instrumentação automática do Fastify e HTTPClient
-import { NodeTracerProvider } from '@opentelemetry/sdk-node'
-import { JaegerExporter } from '@opentelemetry/exporter-jaeger'
+import { NodeTracerProvider } from "@opentelemetry/sdk-node";
+import { JaegerExporter } from "@opentelemetry/exporter-jaeger";
 
 // Jaeger self-hosted (Docker) — gratuito, UI completa de tracing
 const provider = new NodeTracerProvider({
   resource: Resource.default().merge(
-    new Resource({ [SemanticResourceAttributes.SERVICE_NAME]: 'agentepro-api' })
+    new Resource({
+      [SemanticResourceAttributes.SERVICE_NAME]: "agentepro-api",
+    }),
   ),
-})
+});
 provider.addSpanProcessor(
-  new BatchSpanProcessor(new JaegerExporter({ endpoint: process.env.JAEGER_ENDPOINT }))
-)
+  new BatchSpanProcessor(
+    new JaegerExporter({ endpoint: process.env.JAEGER_ENDPOINT }),
+  ),
+);
 ```
 
 **Managed Agents:** Claude Console já fornece tracing de cada tool call de cada
@@ -194,12 +198,14 @@ cacheadas no Redis com TTL de 5 minutos. Invalidação por domain event.
 ## Consequências
 
 ### Positivas
+
 - Stack gratuita: Prometheus + Grafana + Jaeger + Loki — tudo Docker, sem SaaS pago
 - Alertas Telegram chegam no celular do operador sem configuração de PagerDuty
 - Tracing permite diagnosticar exatamente onde uma sessão de agente falhou
 - Métricas de pipeline respondem a: "quantas vendas fechei essa semana?"
 
 ### Negativas
+
 - Mais containers Docker para gerenciar (Prometheus, Grafana, Jaeger, Loki)
 - Na VM Oracle Cloud (24 GB), reservar ~3–4 GB para stack de observabilidade
 - Loki + Jaeger geram volume de dados — implementar retenção e compactação
@@ -207,6 +213,7 @@ cacheadas no Redis com TTL de 5 minutos. Invalidação por domain event.
 ### Simplificação para MVP mínimo
 
 Se a observabilidade completa atrasar o MVP, implementar nesta ordem:
+
 1. Logs estruturados (Pino) → stdout (semana 1)
 2. Health check endpoint `/health` (semana 1)
 3. Alertas Telegram críticos (semana 2)

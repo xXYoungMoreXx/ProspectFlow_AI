@@ -1,23 +1,29 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { api, ApiError } from '@/lib/api';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { api, ApiError } from "@/lib/api";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Bot, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
@@ -25,9 +31,9 @@ export default function ForgotPasswordPage() {
       setSuccess(true);
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.errors[0]?.message || 'Erro ao solicitar redefinição');
+        setError(err.errors[0]?.message || "Erro ao solicitar redefinição");
       } else {
-        setError('Não foi possível conectar ao servidor');
+        setError("Não foi possível conectar ao servidor");
       }
     } finally {
       setLoading(false);
@@ -44,11 +50,17 @@ export default function ForgotPasswordPage() {
             </div>
             <CardTitle>Solicitação enviada</CardTitle>
             <CardDescription>
-              Se o e-mail <strong>{email}</strong> estiver cadastrado em nossa base, 
-              você receberá um link para redefinir sua senha.
+              Se o e-mail <strong>{email}</strong> estiver cadastrado em nossa
+              base, você receberá um link para redefinir sua senha.
             </CardDescription>
             <div className="pt-4 flex">
-              <Link href="/login" className={buttonVariants({ variant: 'default', className: 'w-full' })}>
+              <Link
+                href="/login"
+                className={buttonVariants({
+                  variant: "default",
+                  className: "w-full",
+                })}
+              >
                 Voltar para o Login
               </Link>
             </div>
@@ -66,7 +78,9 @@ export default function ForgotPasswordPage() {
             <Bot className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold tracking-tight">Recuperar Senha</CardTitle>
+            <CardTitle className="text-2xl font-bold tracking-tight">
+              Recuperar Senha
+            </CardTitle>
             <CardDescription className="text-muted-foreground mt-1">
               Digite seu e-mail para receber um link de redefinição
             </CardDescription>
@@ -95,19 +109,26 @@ export default function ForgotPasswordPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full h-11 font-medium" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full h-11 font-medium"
+              disabled={loading}
+            >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Enviando...
                 </>
               ) : (
-                'Enviar link de redefinição'
+                "Enviar link de redefinição"
               )}
             </Button>
-            
+
             <div className="text-center text-sm text-muted-foreground mt-4">
-              <Link href="/login" className="font-medium text-primary hover:underline">
+              <Link
+                href="/login"
+                className="font-medium text-primary hover:underline"
+              >
                 Voltar para o login
               </Link>
             </div>

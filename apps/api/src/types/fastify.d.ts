@@ -1,6 +1,6 @@
-import type { Container } from './container.js';
+import type { Container } from "./container.js";
 
-declare module 'fastify' {
+declare module "fastify" {
   export interface FastifyInstance {
     container: Container;
   }

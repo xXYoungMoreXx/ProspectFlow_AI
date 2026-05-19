@@ -1,9 +1,9 @@
-import { AggregateRoot } from '../shared/AggregateRoot.js';
-import { createDomainEvent } from '../shared/DomainEvent.js';
-import { ValidationError, ok, err, type Result } from '../shared/Result.js';
-import type { HITLStatus } from '@agentepro/shared-types';
-import { HITLLevel } from './HITLLevel.js';
-import { HITLActionType } from './HITLActionType.js';
+import { AggregateRoot } from "../shared/AggregateRoot.js";
+import { createDomainEvent } from "../shared/DomainEvent.js";
+import { ValidationError, ok, err, type Result } from "../shared/Result.js";
+import type { HITLStatus } from "@agentepro/shared-types";
+import { HITLLevel } from "./HITLLevel.js";
+import { HITLActionType } from "./HITLActionType.js";
 
 export interface HITLApprovalProps {
   id: string;
@@ -39,15 +39,23 @@ export class HITLApproval extends AggregateRoot {
     payloadFullRef?: string;
     timeoutMinutes: number | null; // null se nunca expirar
   }): Result<HITLApproval, ValidationError> {
-    if (input.timeoutMinutes !== null && (input.timeoutMinutes < 1 || input.timeoutMinutes > 1440)) {
-      return err(new ValidationError('Timeout must be between 1 and 1440 minutes or null'));
+    if (
+      input.timeoutMinutes !== null &&
+      (input.timeoutMinutes < 1 || input.timeoutMinutes > 1440)
+    ) {
+      return err(
+        new ValidationError(
+          "Timeout must be between 1 and 1440 minutes or null",
+        ),
+      );
     }
 
     const now = new Date();
     // Se for null (financeiro), colocamos uma data bem no futuro para não quebrar compatibilidade
-    const expiresAt = input.timeoutMinutes === null 
-      ? new Date(now.getTime() + 100 * 365 * 24 * 60 * 60 * 1000) // 100 anos
-      : new Date(now.getTime() + input.timeoutMinutes * 60 * 1000);
+    const expiresAt =
+      input.timeoutMinutes === null
+        ? new Date(now.getTime() + 100 * 365 * 24 * 60 * 60 * 1000) // 100 anos
+        : new Date(now.getTime() + input.timeoutMinutes * 60 * 1000);
 
     const approval = new HITLApproval({
       id: input.id,
@@ -59,13 +67,13 @@ export class HITLApproval extends AggregateRoot {
       contextId: input.contextId,
       payloadPreview: input.payloadPreview,
       payloadFullRef: input.payloadFullRef,
-      status: 'PENDING',
+      status: "PENDING",
       expiresAt,
       createdAt: now,
     });
 
     approval.addDomainEvent(
-      createDomainEvent('hitl.approval_requested', 'HITLApproval', input.id, {
+      createDomainEvent("hitl.approval_requested", "HITLApproval", input.id, {
         approvalId: input.id,
         actionType: input.actionType,
         contextType: input.contextType,
@@ -80,23 +88,49 @@ export class HITLApproval extends AggregateRoot {
     return new HITLApproval(props);
   }
 
-  get id(): string { return this.props.id; }
-  get operatorId(): string { return this.props.operatorId; }
-  get agentId(): string { return this.props.agentId; }
-  get hitlLevel(): HITLLevel { return this.props.hitlLevel; }
-  get actionType(): string { return this.props.actionType; }
-  get contextType(): string { return this.props.contextType; }
-  get contextId(): string { return this.props.contextId; }
-  get payloadPreview(): Record<string, unknown> { return this.props.payloadPreview; }
-  get status(): HITLStatus { return this.props.status; }
-  get expiresAt(): Date { return this.props.expiresAt; }
-  get decidedAt(): Date | undefined { return this.props.decidedAt; }
-  get operatorNote(): string | undefined { return this.props.operatorNote; }
-  get createdAt(): Date { return this.props.createdAt; }
+  get id(): string {
+    return this.props.id;
+  }
+  get operatorId(): string {
+    return this.props.operatorId;
+  }
+  get agentId(): string {
+    return this.props.agentId;
+  }
+  get hitlLevel(): HITLLevel {
+    return this.props.hitlLevel;
+  }
+  get actionType(): string {
+    return this.props.actionType;
+  }
+  get contextType(): string {
+    return this.props.contextType;
+  }
+  get contextId(): string {
+    return this.props.contextId;
+  }
+  get payloadPreview(): Record<string, unknown> {
+    return this.props.payloadPreview;
+  }
+  get status(): HITLStatus {
+    return this.props.status;
+  }
+  get expiresAt(): Date {
+    return this.props.expiresAt;
+  }
+  get decidedAt(): Date | undefined {
+    return this.props.decidedAt;
+  }
+  get operatorNote(): string | undefined {
+    return this.props.operatorNote;
+  }
+  get createdAt(): Date {
+    return this.props.createdAt;
+  }
 
   get isExpired(): boolean {
     if (this.props.hitlLevel === HITLLevel.HITL_FINANCEIRO) return false;
-    return this.props.status === 'PENDING' && new Date() > this.props.expiresAt;
+    return this.props.status === "PENDING" && new Date() > this.props.expiresAt;
   }
 
   get isFinancial(): boolean {
@@ -109,99 +143,132 @@ export class HITLApproval extends AggregateRoot {
 
   autoApprove(): Result<void, ValidationError> {
     if (!this.canAutoApprove) {
-      return err(new ValidationError('This HITL level does not support auto-approval or is not expired yet.'));
+      return err(
+        new ValidationError(
+          "This HITL level does not support auto-approval or is not expired yet.",
+        ),
+      );
     }
-    this.props.status = 'APPROVED';
+    this.props.status = "APPROVED";
     this.props.decidedAt = new Date();
-    this.props.operatorNote = 'Auto-approved due to timeout (HITL-2)';
+    this.props.operatorNote = "Auto-approved due to timeout (HITL-2)";
     this.addDomainEvent(
-      createDomainEvent('hitl.auto_approved', 'HITLApproval', this.props.id, {
+      createDomainEvent("hitl.auto_approved", "HITLApproval", this.props.id, {
         approvalId: this.props.id,
-        decision: 'APPROVED',
-        reason: 'timeout_auto_approve'
+        decision: "APPROVED",
+        reason: "timeout_auto_approve",
       }),
     );
     return ok(undefined);
   }
 
   approve(note?: string): Result<void, ValidationError> {
-    if (this.props.status !== 'PENDING') {
-      return err(new ValidationError(`Cannot approve: status is ${this.props.status}`));
+    if (this.props.status !== "PENDING") {
+      return err(
+        new ValidationError(`Cannot approve: status is ${this.props.status}`),
+      );
     }
     if (this.isExpired) {
-      return err(new ValidationError('Approval has expired'));
+      return err(new ValidationError("Approval has expired"));
     }
-    this.props.status = 'APPROVED';
+    this.props.status = "APPROVED";
     this.props.decidedAt = new Date();
     this.props.operatorNote = note;
     this.addDomainEvent(
-      createDomainEvent('hitl.approval_decided', 'HITLApproval', this.props.id, {
-        approvalId: this.props.id,
-        decision: 'APPROVED',
-        operatorNote: note,
-      }),
+      createDomainEvent(
+        "hitl.approval_decided",
+        "HITLApproval",
+        this.props.id,
+        {
+          approvalId: this.props.id,
+          decision: "APPROVED",
+          operatorNote: note,
+        },
+      ),
     );
     return ok(undefined);
   }
 
   reject(note?: string): Result<void, ValidationError> {
-    if (this.props.status !== 'PENDING') {
-      return err(new ValidationError(`Cannot reject: status is ${this.props.status}`));
+    if (this.props.status !== "PENDING") {
+      return err(
+        new ValidationError(`Cannot reject: status is ${this.props.status}`),
+      );
     }
-    this.props.status = 'REJECTED';
+    this.props.status = "REJECTED";
     this.props.decidedAt = new Date();
     this.props.operatorNote = note;
     this.addDomainEvent(
-      createDomainEvent('hitl.approval_decided', 'HITLApproval', this.props.id, {
-        approvalId: this.props.id,
-        decision: 'REJECTED',
-        operatorNote: note,
-      }),
+      createDomainEvent(
+        "hitl.approval_decided",
+        "HITLApproval",
+        this.props.id,
+        {
+          approvalId: this.props.id,
+          decision: "REJECTED",
+          operatorNote: note,
+        },
+      ),
     );
     return ok(undefined);
   }
 
-  editAndApprove(editedPayload: Record<string, unknown>, note?: string): Result<void, ValidationError> {
-    if (this.props.status !== 'PENDING') {
-      return err(new ValidationError(`Cannot edit: status is ${this.props.status}`));
+  editAndApprove(
+    editedPayload: Record<string, unknown>,
+    note?: string,
+  ): Result<void, ValidationError> {
+    if (this.props.status !== "PENDING") {
+      return err(
+        new ValidationError(`Cannot edit: status is ${this.props.status}`),
+      );
     }
     if (this.isExpired) {
-      return err(new ValidationError('Approval has expired'));
+      return err(new ValidationError("Approval has expired"));
     }
     this.props.payloadPreview = editedPayload;
-    this.props.status = 'EDITED_APPROVED';
+    this.props.status = "EDITED_APPROVED";
     this.props.decidedAt = new Date();
     this.props.operatorNote = note;
     this.addDomainEvent(
-      createDomainEvent('hitl.approval_decided', 'HITLApproval', this.props.id, {
-        approvalId: this.props.id,
-        decision: 'EDITED_APPROVED',
-        operatorNote: note,
-      }),
+      createDomainEvent(
+        "hitl.approval_decided",
+        "HITLApproval",
+        this.props.id,
+        {
+          approvalId: this.props.id,
+          decision: "EDITED_APPROVED",
+          operatorNote: note,
+        },
+      ),
     );
     return ok(undefined);
   }
 
   expire(): void {
-    if (this.props.status === 'PENDING' && !this.isFinancial) {
-      this.props.status = 'EXPIRED';
+    if (this.props.status === "PENDING" && !this.isFinancial) {
+      this.props.status = "EXPIRED";
       this.props.decidedAt = new Date();
       this.addDomainEvent(
-        createDomainEvent('hitl.auto_expired', 'HITLApproval', this.props.id, {
+        createDomainEvent("hitl.auto_expired", "HITLApproval", this.props.id, {
           approvalId: this.props.id,
-          hitlLevel: this.props.hitlLevel
+          hitlLevel: this.props.hitlLevel,
         }),
       );
     }
   }
 
   escalateToFinancial(): void {
-    if (this.props.status === 'PENDING') {
+    if (this.props.status === "PENDING") {
       this.props.hitlLevel = HITLLevel.HITL_FINANCEIRO;
       this.addDomainEvent(
-        createDomainEvent('hitl.financial_escalated', 'HITLApproval', this.props.id, {
-          approvalId: this.props.id,
-        }),
+        createDomainEvent(
+          "hitl.financial_escalated",
+          "HITLApproval",
+          this.props.id,
+          {
+            approvalId: this.props.id,
+          },
+        ),
       );
     }
   }

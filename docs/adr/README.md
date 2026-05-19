@@ -16,26 +16,27 @@ que está trabalhando. O CLAUDE.md referencia este índice e os ADRs mais críti
 
 ### ✅ Aceitos (decisão tomada e implementada/em implementação)
 
-| # | Título | Área | Data |
-|---|--------|------|------|
-| [ADR-002](ADR-002-estrategia-llm-por-agente.md) | Estratégia de LLM por agente — interface desacoplada | Arquitetura | 2026-05-09 |
-| [ADR-003](ADR-003-arquitetura-hexagonal-cqrs-ddd.md) | Hexagonal Architecture + CQRS + DDD | Arquitetura | 2026-05-09 |
-| [ADR-004](ADR-004-hitl-acoes-externas.md) | HITL obrigatório para ações externas | Segurança / Produto | 2026-05-09 |
-| [ADR-005](ADR-005-estrategia-hospedagem.md) | Hospedagem distribuída — 100% gratuita no MVP | Infraestrutura | 2026-05-09 |
-| [ADR-006](ADR-006-estrategia-seguranca.md) | Segurança Security First transversal (OWASP) | Segurança | 2026-05-09 |
-| [ADR-007](ADR-007-modelo-negocio-precificacao.md) | Modelo de negócio e estratégia de precificação | Produto / Negócio | 2026-05-09 |
-| [ADR-008](ADR-008-estrategia-entrega-sites.md) | Entrega de sites — templates curados + Framer Motion | Builder / Produto | 2026-05-09 |
-| [ADR-009](ADR-009-roadmap-expansao-agentes.md) | Roadmap de expansão — SEO, Social, Tráfego | Produto / Roadmap | 2026-05-09 |
-| [ADR-010](ADR-010-estrategia-rag-conhecimento.md) | RAG e gestão de conhecimento — ChromaDB + Context7 | Agentes / IA | 2026-05-09 |
-| [ADR-011](ADR-011-estrategia-contratual-compliance.md) | Estratégia contratual — Clickwrap + LGPD + CDC | Legal / Compliance | 2026-05-09 |
-| [ADR-012](ADR-012-observabilidade-escalabilidade.md) | Observabilidade — Prometheus + Grafana + Jaeger | Infraestrutura | 2026-05-09 |
-| [ADR-013](ADR-013-escolha-fastify-backend.md) | Escolha do Framework Backend — Fastify | Infraestrutura | 2026-05-01 |
-| [ADR-014](ADR-014-versionamento-prompts.md) | Estratégia de versionamento de prompts (Prompt-as-Code) | Agentes / IA | 2026-05-01 |
+| #                                                      | Título                                                  | Área                | Data       |
+| ------------------------------------------------------ | ------------------------------------------------------- | ------------------- | ---------- |
+| [ADR-002](ADR-002-estrategia-llm-por-agente.md)        | Estratégia de LLM por agente — interface desacoplada    | Arquitetura         | 2026-05-09 |
+| [ADR-003](ADR-003-arquitetura-hexagonal-cqrs-ddd.md)   | Hexagonal Architecture + CQRS + DDD                     | Arquitetura         | 2026-05-09 |
+| [ADR-004](ADR-004-hitl-acoes-externas.md)              | HITL obrigatório para ações externas                    | Segurança / Produto | 2026-05-09 |
+| [ADR-005](ADR-005-estrategia-hospedagem.md)            | Hospedagem distribuída — 100% gratuita no MVP           | Infraestrutura      | 2026-05-09 |
+| [ADR-006](ADR-006-estrategia-seguranca.md)             | Segurança Security First transversal (OWASP)            | Segurança           | 2026-05-09 |
+| [ADR-007](ADR-007-modelo-negocio-precificacao.md)      | Modelo de negócio e estratégia de precificação          | Produto / Negócio   | 2026-05-09 |
+| [ADR-008](ADR-008-estrategia-entrega-sites.md)         | Entrega de sites — templates curados + Framer Motion    | Builder / Produto   | 2026-05-09 |
+| [ADR-009](ADR-009-roadmap-expansao-agentes.md)         | Roadmap de expansão — SEO, Social, Tráfego              | Produto / Roadmap   | 2026-05-09 |
+| [ADR-010](ADR-010-estrategia-rag-conhecimento.md)      | RAG e gestão de conhecimento — ChromaDB + Context7      | Agentes / IA        | 2026-05-09 |
+| [ADR-011](ADR-011-estrategia-contratual-compliance.md) | Estratégia contratual — Clickwrap + LGPD + CDC          | Legal / Compliance  | 2026-05-09 |
+| [ADR-012](ADR-012-observabilidade-escalabilidade.md)   | Observabilidade — Prometheus + Grafana + Jaeger         | Infraestrutura      | 2026-05-09 |
+| [ADR-013](ADR-013-escolha-fastify-backend.md)          | Escolha do Framework Backend — Fastify                  | Infraestrutura      | 2026-05-01 |
+| [ADR-014](ADR-014-versionamento-prompts.md)            | Estratégia de versionamento de prompts (Prompt-as-Code) | Agentes / IA        | 2026-05-01 |
+| [ADR-015](ADR-015-hospedagem-api-railway.md)           | Hospedagem da API Backend no Railway                    | Infraestrutura      | 2026-05-18 |
 
 ### ⏳ Propostos (em avaliação)
 
-| # | Título | Área | Data |
-|---|--------|------|------|
+| #                                                  | Título                                          | Área           | Data       |
+| -------------------------------------------------- | ----------------------------------------------- | -------------- | ---------- |
 | [ADR-001](ADR-001-runtime-orquestracao-agentes.md) | Runtime de orquestração — Claude Managed Agents | Infraestrutura | 2026-05-09 |
 
 ---
@@ -79,19 +80,25 @@ ADR-009 (Expansão)
 **Tags:** [categorias]
 
 ## Contexto
+
 [Qual o problema? Por que essa decisão é necessária agora?]
 
 ## Decisão
+
 [O que foi decidido? Como implementar?]
 
 ## Consequências
+
 ### Positivas
+
 ### Negativas
 
 ## Alternativas consideradas
+
 [O que foi descartado e por quê?]
 
 ## Critérios de reavaliação
+
 [Quando esta decisão deve ser revisitada?]
 ```
 
@@ -107,4 +114,4 @@ ADR-009 (Expansão)
 
 ---
 
-*Última atualização: 2026-05-10 | Total: 13 ADRs aceitos, 1 proposto*
+_Última atualização: 2026-05-18 | Total: 14 ADRs aceitos, 1 proposto_

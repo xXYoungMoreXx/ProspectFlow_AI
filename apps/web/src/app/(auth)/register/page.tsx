@@ -1,29 +1,35 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { api, ApiError } from '@/lib/api';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { api, ApiError } from "@/lib/api";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Bot, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function RegisterPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    
+    setError("");
+
     if (password !== confirmPassword) {
-      setError('As senhas não coincidem');
+      setError("As senhas não coincidem");
       return;
     }
 
@@ -34,9 +40,9 @@ export default function RegisterPage() {
       setSuccess(true);
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.errors[0]?.message || 'Erro ao realizar cadastro');
+        setError(err.errors[0]?.message || "Erro ao realizar cadastro");
       } else {
-        setError('Não foi possível conectar ao servidor');
+        setError("Não foi possível conectar ao servidor");
       }
     } finally {
       setLoading(false);
@@ -54,11 +60,17 @@ export default function RegisterPage() {
             </div>
             <CardTitle>Cadastro realizado com sucesso!</CardTitle>
             <CardDescription>
-              Enviamos um e-mail de verificação para <strong>{email}</strong>. 
+              Enviamos um e-mail de verificação para <strong>{email}</strong>.
               Por favor, verifique sua caixa de entrada para ativar sua conta.
             </CardDescription>
             <div className="pt-4 flex">
-              <Link href="/login" className={buttonVariants({ variant: 'default', className: 'w-full' })}>
+              <Link
+                href="/login"
+                className={buttonVariants({
+                  variant: "default",
+                  className: "w-full",
+                })}
+              >
                 Ir para o Login
               </Link>
             </div>
@@ -71,14 +83,16 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
       <div className="absolute top-1/4 -right-32 w-96 h-96 rounded-full bg-primary/10 blur-3xl animate-pulse" />
-      
+
       <Card className="w-full max-w-md mx-4 border-border/50 bg-card/80 backdrop-blur-sm shadow-2xl z-10">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20">
             <Bot className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold tracking-tight">Criar Conta</CardTitle>
+            <CardTitle className="text-2xl font-bold tracking-tight">
+              Criar Conta
+            </CardTitle>
             <CardDescription className="text-muted-foreground mt-1">
               Cadastre-se para gerenciar seus agentes de IA
             </CardDescription>
@@ -132,7 +146,8 @@ export default function RegisterPage() {
                 className="h-11"
               />
               <p className="text-xs text-muted-foreground">
-                Mínimo de 8 caracteres, com letra maiúscula, minúscula, número e símbolo.
+                Mínimo de 8 caracteres, com letra maiúscula, minúscula, número e
+                símbolo.
               </p>
             </div>
 
@@ -149,20 +164,27 @@ export default function RegisterPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full h-11 font-medium" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full h-11 font-medium"
+              disabled={loading}
+            >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Cadastrando...
                 </>
               ) : (
-                'Cadastrar'
+                "Cadastrar"
               )}
             </Button>
-            
+
             <div className="text-center text-sm text-muted-foreground mt-4">
-              Já tem uma conta?{' '}
-              <Link href="/login" className="font-medium text-primary hover:underline">
+              Já tem uma conta?{" "}
+              <Link
+                href="/login"
+                className="font-medium text-primary hover:underline"
+              >
                 Faça login
               </Link>
             </div>

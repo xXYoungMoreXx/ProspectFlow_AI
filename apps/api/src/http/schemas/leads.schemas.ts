@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { LeadSource, LeadStatus } from '@agentepro/shared-types';
+import { z } from "zod";
+import { LeadSource, LeadStatus } from "@agentepro/shared-types";
 
 const leadSourceValues = Object.values(LeadSource) as [string, ...string[]];
 const leadStatusValues = Object.values(LeadStatus) as [string, ...string[]];
@@ -10,7 +10,7 @@ export const CreateLeadSchema = z.object({
   contactPhone: z.string().max(30).optional(),
   contactCompany: z.string().max(200).optional(),
   contactWebsite: z.string().url().max(500).optional(),
-  source: z.enum(leadSourceValues).default('MANUAL'),
+  source: z.enum(leadSourceValues).default("MANUAL"),
   assignedAgentId: z.string().uuid().optional(),
   notes: z.string().max(2000).optional(),
 });

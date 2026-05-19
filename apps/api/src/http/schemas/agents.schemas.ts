@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { AgentPersona, LLMProvider } from '@agentepro/shared-types';
+import { z } from "zod";
+import { AgentPersona, LLMProvider } from "@agentepro/shared-types";
 
 const llmProviderValues = Object.values(LLMProvider) as [string, ...string[]];
 const agentPersonaValues = Object.values(AgentPersona) as [string, ...string[]];
@@ -31,7 +31,7 @@ export const UpdateAgentSchema = z.object({
   ragTopK: z.number().int().min(1).max(20).optional(),
   ragThreshold: z.number().min(0).max(1).optional(),
   hitlTimeoutMinutes: z.number().int().min(1).max(1440).optional(),
-  hitlNotifyChannel: z.enum(['email', 'whatsapp', 'both']).optional(),
+  hitlNotifyChannel: z.enum(["email", "whatsapp", "both"]).optional(),
 });
 export type UpdateAgentInput = z.infer<typeof UpdateAgentSchema>;
 
@@ -46,14 +46,14 @@ export type CreateSkillInput = z.infer<typeof CreateSkillSchema>;
 export const CreateRuleSchema = z.object({
   name: z.string().min(1).max(100),
   condition: z.string().min(1).max(1000),
-  action: z.enum(['BLOCK', 'WARN', 'LOG', 'ESCALATE_HITL']),
+  action: z.enum(["BLOCK", "WARN", "LOG", "ESCALATE_HITL"]),
   priority: z.number().int().min(1).max(1000).default(100),
   isEnabled: z.boolean().default(true),
 });
 export type CreateRuleInput = z.infer<typeof CreateRuleSchema>;
 
 export const ListAgentsQuery = z.object({
-  status: z.enum(['ACTIVE', 'INACTIVE', 'PAUSED']).optional(),
+  status: z.enum(["ACTIVE", "INACTIVE", "PAUSED"]).optional(),
   persona: z.enum(agentPersonaValues).optional(),
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -71,7 +71,7 @@ export type UpdateSkillInput = z.infer<typeof UpdateSkillSchema>;
 export const UpdateRuleSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   condition: z.string().min(1).max(1000).optional(),
-  action: z.enum(['BLOCK', 'WARN', 'LOG', 'ESCALATE_HITL']).optional(),
+  action: z.enum(["BLOCK", "WARN", "LOG", "ESCALATE_HITL"]).optional(),
   priority: z.number().int().min(1).max(1000).optional(),
   isEnabled: z.boolean().optional(),
 });

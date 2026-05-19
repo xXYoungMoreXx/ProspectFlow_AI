@@ -1,22 +1,28 @@
-'use client';
+"use client";
 
-import { useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { api, ApiError } from '@/lib/api';
-import { buttonVariants } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { api, ApiError } from "@/lib/api";
+import { buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Bot, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+  const token = searchParams.get("token");
 
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -28,9 +34,17 @@ function ResetPasswordForm() {
             <AlertCircle className="w-8 h-8" />
           </div>
           <CardTitle>Token inválido</CardTitle>
-          <CardDescription>O link de redefinição de senha está incompleto ou inválido.</CardDescription>
+          <CardDescription>
+            O link de redefinição de senha está incompleto ou inválido.
+          </CardDescription>
           <div className="pt-4 flex">
-            <Link href="/forgot-password" className={buttonVariants({ variant: 'default', className: 'w-full' })}>
+            <Link
+              href="/forgot-password"
+              className={buttonVariants({
+                variant: "default",
+                className: "w-full",
+              })}
+            >
               Solicitar novo link
             </Link>
           </div>
@@ -41,10 +55,10 @@ function ResetPasswordForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    
+    setError("");
+
     if (password !== confirmPassword) {
-      setError('As senhas não coincidem');
+      setError("As senhas não coincidem");
       return;
     }
 
@@ -55,9 +69,9 @@ function ResetPasswordForm() {
       setSuccess(true);
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.errors[0]?.message || 'Erro ao redefinir senha');
+        setError(err.errors[0]?.message || "Erro ao redefinir senha");
       } else {
-        setError('Não foi possível conectar ao servidor');
+        setError("Não foi possível conectar ao servidor");
       }
     } finally {
       setLoading(false);
@@ -72,9 +86,17 @@ function ResetPasswordForm() {
             <CheckCircle2 className="w-8 h-8" />
           </div>
           <CardTitle>Senha redefinida!</CardTitle>
-          <CardDescription>Sua senha foi alterada com sucesso. Você já pode fazer login.</CardDescription>
+          <CardDescription>
+            Sua senha foi alterada com sucesso. Você já pode fazer login.
+          </CardDescription>
           <div className="pt-4 flex">
-            <Link href="/login" className={buttonVariants({ variant: 'default', className: 'w-full' })}>
+            <Link
+              href="/login"
+              className={buttonVariants({
+                variant: "default",
+                className: "w-full",
+              })}
+            >
               Ir para o Login
             </Link>
           </div>
@@ -90,7 +112,9 @@ function ResetPasswordForm() {
           <Bot className="w-8 h-8 text-primary" />
         </div>
         <div>
-          <CardTitle className="text-2xl font-bold tracking-tight">Nova Senha</CardTitle>
+          <CardTitle className="text-2xl font-bold tracking-tight">
+            Nova Senha
+          </CardTitle>
           <CardDescription className="text-muted-foreground mt-1">
             Digite sua nova senha abaixo
           </CardDescription>
@@ -132,14 +156,21 @@ function ResetPasswordForm() {
             />
           </div>
 
-          <button type="submit" className={buttonVariants({ variant: 'default', className: 'w-full h-11 font-medium' })} disabled={loading}>
+          <button
+            type="submit"
+            className={buttonVariants({
+              variant: "default",
+              className: "w-full h-11 font-medium",
+            })}
+            disabled={loading}
+          >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Salvando...
               </>
             ) : (
-              'Redefinir Senha'
+              "Redefinir Senha"
             )}
           </button>
         </form>
@@ -151,7 +182,9 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
-      <Suspense fallback={<Loader2 className="w-8 h-8 animate-spin text-primary" />}>
+      <Suspense
+        fallback={<Loader2 className="w-8 h-8 animate-spin text-primary" />}
+      >
         <ResetPasswordForm />
       </Suspense>
     </div>

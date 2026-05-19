@@ -1,7 +1,17 @@
-import { AggregateRoot } from '../shared/AggregateRoot.js';
-import { createDomainEvent } from '../shared/DomainEvent.js';
-import { ValidationError, InsufficientBudgetError, ok, err, type Result } from '../shared/Result.js';
-import type { AgentPersona, AgentStatus, LLMProvider } from '@agentepro/shared-types';
+import { AggregateRoot } from "../shared/AggregateRoot.js";
+import { createDomainEvent } from "../shared/DomainEvent.js";
+import {
+  ValidationError,
+  InsufficientBudgetError,
+  ok,
+  err,
+  type Result,
+} from "../shared/Result.js";
+import type {
+  AgentPersona,
+  AgentStatus,
+  LLMProvider,
+} from "@agentepro/shared-types";
 
 export interface LLMConfiguration {
   readonly provider: LLMProvider;
@@ -66,13 +76,28 @@ export class Agent extends AggregateRoot {
     llmConfig: LLMConfiguration;
   }): Result<Agent, ValidationError> {
     if (input.name.length < 2 || input.name.length > 100) {
-      return err(new ValidationError('Agent name must be between 2 and 100 characters', 'name'));
+      return err(
+        new ValidationError(
+          "Agent name must be between 2 and 100 characters",
+          "name",
+        ),
+      );
     }
     if (input.llmConfig.temperature < 0 || input.llmConfig.temperature > 2) {
-      return err(new ValidationError('Temperature must be between 0 and 2', 'llm_temperature'));
+      return err(
+        new ValidationError(
+          "Temperature must be between 0 and 2",
+          "llm_temperature",
+        ),
+      );
     }
     if (input.llmConfig.maxTokens < 1 || input.llmConfig.maxTokens > 128_000) {
-      return err(new ValidationError('Max tokens must be between 1 and 128000', 'llm_max_tokens'));
+      return err(
+        new ValidationError(
+          "Max tokens must be between 1 and 128000",
+          "llm_max_tokens",
+        ),
+      );
     }
 
     const now = new Date();
@@ -81,15 +106,15 @@ export class Agent extends AggregateRoot {
       operatorId: input.operatorId,
       name: input.name,
       persona: input.persona,
-      status: 'INACTIVE',
+      status: "INACTIVE",
       llmConfig: input.llmConfig,
       tokenBudgetTotal: 1_000_000,
       tokenBudgetRemaining: 1_000_000,
       ragEnabled: false,
       ragTopK: 5,
-      ragThreshold: 0.70,
+      ragThreshold: 0.7,
       hitlTimeoutMinutes: 60,
-      hitlNotifyChannel: 'email',
+      hitlNotifyChannel: "email",
       skills: [],
       rules: [],
       createdAt: now,
@@ -105,35 +130,71 @@ export class Agent extends AggregateRoot {
 
   // ── Getters ──────────────────────────────────────────────────────────────
 
-  get id(): string { return this.props.id; }
-  get operatorId(): string { return this.props.operatorId; }
-  get name(): string { return this.props.name; }
-  get persona(): AgentPersona { return this.props.persona; }
-  get status(): AgentStatus { return this.props.status; }
-  get llmConfig(): LLMConfiguration { return this.props.llmConfig; }
-  get tokenBudgetTotal(): number { return this.props.tokenBudgetTotal; }
-  get tokenBudgetRemaining(): number { return this.props.tokenBudgetRemaining; }
-  get ragEnabled(): boolean { return this.props.ragEnabled; }
-  get ragCollection(): string | undefined { return this.props.ragCollection; }
-  get ragTopK(): number { return this.props.ragTopK; }
-  get ragThreshold(): number { return this.props.ragThreshold; }
-  get hitlTimeoutMinutes(): number { return this.props.hitlTimeoutMinutes; }
-  get hitlNotifyChannel(): string { return this.props.hitlNotifyChannel; }
-  get skills(): ReadonlyArray<AgentSkill> { return this.props.skills; }
-  get rules(): ReadonlyArray<AgentRule> { return this.props.rules; }
-  get createdAt(): Date { return this.props.createdAt; }
-  get updatedAt(): Date { return this.props.updatedAt; }
+  get id(): string {
+    return this.props.id;
+  }
+  get operatorId(): string {
+    return this.props.operatorId;
+  }
+  get name(): string {
+    return this.props.name;
+  }
+  get persona(): AgentPersona {
+    return this.props.persona;
+  }
+  get status(): AgentStatus {
+    return this.props.status;
+  }
+  get llmConfig(): LLMConfiguration {
+    return this.props.llmConfig;
+  }
+  get tokenBudgetTotal(): number {
+    return this.props.tokenBudgetTotal;
+  }
+  get tokenBudgetRemaining(): number {
+    return this.props.tokenBudgetRemaining;
+  }
+  get ragEnabled(): boolean {
+    return this.props.ragEnabled;
+  }
+  get ragCollection(): string | undefined {
+    return this.props.ragCollection;
+  }
+  get ragTopK(): number {
+    return this.props.ragTopK;
+  }
+  get ragThreshold(): number {
+    return this.props.ragThreshold;
+  }
+  get hitlTimeoutMinutes(): number {
+    return this.props.hitlTimeoutMinutes;
+  }
+  get hitlNotifyChannel(): string {
+    return this.props.hitlNotifyChannel;
+  }
+  get skills(): ReadonlyArray<AgentSkill> {
+    return this.props.skills;
+  }
+  get rules(): ReadonlyArray<AgentRule> {
+    return this.props.rules;
+  }
+  get createdAt(): Date {
+    return this.props.createdAt;
+  }
+  get updatedAt(): Date {
+    return this.props.updatedAt;
+  }
 
   // ── Commands ─────────────────────────────────────────────────────────────
 
   activate(): Result<void, ValidationError> {
-    if (this.props.status === 'ACTIVE') {
-      return err(new ValidationError('Agent is already active'));
+    if (this.props.status === "ACTIVE") {
+      return err(new ValidationError("Agent is already active"));
     }
-    this.props.status = 'ACTIVE';
+    this.props.status = "ACTIVE";
     this.props.updatedAt = new Date();
     this.addDomainEvent(
-      createDomainEvent('agent.activated', 'Agent', this.props.id, {
+      createDomainEvent("agent.activated", "Agent", this.props.id, {
         agentId: this.props.id,
         persona: this.props.persona,
       }),
@@ -142,13 +203,13 @@ export class Agent extends AggregateRoot {
   }
 
   pause(reason?: string): Result<void, ValidationError> {
-    if (this.props.status === 'PAUSED') {
-      return err(new ValidationError('Agent is already paused'));
+    if (this.props.status === "PAUSED") {
+      return err(new ValidationError("Agent is already paused"));
     }
-    this.props.status = 'PAUSED';
+    this.props.status = "PAUSED";
     this.props.updatedAt = new Date();
     this.addDomainEvent(
-      createDomainEvent('agent.paused', 'Agent', this.props.id, {
+      createDomainEvent("agent.paused", "Agent", this.props.id, {
         agentId: this.props.id,
         reason,
       }),
@@ -156,32 +217,58 @@ export class Agent extends AggregateRoot {
     return ok(undefined);
   }
 
-  updateConfig(updates: Partial<Pick<AgentProps, 'name' | 'llmConfig' | 'ragEnabled' | 'ragCollection' | 'ragTopK' | 'ragThreshold' | 'hitlTimeoutMinutes' | 'hitlNotifyChannel'>>): void {
+  updateConfig(
+    updates: Partial<
+      Pick<
+        AgentProps,
+        | "name"
+        | "llmConfig"
+        | "ragEnabled"
+        | "ragCollection"
+        | "ragTopK"
+        | "ragThreshold"
+        | "hitlTimeoutMinutes"
+        | "hitlNotifyChannel"
+      >
+    >,
+  ): void {
     if (updates.name !== undefined) this.props.name = updates.name;
-    if (updates.llmConfig !== undefined) this.props.llmConfig = updates.llmConfig;
-    if (updates.ragEnabled !== undefined) this.props.ragEnabled = updates.ragEnabled;
-    if (updates.ragCollection !== undefined) this.props.ragCollection = updates.ragCollection;
+    if (updates.llmConfig !== undefined)
+      this.props.llmConfig = updates.llmConfig;
+    if (updates.ragEnabled !== undefined)
+      this.props.ragEnabled = updates.ragEnabled;
+    if (updates.ragCollection !== undefined)
+      this.props.ragCollection = updates.ragCollection;
     if (updates.ragTopK !== undefined) this.props.ragTopK = updates.ragTopK;
-    if (updates.ragThreshold !== undefined) this.props.ragThreshold = updates.ragThreshold;
-    if (updates.hitlTimeoutMinutes !== undefined) this.props.hitlTimeoutMinutes = updates.hitlTimeoutMinutes;
-    if (updates.hitlNotifyChannel !== undefined) this.props.hitlNotifyChannel = updates.hitlNotifyChannel;
+    if (updates.ragThreshold !== undefined)
+      this.props.ragThreshold = updates.ragThreshold;
+    if (updates.hitlTimeoutMinutes !== undefined)
+      this.props.hitlTimeoutMinutes = updates.hitlTimeoutMinutes;
+    if (updates.hitlNotifyChannel !== undefined)
+      this.props.hitlNotifyChannel = updates.hitlNotifyChannel;
     this.props.updatedAt = new Date();
   }
 
   consumeTokens(count: number): Result<void, InsufficientBudgetError> {
     if (count > this.props.tokenBudgetRemaining) {
-      return err(new InsufficientBudgetError(
-        `Need ${count} tokens but only ${this.props.tokenBudgetRemaining} remaining`,
-      ));
+      return err(
+        new InsufficientBudgetError(
+          `Need ${count} tokens but only ${this.props.tokenBudgetRemaining} remaining`,
+        ),
+      );
     }
     this.props.tokenBudgetRemaining -= count;
     this.props.updatedAt = new Date();
     return ok(undefined);
   }
 
-  recordTaskCompleted(taskType: string, durationMs: number, tokensUsed: number): void {
+  recordTaskCompleted(
+    taskType: string,
+    durationMs: number,
+    tokensUsed: number,
+  ): void {
     this.addDomainEvent(
-      createDomainEvent('agent.task_completed', 'Agent', this.props.id, {
+      createDomainEvent("agent.task_completed", "Agent", this.props.id, {
         agentId: this.props.id,
         taskType,
         durationMs,

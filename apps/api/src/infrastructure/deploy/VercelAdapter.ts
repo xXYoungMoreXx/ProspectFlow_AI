@@ -1,17 +1,23 @@
-import { ok, err, type Result } from '../../domain/shared/Result.js';
-import type { DeploymentProvider, DeploymentOptions, DeploymentResult } from './DeploymentRouter.js';
+import { ok, err, type Result } from "../../domain/shared/Result.js";
+import type {
+  DeploymentProvider,
+  DeploymentOptions,
+  DeploymentResult,
+} from "./DeploymentRouter.js";
 
 export class VercelAdapter implements DeploymentProvider {
   constructor(private readonly apiKey: string) {}
 
-  async deploy(options: DeploymentOptions): Promise<Result<DeploymentResult, Error>> {
+  async deploy(
+    options: DeploymentOptions,
+  ): Promise<Result<DeploymentResult, Error>> {
     // Simulated Vercel deployment
-    if (!this.apiKey) return err(new Error('Vercel API key is missing'));
-    
+    if (!this.apiKey) return err(new Error("Vercel API key is missing"));
+
     return ok({
       url: `https://proj-${options.projectId}.vercel.app`,
-      provider: 'vercel',
-      deploymentId: `vrc_${Date.now()}`
+      provider: "vercel",
+      deploymentId: `vrc_${Date.now()}`,
     });
   }
 

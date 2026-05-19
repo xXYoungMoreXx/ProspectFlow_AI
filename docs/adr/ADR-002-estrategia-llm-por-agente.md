@@ -32,44 +32,46 @@ A configuração de LLM por agente na UI **mantém** os campos de provider e mod
 ```typescript
 // Domain port — sem deps externas
 interface LLMProvider {
-  readonly providerId: string
-  complete(messages: Message[], config: LLMConfig): Promise<LLMResponse>
-  stream(messages: Message[], config: LLMConfig): AsyncIterable<LLMChunk>
-  isAvailable(): Promise<boolean>
+  readonly providerId: string;
+  complete(messages: Message[], config: LLMConfig): Promise<LLMResponse>;
+  stream(messages: Message[], config: LLMConfig): AsyncIterable<LLMChunk>;
+  isAvailable(): Promise<boolean>;
 }
 
 // Configuração por agente — sempre via interface
 interface AgentLLMConfig {
-  provider: LLMProviderId      // 'managed_agents' | 'ollama' | 'openai' | 'groq'
-  model: string
-  baseUrl?: string             // Para Ollama: http://localhost:11434
-  apiKeyRef?: string           // Referência ao vault, nunca o valor
-  temperature: number
-  maxTokens: number
-  systemPrompt: string
+  provider: LLMProviderId; // 'managed_agents' | 'ollama' | 'openai' | 'groq'
+  model: string;
+  baseUrl?: string; // Para Ollama: http://localhost:11434
+  apiKeyRef?: string; // Referência ao vault, nunca o valor
+  temperature: number;
+  maxTokens: number;
+  systemPrompt: string;
 }
 ```
 
 ### Regra de seleção de modelo por persona (Managed Agents)
 
-| Persona | Modelo padrão | Justificativa |
-|---------|--------------|---------------|
-| Hunter  | claude-sonnet-4-6 | Custo-benefício — tarefa de qualificação |
-| Closer  | claude-sonnet-4-6 | Equilíbrio qualidade/custo em negociação |
-| Builder | claude-sonnet-4-6 | Geração de código de qualidade |
-| QA      | claude-haiku-4-5 | Verificações simples e rápidas — menor custo |
+| Persona | Modelo padrão     | Justificativa                                |
+| ------- | ----------------- | -------------------------------------------- |
+| Hunter  | claude-sonnet-4-6 | Custo-benefício — tarefa de qualificação     |
+| Closer  | claude-sonnet-4-6 | Equilíbrio qualidade/custo em negociação     |
+| Builder | claude-sonnet-4-6 | Geração de código de qualidade               |
+| QA      | claude-haiku-4-5  | Verificações simples e rápidas — menor custo |
 
 ---
 
 ## Consequências
 
 ### Positivas
+
 - Domain layer nunca importa SDK Anthropic ou Ollama — troca de provider é trocar o adapter
 - Campos de configuração de LLM na UI já existem — sem retrabalho ao migrar
 - Agentes leves (Hunter em dev) podem rodar em Ollama local sem custo
 - QA Agent com Haiku reduz custo de verificações repetitivas em ~70%
 
 ### Negativas
+
 - Overhead de manutenção: dois adapters ativos mesmo que apenas um seja usado no MVP
 - Operador pode tentar configurar Ollama para agentes em produção com Managed Agents ativo — UI precisa de validação clara
 - Testes precisam mockar a interface em vez de chamar APIs reais — adiciona complexidade de test setup
@@ -79,9 +81,11 @@ interface AgentLLMConfig {
 ## Alternativas consideradas
 
 ### Acoplamento direto ao SDK Anthropic
+
 - **Descartado** — viola Dependency Rule da arquitetura hexagonal; torna migração futura cara
 
 ### LiteLLM como abstração universal
+
 - **Prós:** Uma biblioteca abstrai OpenAI, Anthropic, Ollama, Groq com interface unificada
 - **Contras:** Dependência externa no domain layer; LiteLLM é infra, não deve vazar para o domain
 - **Decisão:** LiteLLM pode ser usado **dentro** do adapter de infraestrutura, nunca exposto ao domain

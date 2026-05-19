@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { create } from 'zustand';
-import { api } from '../api';
-import { useAuthStore } from './auth-store';
+import { create } from "zustand";
+import { api } from "../api";
+import { useAuthStore } from "./auth-store";
 
 export interface HitlApproval {
   id: string;
@@ -10,7 +10,7 @@ export interface HitlApproval {
   hitlLevel: string;
   actionType: string;
   payloadPreview: any;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
+  status: "PENDING" | "APPROVED" | "REJECTED" | "EXPIRED";
   createdAt: string;
 }
 
@@ -27,7 +27,7 @@ export const useHitlStore = create<HitlState>((set, _get) => ({
   pendingApprovals: [],
   isLoading: false,
   error: null,
-  
+
   fetchPending: async () => {
     const { token } = useAuthStore.getState();
     if (!token) return;
@@ -40,34 +40,34 @@ export const useHitlStore = create<HitlState>((set, _get) => ({
       set({ error: error.message, isLoading: false });
     }
   },
-  
-  approve: async (id: string, note = 'Approved by Operator') => {
+
+  approve: async (id: string, note = "Approved by Operator") => {
     const { token } = useAuthStore.getState();
     if (!token) return;
 
     try {
       await api.hitl.approve(id, note, token);
       set((state) => ({
-        pendingApprovals: state.pendingApprovals.filter(a => a.id !== id)
+        pendingApprovals: state.pendingApprovals.filter((a) => a.id !== id),
       }));
     } catch (error: any) {
-      console.error('Failed to approve HITL', error);
+      console.error("Failed to approve HITL", error);
       throw error;
     }
   },
 
-  reject: async (id: string, note = 'Rejected by Operator') => {
+  reject: async (id: string, note = "Rejected by Operator") => {
     const { token } = useAuthStore.getState();
     if (!token) return;
 
     try {
       await api.hitl.reject(id, note, token);
       set((state) => ({
-        pendingApprovals: state.pendingApprovals.filter(a => a.id !== id)
+        pendingApprovals: state.pendingApprovals.filter((a) => a.id !== id),
       }));
     } catch (error: any) {
-      console.error('Failed to reject HITL', error);
+      console.error("Failed to reject HITL", error);
       throw error;
     }
-  }
+  },
 }));

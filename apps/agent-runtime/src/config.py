@@ -41,5 +41,7 @@ class RuntimeConfig(BaseSettings):
     max_input_length: int = 4000
     max_output_length: int = 8000
 
-
+    # ── MCP Brasil ───────────────────────────────────────────────────────
+    transparencia_api_key: SecretStr | None = None
+    
 config = RuntimeConfig()

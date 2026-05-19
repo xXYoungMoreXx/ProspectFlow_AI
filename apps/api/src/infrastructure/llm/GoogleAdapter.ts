@@ -1,5 +1,9 @@
-import type { LLMRouter, LLMCompletionRequest, LLMCompletionResponse } from './LLMRouter.js';
-import type { SecretsProvider } from '../secrets/SecretsProvider.js';
+import type {
+  LLMRouter,
+  LLMCompletionRequest,
+  LLMCompletionResponse,
+} from "./LLMRouter.js";
+import type { SecretsProvider } from "../secrets/SecretsProvider.js";
 
 /**
  * Google Gemini adapter — uses the Gemini REST API (v1beta).
@@ -8,20 +12,25 @@ import type { SecretsProvider } from '../secrets/SecretsProvider.js';
 export class GoogleAdapter implements LLMRouter {
   constructor(private readonly secrets: SecretsProvider) {}
 
-  async complete(request: LLMCompletionRequest): Promise<LLMCompletionResponse> {
+  async complete(
+    request: LLMCompletionRequest,
+  ): Promise<LLMCompletionResponse> {
     const apiKey = request.apiKeyRef
       ? await this.secrets.get(request.apiKeyRef)
-      : await this.secrets.get('GOOGLE_API_KEY');
+      : await this.secrets.get("GOOGLE_API_KEY");
 
-    const baseUrl = request.baseUrl ?? 'https://generativelanguage.googleapis.com/v1beta';
+    const baseUrl =
+      request.baseUrl ?? "https://generativelanguage.googleapis.com/v1beta";
     const start = performance.now();
 
     // Separate system instruction from conversation messages
-    const systemMessage = request.messages.find((m) => m.role === 'system')?.content;
+    const systemMessage = request.messages.find(
+      (m) => m.role === "system",
+    )?.content;
     const conversationMessages = request.messages
-      .filter((m) => m.role !== 'system')
+      .filter((m) => m.role !== "system")
       .map((m) => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
+        role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content }],
       }));
 
@@ -34,7 +43,7 @@ export class GoogleAdapter implements LLMRouter {
     };
 
     if (systemMessage) {
-      body['systemInstruction'] = {
+      body["systemInstruction"] = {
         parts: [{ text: systemMessage }],
       };
     }
@@ -42,8 +51,8 @@ export class GoogleAdapter implements LLMRouter {
     const response = await fetch(
       `${baseUrl}/models/${request.model}:generateContent?key=${apiKey}`,
       {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       },
     );
@@ -67,19 +76,20 @@ export class GoogleAdapter implements LLMRouter {
 
     const latencyMs = Math.round(performance.now() - start);
     const candidate = data.candidates?.[0];
-    const textContent = candidate?.content?.parts?.map((p) => p.text).join('') ?? '';
+    const textContent =
+      candidate?.content?.parts?.map((p) => p.text).join("") ?? "";
 
     return {
       content: textContent,
       tokensUsed: data.usageMetadata?.totalTokenCount ?? 0,
-      finishReason: candidate?.finishReason === 'STOP' ? 'stop' : 'length',
+      finishReason: candidate?.finishReason === "STOP" ? "stop" : "length",
       latencyMs,
     };
   }
 
   async isAvailable(): Promise<boolean> {
     try {
-      const apiKey = await this.secrets.getOptional('GOOGLE_API_KEY');
+      const apiKey = await this.secrets.getOptional("GOOGLE_API_KEY");
       return !!apiKey;
     } catch {
       return false;

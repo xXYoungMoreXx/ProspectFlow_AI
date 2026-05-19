@@ -1,20 +1,36 @@
-'use client';
+"use client";
 
-import { useAuthStore } from '@/lib/stores/auth-store';
-import { useHitlStore } from '@/lib/stores/hitl-store';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { ShieldCheck, Check, X, Clock, Loader2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useAuthStore } from "@/lib/stores/auth-store";
+import { useHitlStore } from "@/lib/stores/hitl-store";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ShieldCheck, Check, X, Clock, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function HITLPage() {
   const token = useAuthStore((s) => s.token);
-  const { pendingApprovals, isLoading, fetchPending, approve, reject } = useHitlStore();
-  const [note, setNote] = useState('');
+  const { pendingApprovals, isLoading, fetchPending, approve, reject } =
+    useHitlStore();
+  const [note, setNote] = useState("");
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,7 +44,7 @@ export default function HITLPage() {
   const handleApprove = async (id: string) => {
     setIsProcessing(id);
     try {
-      await approve(id, 'Approved via dashboard');
+      await approve(id, "Approved via dashboard");
     } finally {
       setIsProcessing(null);
     }
@@ -38,7 +54,7 @@ export default function HITLPage() {
     setIsProcessing(id);
     try {
       await reject(id, note);
-      setNote('');
+      setNote("");
     } finally {
       setIsProcessing(null);
     }
@@ -80,26 +96,35 @@ export default function HITLPage() {
             </div>
             <div className="text-center">
               <h3 className="font-semibold">All clear!</h3>
-              <p className="text-sm text-muted-foreground mt-1">No pending approvals at this time</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                No pending approvals at this time
+              </p>
             </div>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
           {approvals.map((approval: any) => (
-            <Card key={approval.id} className="border-amber-500/20 bg-amber-500/[0.02] hover:shadow-sm transition-all">
+            <Card
+              key={approval.id}
+              className="border-amber-500/20 bg-amber-500/[0.02] hover:shadow-sm transition-all"
+            >
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                       <Clock className="w-4 h-4 text-amber-400" />
-                      {approval.actionType || 'Agent Action'}
+                      {approval.actionType || "Agent Action"}
                     </CardTitle>
                     <CardDescription className="mt-1 text-xs">
-                      Agent: {approval.agentId?.slice(-8)} · {new Date(approval.createdAt).toLocaleString('pt-BR')}
+                      Agent: {approval.agentId?.slice(-8)} ·{" "}
+                      {new Date(approval.createdAt).toLocaleString("pt-BR")}
                     </CardDescription>
                   </div>
-                  <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px]">
+                  <Badge
+                    variant="outline"
+                    className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px]"
+                  >
                     PENDING
                   </Badge>
                 </div>
@@ -120,7 +145,9 @@ export default function HITLPage() {
                           variant="destructive"
                           size="sm"
                           className="gap-1.5"
-                          onClick={() => { setNote(''); }}
+                          onClick={() => {
+                            setNote("");
+                          }}
                         />
                       }
                     >
@@ -152,7 +179,9 @@ export default function HITLPage() {
                           disabled={!note || isProcessing === approval.id}
                           onClick={() => handleReject(approval.id)}
                         >
-                          {isProcessing === approval.id ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                          {isProcessing === approval.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          ) : null}
                           Confirm Reject
                         </Button>
                       </DialogFooter>
@@ -165,7 +194,11 @@ export default function HITLPage() {
                     disabled={isProcessing === approval.id}
                     onClick={() => handleApprove(approval.id)}
                   >
-                    {isProcessing === approval.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                    {isProcessing === approval.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Check className="w-3.5 h-3.5" />
+                    )}
                     Approve
                   </Button>
                 </div>

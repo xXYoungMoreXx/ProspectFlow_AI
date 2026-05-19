@@ -67,12 +67,8 @@
           "name": "agent_rules_agent_id_agents_id_fk",
           "tableFrom": "agent_rules",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -140,12 +136,8 @@
           "name": "agent_skills_agent_id_agents_id_fk",
           "tableFrom": "agent_skills",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -315,12 +307,8 @@
           "name": "agents_operator_id_operators_id_fk",
           "tableFrom": "agents",
           "tableTo": "operators",
-          "columnsFrom": [
-            "operator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["operator_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -527,12 +515,8 @@
           "name": "contract_acceptances_deal_id_deals_id_fk",
           "tableFrom": "contract_acceptances",
           "tableTo": "deals",
-          "columnsFrom": [
-            "deal_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["deal_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -704,12 +688,8 @@
           "name": "deals_lead_id_leads_id_fk",
           "tableFrom": "deals",
           "tableTo": "leads",
-          "columnsFrom": [
-            "lead_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["lead_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -717,12 +697,8 @@
           "name": "deals_operator_id_operators_id_fk",
           "tableFrom": "deals",
           "tableTo": "operators",
-          "columnsFrom": [
-            "operator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["operator_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -730,12 +706,8 @@
           "name": "deals_agent_id_agents_id_fk",
           "tableFrom": "deals",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -824,12 +796,8 @@
           "name": "email_verifications_operator_id_operators_id_fk",
           "tableFrom": "email_verifications",
           "tableTo": "operators",
-          "columnsFrom": [
-            "operator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["operator_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -839,9 +807,7 @@
         "email_verifications_token_hash_unique": {
           "name": "email_verifications_token_hash_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token_hash"
-          ]
+          "columns": ["token_hash"]
         }
       },
       "policies": {},
@@ -991,12 +957,8 @@
           "name": "hitl_approvals_operator_id_operators_id_fk",
           "tableFrom": "hitl_approvals",
           "tableTo": "operators",
-          "columnsFrom": [
-            "operator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["operator_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1004,12 +966,8 @@
           "name": "hitl_approvals_agent_id_agents_id_fk",
           "tableFrom": "hitl_approvals",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1159,12 +1117,8 @@
           "name": "leads_operator_id_operators_id_fk",
           "tableFrom": "leads",
           "tableTo": "operators",
-          "columnsFrom": [
-            "operator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["operator_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1172,12 +1126,8 @@
           "name": "leads_assigned_agent_id_agents_id_fk",
           "tableFrom": "leads",
           "tableTo": "agents",
-          "columnsFrom": [
-            "assigned_agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["assigned_agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1244,12 +1194,8 @@
           "name": "mcp_servers_agent_id_agents_id_fk",
           "tableFrom": "mcp_servers",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1358,12 +1304,8 @@
           "name": "messages_lead_id_leads_id_fk",
           "tableFrom": "messages",
           "tableTo": "leads",
-          "columnsFrom": [
-            "lead_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["lead_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1371,12 +1313,8 @@
           "name": "messages_agent_id_agents_id_fk",
           "tableFrom": "messages",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1452,9 +1390,7 @@
         "operators_email_unique": {
           "name": "operators_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -1534,12 +1470,8 @@
           "name": "pricing_config_operator_id_operators_id_fk",
           "tableFrom": "pricing_config",
           "tableTo": "operators",
-          "columnsFrom": [
-            "operator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["operator_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1699,12 +1631,8 @@
           "name": "projects_deal_id_deals_id_fk",
           "tableFrom": "projects",
           "tableTo": "deals",
-          "columnsFrom": [
-            "deal_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["deal_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1712,12 +1640,8 @@
           "name": "projects_operator_id_operators_id_fk",
           "tableFrom": "projects",
           "tableTo": "operators",
-          "columnsFrom": [
-            "operator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["operator_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1725,12 +1649,8 @@
           "name": "projects_assigned_agent_id_agents_id_fk",
           "tableFrom": "projects",
           "tableTo": "agents",
-          "columnsFrom": [
-            "assigned_agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["assigned_agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1827,12 +1747,8 @@
           "name": "prospect_optouts_operator_id_operators_id_fk",
           "tableFrom": "prospect_optouts",
           "tableTo": "operators",
-          "columnsFrom": [
-            "operator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["operator_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1892,12 +1808,8 @@
           "name": "refresh_tokens_operator_id_operators_id_fk",
           "tableFrom": "refresh_tokens",
           "tableTo": "operators",
-          "columnsFrom": [
-            "operator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["operator_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1907,9 +1819,7 @@
         "refresh_tokens_token_hash_unique": {
           "name": "refresh_tokens_token_hash_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token_hash"
-          ]
+          "columns": ["token_hash"]
         }
       },
       "policies": {},
@@ -1921,31 +1831,17 @@
     "public.agent_persona": {
       "name": "agent_persona",
       "schema": "public",
-      "values": [
-        "HUNTER",
-        "CLOSER",
-        "BUILDER",
-        "QA"
-      ]
+      "values": ["HUNTER", "CLOSER", "BUILDER", "QA"]
     },
     "public.agent_status": {
       "name": "agent_status",
       "schema": "public",
-      "values": [
-        "ACTIVE",
-        "INACTIVE",
-        "PAUSED"
-      ]
+      "values": ["ACTIVE", "INACTIVE", "PAUSED"]
     },
     "public.deal_status": {
       "name": "deal_status",
       "schema": "public",
-      "values": [
-        "PROPOSED",
-        "NEGOTIATING",
-        "CLOSED",
-        "CANCELLED"
-      ]
+      "values": ["PROPOSED", "NEGOTIATING", "CLOSED", "CANCELLED"]
     },
     "public.hitl_status": {
       "name": "hitl_status",
@@ -1961,51 +1857,27 @@
     "public.lead_source": {
       "name": "lead_source",
       "schema": "public",
-      "values": [
-        "MANUAL",
-        "SCRAPED",
-        "REFERRAL"
-      ]
+      "values": ["MANUAL", "SCRAPED", "REFERRAL"]
     },
     "public.lead_status": {
       "name": "lead_status",
       "schema": "public",
-      "values": [
-        "NEW",
-        "CONTACTED",
-        "QUALIFIED",
-        "CONVERTED",
-        "LOST"
-      ]
+      "values": ["NEW", "CONTACTED", "QUALIFIED", "CONVERTED", "LOST"]
     },
     "public.llm_provider": {
       "name": "llm_provider",
       "schema": "public",
-      "values": [
-        "OLLAMA",
-        "OPENAI",
-        "ANTHROPIC",
-        "GOOGLE",
-        "GROQ",
-        "CUSTOM"
-      ]
+      "values": ["OLLAMA", "OPENAI", "ANTHROPIC", "GOOGLE", "GROQ", "CUSTOM"]
     },
     "public.message_channel": {
       "name": "message_channel",
       "schema": "public",
-      "values": [
-        "WHATSAPP",
-        "EMAIL",
-        "INTERNAL"
-      ]
+      "values": ["WHATSAPP", "EMAIL", "INTERNAL"]
     },
     "public.message_direction": {
       "name": "message_direction",
       "schema": "public",
-      "values": [
-        "INBOUND",
-        "OUTBOUND"
-      ]
+      "values": ["INBOUND", "OUTBOUND"]
     },
     "public.project_status": {
       "name": "project_status",
@@ -2022,20 +1894,12 @@
     "public.service_type": {
       "name": "service_type",
       "schema": "public",
-      "values": [
-        "WEBSITE",
-        "TRAFFIC",
-        "SOCIAL_MEDIA",
-        "OTHER"
-      ]
+      "values": ["WEBSITE", "TRAFFIC", "SOCIAL_MEDIA", "OTHER"]
     },
     "public.verification_type": {
       "name": "verification_type",
       "schema": "public",
-      "values": [
-        "EMAIL_VERIFICATION",
-        "PASSWORD_RESET"
-      ]
+      "values": ["EMAIL_VERIFICATION", "PASSWORD_RESET"]
     }
   },
   "schemas": {},

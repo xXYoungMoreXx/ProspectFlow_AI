@@ -1,6 +1,8 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
-export const createMockRepo = <T extends Record<string, any>>(methods: (keyof T)[]) => {
+export const createMockRepo = <T extends Record<string, any>>(
+  methods: (keyof T)[],
+) => {
   const mock: any = {};
   for (const method of methods) {
     mock[method] = vi.fn();
@@ -12,38 +14,19 @@ export const createMockRepo = <T extends Record<string, any>>(methods: (keyof T)
   };
 };
 
-export const createMockHitlRepo = () => createMockRepo([
-  'save',
-  'findById',
-  'findPending',
-  'findByOperator'
-]);
+export const createMockHitlRepo = () =>
+  createMockRepo(["save", "findById", "findPending", "findByOperator"]);
 
-export const createMockLeadRepo = () => createMockRepo([
-  'save',
-  'findById',
-  'findList'
-]);
+export const createMockLeadRepo = () =>
+  createMockRepo(["save", "findById", "findList"]);
 
-export const createMockDealRepo = () => createMockRepo([
-  'save',
-  'findById',
-  'findMany'
-]);
+export const createMockDealRepo = () =>
+  createMockRepo(["save", "findById", "findMany"]);
 
-export const createMockProjectRepo = () => createMockRepo([
-  'save',
-  'findById',
-  'findMany'
-]);
+export const createMockProjectRepo = () =>
+  createMockRepo(["save", "findById", "findMany"]);
 
-export const createMockAuthRepo = () => createMockRepo([
-  'save',
-  'findByEmail'
-]);
+export const createMockAuthRepo = () => createMockRepo(["save", "findByEmail"]);
 
-export const createMockAgentRepo = () => createMockRepo([
-  'save',
-  'findById',
-  'findMany'
-]);
+export const createMockAgentRepo = () =>
+  createMockRepo(["save", "findById", "findMany"]);

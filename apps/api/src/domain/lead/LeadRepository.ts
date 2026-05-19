@@ -1,5 +1,5 @@
-import type { Lead } from './Lead.js';
-import type { LeadStatus } from '@agentepro/shared-types';
+import type { Lead } from "./Lead.js";
+import type { LeadStatus } from "@agentepro/shared-types";
 
 export interface LeadFilters {
   operatorId: string;
