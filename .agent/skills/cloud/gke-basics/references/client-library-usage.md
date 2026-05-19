@@ -65,7 +65,7 @@ within your application code.
 - **Usage Example:**
 
   ```javascript
-  const k8s = require('@kubernetes/client-node');
+  const k8s = require("@kubernetes/client-node");
 
   const kc = new k8s.KubeConfig();
   kc.loadFromDefault(); // Automatically detects local vs. in-cluster configuration
@@ -73,9 +73,9 @@ within your application code.
   const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 
   // In most recent library versions, parameters must be passed inside an object
-  k8sApi.listNamespacedPod({ namespace: 'default' }).then((res) => {
-      const pods = res.items || res.body.items;
-      console.log(`Found ${pods.length} pods in 'default' namespace.`);
+  k8sApi.listNamespacedPod({ namespace: "default" }).then((res) => {
+    const pods = res.items || res.body.items;
+    console.log(`Found ${pods.length} pods in 'default' namespace.`);
   });
   ```
 
@@ -85,7 +85,7 @@ within your application code.
 
 ## GKE-specific API (Container Service)
 
-To manage the GKE *service* itself (e.g., create/delete clusters)
+To manage the GKE _service_ itself (e.g., create/delete clusters)
 programmatically, use the Google Cloud Container client libraries.
 
 - [Google Cloud Container Client Libraries](https://cloud.google.com/kubernetes-engine/docs/reference/libraries)

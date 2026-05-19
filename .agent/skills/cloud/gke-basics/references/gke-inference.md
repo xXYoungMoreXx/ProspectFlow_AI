@@ -43,6 +43,7 @@ gcloud container ai profiles manifests create \
 ```
 
 **Parameters:**
+
 - `--model`: Model ID (e.g., `gemma-2-9b-it`, `llama-3-8b`)
 - `--model-server`: Inference server (`vllm`, `tgi`, `triton`, `tensorrt-llm`)
 - `--accelerator-type`: GPU/TPU type (`nvidia-l4`, `nvidia-tesla-a100`, `nvidia-h100-80gb`)
@@ -85,29 +86,29 @@ metadata:
   name: l4-inference
 spec:
   priorities:
-  - machineFamily: g2
-    gpu:
-      type: nvidia-l4
-      count: 1
-    minCores: 4
-    minMemoryGb: 16
+    - machineFamily: g2
+      gpu:
+        type: nvidia-l4
+        count: 1
+      minCores: 4
+      minMemoryGb: 16
 ```
 
 ## Accelerator Selection Guide
 
-| Accelerator | Best For | Memory | Relative Cost |
-|-------------|----------|--------|---------------|
-| NVIDIA T4 | Budget inference, lightweight legacy models | 16 GB | Lowest |
-| NVIDIA L4 (G2) | Small-medium model inference, video, graphics | 24 GB | Low |
-| NVIDIA RTX PRO 6000 (G4) | Multimodal AI, high-fidelity 3D, fine-tuning | 96 GB | Medium |
-| Cloud TPU v5e | Cost-effective transformer inference | Varies | Medium |
-| Cloud TPU v5p | High-performance training | Varies | High |
-| Cloud TPU v6e (Trillium) | High-efficiency next-gen training & serving | 32 GB/chip | Medium-High |
-| Cloud TPU v7x (Ironwood) | Ultra-scale inference & agentic workflows | 192 GB/chip | High |
-| NVIDIA A100 | Large model inference, enterprise ML | 40/80 GB | High |
-| NVIDIA H100 / H200 | Frontier model training, high throughput | 80/141 GB | Highest |
-| NVIDIA B200 (A4) | Blackwell-scale training, FP4 precision | 192 GB | Highest |
-| NVIDIA GB200 (A4X) | Rack-scale AI (Grace Blackwell Superchip) | Massive | Highest |
+| Accelerator              | Best For                                      | Memory      | Relative Cost |
+| ------------------------ | --------------------------------------------- | ----------- | ------------- |
+| NVIDIA T4                | Budget inference, lightweight legacy models   | 16 GB       | Lowest        |
+| NVIDIA L4 (G2)           | Small-medium model inference, video, graphics | 24 GB       | Low           |
+| NVIDIA RTX PRO 6000 (G4) | Multimodal AI, high-fidelity 3D, fine-tuning  | 96 GB       | Medium        |
+| Cloud TPU v5e            | Cost-effective transformer inference          | Varies      | Medium        |
+| Cloud TPU v5p            | High-performance training                     | Varies      | High          |
+| Cloud TPU v6e (Trillium) | High-efficiency next-gen training & serving   | 32 GB/chip  | Medium-High   |
+| Cloud TPU v7x (Ironwood) | Ultra-scale inference & agentic workflows     | 192 GB/chip | High          |
+| NVIDIA A100              | Large model inference, enterprise ML          | 40/80 GB    | High          |
+| NVIDIA H100 / H200       | Frontier model training, high throughput      | 80/141 GB   | Highest       |
+| NVIDIA B200 (A4)         | Blackwell-scale training, FP4 precision       | 192 GB      | Highest       |
+| NVIDIA GB200 (A4X)       | Rack-scale AI (Grace Blackwell Superchip)     | Massive     | Highest       |
 
 ## Autoscaling LLM Inference
 
@@ -128,13 +129,13 @@ spec:
   minReplicas: 1
   maxReplicas: 10
   metrics:
-  - type: Pods
-    pods:
-      metric:
-        name: gpu_duty_cycle
-      target:
-        type: AverageValue
-        averageValue: "80"
+    - type: Pods
+      pods:
+        metric:
+          name: gpu_duty_cycle
+        target:
+          type: AverageValue
+          averageValue: "80"
 ```
 
 ### Best practices for inference autoscaling
@@ -153,9 +154,9 @@ spec:
 
 ## Troubleshooting
 
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| Invalid model/accelerator combination | Unsupported tuple | Re-run `gcloud container ai profiles list --model=<MODEL>` |
-| GPU quota exceeded | Regional quota limit | Request quota increase or try a different region |
-| OOM on GPU | Model too large for accelerator | Use larger GPU, enable quantization, or use tensor parallelism |
-| Slow cold start | Large model loading from registry | Use local SSD for model caching; pre-pull images |
+| Issue                                 | Cause                             | Fix                                                            |
+| ------------------------------------- | --------------------------------- | -------------------------------------------------------------- |
+| Invalid model/accelerator combination | Unsupported tuple                 | Re-run `gcloud container ai profiles list --model=<MODEL>`     |
+| GPU quota exceeded                    | Regional quota limit              | Request quota increase or try a different region               |
+| OOM on GPU                            | Model too large for accelerator   | Use larger GPU, enable quantization, or use tensor parallelism |
+| Slow cold start                       | Large model loading from registry | Use local SSD for model caching; pre-pull images               |

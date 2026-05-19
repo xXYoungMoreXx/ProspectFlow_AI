@@ -8,12 +8,12 @@ This reference covers strategies for reducing GKE costs while maintaining the go
 
 The golden path already includes cost-optimizing settings:
 
-| Setting | Value | Impact |
-|---------|-------|--------|
-| `autoscalingProfile` | `OPTIMIZE_UTILIZATION` | Aggressive node scale-down reduces idle compute |
-| `verticalPodAutoscaling` | `enabled` | VPA recommendations prevent over-provisioning |
-| Autopilot pricing | Pay per pod request | No charge for unused node capacity |
-| Node Auto Provisioning | enabled | Right-sized node pools created automatically |
+| Setting                  | Value                  | Impact                                          |
+| ------------------------ | ---------------------- | ----------------------------------------------- |
+| `autoscalingProfile`     | `OPTIMIZE_UTILIZATION` | Aggressive node scale-down reduces idle compute |
+| `verticalPodAutoscaling` | `enabled`              | VPA recommendations prevent over-provisioning   |
+| Autopilot pricing        | Pay per pod request    | No charge for unused node capacity              |
+| Node Auto Provisioning   | enabled                | Right-sized node pools created automatically    |
 
 ## Cost Optimization Strategies
 
@@ -30,22 +30,22 @@ spec:
   activeMigration:
     optimizeRulePriority: true
   priorities:
-  - machineFamily: n4
-    spot: true
-  - machineFamily: n4
-    spot: false
+    - machineFamily: n4
+      spot: true
+    - machineFamily: n4
+      spot: false
 ```
 
 **Spot-suitable workloads:**
 
-| Workload | Spot-Suitable? |
-|----------|----------------|
-| Batch / data processing | Yes |
-| Dev / test environments | Yes |
+| Workload                          | Spot-Suitable?  |
+| --------------------------------- | --------------- |
+| Batch / data processing           | Yes             |
+| Dev / test environments           | Yes             |
 | Stateless web/API (replicas >= 2) | Yes (with PDBs) |
-| Jobs with checkpointing | Yes |
-| Stateful workloads (databases) | No |
-| Single-replica critical services | No |
+| Jobs with checkpointing           | Yes             |
+| Stateful workloads (databases)    | No              |
+| Single-replica critical services  | No              |
 
 **Handling eviction:**
 
@@ -53,13 +53,13 @@ spec:
 spec:
   template:
     spec:
-      terminationGracePeriodSeconds: 25  # Must be < 30s for Spot
+      terminationGracePeriodSeconds: 25 # Must be < 30s for Spot
       containers:
-      - name: app
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/bin/sh", "-c", "sleep 5"]
+        - name: app
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
 ```
 
 ### 2. Pod Rightsizing
@@ -90,29 +90,29 @@ kubectl get vpa <DEPLOYMENT>-vpa -o jsonpath='{.status.recommendation}'
 
 **Optimization rules:**
 
-| Condition | Action | Savings |
-|-----------|--------|---------|
-| CPU request >5x P95 actual | Reduce to `P95 * 1.2` | High |
-| Memory request >3x P95 actual | Reduce to `P95 * 1.2` | High |
-| CPU request >2x P95 actual | Reduce to `P95 * 1.2` | Medium |
-| No resource requests set | Add requests (enables bin-packing) | Medium |
+| Condition                     | Action                             | Savings |
+| ----------------------------- | ---------------------------------- | ------- |
+| CPU request >5x P95 actual    | Reduce to `P95 * 1.2`              | High    |
+| Memory request >3x P95 actual | Reduce to `P95 * 1.2`              | High    |
+| CPU request >2x P95 actual    | Reduce to `P95 * 1.2`              | Medium  |
+| No resource requests set      | Add requests (enables bin-packing) | Medium  |
 
 ### 3. Machine Type Selection
 
-| Family | Use Case | Relative Cost |
-|--------|----------|---------------|
-| e2 | General purpose, burstable | Lowest |
-| t2a / t2d | Scale-out (Arm/AMD), price-performance optimized | Low |
-| n4a | Axion Arm-based, general-purpose price-performance | Low |
-| n4 / n4d | General purpose (Intel/AMD), flexible shapes | Low-Medium |
-| c4a | Compute-optimized (Arm), high efficiency | Medium-High |
-| c3 / c4 | Compute-optimized (Intel) | Medium-High |
-| c3d / c4d | Compute-optimized (AMD), high-performance throughput | Medium-High |
-| ek-standard | Autopilot enhanced (golden path) | Medium |
-| m3 / x4 | Memory-optimized, SAP HANA, large databases | High |
-| g2 (L4 GPU) | AI inference | High |
-| a3 (H100 GPU) | AI training | Highest |
-| a4 / a4x | Ultra-scale AI (Blackwell GPUs) | Highest |
+| Family        | Use Case                                             | Relative Cost |
+| ------------- | ---------------------------------------------------- | ------------- |
+| e2            | General purpose, burstable                           | Lowest        |
+| t2a / t2d     | Scale-out (Arm/AMD), price-performance optimized     | Low           |
+| n4a           | Axion Arm-based, general-purpose price-performance   | Low           |
+| n4 / n4d      | General purpose (Intel/AMD), flexible shapes         | Low-Medium    |
+| c4a           | Compute-optimized (Arm), high efficiency             | Medium-High   |
+| c3 / c4       | Compute-optimized (Intel)                            | Medium-High   |
+| c3d / c4d     | Compute-optimized (AMD), high-performance throughput | Medium-High   |
+| ek-standard   | Autopilot enhanced (golden path)                     | Medium        |
+| m3 / x4       | Memory-optimized, SAP HANA, large databases          | High          |
+| g2 (L4 GPU)   | AI inference                                         | High          |
+| a3 (H100 GPU) | AI training                                          | Highest       |
+| a4 / a4x      | Ultra-scale AI (Blackwell GPUs)                      | Highest       |
 
 > In Autopilot, machine type is managed. Use ComputeClasses to influence selection.
 
@@ -148,11 +148,11 @@ kubectl top pods --all-namespaces --containers
 
 For non-production environments, these golden path deviations are acceptable:
 
-| Setting | Production (Golden Path) | Dev/Test |
-|---------|-------------------------|----------|
-| Cluster mode | Autopilot | Autopilot (cheaper with fewer pods) |
-| Release channel | Regular | Rapid (get fixes faster) |
-| Private nodes | Required | Optional (simpler access) |
-| Monitoring components | Full suite | SYSTEM_COMPONENTS only |
-| Secret Manager rotation | 120s | Disabled |
-| Maintenance windows | Configured | Not needed |
+| Setting                 | Production (Golden Path) | Dev/Test                            |
+| ----------------------- | ------------------------ | ----------------------------------- |
+| Cluster mode            | Autopilot                | Autopilot (cheaper with fewer pods) |
+| Release channel         | Regular                  | Rapid (get fixes faster)            |
+| Private nodes           | Required                 | Optional (simpler access)           |
+| Monitoring components   | Full suite               | SYSTEM_COMPONENTS only              |
+| Secret Manager rotation | 120s                     | Disabled                            |
+| Maintenance windows     | Configured               | Not needed                          |

@@ -6,12 +6,12 @@ This reference covers scaling workloads on GKE. The golden path enables VPA, OPT
 
 ## Golden Path Scaling Defaults
 
-| Setting | Golden Path Value | Notes |
-|---------|-------------------|-------|
-| `autoscaling.autoscalingProfile` | `OPTIMIZE_UTILIZATION` | Aggressive scale-down for cost savings |
-| `verticalPodAutoscaling.enabled` | `true` | VPA recommendations available |
-| `autoscaling.enableNodeAutoprovisioning` | `true` | NAP creates node pools on demand |
-| GPU resource limits (T4, A100) | `1000000000` each | NAP can provision GPU nodes |
+| Setting                                  | Golden Path Value      | Notes                                  |
+| ---------------------------------------- | ---------------------- | -------------------------------------- |
+| `autoscaling.autoscalingProfile`         | `OPTIMIZE_UTILIZATION` | Aggressive scale-down for cost savings |
+| `verticalPodAutoscaling.enabled`         | `true`                 | VPA recommendations available          |
+| `autoscaling.enableNodeAutoprovisioning` | `true`                 | NAP creates node pools on demand       |
+| GPU resource limits (T4, A100)           | `1000000000` each      | NAP can provision GPU nodes            |
 
 ## Scaling Mechanisms
 
@@ -50,12 +50,12 @@ spec:
   minReplicas: 1
   maxReplicas: 10
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 50
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
 ```
 
 ### 3. Vertical Pod Autoscaling (VPA)
@@ -63,6 +63,7 @@ spec:
 Adjusts CPU and memory requests to match actual usage. Enabled by default on golden path.
 
 **Update modes:**
+
 - `Off` — recommendations only (safest, start here)
 - `Initial` — sets resources only at pod creation
 - `Auto` — restarts pods to apply new resource values
@@ -117,10 +118,10 @@ gcloud container clusters update <CLUSTER_NAME> --region <REGION> \
 
 **Autoscaling profiles:**
 
-| Profile | Behavior | Golden Path? |
-|---------|----------|-------------|
-| `BALANCED` | Default GKE; conservative scale-down | No |
-| `OPTIMIZE_UTILIZATION` | Aggressive scale-down; lower idle resources | **Yes** |
+| Profile                | Behavior                                    | Golden Path? |
+| ---------------------- | ------------------------------------------- | ------------ |
+| `BALANCED`             | Default GKE; conservative scale-down        | No           |
+| `OPTIMIZE_UTILIZATION` | Aggressive scale-down; lower idle resources | **Yes**      |
 
 ## Best Practices
 
@@ -139,9 +140,9 @@ gcloud container clusters update <CLUSTER_NAME> --region <REGION> \
 4. Apply with 20% buffer: `new_request = target * 1.2`
 5. Use patch format to update Deployment
 
-| Condition | Recommendation | Risk |
-|-----------|----------------|------|
-| CPU request >5x P95 actual | Reduce to `P95 * 1.2` | Medium |
-| Memory request >3x P95 actual | Reduce to `P95 * 1.2` | Medium |
-| CPU request >2x P95 actual | Rightsizing with 20% buffer | Low |
-| No resource limits set | Add limits to prevent noisy-neighbor | Low |
+| Condition                     | Recommendation                       | Risk   |
+| ----------------------------- | ------------------------------------ | ------ |
+| CPU request >5x P95 actual    | Reduce to `P95 * 1.2`                | Medium |
+| Memory request >3x P95 actual | Reduce to `P95 * 1.2`                | Medium |
+| CPU request >2x P95 actual    | Rightsizing with 20% buffer          | Low    |
+| No resource limits set        | Add limits to prevent noisy-neighbor | Low    |

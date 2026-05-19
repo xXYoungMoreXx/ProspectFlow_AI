@@ -1,15 +1,45 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const basePath = path.join(process.cwd(), 'packages', 'templates');
+const basePath = path.join(process.cwd(), "packages", "templates");
 if (!fs.existsSync(basePath)) fs.mkdirSync(basePath, { recursive: true });
 
 const templates = [
-  { dir: 'T001-landing-page', type: 'landing', pages: 1, animation: 'low', lh: 95 },
-  { dir: 'T002-institucional-5p', type: 'institutional', pages: 5, animation: 'medium', lh: 90 },
-  { dir: 'T003-blog-portfolio', type: 'blog', pages: 3, animation: 'low', lh: 95 },
-  { dir: 'T004-ecommerce-basico', type: 'ecommerce', pages: 4, animation: 'low', lh: 85 },
-  { dir: 'T005-portfolio-criativo', type: 'portfolio', pages: 2, animation: 'high', lh: 88 }
+  {
+    dir: "T001-landing-page",
+    type: "landing",
+    pages: 1,
+    animation: "low",
+    lh: 95,
+  },
+  {
+    dir: "T002-institucional-5p",
+    type: "institutional",
+    pages: 5,
+    animation: "medium",
+    lh: 90,
+  },
+  {
+    dir: "T003-blog-portfolio",
+    type: "blog",
+    pages: 3,
+    animation: "low",
+    lh: 95,
+  },
+  {
+    dir: "T004-ecommerce-basico",
+    type: "ecommerce",
+    pages: 4,
+    animation: "low",
+    lh: 85,
+  },
+  {
+    dir: "T005-portfolio-criativo",
+    type: "portfolio",
+    pages: 2,
+    animation: "high",
+    lh: 88,
+  },
 ];
 
 const nextConfigContent = `import type { NextConfig } from 'next';
@@ -37,15 +67,18 @@ export default nextConfig;
 for (const t of templates) {
   const dirPath = path.join(basePath, t.dir);
   if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
-  
+
   const meta = {
     serviceType: t.type,
     pageCount: t.pages,
     animationLevel: t.animation,
-    lighthouseBaseline: t.lh
+    lighthouseBaseline: t.lh,
   };
-  
-  fs.writeFileSync(path.join(dirPath, 'metadata.json'), JSON.stringify(meta, null, 2));
-  fs.writeFileSync(path.join(dirPath, 'next.config.ts'), nextConfigContent);
+
+  fs.writeFileSync(
+    path.join(dirPath, "metadata.json"),
+    JSON.stringify(meta, null, 2),
+  );
+  fs.writeFileSync(path.join(dirPath, "next.config.ts"), nextConfigContent);
 }
-console.log('Templates created');
+console.log("Templates created");

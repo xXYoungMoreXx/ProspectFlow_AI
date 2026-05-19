@@ -3,7 +3,7 @@
  * Implementations switch based on provider (Ollama, OpenAI, Anthropic, Groq).
  */
 export interface LLMMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
@@ -21,7 +21,7 @@ export interface LLMCompletionRequest {
 export interface LLMCompletionResponse {
   content: string;
   tokensUsed: number;
-  finishReason: 'stop' | 'length' | 'error';
+  finishReason: "stop" | "length" | "error";
   latencyMs: number;
 }
 

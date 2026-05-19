@@ -1,5 +1,5 @@
-import type { Project } from './Project.js';
-import type { ProjectStatus } from '@agentepro/shared-types';
+import type { Project } from "./Project.js";
+import type { ProjectStatus } from "@agentepro/shared-types";
 
 export interface ProjectFilters {
   operatorId: string;

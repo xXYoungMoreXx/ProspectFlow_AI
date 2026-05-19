@@ -6,14 +6,14 @@ managed using Terraform.
 ## Terraform
 
 Terraform uses two main providers for GKE:
-*   The **Google Cloud provider** connects to the Google Cloud API to manage
-    GKE cluster infrastructure using Terraform resources such as
-    `google_container_cluster` for the cluster itself, and
-    `google_container_node_pool` for nodes in Standard mode.
-*   The **Kubernetes provider** connects to the Kubernetes API to manage
-    workloads inside the cluster using Kubernetes resources such as
-    Deployments and Services.
 
+- The **Google Cloud provider** connects to the Google Cloud API to manage
+  GKE cluster infrastructure using Terraform resources such as
+  `google_container_cluster` for the cluster itself, and
+  `google_container_node_pool` for nodes in Standard mode.
+- The **Kubernetes provider** connects to the Kubernetes API to manage
+  workloads inside the cluster using Kubernetes resources such as
+  Deployments and Services.
 
 ### GKE Autopilot Cluster Example
 

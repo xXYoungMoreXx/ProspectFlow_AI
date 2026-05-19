@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { create } from 'zustand';
-import { api } from '../api';
-import { useAuthStore } from './auth-store';
+import { create } from "zustand";
+import { api } from "../api";
+import { useAuthStore } from "./auth-store";
 
 interface Agent {
   id: string;
   name: string;
   persona: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'PAUSED';
+  status: "ACTIVE" | "INACTIVE" | "PAUSED";
   tokenBudgetRemaining: number;
 }
 
@@ -17,7 +17,7 @@ interface AgentsState {
   isLoading: boolean;
   error: string | null;
   fetchAgents: () => Promise<void>;
-  updateAgentStatus: (id: string, status: Agent['status']) => void;
+  updateAgentStatus: (id: string, status: Agent["status"]) => void;
 }
 
 export const useAgentsStore = create<AgentsState>((set, _get) => ({
@@ -40,7 +40,7 @@ export const useAgentsStore = create<AgentsState>((set, _get) => ({
     // Optimistic update
     set((state) => ({
       agents: state.agents.map((agent) =>
-        agent.id === id ? { ...agent, status } : agent
+        agent.id === id ? { ...agent, status } : agent,
       ),
     }));
   },

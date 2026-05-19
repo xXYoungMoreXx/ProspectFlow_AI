@@ -9,14 +9,13 @@ tasks.
     (e.g., `~/.codeium/windsurf/mcp_config.json`, `cline_mcp_settings.json`, or
     `claude_desktop_config.json`).
 
-    *Note: If the document or its containing directory does not exist, create
-    them and initialize the file with `{ "mcpServers": {} }` before proceeding.*
+    _Note: If the document or its containing directory does not exist, create
+    them and initialize the file with `{ "mcpServers": {} }` before proceeding._
 
 2.  **Check existing configuration**
 
     Open the configuration file and check the `mcpServers` section for a
     `firebase` entry.
-
     - Firebase is already configured if the `command` is `"firebase"` OR if the
       `command` is `"npx"` with `"firebase-tools"` and `"mcp"` in the `args`.
 
@@ -24,13 +23,16 @@ tasks.
       already configured. **Skip step 3** and proceed directly to step 4.
 
     **Example valid configurations**:
+
     ```json
     "firebase": {
       "command": "npx",
       "args": ["-y", "firebase-tools@latest", "mcp"]
     }
     ```
+
     OR
+
     ```json
     "firebase": {
       "command": "firebase",
@@ -54,8 +56,8 @@ tasks.
     }
     ```
 
-    *CRITICAL: Merge this configuration into the existing file. You MUST
-    preserve any other existing servers inside the `mcpServers` object.*
+    _CRITICAL: Merge this configuration into the existing file. You MUST
+    preserve any other existing servers inside the `mcpServers` object._
 
 4.  **Verify configuration**
 

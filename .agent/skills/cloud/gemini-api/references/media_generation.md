@@ -1,6 +1,7 @@
 # Media Generation
 
 ## Image Generation
+
 Generate images using `gemini-2.5-flash-image`.
 
 ```python
@@ -50,6 +51,7 @@ for part in response.parts:
 ```
 
 ## Image Editing
+
 Editing images is better done using the Gemini native image generation model, and it is recommended to use chat mode.
 
 ```python
@@ -80,6 +82,7 @@ chat.send_message('Make the bowl blue')
 ```
 
 ## Video Generation
+
 Generate video using the Veo model. Usage of Veo can be costly, so check pricing for Veo. Start with the fast model (`veo-3.1-fast-generate-001`) since the result quality is usually sufficient, and swap to the larger model if needed.
 
 ```python

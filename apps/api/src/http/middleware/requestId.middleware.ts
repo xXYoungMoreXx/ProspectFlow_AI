@@ -1,7 +1,7 @@
-import { ulid } from 'ulid';
-import type { FastifyRequest } from 'fastify';
+import { ulid } from "ulid";
+import type { FastifyRequest } from "fastify";
 
-declare module 'fastify' {
+declare module "fastify" {
   interface FastifyRequest {
     requestId: string;
   }

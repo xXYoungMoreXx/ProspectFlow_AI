@@ -13,27 +13,24 @@ from a mobile or web app. These SDKs are available for iOS (Swift and
 Objective-C), Android (Kotlin and Java), Web (JavaScript), Flutter (Dart),
 Unity, and C++.
 
--   For **web apps**, Agent Skills for Firebase provide guides to get started
-    with the JavaScript client SDK. Install these skills by running:
+- For **web apps**, Agent Skills for Firebase provide guides to get started
+  with the JavaScript client SDK. Install these skills by running:
 
-    ```bash
-    npx -y skills add firebase/agent-skills -y
-    ```
+  ```bash
+  npx -y skills add firebase/agent-skills -y
+  ```
 
--   For **native iOS or Android mobile apps**, see the documentation to get
-    started:
+- For **native iOS or Android mobile apps**, see the documentation to get
+  started:
+  - **iOS**: https://firebase.google.com/docs/ios/setup.md.txt
+  - **Android**: https://firebase.google.com/docs/android/setup.md.txt
 
-    -   **iOS**: https://firebase.google.com/docs/ios/setup.md.txt
-    -   **Android**: https://firebase.google.com/docs/android/setup.md.txt
+- For **Flutter apps**, see the documentation to get started:
+  - **Flutter**: https://firebase.google.com/docs/flutter/setup.md.txt
 
--   For **Flutter apps**, see the documentation to get started:
-
-    -   **Flutter**: https://firebase.google.com/docs/flutter/setup.md.txt
-
--   For **Unity and C++ mobile apps**, see the documentation to get started:
-
-    -   **Unity**: https://firebase.google.com/docs/unity/setup.md.txt
-    -   **C++**: https://firebase.google.com/docs/cpp/setup.md.txt
+- For **Unity and C++ mobile apps**, see the documentation to get started:
+  - **Unity**: https://firebase.google.com/docs/unity/setup.md.txt
+  - **C++**: https://firebase.google.com/docs/cpp/setup.md.txt
 
 ## Server-side Admin SDKs
 

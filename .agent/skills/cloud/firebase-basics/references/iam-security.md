@@ -13,13 +13,13 @@ Firebase offers several security-related features and services, including:
 
 Here are some common IAM roles:
 
-| Role | Description |
-|---|---|
-| `roles/viewer` | Permissions for read-only actions, such as viewing (but not modifying) existing resources or data. |
-| `roles/editor` | All the `roles/viewer` permissions, plus permissions for actions that modify state, such as changing existing resources. |
-| `roles/owner` | All the `roles/editor` permissions, plus permissions for the following actions: manage IAM for a project, manage all resources within the project, set up and manage billing for a project, and delete or restore a project. |
-| `roles/firebase.viewer` | Read-only access to Firebase resources and data. |
-| `roles/firebase.admin` | Full access to all Firebase products and project management. |
+| Role                    | Description                                                                                                                                                                                                                  |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `roles/viewer`          | Permissions for read-only actions, such as viewing (but not modifying) existing resources or data.                                                                                                                           |
+| `roles/editor`          | All the `roles/viewer` permissions, plus permissions for actions that modify state, such as changing existing resources.                                                                                                     |
+| `roles/owner`           | All the `roles/editor` permissions, plus permissions for the following actions: manage IAM for a project, manage all resources within the project, set up and manage billing for a project, and delete or restore a project. |
+| `roles/firebase.viewer` | Read-only access to Firebase resources and data.                                                                                                                                                                             |
+| `roles/firebase.admin`  | Full access to all Firebase products and project management.                                                                                                                                                                 |
 
 For details about IAM and Firebase, see
 https://firebase.google.com/docs/projects/iam/overview.md.txt

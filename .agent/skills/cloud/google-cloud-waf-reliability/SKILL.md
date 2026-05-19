@@ -19,56 +19,56 @@ minimizing downtime, enhancing user experience, and ensuring data integrity.
 The recommendations in the reliability pillar of the Well-Architected Framework
 are aligned with the following core principles:
 
--  **Define reliability based on user-experience goals**: Measurement of
-   reliability should reflect the actual experience of the system's users rather
-   than merely relying on infrastructure metrics. Focus on outcomes that matter
-   most to users. Grounding document:
-   https://docs.cloud.google.com/architecture/framework/reliability/define-reliability-based-on-user-experience-goals
+- **Define reliability based on user-experience goals**: Measurement of
+  reliability should reflect the actual experience of the system's users rather
+  than merely relying on infrastructure metrics. Focus on outcomes that matter
+  most to users. Grounding document:
+  https://docs.cloud.google.com/architecture/framework/reliability/define-reliability-based-on-user-experience-goals
 
--  **Set realistic targets for reliability**: Determine appropriate Service
-   Level Objectives (SLOs) that balance the cost and complexity of maximizing
-   availability against business requirements. Utilize error budgets to manage
-   feature velocity. Grounding document:
-   https://docs.cloud.google.com/architecture/framework/reliability/set-targets
+- **Set realistic targets for reliability**: Determine appropriate Service
+  Level Objectives (SLOs) that balance the cost and complexity of maximizing
+  availability against business requirements. Utilize error budgets to manage
+  feature velocity. Grounding document:
+  https://docs.cloud.google.com/architecture/framework/reliability/set-targets
 
--  **Build highly available systems through resource redundancy**: Eliminate
-   single points of failure by duplicating critical components across zones and
-   regions to maintain operations during localized outages. Grounding document:
-   https://docs.cloud.google.com/architecture/framework/reliability/build-highly-available-systems
+- **Build highly available systems through resource redundancy**: Eliminate
+  single points of failure by duplicating critical components across zones and
+  regions to maintain operations during localized outages. Grounding document:
+  https://docs.cloud.google.com/architecture/framework/reliability/build-highly-available-systems
 
--  **Take advantage of horizontal scalability**: Design system architectures to
-   scale horizontally (adding more instances) to seamlessly accommodate load
-   fluctuations and improve overall fault tolerance. Grounding document:
-   https://docs.cloud.google.com/architecture/framework/reliability/horizontal-scalability
+- **Take advantage of horizontal scalability**: Design system architectures to
+  scale horizontally (adding more instances) to seamlessly accommodate load
+  fluctuations and improve overall fault tolerance. Grounding document:
+  https://docs.cloud.google.com/architecture/framework/reliability/horizontal-scalability
 
--  **Detect potential failures by using observability**: Implement thorough
-   monitoring, logging, and alerting systems to proactively detect, diagnose,
-   and address anomalies before they cause user-facing issues. Grounding
-   document:
-   https://docs.cloud.google.com/architecture/framework/reliability/observability
+- **Detect potential failures by using observability**: Implement thorough
+  monitoring, logging, and alerting systems to proactively detect, diagnose,
+  and address anomalies before they cause user-facing issues. Grounding
+  document:
+  https://docs.cloud.google.com/architecture/framework/reliability/observability
 
--  **Design for graceful degradation**: Architect systems to maintain critical
-   functionality, even if at reduced performance or with limited features, when
-   dependencies fail or the system experiences extreme stress. Grounding
-   document:
-   https://docs.cloud.google.com/architecture/framework/reliability/graceful-degradation
+- **Design for graceful degradation**: Architect systems to maintain critical
+  functionality, even if at reduced performance or with limited features, when
+  dependencies fail or the system experiences extreme stress. Grounding
+  document:
+  https://docs.cloud.google.com/architecture/framework/reliability/graceful-degradation
 
--  **Perform testing for recovery from failures**: Build confidence in system
-   resilience by continuously simulating failures and verifying the
-   effectiveness of automated and manual recovery procedures. Grounding
-   document:
-   https://docs.cloud.google.com/architecture/framework/reliability/perform-testing-for-recovery-from-failures
+- **Perform testing for recovery from failures**: Build confidence in system
+  resilience by continuously simulating failures and verifying the
+  effectiveness of automated and manual recovery procedures. Grounding
+  document:
+  https://docs.cloud.google.com/architecture/framework/reliability/perform-testing-for-recovery-from-failures
 
--  **Perform testing for recovery from data loss**: Regularly test backup and
-   restore protocols to ensure rapid recovery from data corruption or loss,
-   remaining within the defined Recovery Time Objective (RTO) and Recovery Point
-   Objective (RPO). Grounding document:
-   https://docs.cloud.google.com/architecture/framework/reliability/perform-testing-for-recovery-from-data-loss
+- **Perform testing for recovery from data loss**: Regularly test backup and
+  restore protocols to ensure rapid recovery from data corruption or loss,
+  remaining within the defined Recovery Time Objective (RTO) and Recovery Point
+  Objective (RPO). Grounding document:
+  https://docs.cloud.google.com/architecture/framework/reliability/perform-testing-for-recovery-from-data-loss
 
--  **Conduct thorough postmortems**: Foster a blameless culture by investigating
-   outages comprehensively to understand root causes, followed by implementing
-   measures that prevent recurrence. Grounding document:
-   https://docs.cloud.google.com/architecture/framework/reliability/conduct-postmortems
+- **Conduct thorough postmortems**: Foster a blameless culture by investigating
+  outages comprehensively to understand root causes, followed by implementing
+  measures that prevent recurrence. Grounding document:
+  https://docs.cloud.google.com/architecture/framework/reliability/conduct-postmortems
 
 ## Relevant Google Cloud products
 

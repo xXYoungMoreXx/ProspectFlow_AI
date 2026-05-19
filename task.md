@@ -1,660 +1,350 @@
-# Task: AgentePro — Evolução Contínua (Arco 2)
+# ProspectFlow AI - Task & Milestone Tracker
 
-## Status: IN_PROGRESS
-
-> **Arco 1 CONCLUÍDO** — Fases 0–8 (Refatoração Arquitetural ProspectFlow → AgentePro) finalizadas.
-> Este documento agora cobre o **Arco 2**: alinhamento documental + features de negócio derivadas dos ADRs de 2026-05-09.
-
-## Contexto
-
-O projeto existe como um monolito Python (FastAPI + SQLAlchemy + Redis Streams) com módulos flat (`modules/lead_hunter`, `modules/conv_agent`, etc.) que funcionam como um PoC.
-
-O PRD (`docs/PRD_AgentePro.md`) define uma arquitetura radicalmente diferente:
-- **Monorepo Turborepo** com 3 apps + 2 packages
-- **API**: Node.js 22 + Fastify 5 + Drizzle ORM + Zod + BullMQ (TypeScript)
-- **Web**: Next.js 15 App Router + shadcn/ui + Tailwind CSS 4 + Zustand
-- **Agent Runtime**: Python 3.12 + CrewAI + LiteLLM + ChromaDB
-- **Padrão**: Hexagonal Architecture + CQRS + DDD + Event-Driven
-- **Segurança**: JWT RS256 + Argon2id + RLS + HITL obrigatório
-
-A lógica de negócio Python existente (LeadHunter, ConvAgent, SiteBuilder, MailAgent, IntegLayer, SecurityGuard) será migrada para o `agent-runtime` CrewAI como skills/tools. O esqueleto Node.js substituirá completamente a API FastAPI.
-
-**Restrição anterior revogada**: A restrição de `docs/` protegia a documentação durante a migração de código. Com as Fases 0–8 concluídas, a **Fase 9** tem como objetivo ESPECÍFICO alinhar os `docs/`. Modificações em `docs/` são PERMITIDAS e NECESSÁRIAS no Arco 2.
+Este documento rastreia o progresso do desenvolvimento, dividido em "Arcos" e "Fases".
+Ele serve como a fonte da verdade para o estado atual do projeto após a transição da arquitetura legada (Python Monolith) para a nova arquitetura (Turborepo).
 
 ---
 
-## Decisões Feitas
+## Arco 1: Fundação e Autenticação (Fases 0 a 8) - ✅ CONCLUÍDO
 
-- [x] **D1**: Usar Turborepo como gerenciador de monorepo (PRD §17)
-- [x] **D2**: API em Fastify 5 (ADR-002)
-- [x] **D3**: Drizzle ORM para TypeScript, schema PRD §13
-- [x] **D4**: BullMQ para filas assíncronas (ADR-003 CQRS)
-- [x] **D5**: CrewAI como orquestrador de agentes (ADR-001)
-- [x] **D6**: HITL via tabela `hitl_approvals` + endpoint REST (ADR-004)
-- [x] **D7**: Prompts versionados em `docs/agents/prompts/` (ADR-005)
-- [x] **D8**: Docker Compose para infra local (PRD §16-Infra)
-- [x] **D9**: Manter código Python legado em `_legacy/` para referência durante migração
+Este arco estabeleceu a base do monorepo, banco de dados, e o sistema completo de autenticação e gestão de agentes, além da base de integração com RAG (ChromaDB) e LLM.
 
----
+- **Fase 0:** Setup do Monorepo (Turborepo, Fastify, Drizzle, etc.) - ✅
+- **Fase 1:** Database Schema Básico (Agents, Logs, RLS) - ✅
+- **Fase 2:** Autenticação JWT RS256 e Argon2id - ✅
+- **Fase 3:** Segurança e Middleware (Rate Limit, Anti-Brute Force) - ✅
+- **Fase 4:** Agent Management CRUD - ✅
+- **Fase 5:** Infraestrutura RAG (ChromaDB local) - ✅
+- **Fase 6:** Worker System (BullMQ) para processamento em background - ✅
+- **Fase 7:** LLM Router (OpenAI/Ollama/Anthropic) - ✅
+- **Fase 8:** HITL Base e Eventos de Domínio - ✅
 
-## Plano de Implementação
-
-### ═══════════════════════════════════════════════
-### FASE 0 — FUNDAÇÃO E BOOTSTRAP
-### ═══════════════════════════════════════════════
-
-#### 0.1 — Reorganização do repositório
-- [x] Mover todo o código Python existente para `_legacy/` (preservação)
-- [x] Remover diretório fantasma `{modules` (artifact de comando mal-formado)
-- [x] Remover diretório vazio `prospectflow/`
-- [x] Atualizar `.gitignore` para monorepo (node_modules, .next, dist, .turbo, .env*)
-
-#### 0.2 — Inicializar Turborepo monorepo
-- [x] Criar `package.json` raiz com workspaces (`apps/*`, `packages/*`)
-- [x] Criar `turbo.json` com pipeline (build, dev, lint, test, typecheck)
-- [x] Criar `tsconfig.base.json` com configuração estrita compartilhada
-
-#### 0.3 — Bootstrap `packages/shared-types`
-- [x] Criar `packages/shared-types/package.json`
-- [x] Criar `packages/shared-types/tsconfig.json`
-- [x] Criar enums do domínio (AgentPersona, AgentStatus, LeadStatus, DealStatus, ProjectStatus, HITLStatus, LLMProvider, etc.)
-- [x] Criar tipos de Domain Events (LeadCreated, LeadQualified, DealClosed, ProjectDelivered, etc.)
-- [x] Criar tipos do contrato API (response envelopes: `{ data, meta, errors }`)
-
-#### 0.4 — Bootstrap `apps/api` (Fastify)
-- [x] Criar `apps/api/package.json` com deps: fastify, drizzle-orm, pg, zod, bullmq, jose, argon2, pino
-- [x] Criar `apps/api/tsconfig.json` herdando de base
-- [x] Criar entry point `apps/api/src/server.ts` com lifespan hooks
-- [x] Criar container DI (`apps/api/src/container.ts`)
-
-#### 0.5 — Bootstrap `apps/web` (Next.js 15)
-- [x] Inicializar Next.js 15 com `npx create-next-app@latest ./` no diretório `apps/web` *(Fase 7)*
-- [x] Configurar Tailwind CSS 4 + shadcn/ui *(Fase 7)*
-- [x] Criar layout raiz com sidebar de dashboard placeholder *(Fase 7)*
-
-#### 0.6 — Bootstrap `apps/agent-runtime` (Python/CrewAI)
-- [x] Criar `apps/agent-runtime/pyproject.toml` com deps: crewai, litellm, chromadb, redis, pydantic
-- [x] Criar estrutura de diretórios: `src/agents/`, `src/skills/`, `src/rag/`, `src/workflows/`
-- [x] Migrar `_legacy/modules/lead_hunter/hunter.py` → `src/skills/web_search.py`
-- [x] Migrar `_legacy/modules/conv_agent/security.py` → `src/skills/security_guard.py`
-- [x] Migrar `_legacy/modules/site_builder/builder.py` → `src/skills/site_generator.py`
-
-#### 0.7 — Docker Compose para infra local
-- [x] Criar `infra/docker-compose.yml` com:
-  - PostgreSQL 16 (porta 5432)
-  - Redis 7 (porta 6379)
-  - ChromaDB (porta 8000)
-  - n8n (porta 5678)
-  - Grafana (porta 3333)
-  - Jaeger (porta 16686)
-- [x] Criar `infra/scripts/setup.sh` para inicialização
-- [x] Criar `.env.example` atualizado para monorepo
+> 📝 **Nota:** A transição do legado foi concluída com sucesso no Arco 1. O foco agora é o desenvolvimento das regras de negócio do CRM e fluxos de negociação.
 
 ---
 
-### ═══════════════════════════════════════════════
-### FASE 1 — DOMAIN LAYER + DATABASE
-### ═══════════════════════════════════════════════
+## Arco 2: Domínio de Negócios e Orquestração (Fases 9 a 15) - 🚧 EM ANDAMENTO
 
-#### 1.1 — Domain Layer Core (`apps/api/src/domain/shared/`)
-- [x] Criar `DomainEvent.ts` (eventId, eventType, aggregateId, occurredAt, correlationId, causationId, payload)
-- [x] Criar `AggregateRoot.ts` (base class com domain events collection)
-- [x] Criar `Result.ts` (Either monad: `Result<T, E>` para erros sem exceções)
-- [x] Criar `ValueObject.ts` (base class com equals)
+### Fase 9: Refatoração do Domínio de Lead e CRM
 
-#### 1.2 — Agent Bounded Context (`apps/api/src/domain/agent/`)
-- [x] `Agent.ts` — Aggregate root com id, persona, name, llmConfig, skills, rules, status
-- [x] `LLMConfiguration` — VO inline no Agent
-- [x] `AgentRepository.ts` — Port (interface)
-- [x] Domain events emitidos inline (agent.activated, agent.paused, agent.task_completed)
+> Objetivo: Solidificar as entidades de Lead, garantindo que o ciclo de vida do pipeline seja respeitado e eventos de domínio sejam disparados.
 
-#### 1.3 — Lead Bounded Context (`apps/api/src/domain/lead/`)
-- [x] `Lead.ts` — Aggregate root com lifecycle completo
-- [x] `ContactInfo` — VO inline
-- [x] `LeadRepository.ts` — Port
-- [x] Domain events inline (lead.created, lead.qualified, lead.converted, lead.lost)
+- [x] Atualizar Entity `Lead.ts` para usar Value Objects (`LeadId`, `Email`, `Phone`).
+- [x] Criar Enum `LeadStatus` (`NEW`, `QUALIFYING`, `QUALIFIED`, `DISQUALIFIED`, `IN_NEGOTIATION`, `WON`, `LOST`).
+- [x] Implementar DrizzleRepository para Leads (leitura e escrita).
+- [x] Criar UseCase `CreateLeadHandler.ts` (idempotente por email/telefone).
+- [x] Criar UseCase `UpdateLeadStatusHandler.ts` (garantir transições de estado válidas).
+- [x] Expor endpoints HTTP `/api/v1/leads/*` com validação Zod.
+- [x] Testes Unitários de transição de estado.
+- [x] (Opcional) Testes de Integração com Drizzle SQLite in-memory.
 
-#### 1.4 — Deal Bounded Context (`apps/api/src/domain/deal/`)
-- [x] `Deal.ts` — Aggregate root com pricing (base + addons - discount)
-- [x] `DealRepository.ts` — Port
-- [x] Domain events inline (deal.proposed, deal.closed, deal.cancelled)
+### Fase 10: Domínio de Negociação (Deals) e Pricing Engine
 
-#### 1.5 — Project Bounded Context (`apps/api/src/domain/project/`)
-- [x] `Project.ts` — Aggregate root com Lighthouse scores, revision limit
-- [x] `ProjectRepository.ts` — Port
-- [x] Domain events inline (project.started, project.delivered, project.revision_requested)
+> Objetivo: Implementar a lógica de orçamentação dinâmica e ciclo de vida de contratos. Requer extrema precisão matemática.
 
-#### 1.6 — HITL Bounded Context (`apps/api/src/domain/hitl/`)
-- [x] `HITLApproval.ts` — Aggregate root com approve/reject/edit-and-approve/expire
-- [x] `HITLApprovalRepository.ts` — Port (com findExpired para worker)
-- [x] Domain events inline (hitl.approval_requested, hitl.approval_decided)
+- [x] Atualizar Entity `Deal.ts` (relacionamento com `LeadId` e `AgentId`).
+- [x] Criar `PricingEngine.ts` puro (domain service sem dependências DB).
+  - [x] Definir base rate, multipliers (complexidade, urgência).
+  - [x] Calcular margem de segurança (buffer).
+- [x] Criar UseCase `GenerateQuoteHandler.ts` usando a `PricingEngine`.
+- [x] Expor rota de simulação de preços `POST /api/v1/deals/quote`. (Pendente Integração)
+- [x] Expor endpoints HTTP `/api/v1/deals/*`.
+- [x] Implementar Repository para Persistência (`DealRepository.ts` / `DrizzleDealRepository.ts`). ✅ Concluído.
 
-#### 1.7 — Drizzle Schema (`apps/api/src/infrastructure/db/schema.ts`)
-- [x] Espelhar schema SQL do PRD §13 fielmente:
-  - `operators`, `refresh_tokens`
-  - `agents`, `agent_skills`, `agent_rules`, `mcp_servers`
-  - `leads`, `messages`
-  - `deals`
-  - `projects`
-  - `hitl_approvals`
-  - `audit_log` (append-only com check via trigger)
-- [x] Configurar Drizzle Kit para migrations
-- [x] Criar migration inicial
+### Fase 11: HITL Tiered System (Aprovação Financeira)
 
-#### 1.8 — Drizzle Repositories (Infrastructure adapters)
-- [x] `apps/api/src/infrastructure/db/repositories/DrizzleAgentRepository.ts`
-- [x] `apps/api/src/infrastructure/db/repositories/DrizzleLeadRepository.ts`
-- [x] `apps/api/src/infrastructure/db/repositories/DrizzleDealRepository.ts`
-- [x] `apps/api/src/infrastructure/db/repositories/DrizzleProjectRepository.ts`
-- [x] `apps/api/src/infrastructure/db/repositories/DrizzleHITLRepository.ts`
-- [x] `apps/api/src/infrastructure/db/repositories/DrizzleAuditLogRepository.ts`
+> Objetivo: Extender o sistema HITL (Fase 8) para suportar aprovações críticas de negócio (ex: descontos agressivos, envio de proposta).
 
----
+- [x] Criar Enum `HITLSeverity` (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL_FINANCIAL`).
+- [x] Modificar `HITLRequest.ts` para incluir payload de contexto financeiro.
+- [x] Criar worker `HITLExpirationWorker.ts` (BullMQ) para requests expirados.
+- [x] HITL-FINANCEIRO: nunca auto-expira — apenas alerta via Telegram.
+- [x] Expor `/api/v1/hitl/approve` e `/api/v1/hitl/reject` para o front-end.
+- [x] Garantir que `Deal.sendProposal()` requer obrigatoriamente clearance do HITL.
 
-### ═══════════════════════════════════════════════
-### FASE 2 — APPLICATION LAYER (USE CASES)
-### ═══════════════════════════════════════════════
+### Fase 12: Contract Acceptances & Compliance (Clickwrap)
 
-#### 2.1 — IAM Use Cases (`apps/api/src/application/auth/`)
-- [x] `LoginHandler` (Argon2id verify, JWT RS256 sign, anti-enumeration)
-- [x] `RefreshTokenHandler` (rotação de refresh token)
-- [x] `LogoutHandler` (revogar refresh tokens)
-- [x] Schema Zod: `LoginSchema`, `RefreshSchema`
+> Objetivo: Garantir segurança jurídica no aceite de propostas geradas pelos agentes.
 
-#### 2.2 — Agent Use Cases (`apps/api/src/application/agent/`)
-- [x] `CreateAgentHandler`
-- [x] `UpdateAgentHandler` (PATCH parcial)
-- [x] `ActivateAgentHandler`
-- [x] `PauseAgentHandler`
-- [x] `GetAgentsHandler` (cursor pagination)
-- [x] `GetAgentByIdHandler`
-- [x] CRUD de Skills, Rules via sub-commands
+- [x] Criar Entity `ContractAcceptance.ts` com hash SHA-256 da proposta.
+- [x] Coletar IP e User-Agent do Lead no momento do aceite (via Headers).
+- [x] Criar rota pública `POST /api/v1/deals/:id/accept` (requer token JWT temporário gerado para a proposta).
+- [x] Disparar evento de domínio `ContractAcceptedEvent`.
+- [x] Atualizar status do Deal para `WON`.
+- [x] Worker para gerar log imutável da transação (AuditLog).
 
-#### 2.3 — Lead Use Cases (`apps/api/src/application/lead/`)
-- [x] `CreateLeadHandler`
-- [x] `UpdateLeadStatusHandler`
-- [x] `GetLeadsHandler` (cursor pagination, filtros)
-- [x] `GetLeadByIdHandler`
+### Fase 13: Project Generation (Hand-off)
 
-#### 2.4 — Deal Use Cases (`apps/api/src/application/deal/`)
-- [x] `GetDealsHandler`
-- [x] `GetDealByIdHandler`
-- [x] `CancelDealHandler`
-- [x] `GenerateQuoteHandler` (IA para Orçamento)
+> Objetivo: A transição entre o fechamento do negócio e o início do desenvolvimento (Agent Builder).
 
-#### 2.5 — Project Use Cases (`apps/api/src/application/project/`)
-- [x] `GetProjectsHandler`
-- [x] `GetProjectByIdHandler`
-- [x] `RequestRevisionHandler`
+- [x] Escutar `ContractAcceptedEvent`.
+- [x] Criar Entity `Project.ts` vinculada ao `DealId`.
+- [x] Selecionar Template de arquitetura com base no tipo de Deal (Landing Page, Institucional, E-commerce).
+- [x] Criar UseCase `InitializeProjectWorkspace.ts`.
+- [x] Disparar job no BullMQ para o agent-runtime iniciar a geração de código.
 
-#### 2.6 — HITL Use Cases (`apps/api/src/application/hitl/`)
-- [x] `GetPendingApprovalsHandler`
-- [x] `ApproveHITLHandler`
-- [x] `RejectHITLHandler`
-- [x] `EditAndApproveHITLHandler`
+### Fase 14: Finalização da Arquitetura e Monitoramento
+
+> Objetivo: Implementar a estrutura de logging e tracing para produção, e alinhar Fases 9-15.
+
+#### 14.1 — Estruturação de Logs
+
+- [x] Log estruturado (JSON) no Fastify.
+- [x] Implementação Padrão: `{ level, timestamp, service, traceId, message, context }`.
+- [x] Remoção de `console.log` legados no `agent-runtime`.
+
+#### 14.2 — OpenTelemetry / Distributed Tracing (Pausado p/ MVP)
+
+- [ ] Adicionar otel-instrumentation no Fastify.
+- [ ] Propagar Trace ID nas mensagens do BullMQ.
+- [ ] Interceptar Trace ID no Python agent-runtime.
+
+#### 14.3 — Configuração Loki + Grafana (Infraestrutura)
+
+- [x] Adicionar promtail e loki no `docker-compose.yml`.
+- [x] Adicionar grafana provisionado com Loki datasource.
+
+#### 14.4 — Alertas Grafana → Telegram (Novo Canal)
+
+- [x] Alerta: Alta latência na LLM.
+- [x] Alerta: Brute-force auth (> X tentativas).
+- [x] Alerta: HITL Financeiro Pendente.
+
+### Fase 15: Agent-Runtime V2 Integration
+
+> Objetivo: Conectar de forma robusta o worker Python com a API Node.
+
+- [x] Refatorar worker Python para escutar BullMQ (usando `redis-py` ou via endpoint Fastify).
+- [x] Garantir que o Python runtime reporte progresso de volta para a API (Webhooks / HTTP callback).
+- [x] Migração dos scripts standalone (`lead_hunter.py`, `conversational_agent.py`) para classes modulares baseadas em LangChain/CrewAI.
+- [x] Definir modelo estrito de Payload JSON de ida e volta.
 
 ---
 
-### ═══════════════════════════════════════════════
-### FASE 3 — HTTP LAYER (ROUTES + MIDDLEWARE)
-### ═══════════════════════════════════════════════
+## Arco 2: Verificação Final (Para Concluir Arco 2)
 
-#### 3.1 — Middleware Stack (`apps/api/src/http/middleware/`)
-- [x] `auth.middleware.ts` — JWT RS256 verification com `jose`
-- [x] `rateLimiter` — via @fastify/rate-limit global + per-route
-- [x] `bodySize` — via Fastify `bodyLimit` (1MB Zero Trust)
-- [x] `requestId.middleware.ts` — ULID correlation ID
-- [x] `errorHandler.ts` — centralizado
-
-#### 3.2 — Zod Schemas (`apps/api/src/http/schemas/`)
-- [x] `auth.schemas.ts` — LoginSchema, RefreshSchema
-- [x] `agents.schemas.ts` — CreateAgentSchema, UpdateAgentSchema, SkillSchema, RuleSchema, ListAgentsQuery
-- [x] `leads.schemas.ts` — CreateLeadSchema, UpdateStatusSchema, ListLeadsQuery
-- [x] `deals.schemas.ts` — CancelDealSchema, ListDealsQuery
-- [x] `hitl.schemas.ts` — ApproveSchema, RejectSchema, EditApproveSchema
-
-#### 3.3 — Routes wired (`apps/api/src/http/routes/`)
-- [x] `auth.routes.ts` — POST /login, /refresh, DELETE /logout
-- [x] `agents.routes.ts` — CRUD + /activate, /pause
-- [x] `leads.routes.ts` — GET list, GET :id, POST create, PATCH :id/status
-- [x] `deals.routes.ts` — GET list, GET :id, POST :id/cancel
-- [x] `projects.routes.ts` — GET list, GET :id, POST :id/request-revision
-- [x] `hitl.routes.ts` — GET /pending, POST :id/approve, :id/reject, PATCH :id/edit-and-approve
-- [x] `system.routes.ts` — GET /health, GET /metrics
+- [x] Todos os testes unitários do domínio rodam? (`npm run test:domain`)
+- [x] A API liga sem erros locais? (`npm run dev`)
+- [x] O Swagger/OpenAPI reflete as rotas de Leads e Deals corretamente?
+- [x] O RLS do Supabase (ou local Drizzle) está blindando acesso a Leads de outros agentes?
+- [x] O agent-runtime levanta e se conecta ao Redis do BullMQ?
+- [x] Os jobs de HITL timeout estão funcionando?
+- [x] O Acceptance Clickwrap gera um log com hash imutável?
+- [x] Pricing Engine lança exceção em desconto > 50% sem HITL High Severity?
+- [x] PricingConfigRepository implementado? (Using Hardcoded MVP defaults)
+- [x] Rota `POST /api/v1/deals/:id/quote` integrada com Repositories?
+- [x] Loki/Promtail recebendo logs de todos os containers?
 
 ---
 
-### ═══════════════════════════════════════════════
-### FASE 4 — INFRAESTRUTURA (ADAPTERS)
-### ═══════════════════════════════════════════════
+## Arco 3: Funcionalidades Ausentes e Simplificação (NOVO)
 
-#### 4.1 — Queue Adapter (`apps/api/src/infrastructure/queue/`)
-- [x] `BullMQAdapter.ts` — publish/subscribe para domain events
-- [x] Filas: `domain-events`, `agent-tasks`, `hitl-expiration`, `email-sending`
-- [x] Worker de expiração de HITL (60 min timeout → auto-reject)
+Este arco engloba as fases identificadas pela Auditoria Cirúrgica (ADR-005, PRD e features de negócio não mapeadas).
 
-#### 4.2 — LLM Router ACL (`apps/api/src/infrastructure/llm/`)
-- [x] `LLMRouter.ts` — interface de domínio para LLM calls
-- [x] `OllamaAdapter.ts` — implementação para Ollama local
-- [x] `AnthropicAdapter.ts` — implementação para Anthropic API
-- [x] `OpenAIAdapter.ts` — implementação para OpenAI API
-- [x] `GoogleAdapter.ts` — implementação para Google Gemini API (3.1)
+### Fase 16: Auth Refactor Completo
 
-#### 4.3 — Messaging Adapters (`apps/api/src/infrastructure/messaging/`)
-- [x] `WhatsAppAdapter.ts` — Evolution API integration (migrar de `_legacy/modules/conv_agent/whatsapp.py`)
-- [x] `EmailAdapter.ts` — Brevo/SMTP (migrar de `_legacy/modules/mail_agent/agent.py`)
+> Objetivo: Implementar os fluxos de criação de conta, verificação de email e reset de senha para o operador, garantindo a gestão do ciclo de vida da conta. _(Ref: `auth-refactor.md`)_
 
-#### 4.4 — RAG Adapter (`apps/api/src/infrastructure/rag/`)
-- [x] `ChromaDBAdapter.ts` — upload, chunk, query
+- [x] Criar UseCase `RegisterOperator.ts` (hash de senha + criação de usuário inativo).
+- [x] Implementar envio de e-mail de verificação (Token temporário 24h).
+- [x] Criar rota `POST /api/v1/auth/verify-email`.
+- [x] Implementar fluxo de "Esqueci minha senha" (geração de token).
+- [x] Criar rota `POST /api/v1/auth/reset-password`.
+- [x] Criar páginas no Frontend (Next.js): `/register`, `/verify-email`, `/forgot-password`, `/reset-password`.
+- [x] Testes de integração (verificar expiração de token e tentativas limitadas).
 
-#### 4.5 — Secrets Adapter (`apps/api/src/infrastructure/secrets/`)
-- [x] `SecretsProvider.ts` — interface
-- [x] `EnvSecretsAdapter.ts` — implementação dev
-- [ ] (Futuro) `InfisicalAdapter.ts`
+### Fase 17: Prospecção via CNPJ
 
----
+> Objetivo: Expandir as capacidades do Hunter Agent para prospectar ativamente empresas baseadas em dados da Receita Federal / APIs do governo (MCP Brasil).
 
-### ═══════════════════════════════════════════════
-### FASE 5 — AGENT RUNTIME (CrewAI)
-### ═══════════════════════════════════════════════
+- [x] Configurar conexão com o MCP Brasil (`TRANSPARENCIA_API_KEY`).
+- [x] Modificar Schema Drizzle de `Leads` para incluir `cnpj` (VARCHAR) e `company_data` (JSONB).
+- [x] Criar nova Skill Python no `agent-runtime`: `cnpj_lookup.py` (busca inicial).
+- [x] Criar nova Skill Python: `cnpj_enricher.py` (buscar sócios, capital social, cnae).
+- [x] Atualizar o prompt do Hunter Agent para utilizar essas skills quando o alvo for B2B no Brasil.
 
-#### 5.1 — CrewAI Core Setup
-- [x] `apps/agent-runtime/src/config.py` — Pydantic Settings (migrar de `_legacy/config.py`)
-- [x] `apps/agent-runtime/src/main.py` — FastAPI bridge (recebe jobs do BullMQ via HTTP)
-- [x] `apps/agent-runtime/src/agents/base.py` — Base agent class com CrewAI
+### Fase 18: Integração com Telegram
 
-#### 5.2 — Hunter Agent
-- [x] `apps/agent-runtime/src/agents/hunter/agent.py` — CrewAI Agent (persona do PRD)
-- [x] `apps/agent-runtime/src/agents/hunter/tasks.py` — Tasks: search, analyze, qualify
-- [x] Migrar lógica de `_legacy/modules/lead_hunter/hunter.py` → skills
+> Objetivo: Implementar o canal Telegram para Alertas Críticos (Operador) e como canal alternativo de Prospecção/Comunicação.
 
-#### 5.3 — Closer Agent
-- [x] `apps/agent-runtime/src/agents/closer/agent.py` — CrewAI Agent
-- [x] `apps/agent-runtime/src/agents/closer/tasks.py` — Tasks: negotiate, propose, close
-- [x] Migrar lógica de `_legacy/modules/conv_agent/agent.py` → skills
+- [x] Adicionar variáveis `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID` ao `.env` e validadores de config.
+- [x] Criar infraestrutura `TelegramAdapter.ts` na API (implementando uma interface comum de notificação).
+- [x] Modificar `HITLExpirationWorker.ts` e serviços de notificação para despachar mensagens via Telegram.
+- [x] Atualizar Enum `MessageChannel` (ou equivalente) no BD para suportar `TELEGRAM` nas mensagens de Leads.
+- [x] Adicionar botões/comandos de aprovação inline no Telegram (opcional para o MVP, mas planejado).
 
-#### 5.4 — Builder Agent
-- [x] `apps/agent-runtime/src/agents/builder/agent.py` — CrewAI Agent
-- [x] `apps/agent-runtime/src/agents/builder/tasks.py` — Tasks: select_template, customize, deploy
-- [x] Migrar lógica de `_legacy/modules/site_builder/builder.py` → skills
+### Fase 19: Simplificação da Infraestrutura (Localhost-First)
 
-#### 5.5 — QA Agent
-- [x] `apps/agent-runtime/src/agents/qa/agent.py` — CrewAI Agent
-- [x] `apps/agent-runtime/src/agents/qa/tasks.py` — Tasks: lighthouse, owasp, validate
+> Objetivo: Remover a complexidade prematura de deploy em Vercel+Railway para um MVP single-user, priorizando a estabilidade local via Docker Compose.
 
-#### 5.6 — Skills compartilhadas
-- [x] `src/skills/web_search.py` — SearXNG search tool (com proteção SSRF)
-- [x] `src/skills/security_guard.py` — Input/output filter (migrar SecurityGuard)
-- [x] `src/skills/site_generator.py` — LLM-based site generation
-- [x] `src/skills/email_sender.py` — Brevo integration
-- [x] `src/skills/whatsapp_sender.py` — Evolution API integration
+- [x] Atualizar `ADR-005` confirmando a estratégia Localhost-First (ou VPS única com Coolify).
+- [x] Remover ou arquivar `railway.toml`.
+- [x] Ajustar `Dockerfile.api` para garantir que foca apenas na execução limpa via Docker Compose, removendo configs específicas do Cloud Run (se não usadas).
+- [x] Atualizar `deploy.yml` para refletir o novo modelo (ou desativar os placeholders se não houver deploy cloud imediato).
+- [x] Documentar o fluxo de "Subir tudo com 1 comando" (`docker-compose up`) de forma cristalina no `README.md`.
 
 ---
 
-### ═══════════════════════════════════════════════
-### FASE 6 — TESTES
-### ═══════════════════════════════════════════════
+## Arco 4: Settings Hub — Configuração via UI (Fases 20-21)
 
-#### 6.1 — Unit Tests (Vitest)
-- [x] Domain entities: Agent, Lead, Deal, Project, HITLApproval
-- [x] Value Objects: Pricing.total(), LLMConfiguration.validate(), QualificationScore
-- [x] Use case handlers com repositórios mockados
+> Este arco implementa o painel de configurações completo na UI, eliminando a necessidade do operador editar manualmente arquivos `.env`. _(Ref: `settings-hub-plan.md`)_
 
-#### 6.2 — Integration Tests (Supertest & Playwright E2E)
-- [x] Auth endpoints (anti-enumeration, timing attack, rate limiting)
-- [x] CRUD completo de agents (E2E Frontend concluído)
-- [x] HITL flow (create → approve/reject)
-- [x] File upload (E2E Frontend concluído)
-- [x] SSRF prevention (localhost, private IPs)
+### Fase 20: Settings Hub Core — Backend + Frontend
 
-#### 6.3 — Security Tests
-- [x] JWT: token expirado, algoritmo "none", signature inválida
-- [x] Upload: .exe renomeado para .jpg, arquivo >10MB
-- [x] Injection: SQLi, XSS nos inputs
-- [x] Rate limiting: brute force login
-- [x] IDOR: acessar recurso de outro operador
+> Objetivo: Criar toda a infraestrutura de persistência, criptografia e API para settings configuráveis via UI, e o frontend com tabs de configuração.
 
-#### 6.4 — Agent Runtime Tests (pytest)
-- [x] Migrar `_legacy/tests/test_security.py` → `apps/agent-runtime/tests/`
-- [x] Tests para cada skill (web_search SSRF block, security_guard injection detection)
+#### 20.1 — Schema e Migration
 
----
+- [x] Adicionar tabela `system_settings` ao `schema.ts` (uuid, operator_id FK, category, key, value, is_secret, is_active, metadata JSONB, timestamps).
+- [x] Criar migration Drizzle para `system_settings`.
+- [x] Adicionar constraint `UNIQUE(operator_id, key)` e index `(operator_id, category)`.
 
-### ═══════════════════════════════════════════════
-### FASE 7 — FRONTEND (Next.js Dashboard)
-### ═══════════════════════════════════════════════
+#### 20.2 — Criptografia de Secrets (AES-256-GCM)
 
-#### 7.1 — Auth Pages
-- [x] `/login` — Login form com shadcn/ui
-- [x] Auth context + interceptor JWT
+- [x] Criar `SettingsCrypto.ts` com `encrypt(plaintext)` e `decrypt(ciphertext)`.
+- [x] Usar AES-256-GCM com IV aleatório, derivando key de `SETTINGS_ENCRYPTION_KEY` (env).
+- [x] Adicionar `SETTINGS_ENCRYPTION_KEY` ao `config.ts` (Zod, obrigatório) e `.env.example`.
+- [x] Testes unitários para encrypt/decrypt roundtrip + tamper detection.
 
-#### 7.2 — Dashboard Layout
-- [x] Sidebar com nav: Agents, Leads, Deals, Projects, HITL, Settings
-- [x] TopBar com user info + notifications badge
-- [x] Dark mode toggle
+#### 20.3 — Repository de Settings
 
-#### 7.3 — Agents Module
-- [x] Lista de agents com status badges
-- [x] Form de criação/edição (LLM config, skills, rules)
-- [x] Editor de system prompt com token counter
+- [x] Criar `DrizzleSettingsRepository.ts` com: `upsert(operatorId, key, value, opts)`, `getByKey(operatorId, key)`, `listByCategory(operatorId, category)`, `listAll(operatorId)`, `delete(operatorId, key)`.
+- [x] Secrets são criptografados antes do INSERT e decriptografados no SELECT.
+- [x] Testes de integração (upsert idempotente, mascaramento de secrets no response).
 
-#### 7.4 — Leads/CRM Module
-- [x] Kanban view do pipeline (NEW → CONTACTED → QUALIFIED → CONVERTED)
-- [x] Lead detail com histórico de conversas (append-only)
+#### 20.4 — CompositeSecretsProvider (DB-first + ENV fallback)
 
-#### 7.5 — HITL Module
-- [x] Lista de aprovações pendentes com badge count
-- [x] Modal de aprovação: preview de ação + payload + approve/reject/edit buttons
+- [x] Criar `CompositeSecretsProvider.ts` implementando `SecretsProvider`.
+- [x] Fluxo: `try DB (decrypt) → fallback process.env → throw if required`.
+- [x] Cache in-memory com TTL de 60s para evitar queries repetidas.
+- [x] Testes unitários: DB hit, ENV fallback, cache invalidation.
 
-#### 7.6 — Projects Module
-- [x] Lista de projetos com status + Lighthouse scores
-- [x] Preview link do site gerado
+#### 20.5 — SettingsService (Application Layer)
 
----
+- [x] Criar `SettingsService.ts` com lógica de negócio: validação por categoria, mascaramento de secrets no response (`sk-****xxxx`), e merge com defaults.
+- [x] Método `testConnection(category, key)` — testa conectividade real com o serviço (LLM ping, Telegram getMe, SMTP verify, etc.).
+- [x] Testes unitários com mocks.
 
-### ═══════════════════════════════════════════════
-### FASE 8 — OBSERVABILIDADE E CI/CD
-### ═══════════════════════════════════════════════
+#### 20.6 — API Routes (`settings.routes.ts`)
 
-#### 8.1 — Observabilidade
-- [x] Pino logger com formato JSON estruturado (PRD §15)
-- [x] Prometheus metrics endpoint (`/metrics`)
-- [x] OpenTelemetry tracing (Jaeger exporter)
-- [x] Grafana dashboards: Pipeline, Agent Performance, HITL, Security
+- [x] `GET /api/v1/settings` — lista todas (secrets mascarados).
+- [x] `GET /api/v1/settings/:category` — filtra por categoria.
+- [x] `PUT /api/v1/settings` — upsert em lote (`{ settings: [{ key, value, category, is_secret }] }`).
+- [x] `DELETE /api/v1/settings/:key` — remove uma configuração.
+- [x] `POST /api/v1/settings/test-connection` — testa conectividade do serviço.
+- [x] Criar Zod schemas de validação em `settings.schemas.ts`.
+- [x] Todas as rotas protegidas por JWT (operador autenticado).
 
-#### 8.2 — CI/CD (GitHub Actions)
-- [x] `.github/workflows/ci.yml` — lint, typecheck, test, build, E2E
-- [x] `.github/workflows/security.yml` — Semgrep SAST, dependency audit, TruffleHog, license check
-- [x] `.github/workflows/deploy.yml` — staging/prod deploy com CI gate
-- [x] Coverage gates: 80% statements, 100% security tests
+#### 20.7 — Atualizar Container e Config
 
----
+- [x] Refatorar `container.ts`: trocar `EnvSecretsAdapter` por `CompositeSecretsProvider`.
+- [x] Registrar `SettingsService`, `DrizzleSettingsRepository`, `SettingsCrypto` no container.
+- [x] Registrar rotas de settings em `app.ts`.
+- [x] Verificar que LLM, WhatsApp, Email e Telegram adapters agora resolvem credenciais via `CompositeSecretsProvider`.
 
-## Verificação Final
+#### 20.8 — Ollama Docker Sidecar
 
-- [x] Todas as rotas do PRD §12 implementadas
-- [x] Schema SQL do PRD §13 refletido no Drizzle
-- [x] Testes de segurança do PRD §14 passando
-- [x] Métricas Prometheus do PRD §15 expostas
-- [x] Estrutura de diretórios alinhada com PRD §17
-- [x] Zero segredos no repositório (PRD §18)
-- [x] Turborepo monorepo com apps/api, apps/web, apps/agent-runtime, packages/shared-types
-- [x] Arquitetura Hexagonal + CQRS + DDD com domain/, application/, infrastructure/
-- [x] CrewAI + LiteLLM com 4 personas (Hunter, Closer, Builder, QA)
-- [x] HITL via hitl_approvals + BullMQ expiration worker
+- [x] Adicionar service `ollama` no `docker-compose.yml` (image: `ollama/ollama`, GPU passthrough opcional, volume persistente).
+- [x] Configurar health check (`/api/tags`).
+- [x] Atualizar `OllamaAdapter.ts` para apontar para `http://ollama:11434` via `OLLAMA_BASE_URL` env quando em Docker.
 
----
+#### 20.9 — OllamaProxyService
 
-## Decisões Confirmadas — Arco 2 (ADRs 2026-05-09)
+- [x] Criar `OllamaProxyService.ts` que proxya comandos para o Ollama container.
+- [x] Endpoints: `listModels()`, `pullModel(name)` (SSE streaming), `deleteModel(name)`, `getStatus()`.
+- [x] Adicionar rotas Ollama em `settings.routes.ts` (`/api/v1/settings/ollama/*`).
+- [x] Testes de integração (mock do Ollama API).
 
-> Baseado na auditoria documental e nos 12 ADRs em `docs/adr/`.
+#### 20.10 — Frontend: Settings Store (Zustand)
 
-- [x] **D10**: Manter CrewAI + LiteLLM como runtime — ADR-001 novo marcado como "Proposto" (não implementado). Port hexagonal `AgentRuntime` permite troca futura. *(ADR-001 novo)*
-- [x] **D11**: `LLMProvider` já implementado via 4 adapters + `CompositeLLMRouter`. *(ADR-002 novo)*
-- [x] **D12**: `PricingEngine` como Domain Service puro — sem deps externas, testável. *(ADR-007)*
-- [x] **D13**: HITL tiered: HITL-1 (bloqueante), HITL-2 (timeout configurável), HITL-FINANCEIRO (nunca expira). *(ADR-004 novo)*
-- [x] **D14**: Clickwrap com `contract_acceptances` imutável (RLS append-only). *(ADR-011)*
-- [x] **D15**: Builder usa catálogo de 5 templates — LLM customiza, nunca gera do zero. *(ADR-008)*
-- [x] **D16**: Loki adicionado ao stack de observabilidade para logs centralizados. *(ADR-012)*
+- [x] Criar `settings-store.ts` com: `fetchSettings()`, `updateSettings(batch)`, `testConnection(category, key)`.
+- [x] Criar `ollama-store.ts` com: `fetchModels()`, `pullModel()`, `deleteModel()`, `fetchStatus()`.
+- [x] Tipagens TypeScript alinhadas com o backend (`SettingCategory`, `SettingEntry`).
 
----
+#### 20.11 — Frontend: Tab AI Providers
 
-### ═══════════════════════════════════════════════
-### FASE 9 — ALINHAMENTO DOCUMENTAL
-### ═══════════════════════════════════════════════
+- [x] Reescrever `settings/page.tsx` com layout de tabs (Tabs component do shadcn/ui).
+- [x] Criar `AIProvidersTab.tsx`: cards para OpenAI, Anthropic, Google, Groq com inputs de API Key (mascarados), selector de modelo default, toggle de ativação, botão [Test].
+- [x] Criar `OllamaManager.tsx`: status do container, lista de modelos, botão [Pull], progress de download, botão [Remove].
+- [x] Seção "Agent ↔ Provider Assignment": tabela editável (Agent → Provider dropdown → Model dropdown).
 
-> **Objetivo**: Corrigir 15 discrepâncias da auditoria de 2026-05-09. Risco baixo — só markdown.
+#### 20.12 — Frontend: Tab Messaging
 
-#### 9.1 — Corrigir ADRs antigos (`docs/adr/`)
-- [x] `ADR-001-escolha-crewai.md` → adicionar `**Status:** Aceito | Implementado ✅`
-- [x] `ADR-002-escolha-fastify-vs-express.md` → adicionar `**Status:** Aceito | Implementado ✅`
-- [x] `ADR-003-decisao-cqrs.md` → adicionar `**Status:** Aceito | Implementado ✅ — expandido em docs/adr/ADR-003`
-- [x] `ADR-004-abordagem-hitl.md` → adicionar `**Status:** Aceito | Expandido em docs/adr/ADR-004`
-- [x] `ADR-005-estrategia-versionamento-prompts.md` → adicionar `**Status:** Aceito | Implementado ✅`
+- [x] Criar `MessagingTab.tsx`: cards para WhatsApp (Evolution API URL, API Key, Instance), Email (Brevo API Key, From Name, From Address), Telegram (Bot Token, Chat ID).
+- [x] Cada card com botão [Test Connection] e indicador de status (🟢/🔴).
 
-#### 9.2 — Corrigir status dos novos ADRs (`docs/adr/`)
-- [x] `ADR-001-runtime-orquestracao-agentes.md` → mudar Status `Aceito` → `Proposto` (Managed Agents não implementado)
-- [x] `ADR-002-estrategia-llm-por-agente.md` → mudar Status `Aceito` → `Aceito (parcial)` + nota: "4 adapters existentes vs. 2 descritos; sem ManagedAgentsLLMProvider"
-- [x] `ADR-007-modelo-negocio-precificacao.md` → adicionar: `**Implementação:** Planejada — Fase 10 do task.md`
-- [x] `ADR-008-estrategia-entrega-sites.md` → adicionar: `**Implementação:** Planejada — Fase 13 do task.md`
-- [x] `ADR-009-roadmap-expansao-agentes.md` → mudar Status `Aceito` → `Aceito (roadmap)` — implementação futura
-- [x] `ADR-011-estrategia-contratual-compliance.md` → adicionar: `**Implementação:** Planejada — Fase 12 do task.md`
+#### 20.13 — Frontend: Tab Integrations
 
-#### 9.3 — Remover/substituir README duplicado
-- [x] Substituir `docs/README.md` por índice geral da pasta `docs/` (não duplicar o ADR README)
-- [x] Conteúdo novo: visão geral de `docs/adr/`, `docs/` estrutura, links para PRD e docs de segurança
+- [x] Criar `IntegrationsTab.tsx`: cards para MCP Brasil (3 API keys), Webhooks (URL + Secret), ChromaDB (URL).
+- [x] Cada card com botão [Test Connection].
 
-#### 9.4 — Corrigir root `README.md`
-- [x] Atualizar nomes dos agentes: LeadHunter→Hunter, ConvAgent→Closer, SiteBuilder→Builder; mencionar QA
-- [x] Corrigir porta Grafana: `3005` → `3333`
-- [x] Atualizar "Claude 3 (Anthropic)" → "multi-provider LLM via LiteLLM (Anthropic, OpenAI, Google, Ollama)"
-- [x] Corrigir path de ADRs → `docs/adr/`
-- [x] Atualizar descrição da arquitetura para mencionar CrewAI + LiteLLM explicitamente
+#### 20.14 — Frontend: Tab System + Components Compartilhados
 
-#### 9.5 — Criar `docs/agents/prompts/qa-v1.md` (ausente)
-- [x] Criar prompt QA Agent: identity, mission, constraints OWASP/Lighthouse, checklist
-- [x] Atualizar `docs/agents/prompts/CHANGELOG.md` com entrada `qa-v1.md`
+- [x] Criar `SystemTab.tsx`: HITL Timeout config, Max Body Size, Export/Import settings (JSON).
+- [x] Criar `SecretInput.tsx`: input com toggle de visibilidade, auto-mascaramento, copy-to-clipboard.
+- [x] Responsividade mobile para todas as tabs.
 
-**Critério de conclusão**: `grep -r "LeadHunter\|ConvAgent\|SiteBuilder\|localhost:3005" README.md` retorna vazio. ADR-001 novo com Status "Proposto".
+#### 20.15 — Testes E2E e Validação
+
+- [ ] Teste E2E: operador configura API Key do OpenAI via UI → agente usa essa key para LLM call.
+- [ ] Teste E2E: operador puxa modelo Ollama via UI → modelo aparece na lista.
+- [ ] Teste E2E: operador configura Telegram Bot Token → envia mensagem de teste com sucesso.
+- [ ] Teste de segurança: API nunca retorna secret em plaintext (somente mascarado).
+- [ ] Teste de segurança: secrets são criptografados no DB (verificar diretamente no PostgreSQL).
 
 ---
 
-### ═══════════════════════════════════════════════
-### FASE 10 — PRICING ENGINE (Domain Service)
-### ═══════════════════════════════════════════════
+### Verificação Final do Arco 4
 
-> **Referência**: ADR-007 (`docs/adr/ADR-007-modelo-negocio-precificacao.md`)
-> **Objetivo**: Motor de precificação como Domain Service puro, testável unitariamente.
-
-#### 10.1 — Domain Layer: `apps/api/src/domain/pricing/`
-- [x] `Money.ts` — VO com `BRL(cents)`, `add()`, `multiply()`, `greaterThan()`, `format()`
-- [x] `ClientBriefing.ts` — VO: serviceType, pageCount, deliveryDays, addons, paymentMethod
-- [x] `OperationalCosts.ts` — VO: tokens, deploy, prospecting (em cents)
-- [x] `PricingResult.ts` — VO: basePrice, extras, paymentFee, total, requiresHITL, composition
-- [x] `PricingEngine.ts` — Domain Service:
-  - Preço base por serviceType + R$/página extra + urgência (multiplicadores) + addons + taxa pagamento
-  - Safety margin: `max(calculated, operationalCost * 1.3)`
-  - `requiresHITL = total > 500_000` (R$ 5.000 em cents)
-- [x] `PricingConfig.ts` — VO com tabela de preços configurável (overrides pelo operador)
-- [x] `PricingRepository.ts` — Port (buscar/salvar config do operador) (Pausado - será implementado futuramente se necessário)
-
-#### 10.2 — Schema: tabela `pricing_config`
-- [x] Migration `002_add_pricing_config.sql` com colunas: `operator_id`, `service_type`, `base_price_cents`, timestamps
-- [x] Atualizar `apps/api/src/infrastructure/db/schema.ts`
-- [x] `DrizzlePricingRepository.ts` (Pausado)
-
-#### 10.3 — Application Layer
-- [x] `GetQuoteHandler.ts` em `application/deal/` — usa PricingEngine + busca custos operacionais
-- [x] Rota `POST /api/v1/deals/quote` com `CreateQuoteSchema` (Zod) (Pendente integração Fastify - MVP usa Handlers diretos)
-
-#### 10.4 — Testes unitários (Vitest)
-- [x] `PricingEngine.test.ts` e `Money.test.ts` implementados.
-- [x] `PricingEngine.test.ts`: landing page simples, urgência 2d (1.5x), proposta >R$ 5.000 (requiresHITL=true), safety margin, PIX (0%) vs Cartão 12x (9.5%)
-- [x] `Money.test.ts`: operações aritméticas, cents, formatação BRL
-
-**Critério de conclusão**: `npm test --filter=apps/api` verde com ≥ 6 testes de PricingEngine.
+- [x] Settings page renderiza com 4 tabs funcionais?
+- [x] API Keys são criptografadas no banco e mascaradas no response?
+- [x] `CompositeSecretsProvider` faz fallback correto para ENV?
+- [x] Ollama está no docker-compose e gerenciável pela UI?
+- [x] Botões de [Test Connection] funcionam para todos os serviços?
+- [x] Operador NÃO precisa editar `.env` para configurar AI/Messaging/Integrations?
 
 ---
 
-### ═══════════════════════════════════════════════
-### FASE 11 — HITL v2: CLASSIFICAÇÃO TIERED
-### ═══════════════════════════════════════════════
+## Próximos Passos (Imediatos)
 
-> **Referência**: ADR-004 (`docs/adr/ADR-004-hitl-acoes-externas.md`)
-> **Objetivo**: Refinar HITL com níveis de urgência e timeouts diferenciados.
-
-#### 11.1 — Schema: nova coluna `hitl_level`
-- [x] Migration `003_hitl_tiered.sql`: `ALTER TABLE hitl_approvals ADD COLUMN hitl_level TEXT NOT NULL DEFAULT 'HITL-1'`
-- [x] Index: `idx_hitl_level ON hitl_approvals(hitl_level, status)`
-
-#### 11.2 — Domain: `apps/api/src/domain/hitl/`
-- [x] `HITLActionType.ts` — Enum: `FIRST_CONTACT | SEND_PROPOSAL | DEPLOY_SITE | FOLLOW_UP | PAID_CAMPAIGN`
-- [x] `HITLLevel.ts` — Enum: `HITL_1 | HITL_2 | HITL_FINANCEIRO`
-- [x] `HITLTimeouts.ts` — Constantes: `{ FIRST_CONTACT: 3600, SEND_PROPOSAL: 7200, DEPLOY_SITE: 14400, FOLLOW_UP: 1800, PAID_CAMPAIGN: null }`
-- [x] Atualizar `HITLApproval.ts` — adicionar `hitlLevel`, `actionType`; métodos `isFinancial()`, `canAutoExpire()`
-- [x] Domain events: `hitl.auto_expired` (HITL-2), `hitl.financial_escalated` (HITL-FINANCEIRO sem timeout)
-
-#### 11.3 — Worker: `HITLExpirationWorker.ts`
-- [x] HITL-FINANCEIRO: nunca auto-expira — apenas alerta via Telegram
-- [x] HITL-2 FOLLOW_UP: auto-aprova após timeout (configurável via `hitlTimeoutMinutes`)
-- [x] Metric: `agentepro_hitl_expired_total{level}`
-
-#### 11.4 — Python: `apps/agent-runtime/src/agents/callbacks.py`
-- [x] `HITLRequiredException` com `hitl_level: str` e `action_type: str`
-- [x] `HITL_ACTION_MAP`: dict tool_name → (HITLLevel, timeout_seconds)
-
-**Critério de conclusão**: HITL-FINANCEIRO nunca auto-expira em teste de integração. Metric `agentepro_hitl_expired_total` visível.
+1. **Testes E2E Settings Hub**: Iniciar containers com `docker compose -f infra/docker-compose.yml up -d`, abrir `/settings` e testar todas as abas.
+2. **Testes 20.15**: Implementar testes E2E Playwright para o fluxo de configurações.
+3. **Arco 5**: Iniciar a implementação do *Skill Registry* no `agent-runtime`.
 
 ---
 
-### ═══════════════════════════════════════════════
-### FASE 12 — COMPLIANCE & CLICKWRAP (ADR-011)
-### ═══════════════════════════════════════════════
+## Arco 5: Agentic Architecture Integration (Fases 22-25) - 🚧 EM ANDAMENTO
 
-> **Referência**: ADR-011 (`docs/adr/ADR-011-estrategia-contratual-compliance.md`)
-> **Objetivo**: Rastreio auditável de aceite contratual e blocklist de opt-out.
+> Este arco implementa os padrões arquiteturais extraídos da auditoria de projetos open-source e das diretrizes oficiais da Anthropic ("Building Effective Agents" e "Managed Agents"). Foco em transparência, simplicidade (redução de frameworks complexos) e ACI (Agent-Computer Interface) rigorosa. _(Ref: `docs/architectural_analysis_agents.md`)_
 
-#### 12.1 — Schema: `contract_acceptances` + `prospect_optouts`
-- [x] Migration `004_contract_acceptances.sql`:
-  - `contract_acceptances(id, deal_id, contract_hash, accepted_at, ip_hash, user_agent_hash, session_id, created_at)`
-  - RLS: apenas INSERT — sem UPDATE/DELETE
-- [x] Migration `005_prospect_optouts.sql`:
-  - `prospect_optouts(id, operator_id, phone_hash, email_hash, opted_out_at)`
-- [x] Atualizar `schema.ts` com ambas tabelas
-- [x] `DrizzleContractAcceptanceRepository.ts` (append-only: só `save()`)
-- [x] `DrizzleOptOutRepository.ts`
+### Fase 22: Auditoria e Planejamento Arquitetural - ✅ CONCLUÍDO
 
-#### 12.2 — Domain: `apps/api/src/domain/deal/`
-- [x] `ContractAcceptance.ts` — `recordAcceptance(ipRaw, userAgent, sessionId, contractText)`: hasha IP em SHA-256
-- [x] `ContractAcceptanceRepository.ts` — Port (apenas `save()`)
+- [x] Analisar projetos referência (`goose-skills`, `agency-agents`, `opensquad`, `paperclip`, `hermes-agent`, `claude-code`, `mcp-brasil`).
+- [x] Extrair padrões aplicáveis ao ecossistema DDD/Hexagonal do ProspectFlow.
+- [x] Documentar findings e action plan em `docs/architectural_analysis_agents.md`.
+- [x] Incorporar padrões "Anthropic Effective Agents" (Desacoplamento Cérebro/Mãos, State-Driven Loops, e Poka-yoke em tools).
 
-#### 12.3 — Domain: `apps/api/src/domain/lead/`
-- [x] `OptOut.ts` — `addToBlocklist(phoneRaw?, emailRaw?)`: hasha e persiste
-- [x] `OptOutRepository.ts` — Port: `isBlocked(phoneHash?, emailHash?)`, `save()`
+### Fase 23: Skill Registry & Metadata Contract - ✅ CONCLUÍDO
 
-#### 12.4 — Application Layer
-- [x] `GenerateProposalLinkHandler.ts` — gera URL única com JWT (exp 48h): `deal_id + contract_hash`
-- [x] `RecordContractAcceptanceHandler.ts` — valida JWT, registra aceite, libera link de pagamento
-- [x] `CheckOptOutHandler.ts` — verifica blocklist antes de disparar HITL-1 de primeiro contato
-- [x] Rotas: `GET /api/v1/deals/:id/proposal`, `POST /api/v1/deals/:id/accept`
+> Objetivo: Padronizar a criação e injeção de tools (capabilities, composites, playbooks) via um contrato estrito de metadados (`skill.meta.json`). Alinhado ao conceito de "Agent Skills" (Anthropic).
 
-**Critério de conclusão**: `SELECT * FROM contract_acceptances WHERE deal_id = ?` = 1 linha. `UPDATE contract_acceptances SET contract_hash = 'x'` retorna RLS error.
+- [x] Definir o schema base (`skill.meta.json`) para skills suportadas.
+- [x] Criar o `LocalFileSystemSkillRegistry` no `agent-runtime` para carregar dinamicamente as skills.
+- [x] Refatorar skills existentes (`cnpj_lookup`, `cnpj_enricher`) para adotar o novo contrato.
 
----
+### Fase 24: Pivot Arquitetural & HITL Orchestration (O "Desbloqueio")
 
-### ═══════════════════════════════════════════════
-### FASE 13 — BUILDER: CATÁLOGO DE TEMPLATES
-### ═══════════════════════════════════════════════
+> Objetivo: Substituir a complexidade opaca do CrewAI por um loop de execução focado em Estado (LangGraph ou LLM Tool Calling puro) para viabilizar "Checkpoints" reais (suspensão e reidratação de estado) exigidos pelo HITL via Telegram. _Baseado no padrão "Managed Agents: wake(sessionId)"._
 
-> **Referência**: ADR-008 (`docs/adr/ADR-008-estrategia-entrega-sites.md`)
-> **Objetivo**: Templates curados como fundação do Builder — qualidade consistente, Lighthouse ≥ 85.
+- [ ] **Desidratação de Framework:** Remover a dependência pesada do `CrewAI` no `base.py`. Transicionar para um *Event-Driven Loop* (LangGraph) ou orquestrador simples focado em Tool Calling para garantir total transparência ("showing planning steps").
+- [ ] Implementar a capacidade de Suspensão de Estado Real: quando o agente chamar uma tool crítica, o estado salva no Redis e o worker hiberna (HITL).
+- [ ] Conectar os Checkpoints de estado aos eventos do Telegram Adapter (retomando o estado via `wake(session_id)` após o clique).
+- [ ] Migrar prompts dos agentes (Hunter, Closer, Builder) para o formato Markdown extensivo (`docs/agents/personas/`), tratando "Prompts as Code".
 
-#### 13.1 — Estrutura de templates (`packages/templates/`)
-- [x] `T001-landing-page/` — 1 página, CTA, hero (Next.js 15 + Tailwind 4 + Framer Motion)
-- [x] `T002-institucional-5p/` — 5 páginas: home, sobre, serviços, contato, blog
-- [x] `T003-blog-portfolio/` — Blog MDX + portfólio de projetos
-- [x] `T004-ecommerce-basico/` — Catálogo + carrinho (sem pagamento no MVP)
-- [x] `T005-portfolio-criativo/` — Framer Motion pesado, scroll-triggered reveals
-- [x] Cada template: `metadata.json` (serviceType, pageCount, animationLevel, lighthouseBaseline)
-- [x] `next.config.ts` com security headers (CSP, HSTS, X-Frame-Options) em todos
-- [x] `prefers-reduced-motion` respeitado em todas animações
+### Fase 25: MCP Ecosystem & Agent-Computer Interface (ACI)
 
-#### 13.2 — DeploymentRouter (`apps/api/src/infrastructure/deploy/`)
-- [x] `DeploymentRouter.ts` — interface de domínio
-- [x] `VercelAdapter.ts` — Vercel API: deploy + getRemainingQuota()
-- [x] `NetlifyAdapter.ts` — Netlify API: fallback quando quota Vercel < threshold
-- [x] Lógica: `if (vercelQuota < QUOTA_THRESHOLD) → netlify; else → vercel`
+> Objetivo: Configurar o acesso aos dados abertos via MCP Brasil e integrar ao Hunter. Foco intenso em "Prompt Engineering your Tools" (Poka-yoke e documentação estrita de *tools*) conforme a Anthropic exige.
 
-#### 13.3 — RAG: seeding de `builder_knowledge` (ChromaDB)
-- [x] Script `apps/agent-runtime/scripts/seed_builder_rag.py`:
-  - [x] Indexar `metadata.json` de cada template
-  - [x] Criar e indexar `docs/builder/owasp_top10_summary.md`
-  - [x] Criar e indexar `docs/builder/framer_motion_patterns.md`
-  - [x] Criar e indexar `docs/builder/wcag21_checklist.md`
-- [x] Atualizar `site_generator.py` — consultar ChromaDB antes de gerar; usar template selecionado
-
-#### 13.4 — Testes
-- [x] `DeploymentRouter.test.ts` — fallback Netlify quando vercelQuota < threshold
-- [x] `seed_builder_rag.test.py` — query "landing page restaurante" → T001
-
-**Critério de conclusão**: `python scripts/seed_builder_rag.py` sem erros. `T001-landing-page/metadata.json` existe. DeploymentRouter.test verde.
-
----
-
-### ═══════════════════════════════════════════════
-### FASE 14 — OBSERVABILIDADE v2 (Loki + Métricas Ausentes)
-### ═══════════════════════════════════════════════
-
-> **Referência**: ADR-012 (`docs/adr/ADR-012-observabilidade-escalabilidade.md`)
-> **Objetivo**: Completar stack com Loki para logs centralizados e métricas de segurança.
-
-#### 14.1 — Docker Compose: Loki + Promtail
-- [x] `infra/docker-compose.yml` — adicionar serviços `loki` (grafana/loki:latest, porta 3100) e `promtail`
-- [x] `infra/loki/loki-config.yml` — retention 30d, filesystem storage
-- [x] `infra/promtail/config.yml` — scrape containers Docker via Docker socket
-
-#### 14.2 — Grafana: datasource Loki
-- [x] `infra/grafana/provisioning/datasources/loki.yml`
-- [x] Painel de logs estruturados no dashboard Pipeline (nível error/warn em destaque)
-
-#### 14.3 — Métricas Prometheus ausentes
-- [x] `agentepro_agent_tokens_consumed_total{persona, provider}` — integrar em BullMQ agent worker
-- [x] `agentepro_hitl_pending{operator_id}` — Gauge, atualizar pós approve/reject
-- [x] `agentepro_auth_failures_total{reason}` — integrar em `LoginHandler`
-- [x] `agentepro_ssrf_blocked_total` — integrar em middleware SSRF
-- [x] `agentepro_invalid_upload_total{reason}` — integrar em upload handler
-- [x] Python: `agentepro_agent_sessions_total{persona, status}` e `agentepro_agent_session_duration_seconds{persona}`
-
-#### 14.4 — Alertas Grafana → Telegram
-- [x] `infra/grafana/provisioning/alerting/alerts.yml`:
-  - [x] `HITLBacklog`: hitl_pending > 10 → warning
-  - [x] `AgentBudgetLow`: < 10% budget → warning
-  - [x] `AgentHighErrorRate`: > 0.2/min → critical
-  - [x] `SecurityBruteForce`: > 10 falhas/min → critical
-
-**Critério de conclusão**: `docker compose up loki promtail` sem erros. Grafana Loki datasource verde. `rate(agentepro_auth_failures_total[1m])` visível no Prometheus.
-
----
-
-### ═══════════════════════════════════════════════
-### FASE 15 — QA AGENT: PROMPT + SKILLS AUDIT
-### ═══════════════════════════════════════════════
-
-> **Objetivo**: Completar prompts versionados (qa-v1 faltante) e auditar skills do agent-runtime.
-
-#### 15.1 — Prompt QA Agent (`docs/agents/prompts/`)
-- [x] Criar `docs/agents/prompts/qa-v1.md`:
-  - Identity: "Auditor de Qualidade e Segurança"
-  - Mission: OWASP Top 10, Lighthouse ≥ 85 perf / 100 a11y / ≥ 90 SEO, W3C válido, security headers presentes
-  - Constraints: Nunca deploy sem aprovação. Escalar HITL se score < threshold após 3 tentativas.
-  - Checklist estruturado (CSP, HSTS, X-Frame-Options, prefers-reduced-motion)
-- [x] Atualizar `docs/agents/prompts/CHANGELOG.md` — nova entrada: `v1.3.0 — qa-v1.md criado`
-
-#### 15.2 — Auditoria das skills (`apps/agent-runtime/src/skills/`)
-- [x] `site_generator.py` — integrar ChromaDB para seleção de template via RAG (Fase 13.3)
-- [x] `security_guard.py` — adicionar verificação de opt-out antes de `whatsapp_sender` (Fase 12.3)
-- [x] Criar `src/skills/contract_notifier.py` — gera e envia link de proposta+clickwrap via WhatsApp/email
-
-#### 15.3 — Testes pytest adicionais
-- [x] `tests/test_qa_agent.py` — QA rejeita HTML sem CSP header; score Lighthouse < 80 → loop de correção
-- [x] `tests/test_contract_notifier.py` — geração de link com JWT válido
-- [x] `tests/test_opt_out.py` — lead em blocklist lança exceção antes de HITL-1
-
-**Critério de conclusão**: `python -m pytest apps/agent-runtime/tests/ -v` verde. `docs/agents/prompts/qa-v1.md` existe com ≥ 50 linhas.
-
----
-
-## Verificação Final — Arco 2 (Fases 9–15)
-
-- [ ] `grep -r "LeadHunter\|ConvAgent\|SiteBuilder" README.md` retorna vazio
-- [ ] Porta 3005 não aparece em nenhum arquivo fora de `_legacy/`
-- [ ] `docs/README.md` tem conteúdo diferente de `docs/adr/README.md`
-- [ ] ADR-001 (novo) com Status "Proposto"
-- [ ] `npm test --filter=apps/api` inclui ≥ 6 testes de PricingEngine passando
-- [ ] HITL-FINANCEIRO nunca auto-expira (teste de integração)
-- [ ] `contract_acceptances` com RLS bloqueando UPDATE/DELETE
-- [ ] ChromaDB query "landing page restaurante" retorna template T001
-- [ ] Prometheus: `agentepro_hitl_pending` e `agentepro_auth_failures_total` expostas
-- [ ] Loki datasource verde no Grafana
-- [ ] `docs/agents/prompts/qa-v1.md` criado e versionado no CHANGELOG
-
+- [ ] Adicionar `mcp-brasil` ao `mcp_config.json` e garantir inicialização automática.
+- [ ] Criar ferramentas wrapper no `agent-runtime` para as queries do MCP Brasil (Receita, Portal da Transparência) aplicando as melhores práticas de **ACI**: *docstrings* perfeitas, limites de contexto, sumários de dados longos (Context Trimming) e tratamento estrito de exceções.
+- [ ] Atualizar o prompt (Markdown) do Hunter Agent para utilizar essa pipeline nativamente durante as pesquisas B2B.

@@ -30,10 +30,10 @@ endpoint management to help developers build AI apps faster.
         --password=my-password --network=my-vpc
     ```
 
-    *Note: For production, we recommend using IAM database authentication
+    _Note: For production, we recommend using IAM database authentication
     instead of passwords. If passwords must be used, use secure secret
     management (e.g., Secret Manager) instead of passing passwords in
-    cleartext.*
+    cleartext._
 
 3.  **Create a Primary Instance:**
 
@@ -44,23 +44,23 @@ endpoint management to help developers build AI apps faster.
 
 ## Reference Directory
 
--   [Core Concepts](references/core-concepts.md): Architecture, disaggregated
-    storage, and performance features.
+- [Core Concepts](references/core-concepts.md): Architecture, disaggregated
+  storage, and performance features.
 
--   [CLI Usage](references/cli-usage.md): Essential `gcloud alloydb` commands
-    for cluster and instance management.
+- [CLI Usage](references/cli-usage.md): Essential `gcloud alloydb` commands
+  for cluster and instance management.
 
--   [Client Libraries & Connectors](references/client-library-usage.md):
-    Connecting to AlloyDB using Python, Java, Node.js, and Go.
+- [Client Libraries & Connectors](references/client-library-usage.md):
+  Connecting to AlloyDB using Python, Java, Node.js, and Go.
 
--   [MCP Usage](references/mcp-usage.md): Using the AlloyDB remote MCP server
-    and Gemini CLI extension.
+- [MCP Usage](references/mcp-usage.md): Using the AlloyDB remote MCP server
+  and Gemini CLI extension.
 
--   [Infrastructure as Code](references/iac-usage.md): Terraform
-    configuration and deployment examples.
+- [Infrastructure as Code](references/iac-usage.md): Terraform
+  configuration and deployment examples.
 
--   [IAM & Security](references/iam-security.md): Predefined roles, service
-    agents, and database authentication.
+- [IAM & Security](references/iam-security.md): Predefined roles, service
+  agents, and database authentication.
 
-*If you need product information not found in these references, use the
-    Developer Knowledge MCP server `search_documents` tool.*
+_If you need product information not found in these references, use the
+Developer Knowledge MCP server `search_documents` tool._

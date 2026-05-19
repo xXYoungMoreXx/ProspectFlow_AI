@@ -1,7 +1,11 @@
-import { Money } from './Money.js';
+import { Money } from "./Money.js";
 
-export type ServiceType = 'LANDING_PAGE' | 'SITE_INSTITUCIONAL' | 'ECOMMERCE' | 'PORTFOLIO';
-export type PaymentMethod = 'PIX' | 'CREDIT_CARD_1X' | 'CREDIT_CARD_12X';
+export type ServiceType =
+  | "LANDING_PAGE"
+  | "SITE_INSTITUCIONAL"
+  | "ECOMMERCE"
+  | "PORTFOLIO";
+export type PaymentMethod = "PIX" | "CREDIT_CARD_1X" | "CREDIT_CARD_12X";
 
 export interface Addon {
   name: string;
@@ -18,10 +22,10 @@ export class ClientBriefing {
     public readonly pageCount: number,
     public readonly deliveryDays: number,
     public readonly paymentMethod: PaymentMethod,
-    public readonly addons: Addon[] = []
+    public readonly addons: Addon[] = [],
   ) {
-    if (pageCount < 1) throw new Error('Page count must be at least 1');
-    if (deliveryDays < 1) throw new Error('Delivery days must be at least 1');
+    if (pageCount < 1) throw new Error("Page count must be at least 1");
+    if (deliveryDays < 1) throw new Error("Delivery days must be at least 1");
   }
 }
 
@@ -33,7 +37,7 @@ export class OperationalCosts {
   constructor(
     public readonly tokensCost: Money,
     public readonly deployCost: Money,
-    public readonly prospectingCost: Money
+    public readonly prospectingCost: Money,
   ) {}
 
   public getTotalCost(): Money {
@@ -52,6 +56,6 @@ export class PricingResult {
     public readonly paymentFee: Money,
     public readonly total: Money,
     public readonly requiresHITL: boolean,
-    public readonly safetyMarginApplied: boolean
+    public readonly safetyMarginApplied: boolean,
   ) {}
 }

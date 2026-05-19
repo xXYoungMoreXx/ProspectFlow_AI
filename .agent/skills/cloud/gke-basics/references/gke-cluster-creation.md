@@ -17,14 +17,14 @@ This reference guides creating GKE clusters. The **golden path Autopilot** confi
 
 ## Mode Selection
 
-| Criteria | Autopilot (Golden Path) | Standard |
-|----------|------------------------|----------|
-| Node management | Google-managed | Self-managed |
-| Pricing | Pay per pod resource request | Pay per node (VM) |
-| Node customization | Via ComputeClasses | Full control |
-| DaemonSets | Allowed (with restrictions) | Full control |
-| GPU/TPU | Supported via ComputeClasses | Supported via node pools |
-| Best for | Most production workloads | Kernel tuning, custom OS, privileged workloads |
+| Criteria           | Autopilot (Golden Path)      | Standard                                       |
+| ------------------ | ---------------------------- | ---------------------------------------------- |
+| Node management    | Google-managed               | Self-managed                                   |
+| Pricing            | Pay per pod resource request | Pay per node (VM)                              |
+| Node customization | Via ComputeClasses           | Full control                                   |
+| DaemonSets         | Allowed (with restrictions)  | Full control                                   |
+| GPU/TPU            | Supported via ComputeClasses | Supported via node pools                       |
+| Best for           | Most production workloads    | Kernel tuning, custom OS, privileged workloads |
 
 > **Rule**: Default to Autopilot unless the customer has a specific requirement that Autopilot cannot satisfy.
 

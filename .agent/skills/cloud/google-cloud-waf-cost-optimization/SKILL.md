@@ -18,30 +18,30 @@ expenditure (OpEx) management and a culture of accountability (FinOps).
 The recommendations in the cost optimization pillar of the Well-Architected
 Framework are aligned with the following core principles:
 
--  **Align cloud spending with business value**: Ensure that your cloud
-   resources deliver measurable business value by aligning IT spending with
-   business objectives. Prioritize investments that directly contribute to
-   revenue, customer satisfaction, or operational efficiency. Grounding
-   document:
-   https://docs.cloud.google.com/architecture/framework/cost-optimization/align-cloud-spending-business-value
+- **Align cloud spending with business value**: Ensure that your cloud
+  resources deliver measurable business value by aligning IT spending with
+  business objectives. Prioritize investments that directly contribute to
+  revenue, customer satisfaction, or operational efficiency. Grounding
+  document:
+  https://docs.cloud.google.com/architecture/framework/cost-optimization/align-cloud-spending-business-value
 
--  **Foster a culture of cost awareness**: Ensure that people across your
-   organization consider the cost impact of their decisions and activities.
-   Provide teams with the visibility and information they need to make informed,
-   cost-conscious choices. Grounding document:
-   https://docs.cloud.google.com/architecture/framework/cost-optimization/foster-culture-cost-awareness
+- **Foster a culture of cost awareness**: Ensure that people across your
+  organization consider the cost impact of their decisions and activities.
+  Provide teams with the visibility and information they need to make informed,
+  cost-conscious choices. Grounding document:
+  https://docs.cloud.google.com/architecture/framework/cost-optimization/foster-culture-cost-awareness
 
--  **Optimize resource usage**: Provision only the resources that you need and
-   pay only for what you consume. Select the most cost-effective resource types,
-   sizes, and locations that meet your technical and business requirements.
-   Grounding document:
-   https://docs.cloud.google.com/architecture/framework/cost-optimization/optimize-resource-usage
+- **Optimize resource usage**: Provision only the resources that you need and
+  pay only for what you consume. Select the most cost-effective resource types,
+  sizes, and locations that meet your technical and business requirements.
+  Grounding document:
+  https://docs.cloud.google.com/architecture/framework/cost-optimization/optimize-resource-usage
 
--  **Optimize continuously**: Continuously monitor your cloud resource usage and
-   costs, and proactively make adjustments as needed to optimize your spending.
-   This iterative approach helps identify and address inefficiencies before they
-   become significant. Grounding document:
-   https://docs.cloud.google.com/architecture/framework/cost-optimization/optimize-continuously
+- **Optimize continuously**: Continuously monitor your cloud resource usage and
+  costs, and proactively make adjustments as needed to optimize your spending.
+  This iterative approach helps identify and address inefficiencies before they
+  become significant. Grounding document:
+  https://docs.cloud.google.com/architecture/framework/cost-optimization/optimize-continuously
 
 ## Relevant Google Cloud products
 
@@ -49,7 +49,6 @@ The following are _examples_ of Google Cloud products and features that are
 relevant to cost optimization:
 
 - **Visibility and monitoring**:
-
   - **Cloud Billing reports**: Native dashboards for visualizing spending and
     trends.
   - **BigQuery billing export**: Enables granular, custom analysis of billing
@@ -60,7 +59,6 @@ relevant to cost optimization:
     reaches predefined thresholds.
 
 - **Automation and optimization tools**:
-
   - **Recommender / Active Assist**: Automatically identifies idle resources,
     rightsizing opportunities, and unused commitments.
   - **Cloud Hub Optimization**: Integrates billing and resource utilization data
@@ -72,7 +70,6 @@ relevant to cost optimization:
     cost spikes.
 
 - **Efficient infrastructure**:
-
   - **Managed services and serverless services**: Services like Cloud Run, Cloud
     Run functions, and GKE Autopilot reduce operational overhead and pay-per-use
     scaling.
@@ -82,7 +79,6 @@ relevant to cost optimization:
     storage classes (Nearline, Coldline, Archive) based on age or access.
 
 - **Organization and governance**:
-
   - **Resource Manager**: Logical structure (Organizations, Folders, Projects)
     for cost attribution.
   - **Labels**: Metadata tags for categorizing and filtering costs by

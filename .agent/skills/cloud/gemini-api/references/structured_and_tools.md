@@ -1,6 +1,7 @@
 # Structured Output and Tools
 
 ## Structured Output (JSON Schema)
+
 Enforce a specific JSON schema using standard Python type hints or Pydantic models.
 
 ```python
@@ -28,6 +29,7 @@ print(response.parsed)
 ```
 
 ## Function Calling
+
 Let the model output function calls that you can execute.
 
 ```python
@@ -60,6 +62,7 @@ else:
 ```
 
 ## Search Grounding
+
 Ground the model's responses in Google Search or your own enterprise data with Agent Search (formerly known as Vertex AI Search).
 
 ```python
@@ -87,6 +90,7 @@ print(f"Search Pages: {', '.join([site.web.title for site in response.candidates
 ```
 
 ## Code Execution
+
 Allow the model to run Python code to calculate answers precisely.
 
 ```python
@@ -107,6 +111,7 @@ print(response.code_execution_result)
 ```
 
 ## Url Context
+
 You can use the URL context tool to provide Gemini with URLs as additional context for your prompt. The model can then retrieve content from the URLs and use that content to inform and shape its response.
 
 ```python

@@ -13,12 +13,12 @@ This reference covers enterprise multi-tenancy patterns on GKE, including namesp
 
 ## Multi-Tenancy Models
 
-| Model | Isolation | Complexity | Cost |
-|-------|-----------|------------|------|
-| **Namespace-per-team** | Soft (RBAC + Network Policy) | Low | Lowest (shared cluster) |
-| **Namespace-per-environment** | Soft | Low | Low |
-| **Node pool-per-team** | Medium (dedicated compute) | Medium | Medium |
-| **Cluster-per-team** | Hard (full isolation) | High | Highest |
+| Model                         | Isolation                    | Complexity | Cost                    |
+| ----------------------------- | ---------------------------- | ---------- | ----------------------- |
+| **Namespace-per-team**        | Soft (RBAC + Network Policy) | Low        | Lowest (shared cluster) |
+| **Namespace-per-environment** | Soft                         | Low        | Low                     |
+| **Node pool-per-team**        | Medium (dedicated compute)   | Medium     | Medium                  |
+| **Cluster-per-team**          | Hard (full isolation)        | High       | Highest                 |
 
 > **Golden path recommendation**: Start with namespace-per-team for cost efficiency. Escalate to stronger isolation only when compliance requires it.
 
@@ -45,9 +45,9 @@ metadata:
   name: team-a-developer
   namespace: team-a
 rules:
-- apiGroups: ["", "apps", "batch"]
-  resources: ["pods", "deployments", "services", "configmaps", "jobs"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["", "apps", "batch"]
+    resources: ["pods", "deployments", "services", "configmaps", "jobs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -55,9 +55,9 @@ metadata:
   name: team-a-developers
   namespace: team-a
 subjects:
-- kind: Group
-  name: "team-a@example.com"  # Google Group
-  apiGroup: rbac.authorization.k8s.io
+  - kind: Group
+    name: "team-a@example.com" # Google Group
+    apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
   name: team-a-developer
@@ -99,16 +99,16 @@ metadata:
   namespace: team-a
 spec:
   limits:
-  - type: Container
-    default:
-      cpu: "500m"
-      memory: "512Mi"
-    defaultRequest:
-      cpu: "100m"
-      memory: "128Mi"
-    max:
-      cpu: "4"
-      memory: "8Gi"
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
 ```
 
 ### 5. Network Isolation
@@ -125,19 +125,19 @@ metadata:
 spec:
   podSelector: {}
   ingress:
-  - from:
-    - podSelector: {}
+    - from:
+        - podSelector: {}
   egress:
-  - to:
-    - podSelector: {}
-  - to:  # Allow DNS
-    - namespaceSelector: {}
-      podSelector:
-        matchLabels:
-          k8s-app: kube-dns
-    ports:
-    - protocol: UDP
-      port: 53
+    - to:
+        - podSelector: {}
+    - to: # Allow DNS
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
 ```
 
 ## Cost Allocation
@@ -160,4 +160,3 @@ gcloud container clusters update <CLUSTER_NAME> --region <REGION> \
 ```
 
 View in Cloud Billing > GKE Cost Allocation.
-

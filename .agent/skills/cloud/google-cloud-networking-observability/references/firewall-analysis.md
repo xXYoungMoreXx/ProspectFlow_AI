@@ -9,14 +9,14 @@ You should use [Cloud Logging MCP](mcp-usage.md#cloud-logging-mcp) for
 exploratory analysis or [BigQuery MCP](mcp-usage.md#bigquery-mcp) for
 high-volume trends. Fallback to the CLI if the MCP tools are not available.
 
--   **Exploratory Analysis**: Typically involves looking at individual log
-    entries or a small set of logs to understand specific events, debug issues,
-    or investigate anomalies. This often requires filtering and examining the
-    full details of log records.
--   **High-Volume Trends**: Focuses on aggregating large datasets of logs over
-    time to identify patterns, measure traffic volumes, analyze latency
-    distributions, or find "top talkers." This usually involves SQL queries to
-    summarize data rather than inspecting individual logs.
+- **Exploratory Analysis**: Typically involves looking at individual log
+  entries or a small set of logs to understand specific events, debug issues,
+  or investigate anomalies. This often requires filtering and examining the
+  full details of log records.
+- **High-Volume Trends**: Focuses on aggregating large datasets of logs over
+  time to identify patterns, measure traffic volumes, analyze latency
+  distributions, or find "top talkers." This usually involves SQL queries to
+  summarize data rather than inspecting individual logs.
 
 ### 1. View Logs ([Cloud Logging MCP](mcp-usage.md#cloud-logging-mcp))
 
@@ -84,13 +84,13 @@ LIMIT 10
 
 ## Key Fields
 
--   `jsonPayload.rule_details.action`: `ALLOW` or `DENY`.
--   `jsonPayload.rule_details.reference`: The firewall rule name (for example,
-    `default-deny-all`).
--   `jsonPayload.connection.src_ip` / `dest_ip`: The source and destination of
-    the connection.
+- `jsonPayload.rule_details.action`: `ALLOW` or `DENY`.
+- `jsonPayload.rule_details.reference`: The firewall rule name (for example,
+  `default-deny-all`).
+- `jsonPayload.connection.src_ip` / `dest_ip`: The source and destination of
+  the connection.
 
 ## Common Use Cases
 
--   **Identify Blocks**: Find which `DENY` rule is causing connection failures.
--   **Security Audit**: Detect unexpected traffic patterns.
+- **Identify Blocks**: Find which `DENY` rule is causing connection failures.
+- **Security Audit**: Detect unexpected traffic patterns.

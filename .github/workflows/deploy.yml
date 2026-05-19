@@ -47,68 +47,31 @@ jobs:
             echo "environment=staging" >> $GITHUB_OUTPUT
           fi
 
-  # ── Deploy API ──────────────────────────────────────────────────────
-  deploy-api:
-    name: Deploy API (${{ needs.setup.outputs.environment }})
+  # ── Deploy Process (MVP) ────────────────────────────────────────────
+  deploy-mvp:
+    name: Deploy to Local/Self-Hosted (${{ needs.setup.outputs.environment }})
     runs-on: ubuntu-latest
     needs: setup
     environment: ${{ needs.setup.outputs.environment }}
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - run: npm ci
-      - run: npx turbo build --filter=@agentepro/api
-
-      - name: Deploy API to Cloud Run
+      - name: Deploy Instructions
         run: |
-          echo "🚀 Deploying API to ${{ needs.setup.outputs.environment }}"
-          echo "TODO: gcloud run deploy agentepro-api-${{ needs.setup.outputs.environment }} ..."
-        # Placeholder — actual deployment depends on infra setup
-
-  # ── Deploy Web ──────────────────────────────────────────────────────
-  deploy-web:
-    name: Deploy Web (${{ needs.setup.outputs.environment }})
-    runs-on: ubuntu-latest
-    needs: setup
-    environment: ${{ needs.setup.outputs.environment }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - run: npm ci
-      - run: npx turbo build --filter=@agentepro/web
-
-      - name: Deploy Web to Vercel
-        run: |
-          echo "🚀 Deploying Web to ${{ needs.setup.outputs.environment }}"
-          echo "TODO: vercel deploy --prod ..."
-        # Placeholder — wire Vercel CLI or GitHub integration
+          echo "🚀 Deploying to ${{ needs.setup.outputs.environment }} via Docker Compose"
+          echo "For the MVP phase, deployment is performed using a localhost-first strategy."
+          echo "Please run 'docker-compose -f infra/docker-compose.yml up -d' on the target environment."
 
   # ── Post-Deploy Verification ────────────────────────────────────────
   verify:
     name: Post-Deploy Smoke Test
     runs-on: ubuntu-latest
-    needs: [deploy-api, deploy-web, setup]
+    needs: [deploy-mvp, setup]
     environment: ${{ needs.setup.outputs.environment }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Health Check
-        run: |
-          ENV="${{ needs.setup.outputs.environment }}"
-          echo "Running health check on $ENV environment..."
-          # curl -sf https://api-${ENV}.agentepro.app/api/v1/health || exit 1
-          echo "✅ Health check passed (placeholder)"
-
       - name: Notify Success
         if: success()
-        run: echo "🎉 Deployment to ${{ needs.setup.outputs.environment }} completed successfully!"
+        run: echo "🎉 Simulated deployment pipeline for ${{ needs.setup.outputs.environment }} completed successfully!"
+

@@ -61,9 +61,9 @@ authenticated.
 - **Usage Example:**
 
   ```typescript
-  import {BigQuery} from '@google-cloud/bigquery';
+  import { BigQuery } from "@google-cloud/bigquery";
   const bigquery = new BigQuery();
-  const [rows] = await bigquery.query('SELECT * FROM dataset.table');
+  const [rows] = await bigquery.query("SELECT * FROM dataset.table");
   ```
 
 - [Node.js Reference](https://googleapis.dev/nodejs/bigquery/latest/index.html)

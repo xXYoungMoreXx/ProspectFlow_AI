@@ -36,9 +36,9 @@ Before proceeding, the agent should clarify the user's current status:
 
 ## Prerequisites
 
--   A [Google Account](https://accounts.google.com/) (e.g., @gmail.com).
--   A valid payment method (credit card or bank account) for billing
-    verification (even for the free trial).
+- A [Google Account](https://accounts.google.com/) (e.g., @gmail.com).
+- A valid payment method (credit card or bank account) for billing
+  verification (even for the free trial).
 
 ## Steps
 
@@ -103,9 +103,9 @@ Linux VM (e.g., `e2-micro` which is part of the Always Free tier in certain
 regions). - **[Cloud Storage](https://docs.cloud.google.com/storage/docs):**
 Create a bucket to store files.
 
-Example (Cloud Run): 
+Example (Cloud Run):
 
-```bash 
+```bash
     gcloud run deploy hello-world \
     --image=gcr.io/cloudrun/hello \ --platform=managed \ --region=us-central1 \
     --allow-unauthenticated
@@ -116,23 +116,23 @@ Congrats - you just deployed your first Google Cloud resource!
 
 ### 7. Next Steps
 
--   Explore the [Google Cloud Free Program](https://cloud.google.com/free) to
-    see what else you can do with your free credit.
--   Read the [Google Cloud Overview](https://cloud.google.com/docs/overview)
--   See the [full list of 150+ Google Cloud products](https://cloud.google.com/products)
--   Explore the [Enterprise Setup Guide](https://docs.cloud.google.com/docs/enterprise/cloud-setup)
-    for information on setting up Google Cloud for a team or organization.
--   Compare [AWS and Azure products to Google Cloud](https://docs.cloud.google.com/docs/get-started/aws-azure-gcp-service-comparison)
+- Explore the [Google Cloud Free Program](https://cloud.google.com/free) to
+  see what else you can do with your free credit.
+- Read the [Google Cloud Overview](https://cloud.google.com/docs/overview)
+- See the [full list of 150+ Google Cloud products](https://cloud.google.com/products)
+- Explore the [Enterprise Setup Guide](https://docs.cloud.google.com/docs/enterprise/cloud-setup)
+  for information on setting up Google Cloud for a team or organization.
+- Compare [AWS and Azure products to Google Cloud](https://docs.cloud.google.com/docs/get-started/aws-azure-gcp-service-comparison)
 
 ## Validation Logic
 
 Use this logic to determine if the user has successfully completed the Google
 Cloud onboarding process:
 
--   **Project Created:** Does the user have a Project ID?
--   **Billing Linked:** Is the project associated with a billing account (check
-    via `gcloud beta billing projects describe PROJECT_ID`)?
--   **CLI Authenticated:** Does `gcloud config list` show the correct account
-    and project?
--   **Resource Verified:** Can the user access the URL or IP of the deployed
-    resource?
+- **Project Created:** Does the user have a Project ID?
+- **Billing Linked:** Is the project associated with a billing account (check
+  via `gcloud beta billing projects describe PROJECT_ID`)?
+- **CLI Authenticated:** Does `gcloud config list` show the correct account
+  and project?
+- **Resource Verified:** Can the user access the URL or IP of the deployed
+  resource?

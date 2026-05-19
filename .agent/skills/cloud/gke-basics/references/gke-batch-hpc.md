@@ -28,12 +28,12 @@ spec:
   template:
     spec:
       containers:
-      - name: worker
-        image: <IMAGE>
-        resources:
-          requests:
-            cpu: "1"
-            memory: "2Gi"
+        - name: worker
+          image: <IMAGE>
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
       restartPolicy: Never
 ```
 
@@ -48,21 +48,21 @@ metadata:
   name: training-job
 spec:
   replicatedJobs:
-  - name: workers
-    replicas: 4
-    template:
-      spec:
-        parallelism: 1
-        completions: 1
-        template:
-          spec:
-            containers:
-            - name: worker
-              image: <IMAGE>
-              resources:
-                requests:
-                  cpu: "4"
-                  memory: "8Gi"
+    - name: workers
+      replicas: 4
+      template:
+        spec:
+          parallelism: 1
+          completions: 1
+          template:
+            spec:
+              containers:
+                - name: worker
+                  image: <IMAGE>
+                  resources:
+                    requests:
+                      cpu: "4"
+                      memory: "8Gi"
 ```
 
 ### Kueue (Job Queuing)
@@ -83,14 +83,14 @@ metadata:
 spec:
   namespaceSelector: {}
   resourceGroups:
-  - coveredResources: ["cpu", "memory"]
-    flavors:
-    - name: default
-      resources:
-      - name: "cpu"
-        nominalQuota: 100
-      - name: "memory"
-        nominalQuota: "200Gi"
+    - coveredResources: ["cpu", "memory"]
+      flavors:
+        - name: default
+          resources:
+            - name: "cpu"
+              nominalQuota: 100
+            - name: "memory"
+              nominalQuota: "200Gi"
 ---
 # Allow a namespace to use the queue
 apiVersion: kueue.x-k8s.io/v1beta1
@@ -140,11 +140,11 @@ spec:
       template:
         spec:
           containers:
-          - name: launcher
-            image: <MPI_IMAGE>
-            command: ["mpirun", "-np", "32", "./simulation"]
+            - name: launcher
+              image: <MPI_IMAGE>
+              command: ["mpirun", "-np", "32", "./simulation"]
     Worker:
-      replicas: 8  # Set resource requests per worker
+      replicas: 8 # Set resource requests per worker
 ```
 
 ## Cost Optimization for Batch/HPC

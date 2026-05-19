@@ -7,21 +7,21 @@ This reference covers upgrade strategy, maintenance windows, and release channel
 
 ## Golden Path Upgrade Defaults
 
-| Setting | Golden Path Value | Notes |
-|---------|-------------------|-------|
-| `releaseChannel.channel` | `REGULAR` | Balanced between freshness and stability |
-| Maintenance exclusion | `NO_MINOR_UPGRADES`, 1 year | Prevents surprise minor version bumps |
-| `upgradeSettings.strategy` | `SURGE` | Rolling upgrades with `maxSurge: 1` |
-| Auto-repair | `true` | Unhealthy nodes are automatically replaced |
-| Auto-upgrade | `true` | Nodes follow control plane version |
+| Setting                    | Golden Path Value           | Notes                                      |
+| -------------------------- | --------------------------- | ------------------------------------------ |
+| `releaseChannel.channel`   | `REGULAR`                   | Balanced between freshness and stability   |
+| Maintenance exclusion      | `NO_MINOR_UPGRADES`, 1 year | Prevents surprise minor version bumps      |
+| `upgradeSettings.strategy` | `SURGE`                     | Rolling upgrades with `maxSurge: 1`        |
+| Auto-repair                | `true`                      | Unhealthy nodes are automatically replaced |
+| Auto-upgrade               | `true`                      | Nodes follow control plane version         |
 
 ## Release Channels
 
-| Channel | Cadence | Best For |
-|---------|---------|----------|
-| `RAPID` | Weeks after release | Dev/test, early access to features |
-| `REGULAR` (golden path) | 2-3 months after Rapid | Production workloads |
-| `STABLE` | 2-3 months after Regular | Risk-averse, highly regulated |
+| Channel                 | Cadence                  | Best For                           |
+| ----------------------- | ------------------------ | ---------------------------------- |
+| `RAPID`                 | Weeks after release      | Dev/test, early access to features |
+| `REGULAR` (golden path) | 2-3 months after Rapid   | Production workloads               |
+| `STABLE`                | 2-3 months after Regular | Risk-averse, highly regulated      |
 
 ```bash
 # Check current channel
@@ -63,6 +63,7 @@ gcloud container clusters update <CLUSTER_NAME> --region <REGION> \
 ```
 
 **Exclusion scopes:**
+
 - `NO_UPGRADES` — blocks all upgrades (max 30 days)
 - `NO_MINOR_UPGRADES` — allows patch upgrades, blocks minor version changes (max 1 year)
 - `NO_MINOR_OR_NODE_UPGRADES` — blocks minor and node upgrades (max 1 year)

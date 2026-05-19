@@ -5,6 +5,7 @@ First off, thank you for considering contributing to ProspectFlow AI! It's peopl
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - **Node.js**: v22+ (LTS)
 - **pnpm**: v9+
 - **Docker Desktop**: For infrastructure (Postgres, Redis, etc.)
@@ -13,22 +14,26 @@ First off, thank you for considering contributing to ProspectFlow AI! It's peopl
 ### Local Development Setup
 
 1.  **Clone the repository**:
+
     ```bash
     git clone https://github.com/xXYoungMoreXx/ProspectFlow_AI.git
     cd ProspectFlow_AI
     ```
 
 2.  **Install dependencies**:
+
     ```bash
     pnpm install
     ```
 
 3.  **Start Infrastructure**:
+
     ```bash
     docker-compose -f infra/docker-compose.yml up -d
     ```
 
 4.  **Database Migration**:
+
     ```bash
     pnpm --filter @agentepro/api db:migrate
     ```

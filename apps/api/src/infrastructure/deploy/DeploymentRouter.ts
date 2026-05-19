@@ -1,4 +1,4 @@
-import { Result } from '../../domain/shared/Result.js';
+import { Result } from "../../domain/shared/Result.js";
 
 export interface DeploymentOptions {
   projectId: string;
@@ -8,7 +8,7 @@ export interface DeploymentOptions {
 
 export interface DeploymentResult {
   url: string;
-  provider: 'vercel' | 'netlify';
+  provider: "vercel" | "netlify";
   deploymentId: string;
 }
 
@@ -22,18 +22,20 @@ export class DeploymentRouter {
 
   constructor(
     private readonly vercel: DeploymentProvider,
-    private readonly netlify: DeploymentProvider
+    private readonly netlify: DeploymentProvider,
   ) {}
 
-  async deploy(options: DeploymentOptions): Promise<Result<DeploymentResult, Error>> {
+  async deploy(
+    options: DeploymentOptions,
+  ): Promise<Result<DeploymentResult, Error>> {
     try {
       const vercelQuota = await this.vercel.getRemainingQuota();
-      
+
       if (vercelQuota < DeploymentRouter.QUOTA_THRESHOLD) {
         // Fallback to Netlify
         return await this.netlify.deploy(options);
       }
-      
+
       // Primary provider
       return await this.vercel.deploy(options);
     } catch {

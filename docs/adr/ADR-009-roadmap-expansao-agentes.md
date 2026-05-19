@@ -25,12 +25,12 @@ de budget financeiro real de clientes, o que exige controles muito mais rígidos
 
 ### Matriz de risco × valor × viabilidade técnica
 
-| Agente | Risco | Valor para cliente | API disponível | Fase |
-|--------|-------|-------------------|----------------|------|
-| SEO | Baixo | Alto (recorrência) | Google Search Console (gratuita) | v2 |
-| Analytics | Muito baixo | Alto (relatórios) | GA4 API (gratuita) | v2 |
-| Social Media | Médio | Alto | Meta Graph API | v3 |
-| Tráfego Pago | Alto | Muito alto | Google Ads + Meta Ads API | v4 |
+| Agente       | Risco       | Valor para cliente | API disponível                   | Fase |
+| ------------ | ----------- | ------------------ | -------------------------------- | ---- |
+| SEO          | Baixo       | Alto (recorrência) | Google Search Console (gratuita) | v2   |
+| Analytics    | Muito baixo | Alto (relatórios)  | GA4 API (gratuita)               | v2   |
+| Social Media | Médio       | Alto               | Meta Graph API                   | v3   |
+| Tráfego Pago | Alto        | Muito alto         | Google Ads + Meta Ads API        | v4   |
 
 ---
 
@@ -41,19 +41,20 @@ Risco baixo (pior cenário: conteúdo ruim, reversível). Alto valor percebido (
 de ranking são visualmente impactantes para clientes).
 
 **MCPs e integrações:**
+
 ```yaml
 skills:
-  - google_search_console:   # Leitura de indexação, clicks, impressões
+  - google_search_console: # Leitura de indexação, clicks, impressões
       api: Google Search Console API v3 (OAuth 2.0)
       scope: webmasters.readonly
-  - analytics_reader:        # Comportamento de usuários
+  - analytics_reader: # Comportamento de usuários
       api: Google Analytics Data API v1 (GA4)
       scope: analytics.readonly
-  - content_generator:       # Artigos SEO, meta tags, alt texts
+  - content_generator: # Artigos SEO, meta tags, alt texts
       llm: claude-sonnet-4-6
       rag_collection: seo_best_practices
-  - competitor_analyzer:     # Análise de SERPs, concorrentes
-      engine: searxng_local   # Self-hosted, sem rastreadores externos
+  - competitor_analyzer: # Análise de SERPs, concorrentes
+      engine: searxng_local # Self-hosted, sem rastreadores externos
 ```
 
 **HITL:** Aprovação antes de publicar qualquer conteúdo novo. Alterações técnicas
@@ -69,15 +70,16 @@ skills:
 relatórios de SEO. Zero risco (apenas leitura de dados).
 
 **MCPs e integrações:**
+
 ```yaml
 skills:
   - ga4_reader:
       api: Google Analytics Data API v1
-  - looker_studio:            # Embedding de dashboards
+  - looker_studio: # Embedding de dashboards
       api: Looker Studio API (read-only)
   - report_generator:
       output: pdf/html
-      llm: claude-haiku-4-5   # Haiku suficiente para relatórios simples
+      llm: claude-haiku-4-5 # Haiku suficiente para relatórios simples
 ```
 
 **HITL:** Apenas para alterações de configuração de tracking (instalação de pixel novo).
@@ -96,21 +98,24 @@ Oferta automática do Closer após 30 dias da entrega do site.
 Requer HITL de dois níveis: operador aprova, idealmente cliente também aprova.
 
 **MCPs e integrações:**
+
 ```yaml
 skills:
-  - meta_graph_api:           # Instagram + Facebook
+  - meta_graph_api: # Instagram + Facebook
       api: Meta Graph API v19
-      permissions: [pages_manage_posts, instagram_basic, instagram_content_publish]
-  - scheduler:                # Agendamento multi-plataforma
-      tool: buffer_api         # Buffer tem API gratuita limitada
+      permissions:
+        [pages_manage_posts, instagram_basic, instagram_content_publish]
+  - scheduler: # Agendamento multi-plataforma
+      tool: buffer_api # Buffer tem API gratuita limitada
   - image_generator:
-      primary: stable_diffusion_local   # Self-hosted, custo zero
-      fallback: canva_api               # Canva free tier
+      primary: stable_diffusion_local # Self-hosted, custo zero
+      fallback: canva_api # Canva free tier
   - content_calendar:
       storage: postgresql
 ```
 
 **HITL obrigatório — regra inviolável:**
+
 ```
 Agente gera post (texto + imagem)
           ↓
@@ -135,6 +140,7 @@ definidos no contrato).
 em minutos. Requer controles de HITL financeiro que precisam ser maduros.
 
 **APIs:**
+
 ```yaml
 google_ads_api:
   version: v16
@@ -148,31 +154,33 @@ meta_marketing_api:
 ```
 
 **Pré-requisitos antes de implementar:**
+
 - Sistema de HITL financeiro maduro (6+ meses em produção)
 - Teto de gasto configurável e imponível tecnicamente (não apenas por contrato)
 - Monitoramento de spend em tempo real com alertas automáticos
 - Seguro ou garantia contratual clara sobre responsabilidade por gastos indevidos
 
 **HITL financeiro — regras específicas:**
+
 ```typescript
 const TRAFFIC_HITL_RULES = {
   // Nunca expira — aprovação manual obrigatória sempre
-  CREATE_CAMPAIGN:       { requiresHITL: true, timeout: null },
-  ACTIVATE_CAMPAIGN:     { requiresHITL: true, timeout: null },
-  INCREASE_BUDGET:       { requiresHITL: true, timeout: null },
+  CREATE_CAMPAIGN: { requiresHITL: true, timeout: null },
+  ACTIVATE_CAMPAIGN: { requiresHITL: true, timeout: null },
+  INCREASE_BUDGET: { requiresHITL: true, timeout: null },
   // Relatórios e análises: autônomos
-  READ_PERFORMANCE:      { requiresHITL: false },
-  GENERATE_REPORT:       { requiresHITL: false },
+  READ_PERFORMANCE: { requiresHITL: false },
+  GENERATE_REPORT: { requiresHITL: false },
   // Pausar campanha: autônomo (ação de proteção)
-  PAUSE_CAMPAIGN:        { requiresHITL: false },
-}
+  PAUSE_CAMPAIGN: { requiresHITL: false },
+};
 
 // Teto de gasto diário — bloqueio técnico no adapter, não apenas no prompt
 class GoogleAdsAdapter {
   async adjustBudget(campaignId: string, newBudget: Money): Promise<void> {
-    const maxAllowed = await this.getBudgetCap(campaignId) // do banco, não do prompt
+    const maxAllowed = await this.getBudgetCap(campaignId); // do banco, não do prompt
     if (newBudget.greaterThan(maxAllowed)) {
-      throw new BudgetCapExceededError(`Teto de ${maxAllowed} excedido`)
+      throw new BudgetCapExceededError(`Teto de ${maxAllowed} excedido`);
     }
     // ...
   }
@@ -186,9 +194,10 @@ class GoogleAdsAdapter {
 ## Princípios de extensibilidade
 
 Cada novo agente é adicionado como bounded context independente:
+
 ```
 src/domain/seo/          # SEO context
-src/domain/social/       # Social Media context  
+src/domain/social/       # Social Media context
 src/domain/traffic/      # Traffic context
 src/domain/analytics/    # Analytics context
 ```
@@ -201,12 +210,14 @@ de Memory) recebe eventos de todos os contexts para consolidar histórico do cli
 ## Consequências
 
 ### Positivas
+
 - Faseamento por risco protege o operador de exposição prematura a riscos altos
 - Cada bounded context é deployável e testável independentemente
 - Upsells naturais entre serviços: site → SEO → analytics → social → tráfego
 - MRR cresce com cada serviço adicionado sem substituir os anteriores
 
 ### Negativas
+
 - Tráfego pago na v4 significa ~6–12 meses para estar disponível
 - Google Ads Developer Token requer aprovação manual do Google (processo burocrático)
 - Meta App Review para permissões de ads pode levar semanas

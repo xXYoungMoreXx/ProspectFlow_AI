@@ -10,6 +10,7 @@
 ## Contexto
 
 O AgentePro lida com:
+
 - Dados pessoais de leads (nome, telefone, email, empresa) — escopo LGPD
 - Credenciais de terceiros (API keys de LLMs, WhatsApp, Mercado Pago)
 - Budget financeiro de clientes (campanhas de tráfego pago)
@@ -34,20 +35,20 @@ controles de segurança independentes, sem confiar nas camadas acima.**
 // Argon2id — parâmetros mínimos obrigatórios
 const ARGON2_CONFIG = {
   type: argon2.argon2id,
-  memoryCost: 2 ** 16,  // 64 MB — resistente a GPU
+  memoryCost: 2 ** 16, // 64 MB — resistente a GPU
   timeCost: 3,
   parallelism: 4,
   hashLength: 32,
-} as const
+} as const;
 
 // JWT — RS256 com chave assimétrica (privada no vault, pública verificável)
 // Nunca HS256 com segredo simétrico — vulnerável se segredo vazar
 const JWT_CONFIG = {
-  algorithm: 'RS256',
-  accessTokenExpiry: '1h',
-  refreshTokenExpiry: '7d',
-  issuer: 'agentepro.dominio.com',
-} as const
+  algorithm: "RS256",
+  accessTokenExpiry: "1h",
+  refreshTokenExpiry: "7d",
+  issuer: "agentepro.dominio.com",
+} as const;
 ```
 
 ### 2. Anti-enumeração (OWASP A07)
@@ -58,15 +59,15 @@ casos para prevenir timing attacks.
 
 ```typescript
 async function login(email: string, password: string) {
-  const user = await userRepo.findByEmail(email)
-  const dummyHash = await getSystemDummyHash() // pré-computado no boot
-  const hashToCompare = user?.passwordHash ?? dummyHash
-  const valid = await argon2.verify(hashToCompare, password)
-  
+  const user = await userRepo.findByEmail(email);
+  const dummyHash = await getSystemDummyHash(); // pré-computado no boot
+  const hashToCompare = user?.passwordHash ?? dummyHash;
+  const valid = await argon2.verify(hashToCompare, password);
+
   if (!user || !valid) {
-    throw new AuthError('Credenciais inválidas') // mensagem idêntica sempre
+    throw new AuthError("Credenciais inválidas"); // mensagem idêntica sempre
   }
-  return generateTokens(user)
+  return generateTokens(user);
 }
 ```
 
@@ -74,11 +75,11 @@ async function login(email: string, password: string) {
 
 ```typescript
 // Middleware pipeline obrigatório — toda rota passa por todos os checks
-app.use(requestIdMiddleware)      // Correlation ID para tracing
-app.use(bodySizeLimiter(512_000)) // 512 KB máximo — antes do parsing JSON
-app.use(rateLimiter(config))      // Por IP + por usuário autenticado
-app.use(authMiddleware)           // JWT verification independente
-app.use(inputValidator(schema))   // Zod schema — nunca confiar no frontend
+app.use(requestIdMiddleware); // Correlation ID para tracing
+app.use(bodySizeLimiter(512_000)); // 512 KB máximo — antes do parsing JSON
+app.use(rateLimiter(config)); // Por IP + por usuário autenticado
+app.use(authMiddleware); // JWT verification independente
+app.use(inputValidator(schema)); // Zod schema — nunca confiar no frontend
 ```
 
 ### 4. Validação de uploads — Magic Bytes obrigatório
@@ -86,15 +87,19 @@ app.use(inputValidator(schema))   // Zod schema — nunca confiar no frontend
 ```typescript
 // Verificação de tipo real do arquivo — extensão e Content-Type são ignorados
 async function validateFile(buffer: Buffer, declaredMime: string) {
-  const detected = await fileTypeFromBuffer(buffer.slice(0, 12))
-  
+  const detected = await fileTypeFromBuffer(buffer.slice(0, 12));
+
   const ALLOWLIST = [
-    'image/jpeg', 'image/png', 'image/webp',
-    'application/pdf', 'text/plain', 'text/markdown'
-  ]
-  
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "application/pdf",
+    "text/plain",
+    "text/markdown",
+  ];
+
   if (!detected || !ALLOWLIST.includes(detected.mime)) {
-    throw new SecurityError('Tipo de arquivo não permitido')
+    throw new SecurityError("Tipo de arquivo não permitido");
   }
   // detected.mime é a fonte de verdade — não declaredMime
 }
@@ -107,20 +112,24 @@ contra ranges de IP privados após resolução DNS.
 
 ```typescript
 const PRIVATE_RANGES = [
-  /^127\./, /^10\./, /^192\.168\./,
+  /^127\./,
+  /^10\./,
+  /^192\.168\./,
   /^172\.(1[6-9]|2[0-9]|3[01])\./,
-  /^169\.254\./, /^::1$/, /^localhost$/i,
+  /^169\.254\./,
+  /^::1$/,
+  /^localhost$/i,
   /^0\.0\.0\.0$/,
-]
+];
 
 async function validateExternalUrl(url: string): Promise<void> {
-  const parsed = new URL(url)
-  if (!['http:', 'https:'].includes(parsed.protocol)) {
-    throw new SecurityError('Protocolo não permitido')
+  const parsed = new URL(url);
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new SecurityError("Protocolo não permitido");
   }
-  const { address } = await dns.promises.lookup(parsed.hostname)
-  if (PRIVATE_RANGES.some(r => r.test(address))) {
-    throw new SecurityError('URL aponta para endereço privado')
+  const { address } = await dns.promises.lookup(parsed.hostname);
+  if (PRIVATE_RANGES.some((r) => r.test(address))) {
+    throw new SecurityError("URL aponta para endereço privado");
   }
 }
 ```
@@ -163,7 +172,7 @@ Hierarquia:
   Dev local:  .env.local (gitignored) — valores manuais
   Produção:   Claude Managed Agents Credential Vaults (ADR-001)
               OU Infisical self-hosted (fallback self-hosted)
-  
+
 Regra absoluta: process.env nunca acessado diretamente em domain/application.
 Sempre injetado via interface SecretsProvider no container DI.
 ```
@@ -177,6 +186,7 @@ PII mascarado antes do log. Retenção: 2 anos.
 ### 10. Testes de segurança automatizados no CI
 
 Suite de testes obrigatória que bloqueia o CI se falhar:
+
 - Anti-enumeração (timing test entre e-mail inexistente e senha errada)
 - Rate limiting (5 tentativas → 429)
 - JWT algorithm confusion (alg: none → 401)
@@ -190,12 +200,14 @@ Suite de testes obrigatória que bloqueia o CI se falhar:
 ## Consequências
 
 ### Positivas
+
 - Defesa em profundidade: falha em uma camada não compromete o sistema inteiro
 - Testes de segurança automatizados capturam regressões antes do deploy
 - Audit log defensável juridicamente em disputas com clientes
 - Zero segredos no repositório elimina o vetor de ataque mais comum em projetos solo
 
 ### Negativas
+
 - Overhead de desenvolvimento: cada feature precisa de testes de segurança adicionais
 - Magic bytes validation adiciona latência em uploads
 - SELECT FOR UPDATE pode criar contenção em cargas altas — aceitável no MVP

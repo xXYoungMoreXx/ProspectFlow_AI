@@ -6,10 +6,10 @@ Google Kubernetes Engine (GKE) is a managed Kubernetes platform for deploying, m
 
 ## Cluster Modes
 
-| Mode | Who Manages Nodes | Best For |
-|------|-------------------|----------|
-| **Autopilot** (recommended) | Google — fully managed nodes, scaling, and security | Most workloads. No node-level ops. Pay per pod resource request. |
-| **Standard** | You — full control over node pools, OS, machine types | Workloads requiring kernel customization, specific node OS, or DaemonSets not supported by Autopilot |
+| Mode                        | Who Manages Nodes                                     | Best For                                                                                             |
+| --------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Autopilot** (recommended) | Google — fully managed nodes, scaling, and security   | Most workloads. No node-level ops. Pay per pod resource request.                                     |
+| **Standard**                | You — full control over node pools, OS, machine types | Workloads requiring kernel customization, specific node OS, or DaemonSets not supported by Autopilot |
 
 **Default: Autopilot.** Use Standard only when Autopilot has a documented limitation for your workload.
 
@@ -22,6 +22,7 @@ Google Kubernetes Engine (GKE) is a managed Kubernetes platform for deploying, m
 ## Networking Model
 
 GKE uses **VPC-native** clusters with alias IP ranges:
+
 - Each pod gets a routable IP from the pod CIDR
 - Dataplane V2 (eBPF-based) is the golden path default — provides built-in Network Policy enforcement
 - Cloud DNS for in-cluster DNS resolution
@@ -48,6 +49,7 @@ GKE is available in all Google Cloud regions. Autopilot clusters are regional by
 ## Pricing
 
 GKE pricing depends on the cluster mode:
+
 - **Autopilot**: Pay for pod resource requests (vCPU, memory, ephemeral storage). No cluster management fee.
 - **Standard**: Pay for underlying Compute Engine VMs plus a per-cluster management fee.
 

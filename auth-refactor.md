@@ -36,50 +36,69 @@ Frontend (Next.js 16)                    Backend (Fastify 5)
 ## FASE 1 — Schema & Infra
 
 - [ ] **1.1** Adicionar `emailVerified` à tabela `operators` em `schema.ts` (L38-46)
+
   ```diff
    isActive: boolean('is_active').notNull().default(true),
   +emailVerified: boolean('email_verified').notNull().default(false),
    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   ```
+
   → Verify: `npm run typecheck` sem erros
 
 - [ ] **1.2** Criar enum `verification_type` + tabela `email_verifications` em schema.ts
+
   ```typescript
-  export const verificationTypeEnum = pgEnum('verification_type', [
-    'EMAIL_VERIFICATION',
-    'PASSWORD_RESET',
+  export const verificationTypeEnum = pgEnum("verification_type", [
+    "EMAIL_VERIFICATION",
+    "PASSWORD_RESET",
   ]);
 
-  export const emailVerifications = pgTable('email_verifications', {
-    id: uuid('id').primaryKey().defaultRandom(),
-    operatorId: uuid('operator_id').notNull()
-      .references(() => operators.id, { onDelete: 'cascade' }),
-    tokenHash: text('token_hash').notNull(), // SHA-256 do token raw
-    type: verificationTypeEnum('type').notNull(),
-    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-    usedAt: timestamp('used_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  }, (table) => [
-    index('idx_email_verifications_operator_type')
-      .on(table.operatorId, table.type),
-  ]);
+  export const emailVerifications = pgTable(
+    "email_verifications",
+    {
+      id: uuid("id").primaryKey().defaultRandom(),
+      operatorId: uuid("operator_id")
+        .notNull()
+        .references(() => operators.id, { onDelete: "cascade" }),
+      tokenHash: text("token_hash").notNull(), // SHA-256 do token raw
+      type: verificationTypeEnum("type").notNull(),
+      expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+      usedAt: timestamp("used_at", { withTimezone: true }),
+      createdAt: timestamp("created_at", { withTimezone: true })
+        .notNull()
+        .defaultNow(),
+    },
+    (table) => [
+      index("idx_email_verifications_operator_type").on(
+        table.operatorId,
+        table.type,
+      ),
+    ],
+  );
   ```
+
   → Verify: Sem erros de tipo
 
 - [ ] **1.3** Gerar + aplicar migration Drizzle
+
   ```bash
   cd apps/api && npm run db:generate && npm run db:migrate
   ```
+
   → Verify: Migration aplicada com sucesso
 
 - [ ] **1.4** Adicionar `FRONTEND_URL` ao `config.ts`
+
   ```diff
   +FRONTEND_URL: z.string().default('http://localhost:3000'),
   ```
+
   E ao `.env` + `.env.example`:
+
   ```
   FRONTEND_URL=http://localhost:3000
   ```
+
   → Verify: `config.FRONTEND_URL` acessível
 
 - [ ] **1.5** Criar `AuthEmailService` em `src/application/auth/auth-email.service.ts`
@@ -87,28 +106,33 @@ Frontend (Next.js 16)                    Backend (Fastify 5)
   - Método `sendPasswordResetEmail(email, name, token)` → enfileira via BullMQ
   - HTML templates inline com branding AgentePro
   - Links: `${FRONTEND_URL}/verify-email?token=${token}` / `${FRONTEND_URL}/reset-password?token=${token}`
-  → Verify: Service instanciável sem erros
+    → Verify: Service instanciável sem erros
 
 ---
 
 ## FASE 2 — Handlers & Routes
 
 - [ ] **2.1** Criar novos Zod schemas em `auth.schemas.ts`
+
   ```typescript
-  export const RegisterSchema = z.object({
-    name: z.string().trim().min(2).max(100),
-    email: z.string().email().max(254),
-    password: z.string()
-      .min(8).max(128)
-      .regex(/[a-z]/, 'Must contain lowercase')
-      .regex(/[A-Z]/, 'Must contain uppercase')
-      .regex(/[0-9]/, 'Must contain number')
-      .regex(/[^a-zA-Z0-9]/, 'Must contain special character'),
-    confirmPassword: z.string(),
-  }).refine(d => d.password === d.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+  export const RegisterSchema = z
+    .object({
+      name: z.string().trim().min(2).max(100),
+      email: z.string().email().max(254),
+      password: z
+        .string()
+        .min(8)
+        .max(128)
+        .regex(/[a-z]/, "Must contain lowercase")
+        .regex(/[A-Z]/, "Must contain uppercase")
+        .regex(/[0-9]/, "Must contain number")
+        .regex(/[^a-zA-Z0-9]/, "Must contain special character"),
+      confirmPassword: z.string(),
+    })
+    .refine((d) => d.password === d.confirmPassword, {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    });
 
   export const VerifyEmailSchema = z.object({
     token: z.string().length(64), // 32 bytes hex
@@ -118,20 +142,29 @@ Frontend (Next.js 16)                    Backend (Fastify 5)
     email: z.string().email().max(254),
   });
 
-  export const ResetPasswordSchema = z.object({
-    token: z.string().length(64),
-    password: z.string().min(8).max(128)
-      .regex(/[a-z]/).regex(/[A-Z]/).regex(/[0-9]/).regex(/[^a-zA-Z0-9]/),
-    confirmPassword: z.string(),
-  }).refine(d => d.password === d.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+  export const ResetPasswordSchema = z
+    .object({
+      token: z.string().length(64),
+      password: z
+        .string()
+        .min(8)
+        .max(128)
+        .regex(/[a-z]/)
+        .regex(/[A-Z]/)
+        .regex(/[0-9]/)
+        .regex(/[^a-zA-Z0-9]/),
+      confirmPassword: z.string(),
+    })
+    .refine((d) => d.password === d.confirmPassword, {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    });
 
   export const ResendVerificationSchema = z.object({
     email: z.string().email().max(254),
   });
   ```
+
   → Verify: Schemas parse corretamente
 
 - [ ] **2.2** Criar `RegisterHandler` em `auth.handlers.ts`
@@ -144,7 +177,7 @@ Frontend (Next.js 16)                    Backend (Fastify 5)
   - Expiry: 24 horas
   - Enfileira email de verificação via BullMQ
   - Retorna: `{ message: "If the email is valid, a verification link was sent" }`
-  → Verify: Unit test passando
+    → Verify: Unit test passando
 
 - [ ] **2.3** Criar `VerifyEmailHandler`
   - Recebe: token (raw)
@@ -154,14 +187,14 @@ Frontend (Next.js 16)                    Backend (Fastify 5)
   - Verifica expiração
   - Atualiza operator: `emailVerified: true`, `isActive: true`
   - Marca token como `usedAt: new Date()`
-  → Verify: Integration test passando
+    → Verify: Integration test passando
 
 - [ ] **2.4** Criar `ForgotPasswordHandler`
   - Recebe: email
   - SEMPRE retorna 200 (anti-enumeration)
   - Se email existe e está verificado: gera reset token, salva hash, envia email
   - Token expiry: 1 hora
-  → Verify: Anti-enumeration verificado
+    → Verify: Anti-enumeration verificado
 
 - [ ] **2.5** Criar `ResetPasswordHandler`
   - Recebe: token, newPassword
@@ -171,30 +204,30 @@ Frontend (Next.js 16)                    Backend (Fastify 5)
   - Atualiza operator `passwordHash`
   - Revoga TODOS os refresh tokens ativos do operator
   - Marca reset token como usado
-  → Verify: Integration test + refresh tokens revogados
+    → Verify: Integration test + refresh tokens revogados
 
 - [ ] **2.6** Criar `ResendVerificationHandler`
   - Recebe: email
   - SEMPRE retorna 200 (anti-enumeration)
   - Se operator existe e NÃO está verificado: gera novo token, invalida anteriores, envia email
   - Rate limit rigoroso
-  → Verify: Não permite flood
+    → Verify: Não permite flood
 
 - [ ] **2.7** Atualizar `LoginHandler` em `auth.handlers.ts` (L42-93)
   - Após verificar credentials, checar `emailVerified`
   - Se `!emailVerified`: retornar erro específico `EMAIL_NOT_VERIFIED`
   - Frontend usa esse código para mostrar opção de reenviar verificação
-  → Verify: Login rejeita conta não verificada
+    → Verify: Login rejeita conta não verificada
 
 - [ ] **2.8** Registrar novas rotas em `auth.routes.ts`
 
-  | Route | Method | Rate Limit | Auth |
-  |-------|--------|-----------|------|
-  | `/register` | POST | 3/15min | ❌ |
-  | `/verify-email` | POST | 10/15min | ❌ |
-  | `/forgot-password` | POST | 3/15min | ❌ |
-  | `/reset-password` | POST | 5/15min | ❌ |
-  | `/resend-verification` | POST | 2/15min | ❌ |
+  | Route                  | Method | Rate Limit | Auth |
+  | ---------------------- | ------ | ---------- | ---- |
+  | `/register`            | POST   | 3/15min    | ❌   |
+  | `/verify-email`        | POST   | 10/15min   | ❌   |
+  | `/forgot-password`     | POST   | 3/15min    | ❌   |
+  | `/reset-password`      | POST   | 5/15min    | ❌   |
+  | `/resend-verification` | POST   | 2/15min    | ❌   |
 
   → Verify: Todas as rotas respondendo
 
@@ -235,6 +268,7 @@ Frontend (Next.js 16)                    Backend (Fastify 5)
 ## FASE 4 — Frontend Pages
 
 - [ ] **4.1** Atualizar `api.ts` com novos endpoints
+
   ```typescript
   auth: {
     login: (...),
@@ -315,16 +349,16 @@ Frontend (Next.js 16)                    Backend (Fastify 5)
   - Validações visuais (error messages, success states)
 
 - [ ] **5.2** Responsividade mobile em todas as telas auth
-  → Verify: Browser devtools em 375px
+      → Verify: Browser devtools em 375px
 
 - [ ] **5.3** Acessibilidade
   - aria-labels em todos os inputs
   - Keyboard navigation (Tab order)
   - Focus management em erros
-  → Verify: `scripts/accessibility_checker.py`
+    → Verify: `scripts/accessibility_checker.py`
 
 - [ ] **5.4** Review de segurança final
-  → Verify: `scripts/security_scan.py`
+      → Verify: `scripts/security_scan.py`
 
 ---
 
@@ -332,37 +366,37 @@ Frontend (Next.js 16)                    Backend (Fastify 5)
 
 ### Backend (`apps/api`)
 
-| Arquivo | Ação |
-|---------|------|
-| `src/infrastructure/db/schema.ts` | ✏️ Adicionar `emailVerified` + tabela `email_verifications` |
-| `src/application/auth/auth.handlers.ts` | ✏️ Adicionar 5 novos handlers + modificar LoginHandler |
-| `src/application/auth/auth-email.service.ts` | 🆕 Criar (templates + enfileiramento) |
-| `src/http/schemas/auth.schemas.ts` | ✏️ Adicionar 5 novos schemas |
-| `src/http/routes/auth.routes.ts` | ✏️ Adicionar 5 novas rotas |
-| `src/config.ts` | ✏️ Adicionar `FRONTEND_URL` |
-| `src/container.ts` | ✏️ Registrar `AuthEmailService` |
-| `tests/integration/auth.test.ts` | ✏️ Expandir (12+ novos testes) |
-| `tests/security/api.security.test.ts` | ✏️ Expandir (4+ novos testes) |
+| Arquivo                                      | Ação                                                        |
+| -------------------------------------------- | ----------------------------------------------------------- |
+| `src/infrastructure/db/schema.ts`            | ✏️ Adicionar `emailVerified` + tabela `email_verifications` |
+| `src/application/auth/auth.handlers.ts`      | ✏️ Adicionar 5 novos handlers + modificar LoginHandler      |
+| `src/application/auth/auth-email.service.ts` | 🆕 Criar (templates + enfileiramento)                       |
+| `src/http/schemas/auth.schemas.ts`           | ✏️ Adicionar 5 novos schemas                                |
+| `src/http/routes/auth.routes.ts`             | ✏️ Adicionar 5 novas rotas                                  |
+| `src/config.ts`                              | ✏️ Adicionar `FRONTEND_URL`                                 |
+| `src/container.ts`                           | ✏️ Registrar `AuthEmailService`                             |
+| `tests/integration/auth.test.ts`             | ✏️ Expandir (12+ novos testes)                              |
+| `tests/security/api.security.test.ts`        | ✏️ Expandir (4+ novos testes)                               |
 
 ### Frontend (`apps/web`)
 
-| Arquivo | Ação |
-|---------|------|
-| `src/lib/api.ts` | ✏️ Adicionar 5 novos métodos auth |
-| `src/app/(auth)/layout.tsx` | ✏️ Shared auth layout |
-| `src/app/(auth)/login/page.tsx` | ✏️ Links + tratamento EMAIL_NOT_VERIFIED |
-| `src/app/(auth)/register/page.tsx` | 🆕 Criar |
-| `src/app/(auth)/verify-email/page.tsx` | 🆕 Criar |
-| `src/app/(auth)/forgot-password/page.tsx` | 🆕 Criar |
-| `src/app/(auth)/reset-password/page.tsx` | 🆕 Criar |
-| `tests/e2e/auth.spec.ts` | ✏️ Expandir |
+| Arquivo                                   | Ação                                     |
+| ----------------------------------------- | ---------------------------------------- |
+| `src/lib/api.ts`                          | ✏️ Adicionar 5 novos métodos auth        |
+| `src/app/(auth)/layout.tsx`               | ✏️ Shared auth layout                    |
+| `src/app/(auth)/login/page.tsx`           | ✏️ Links + tratamento EMAIL_NOT_VERIFIED |
+| `src/app/(auth)/register/page.tsx`        | 🆕 Criar                                 |
+| `src/app/(auth)/verify-email/page.tsx`    | 🆕 Criar                                 |
+| `src/app/(auth)/forgot-password/page.tsx` | 🆕 Criar                                 |
+| `src/app/(auth)/reset-password/page.tsx`  | 🆕 Criar                                 |
+| `tests/e2e/auth.spec.ts`                  | ✏️ Expandir                              |
 
 ### Infra
 
-| Arquivo | Ação |
-|---------|------|
+| Arquivo                 | Ação                        |
+| ----------------------- | --------------------------- |
 | `.env` / `.env.example` | ✏️ Adicionar `FRONTEND_URL` |
-| Drizzle migration | 🆕 Auto-gerada |
+| Drizzle migration       | 🆕 Auto-gerada              |
 
 ---
 
@@ -382,16 +416,16 @@ Frontend (Next.js 16)                    Backend (Fastify 5)
 
 ## Decisões de Segurança
 
-| Aspecto | Decisão | Justificativa |
-|---------|---------|---------------|
-| Token format | `crypto.randomBytes(32).hex` | 128 bits de entropia → impossível brute-force |
-| Token storage | SHA-256 hash no DB | Se DB vazado, tokens não são utilizáveis |
-| Token comparison | `crypto.timingSafeEqual` | Previne timing attacks |
-| Password hashing | Argon2id (64MB, t=3, p=4) | Já existente, industry standard 2025+ |
-| Anti-enumeration | Respostas genéricas idênticas | Atacante não consegue mapear emails válidos |
-| Rate limiting | 2-5 req/15min por rota | Previne brute-force e abuse |
-| Email delivery | BullMQ async queue | Não bloqueia response + retry automático |
-| Refresh token revogation | Em reset password | Previne sessões comprometidas |
+| Aspecto                  | Decisão                       | Justificativa                                 |
+| ------------------------ | ----------------------------- | --------------------------------------------- |
+| Token format             | `crypto.randomBytes(32).hex`  | 128 bits de entropia → impossível brute-force |
+| Token storage            | SHA-256 hash no DB            | Se DB vazado, tokens não são utilizáveis      |
+| Token comparison         | `crypto.timingSafeEqual`      | Previne timing attacks                        |
+| Password hashing         | Argon2id (64MB, t=3, p=4)     | Já existente, industry standard 2025+         |
+| Anti-enumeration         | Respostas genéricas idênticas | Atacante não consegue mapear emails válidos   |
+| Rate limiting            | 2-5 req/15min por rota        | Previne brute-force e abuse                   |
+| Email delivery           | BullMQ async queue            | Não bloqueia response + retry automático      |
+| Refresh token revogation | Em reset password             | Previne sessões comprometidas                 |
 
 ---
 

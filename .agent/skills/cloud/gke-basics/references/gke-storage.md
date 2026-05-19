@@ -8,13 +8,13 @@ This reference covers storage configuration for GKE clusters including persisten
 
 The golden path Autopilot config enables these CSI drivers:
 
-| Driver | Golden Path | Access Mode | Use Case |
-|--------|-------------|-------------|----------|
-| Compute Engine Persistent Disk CSI | Enabled (default) | ReadWriteOnce | Block storage for databases, single-pod workloads |
-| Google Cloud Filestore CSI | Enabled | ReadWriteMany | Shared NFS for multi-pod access |
-| Cloud Storage FUSE CSI | Enabled | ReadWriteMany / ReadOnlyMany | Mount GCS buckets as volumes |
-| Parallelstore CSI | Enabled | ReadWriteMany | High-performance parallel file system |
-| Boot disk type | `pd-balanced` | N/A | Node boot disks |
+| Driver                             | Golden Path       | Access Mode                  | Use Case                                          |
+| ---------------------------------- | ----------------- | ---------------------------- | ------------------------------------------------- |
+| Compute Engine Persistent Disk CSI | Enabled (default) | ReadWriteOnce                | Block storage for databases, single-pod workloads |
+| Google Cloud Filestore CSI         | Enabled           | ReadWriteMany                | Shared NFS for multi-pod access                   |
+| Cloud Storage FUSE CSI             | Enabled           | ReadWriteMany / ReadOnlyMany | Mount GCS buckets as volumes                      |
+| Parallelstore CSI                  | Enabled           | ReadWriteMany                | High-performance parallel file system             |
+| Boot disk type                     | `pd-balanced`     | N/A                          | Node boot disks                                   |
 
 ## StorageClasses
 
@@ -22,12 +22,12 @@ The golden path Autopilot config enables these CSI drivers:
 
 GKE provides built-in StorageClasses:
 
-| StorageClass | Disk Type | Use Case |
-|-------------|-----------|----------|
-| `standard-rwo` | `pd-standard` | Cost-effective, low IOPS |
-| `premium-rwo` | `pd-ssd` | High IOPS, databases |
-| `standard-rwx` | Filestore (Basic HDD) | Shared NFS |
-| `premium-rwx` | Filestore (Basic SSD) | Shared NFS, higher performance |
+| StorageClass   | Disk Type             | Use Case                       |
+| -------------- | --------------------- | ------------------------------ |
+| `standard-rwo` | `pd-standard`         | Cost-effective, low IOPS       |
+| `premium-rwo`  | `pd-ssd`              | High IOPS, databases           |
+| `standard-rwx` | Filestore (Basic HDD) | Shared NFS                     |
+| `premium-rwx`  | Filestore (Basic SSD) | Shared NFS, higher performance |
 
 ### Custom StorageClass
 
@@ -39,9 +39,9 @@ metadata:
 provisioner: pd.csi.storage.gke.io
 parameters:
   type: pd-ssd
-  replication-type: regional-pd    # Replicate across 2 zones
+  replication-type: regional-pd # Replicate across 2 zones
 volumeBindingMode: WaitForFirstConsumer
-allowVolumeExpansion: true         # Always enable for production
+allowVolumeExpansion: true # Always enable for production
 ```
 
 ## PersistentVolumeClaims
@@ -55,7 +55,7 @@ metadata:
   name: database-pvc
 spec:
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   storageClassName: premium-rwo
   resources:
     requests:
@@ -71,11 +71,11 @@ metadata:
   name: shared-data
 spec:
   accessModes:
-  - ReadWriteMany
+    - ReadWriteMany
   storageClassName: standard-rwx
   resources:
     requests:
-      storage: 1Ti    # Filestore minimum is 1 TiB for Basic tier
+      storage: 1Ti # Filestore minimum is 1 TiB for Basic tier
 ```
 
 ### GCS Bucket Mount (Cloud Storage FUSE)
@@ -91,19 +91,19 @@ metadata:
     gke-gcsfuse/volumes: "true"
 spec:
   containers:
-  - name: reader
-    image: busybox
-    command: ["ls", "/data"]
-    volumeMounts:
-    - name: gcs-bucket
-      mountPath: /data
+    - name: reader
+      image: busybox
+      command: ["ls", "/data"]
+      volumeMounts:
+        - name: gcs-bucket
+          mountPath: /data
   volumes:
-  - name: gcs-bucket
-    csi:
-      driver: gcsfuse.csi.storage.gke.io
-      readOnly: true
-      volumeAttributes:
-        bucketName: <BUCKET_NAME>
+    - name: gcs-bucket
+      csi:
+        driver: gcsfuse.csi.storage.gke.io
+        readOnly: true
+        volumeAttributes:
+          bucketName: <BUCKET_NAME>
 ```
 
 > Requires Workload Identity for the pod's service account to have `storage.objectViewer` on the bucket.

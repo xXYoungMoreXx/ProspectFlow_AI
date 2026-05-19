@@ -10,15 +10,15 @@ provides a set of tools for automated data management and analysis.
 - **list_table_ids:** List table ids in a BigQuery dataset.
 - **get_table_info:** Get metadata information about a BigQuery table.
 - **execute_sql:** Run a SQL query in the project and return the result. This
-tool is restricted to only `SELECT` statements. `INSERT`, `UPDATE`, and
-`DELETE` statements and stored procedures aren't allowed. If the query
-doesn't include a `SELECT` statement, an error is returned. For information
-on creating queries, see the GoogleSQL documentation. The `execute_sql` tool
-can also have side effects if the query invokes remote functions or Python
-UDFs. All queries that are run using the `execute_sql` tool have a label that
-identifies the tool as the source. You can use this label to filter the
-queries using the label and value pair `goog-mcp-server: true`. Queries are
-charged to the project specified in the `project_id` field.
+  tool is restricted to only `SELECT` statements. `INSERT`, `UPDATE`, and
+  `DELETE` statements and stored procedures aren't allowed. If the query
+  doesn't include a `SELECT` statement, an error is returned. For information
+  on creating queries, see the GoogleSQL documentation. The `execute_sql` tool
+  can also have side effects if the query invokes remote functions or Python
+  UDFs. All queries that are run using the `execute_sql` tool have a label that
+  identifies the tool as the source. You can use this label to filter the
+  queries using the label and value pair `goog-mcp-server: true`. Queries are
+  charged to the project specified in the `project_id` field.
 
 ## Setup Instructions
 

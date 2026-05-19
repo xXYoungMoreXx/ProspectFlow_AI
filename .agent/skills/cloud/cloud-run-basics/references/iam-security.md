@@ -4,13 +4,13 @@ Cloud Run uses Identity and Access Management (IAM) to secure your resources and
 
 ## Predefined IAM Roles
 
-| Predefined Role | Usage |
-| :--- | :--- |
-| `roles/run.admin` | Full control over all Cloud Run resources. |
-| `roles/run.invoker` | Invoke Cloud Run services and execute Cloud Run jobs. |
-| `roles/run.developer` | Read and write access to services, jobs and worker pools; cannot
-  set IAM policies. |
-| `roles/run.viewer` | Read-only access to Cloud Run resources. |
+| Predefined Role       | Usage                                                            |
+| :-------------------- | :--------------------------------------------------------------- |
+| `roles/run.admin`     | Full control over all Cloud Run resources.                       |
+| `roles/run.invoker`   | Invoke Cloud Run services and execute Cloud Run jobs.            |
+| `roles/run.developer` | Read and write access to services, jobs and worker pools; cannot |
+| set IAM policies.     |
+| `roles/run.viewer`    | Read-only access to Cloud Run resources.                         |
 
 ## Types of service accounts for service identity
 
@@ -65,8 +65,8 @@ resource.
 
 There are two ways to create a public Cloud Run service, you can either:
 
-* Disable the Cloud Run Invoker IAM check (recommended).
-* Assign the Cloud Run Invoker IAM role to the `allUsers` member type.
+- Disable the Cloud Run Invoker IAM check (recommended).
+- Assign the Cloud Run Invoker IAM role to the `allUsers` member type.
 
 For more information, see:
 [Cloud Run security overview](https://docs.cloud.google.com/run/docs/securing/managing-access#make-service-public).
@@ -80,13 +80,13 @@ balancers.
 When you integrate IAP with Cloud Run, you can manage user or group access in
 the following ways:
 
-* Inside the organization - configure access to users who are within the same
+- Inside the organization - configure access to users who are within the same
   organization as your Cloud Run service
 
-* Outside the organization - configure access to users who are from
+- Outside the organization - configure access to users who are from
   organizations different than your Cloud Run service
 
-* No organization - configure access in projects that are not part of any
+- No organization - configure access in projects that are not part of any
   Google organization
 
 Enabling IAP on a Cloud Run service can be as easy as deploying a new service with

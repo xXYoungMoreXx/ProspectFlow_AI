@@ -43,4 +43,3 @@ resource "google_sql_user" "users" {
 - [Terraform Google Provider - SQL Database](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/sql_database)
 
 - [Terraform Google Provider - SQL User](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/sql_user)
-

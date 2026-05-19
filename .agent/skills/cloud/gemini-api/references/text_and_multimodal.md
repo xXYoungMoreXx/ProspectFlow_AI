@@ -1,6 +1,7 @@
 # Text and Multimodal Generation
 
 ## Basic Text Generation
+
 ```python
 from google import genai
 
@@ -13,6 +14,7 @@ print(response.text)
 ```
 
 ## Chat (Multi-turn conversations)
+
 ```python
 from google import genai
 from google.genai import types
@@ -46,6 +48,7 @@ for chunk in client.models.generate_content_stream(
 ```
 
 ## Multimodal Inputs (Images, Audio, Video)
+
 You can provide files natively using Google Cloud Storage URIs or local bytes.
 
 ```python
@@ -71,6 +74,7 @@ print(response.text)
 ```
 
 ### YouTube Videos
+
 ```python
 from google import genai
 from google.genai import types

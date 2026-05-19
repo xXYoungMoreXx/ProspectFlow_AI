@@ -20,11 +20,13 @@ intelligence capabilities.
 ## Setup and Basic Usage
 
 1.  **Enable the BigQuery API:**
+
     ```bash
     gcloud services enable bigquery.googleapis.com
     ```
 
 2.  **Create a Dataset:**
+
     ```bash
     bq mk --dataset --location=US my_dataset
     ```
@@ -81,8 +83,8 @@ intelligence capabilities.
 - [IAM & Security](references/iam-security.md): Roles, permissions, and data
   governance best practices.
 
-*If you need product information not found in these references, use the
-Developer Knowledge MCP server `search_documents` tool.*
+_If you need product information not found in these references, use the
+Developer Knowledge MCP server `search_documents` tool._
 
 ## Related Skills
 

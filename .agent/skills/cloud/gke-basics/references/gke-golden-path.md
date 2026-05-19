@@ -27,40 +27,40 @@ If the user is unsure, use golden path defaults.
 
 Recommended best practices applied by default. If the user requests a different setting, apply it and briefly note the security or operational trade-off.
 
-| Setting | Golden Path Value |
-|---------|-------------------|
-| `autopilot.enabled` | `true` |
-| `privateClusterConfig.enablePrivateNodes` | `true` |
-| `masterAuthorizedNetworksConfig.privateEndpointEnforcementEnabled` | `true` |
-| `secretManagerConfig.enabled` + `rotationInterval: 120s` | `true` |
-| `rbacBindingConfig.enableInsecureBinding*` | `false` (both) |
-| `workloadIdentityConfig.workloadPool` | enabled |
-| `networkConfig.datapathProvider` | `ADVANCED_DATAPATH` |
-| `networkConfig.dnsConfig.clusterDns` | `CLOUD_DNS` |
-| `autoscaling.autoscalingProfile` | `OPTIMIZE_UTILIZATION` |
-| `verticalPodAutoscaling.enabled` | `true` |
-| `monitoringConfig` components | SYSTEM_COMPONENTS, STORAGE, POD, DEPLOYMENT, STATEFULSET, DAEMONSET, HPA, JOBSET, CADVISOR, KUBELET, DCGM, APISERVER, SCHEDULER, CONTROLLER_MANAGER |
-| `advancedDatapathObservabilityConfig.enableMetrics` | `true` |
-| `nodeConfig.shieldedInstanceConfig.enableSecureBoot` | `true` |
-| `nodeConfig.workloadMetadataConfig.mode` | `GKE_METADATA` |
-| `nodeConfig.gcfsConfig.enabled` / `gvnic.enabled` | `true` / `true` |
-| `addonsConfig.statefulHaConfig.enabled` | `true` |
-| Storage CSI drivers (Filestore, GCS FUSE, Parallelstore) | enabled |
-| Pod Security Standards | `restricted` on production namespaces |
+| Setting                                                            | Golden Path Value                                                                                                                                   |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `autopilot.enabled`                                                | `true`                                                                                                                                              |
+| `privateClusterConfig.enablePrivateNodes`                          | `true`                                                                                                                                              |
+| `masterAuthorizedNetworksConfig.privateEndpointEnforcementEnabled` | `true`                                                                                                                                              |
+| `secretManagerConfig.enabled` + `rotationInterval: 120s`           | `true`                                                                                                                                              |
+| `rbacBindingConfig.enableInsecureBinding*`                         | `false` (both)                                                                                                                                      |
+| `workloadIdentityConfig.workloadPool`                              | enabled                                                                                                                                             |
+| `networkConfig.datapathProvider`                                   | `ADVANCED_DATAPATH`                                                                                                                                 |
+| `networkConfig.dnsConfig.clusterDns`                               | `CLOUD_DNS`                                                                                                                                         |
+| `autoscaling.autoscalingProfile`                                   | `OPTIMIZE_UTILIZATION`                                                                                                                              |
+| `verticalPodAutoscaling.enabled`                                   | `true`                                                                                                                                              |
+| `monitoringConfig` components                                      | SYSTEM_COMPONENTS, STORAGE, POD, DEPLOYMENT, STATEFULSET, DAEMONSET, HPA, JOBSET, CADVISOR, KUBELET, DCGM, APISERVER, SCHEDULER, CONTROLLER_MANAGER |
+| `advancedDatapathObservabilityConfig.enableMetrics`                | `true`                                                                                                                                              |
+| `nodeConfig.shieldedInstanceConfig.enableSecureBoot`               | `true`                                                                                                                                              |
+| `nodeConfig.workloadMetadataConfig.mode`                           | `GKE_METADATA`                                                                                                                                      |
+| `nodeConfig.gcfsConfig.enabled` / `gvnic.enabled`                  | `true` / `true`                                                                                                                                     |
+| `addonsConfig.statefulHaConfig.enabled`                            | `true`                                                                                                                                              |
+| Storage CSI drivers (Filestore, GCS FUSE, Parallelstore)           | enabled                                                                                                                                             |
+| Pod Security Standards                                             | `restricted` on production namespaces                                                                                                               |
 
 ## Customer-Configurable Settings
 
 These have golden path defaults but customers may deviate with valid justification. **Ask before changing.**
 
-| Setting | Default | Why Deviate |
-|---------|---------|-------------|
-| `dnsEndpointConfig.allowExternalTraffic` | `true` | Restrict if cluster only accessed from within VPC |
-| `autoIpamConfig` / `createSubnetwork` | `true` / `true` | Customer has pre-existing VPC/subnets |
-| `maxPodsPerNode` | `48` | `110` for high pod-density (costs more CIDR space) |
-| `subnetwork` | auto-created | Customer brings existing subnets |
-| Maintenance exclusion windows | configured (NO_MINOR_UPGRADES, 1yr) | Customer-specific scheduling |
-| `nodeConfig.bootDisk.diskType` | `pd-balanced` | `pd-ssd` for I/O-intensive, `pd-standard` for cost |
-| `nodeConfig.machineType` | `ek-standard-8` (Autopilot) | Varies by workload; use ComputeClasses |
+| Setting                                  | Default                             | Why Deviate                                        |
+| ---------------------------------------- | ----------------------------------- | -------------------------------------------------- |
+| `dnsEndpointConfig.allowExternalTraffic` | `true`                              | Restrict if cluster only accessed from within VPC  |
+| `autoIpamConfig` / `createSubnetwork`    | `true` / `true`                     | Customer has pre-existing VPC/subnets              |
+| `maxPodsPerNode`                         | `48`                                | `110` for high pod-density (costs more CIDR space) |
+| `subnetwork`                             | auto-created                        | Customer brings existing subnets                   |
+| Maintenance exclusion windows            | configured (NO_MINOR_UPGRADES, 1yr) | Customer-specific scheduling                       |
+| `nodeConfig.bootDisk.diskType`           | `pd-balanced`                       | `pd-ssd` for I/O-intensive, `pd-standard` for cost |
+| `nodeConfig.machineType`                 | `ek-standard-8` (Autopilot)         | Varies by workload; use ComputeClasses             |
 
 ## Guardrails
 

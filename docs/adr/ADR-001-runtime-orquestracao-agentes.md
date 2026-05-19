@@ -57,6 +57,7 @@ class CrewAIAdapter implements AgentRuntime { ... }
 ## Consequências
 
 ### Positivas
+
 - Elimina 3–4 semanas de setup de infraestrutura (Redis, BullMQ, sandboxing, credential vaults, Jaeger)
 - Dreaming: agentes Hunter e Closer melhoram automaticamente com o tempo sem engenharia adicional
 - Checkpointing nativo: sessões longas do Builder não reiniciam após falhas de rede
@@ -65,6 +66,7 @@ class CrewAIAdapter implements AgentRuntime { ... }
 - Webhooks nativos integram diretamente com o fluxo HITL
 
 ### Negativas
+
 - **Lock-in em modelos Claude** — impossível usar Ollama local ou outros providers por agente
 - **Custo por token** — sem free tier; requer saldo na Claude Platform API
 - **Beta** — `managed-agents-2026-04-01` header obrigatório; comportamentos podem ser refinados
@@ -77,11 +79,13 @@ class CrewAIAdapter implements AgentRuntime { ... }
 ## Alternativas consideradas
 
 ### CrewAI self-hosted
+
 - **Prós:** Multi-LLM por agente (Ollama local gratuito), controle total de dados, sem lock-in
 - **Contras:** Requer implementar: loop de agente, BullMQ + Redis para filas, sandboxing, checkpointing, credential vault (Infisical), observabilidade (LangSmith/Jaeger). Estimativa: +3–4 semanas de setup. Memory/dreaming: implementação do zero
 - **Descartado para MVP** — custo de engenharia não justifica no momento
 
 ### LangGraph self-hosted
+
 - **Prós:** Controle fino de grafo de estados, suporte a ciclos complexos, multi-framework
 - **Contras:** Mesmas desvantagens de infraestrutura do CrewAI, curva de aprendizado maior
 - **Descartado** — complexidade adicional sem ganho claro sobre CrewAI para este caso de uso
@@ -91,6 +95,7 @@ class CrewAIAdapter implements AgentRuntime { ... }
 ## Critérios de reavaliação
 
 Esta decisão deve ser reavaliada se:
+
 - Volume mensal de tokens superar $500 (ponto onde Ollama self-hosted se torna mais barato)
 - Anthropic alterar pricing de Managed Agents de forma desfavorável na saída do beta
 - Requisito de rodar modelos offline (cliente enterprise sem conectividade)

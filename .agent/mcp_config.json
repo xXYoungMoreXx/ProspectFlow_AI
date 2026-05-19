@@ -8,8 +8,10 @@
       "args": []
     },
     "docker": {
-      "command": "E:\\cache\\npm-global\\docker-mcp-server.cmd",
-      "args": []
+      "command": "node",
+      "args": [
+        "E:\\cache\\npm-global\\node_modules\\@0xshariq\\docker-mcp-server\\dist\\index.js"
+      ]
     },
     "brasil": {
       "command": "C:\\Users\\morek\\.local\\bin\\uvx.exe",

@@ -1,5 +1,5 @@
-import type { Deal } from './Deal.js';
-import type { DealStatus } from '@agentepro/shared-types';
+import type { Deal } from "./Deal.js";
+import type { DealStatus } from "@agentepro/shared-types";
 
 export interface DealFilters {
   operatorId: string;

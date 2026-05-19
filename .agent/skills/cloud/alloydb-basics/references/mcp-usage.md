@@ -24,6 +24,6 @@ server](https://cloud.google.com/alloydb/docs/ai/use-alloydb-mcp) guide.
 
 - [AlloyDB MCP Reference](https://cloud.google.com/alloydb/docs/reference/mcp)
 - [MCP Toolbox](https://mcp-toolbox.dev/): An open-source alternative to the remote MCP server that runs on a local machine or IDE.
-    - [MCP Toolbox AlloyDB Integration](https://mcp-toolbox.dev/integrations/alloydb/source/)
-    - [Configure your MCP client](https://docs.cloud.google.com/alloydb/docs/connect-ide-using-mcp-toolbox#configure-your-mcp-client)
+  - [MCP Toolbox AlloyDB Integration](https://mcp-toolbox.dev/integrations/alloydb/source/)
+  - [Configure your MCP client](https://docs.cloud.google.com/alloydb/docs/connect-ide-using-mcp-toolbox#configure-your-mcp-client)
 - For additional specialized skills including health auditing, performance monitoring, and lifecycle management, install the [AlloyDB for PostgreSQL](https://github.com/gemini-cli-extensions/alloydb) Gemini CLI extension or Claude Plugin.

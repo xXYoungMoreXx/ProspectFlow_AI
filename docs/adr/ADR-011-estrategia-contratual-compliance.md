@@ -121,16 +121,20 @@ Texto obrigatório na primeira mensagem do agente:
 ```typescript
 // Rule obrigatória em todos os agentes de prospecção
 const COMPLIANCE_RULE: AgentRule = {
-  name: 'first_message_opt_out_required',
+  name: "first_message_opt_out_required",
   condition: "message.isFirst == true && message.channel == 'EXTERNAL'",
-  action: 'BLOCK_UNLESS_OPT_OUT_INCLUDED',
+  action: "BLOCK_UNLESS_OPT_OUT_INCLUDED",
   priority: 1,
-}
+};
 
 // Verificação automática antes de qualquer primeiro contato
 function validateFirstMessage(message: string): boolean {
-  const OPT_OUT_PATTERNS = [/responda PARAR/i, /para não receber/i, /descadastrar/i]
-  return OPT_OUT_PATTERNS.some(p => p.test(message))
+  const OPT_OUT_PATTERNS = [
+    /responda PARAR/i,
+    /para não receber/i,
+    /descadastrar/i,
+  ];
+  return OPT_OUT_PATTERNS.some((p) => p.test(message));
 }
 ```
 
@@ -156,17 +160,20 @@ CREATE TABLE contract_acceptances (
 ## Consequências
 
 ### Positivas
+
 - Clickwrap é juridicamente defensável no Brasil (MP 2.200-2/2001 + jurisprudência)
 - Registro imutável do aceite protege o operador em disputas
 - Opt-out na prospecção reduz risco LGPD significativamente
 - Direito de arrependimento explicitado protege o operador de chargebacks
 
 ### Negativas
+
 - Adiciona fricção no fluxo de compra (cliente precisa acessar página de contrato)
 - Requer consultoria jurídica para revisão do texto contratual antes do lançamento
 - MEI tem limitações de faturamento (R$ 81.000/ano em 2026) — planejar transição
 
 ### Recomendações não técnicas (fora do escopo do sistema)
+
 - Contratar advogado especializado em direito digital para revisão do contrato (R$ 300–600)
 - Registrar CNPJ (MEI mínimo) antes de receber primeiro pagamento
 - Ter conta bancária PJ separada da pessoal
@@ -186,12 +193,11 @@ CREATE TABLE contract_acceptances (
 
 **Implementação:** Planejada — **Fase 12** do `task.md`
 
-| Componente | Status |
-|-----------|--------|
+| Componente                                           | Status                  |
+| ---------------------------------------------------- | ----------------------- |
 | `contract_acceptances` (tabela DB + RLS append-only) | ⏳ Pendente — Fase 12.1 |
-| `prospect_optouts` (blocklist hasheada) | ⏳ Pendente — Fase 12.1 |
-| `ContractAcceptance` (Domain Aggregate) | ⏳ Pendente — Fase 12.2 |
-| `GenerateProposalLinkHandler` (JWT 48h) | ⏳ Pendente — Fase 12.4 |
-| `RecordContractAcceptanceHandler` | ⏳ Pendente — Fase 12.4 |
-| `CheckOptOutHandler` (antes de HITL-1) | ⏳ Pendente — Fase 12.4 |
-
+| `prospect_optouts` (blocklist hasheada)              | ⏳ Pendente — Fase 12.1 |
+| `ContractAcceptance` (Domain Aggregate)              | ⏳ Pendente — Fase 12.2 |
+| `GenerateProposalLinkHandler` (JWT 48h)              | ⏳ Pendente — Fase 12.4 |
+| `RecordContractAcceptanceHandler`                    | ⏳ Pendente — Fase 12.4 |
+| `CheckOptOutHandler` (antes de HITL-1)               | ⏳ Pendente — Fase 12.4 |

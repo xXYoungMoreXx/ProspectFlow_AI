@@ -31,15 +31,15 @@ Nenhuma classe no `domain/` importa de `application/` ou `infrastructure/`. Nenh
 
 ### Bounded Contexts definidos
 
-| Context | Responsabilidade | Pasta |
-|---------|-----------------|-------|
-| IAM | Autenticação do operador, tokens | `src/domain/iam/` |
-| Lead & Prospecting | Lifecycle do lead, mensagens | `src/domain/lead/` |
-| Sales & Negotiation | Deals, propostas, precificação | `src/domain/sales/` |
-| Delivery | Projetos, sites, deploy | `src/domain/delivery/` |
-| Agent Management | Configuração de agentes | `src/domain/agent/` |
-| Pricing Intelligence | Engine de precificação, custos | `src/domain/pricing/` |
-| HITL | Aprovações, audit trail | `src/domain/hitl/` |
+| Context              | Responsabilidade                 | Pasta                  |
+| -------------------- | -------------------------------- | ---------------------- |
+| IAM                  | Autenticação do operador, tokens | `src/domain/iam/`      |
+| Lead & Prospecting   | Lifecycle do lead, mensagens     | `src/domain/lead/`     |
+| Sales & Negotiation  | Deals, propostas, precificação   | `src/domain/sales/`    |
+| Delivery             | Projetos, sites, deploy          | `src/domain/delivery/` |
+| Agent Management     | Configuração de agentes          | `src/domain/agent/`    |
+| Pricing Intelligence | Engine de precificação, custos   | `src/domain/pricing/`  |
+| HITL                 | Aprovações, audit trail          | `src/domain/hitl/`     |
 
 ### CQRS no Application Layer
 
@@ -63,7 +63,7 @@ Comunicação entre bounded contexts exclusivamente via Domain Events. Nunca cha
 ```typescript
 // Hunter emite — Sales consome. Nunca Hunter chama Sales diretamente.
 class LeadQualified implements DomainEvent {
-  readonly eventType = 'lead.qualified'
+  readonly eventType = "lead.qualified";
   constructor(
     readonly leadId: LeadId,
     readonly score: QualificationScore,
@@ -81,6 +81,7 @@ Todo serviço externo (Anthropic SDK, Evolution API WhatsApp, Vercel API, Mercad
 ## Consequências
 
 ### Positivas
+
 - Novos serviços (agente de tráfego, SEO) adicionados como novos bounded contexts sem alterar contexts existentes
 - Testes unitários do domain não precisam de mocks de banco ou HTTP — sem deps externas
 - Troca de provider LLM, gateway de pagamento ou plataforma de deploy: trocar o adapter, não o domain
@@ -88,6 +89,7 @@ Todo serviço externo (Anthropic SDK, Evolution API WhatsApp, Vercel API, Mercad
 - CI verifica violações de dependência automaticamente
 
 ### Negativas
+
 - Verbosidade inicial: criar Command + Handler + Event para cada operação simples parece over-engineering nas primeiras semanas
 - Curva de aprendizado para contribuidores que não conhecem Hexagonal/DDD
 - Mais arquivos por feature — aceitável dado o benefício de longo prazo
@@ -97,9 +99,11 @@ Todo serviço externo (Anthropic SDK, Evolution API WhatsApp, Vercel API, Mercad
 ## Alternativas consideradas
 
 ### MVC simples (Express + controllers + models)
+
 - **Descartado** — acoplamento direto entre rotas e lógica de negócio cria dívida técnica rapidamente; difícil de testar; integrações externas vazam para controllers
 
 ### Clean Architecture (Screaming Architecture)
+
 - **Considerada** — muito similar à Hexagonal; a diferença é semântica (use cases vs ports)
 - **Decisão:** Hexagonal foi escolhida por ser mais explícita sobre a direção dos adapters, o que é mais fácil de comunicar ao AI durante vibe coding
 
@@ -108,6 +112,7 @@ Todo serviço externo (Anthropic SDK, Evolution API WhatsApp, Vercel API, Mercad
 ## Nota sobre vibe coding
 
 O arquivo `CLAUDE.md` na raiz do repositório instrui o AI a:
+
 1. Nunca importar de `infrastructure/` dentro de `domain/`
 2. Sempre criar Command + Handler para operações de escrita
 3. Comunicação cross-context somente via Domain Events

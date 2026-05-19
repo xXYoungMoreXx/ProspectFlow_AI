@@ -1,5 +1,5 @@
-import type { Agent, AgentSkill, AgentRule } from './Agent.js';
-import type { AgentStatus, AgentPersona } from '@agentepro/shared-types';
+import type { Agent, AgentSkill, AgentRule } from "./Agent.js";
+import type { AgentStatus, AgentPersona } from "@agentepro/shared-types";
 
 export interface AgentFilters {
   operatorId: string;
@@ -59,13 +59,21 @@ export interface AgentRepository {
 
   // ── Skill sub-resource methods ──────────────────────────────────────────
   addSkill(data: CreateSkillData): Promise<AgentSkill>;
-  updateSkill(skillId: string, agentId: string, data: UpdateSkillData): Promise<AgentSkill | null>;
+  updateSkill(
+    skillId: string,
+    agentId: string,
+    data: UpdateSkillData,
+  ): Promise<AgentSkill | null>;
   removeSkill(skillId: string, agentId: string): Promise<boolean>;
   listSkills(agentId: string): Promise<AgentSkill[]>;
 
   // ── Rule sub-resource methods ───────────────────────────────────────────
   addRule(data: CreateRuleData): Promise<AgentRule>;
-  updateRule(ruleId: string, agentId: string, data: UpdateRuleData): Promise<AgentRule | null>;
+  updateRule(
+    ruleId: string,
+    agentId: string,
+    data: UpdateRuleData,
+  ): Promise<AgentRule | null>;
   removeRule(ruleId: string, agentId: string): Promise<boolean>;
   listRules(agentId: string): Promise<AgentRule[]>;
 }

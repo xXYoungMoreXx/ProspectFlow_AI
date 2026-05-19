@@ -1,17 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { buildApp } from '../../src/app.js';
-import type { FastifyInstance } from 'fastify';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { buildApp } from "../../src/app.js";
+import type { FastifyInstance } from "fastify";
 
-describe('Auth Endpoints Integration', () => {
+describe("Auth Endpoints Integration", () => {
   let app: FastifyInstance;
-  
+
   const mockDb = {
     select: vi.fn().mockReturnThis(),
     from: vi.fn().mockReturnThis(),
     where: vi.fn().mockReturnThis(),
     limit: vi.fn(),
     insert: vi.fn().mockReturnThis(),
-    values: vi.fn().mockResolvedValue([{ id: '1' }]),
+    values: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: "1" }]) }),
     update: vi.fn().mockReturnThis(),
     set: vi.fn().mockReturnThis(),
     transaction: vi.fn().mockImplementation(async (cb) => {
@@ -31,94 +31,112 @@ describe('Auth Endpoints Integration', () => {
     app.container.authEmailService = mockEmailService as any;
   });
 
+  afterEach(async () => {
+    if (app) await app.close();
+  });
+
   // ── Login ──────────────────────────────────────────────────────────────────
-  it('should return 400 for invalid login payload', async () => {
+  it("should return 400 for invalid login payload", async () => {
     const response = await app.inject({
-      method: 'POST',
-      url: '/api/v1/auth/login',
-      payload: { email: 'not-an-email', password: '12' },
+      method: "POST",
+      url: "/api/v1/auth/login",
+      payload: { email: "not-an-email", password: "12" },
     });
 
     expect(response.statusCode).toBe(400);
     const body = response.json();
-    expect(body.errors[0].code).toBe('VALIDATION_ERROR');
+    expect(body.errors[0].code).toBe("VALIDATION_ERROR");
   });
 
-  it('should prevent enumeration by returning generic error when user not found', async () => {
+  it("should prevent enumeration by returning generic error when user not found", async () => {
     mockDb.limit.mockResolvedValueOnce([]);
 
     const response = await app.inject({
-      method: 'POST',
-      url: '/api/v1/auth/login',
-      payload: { email: 'test@example.com', password: 'Password123!' },
+      method: "POST",
+      url: "/api/v1/auth/login",
+      payload: { email: "test@example.com", password: "Password123!" },
     });
 
     expect(response.statusCode).toBe(401);
     const body = response.json();
-    expect(body.errors[0].code).toBe('AUTHENTICATION_ERROR');
+    expect(body.errors[0].code).toBe("AUTHENTICATION_ERROR");
   });
 
-  it('should prevent enumeration by returning ok when registering existing email', async () => {
+  it("should prevent enumeration by returning ok when registering existing email", async () => {
     // simulate duplicate email
-    mockDb.values.mockRejectedValueOnce({ code: '23505' });
+    mockDb.values.mockReturnValueOnce({ returning: vi.fn().mockRejectedValueOnce({ code: "23505" }) });
 
     const response = await app.inject({
-      method: 'POST',
-      url: '/api/v1/auth/register',
-      payload: { 
-        name: 'Test', 
-        email: 'test@example.com', 
-        password: 'Password123!',
-        confirmPassword: 'Password123!'
+      method: "POST",
+      url: "/api/v1/auth/register",
+      payload: {
+        name: "Test",
+        email: "test@example.com",
+        password: "Password123!",
+        confirmPassword: "Password123!",
       },
     });
 
+    if (response.statusCode !== 200) {
+      console.error(response.json());
+    }
     expect(response.statusCode).toBe(200);
     // Should NOT send email for duplicate registration
     expect(mockEmailService.sendVerificationEmail).not.toHaveBeenCalled();
   });
 
-  it('should register successfully and send email', async () => {
-    mockDb.values.mockResolvedValueOnce([{ id: '1' }]).mockResolvedValueOnce([{ id: 'v1' }]);
+  it("should register successfully and send email", async () => {
+    mockDb.values
+      .mockReturnValueOnce({ returning: vi.fn().mockResolvedValueOnce([{ id: "1", name: "Test User", email: "newuser@example.com" }]) }) // for operator insert
+      .mockReturnValueOnce({ returning: vi.fn().mockResolvedValueOnce([{ id: "v1" }]) }); // for verification token insert
 
     const response = await app.inject({
-      method: 'POST',
-      url: '/api/v1/auth/register',
-      payload: { 
-        name: 'Test User', 
-        email: 'newuser@example.com', 
-        password: 'Password123!',
-        confirmPassword: 'Password123!'
+      method: "POST",
+      url: "/api/v1/auth/register",
+      payload: {
+        name: "Test User",
+        email: "newuser@example.com",
+        password: "Password123!",
+        confirmPassword: "Password123!",
       },
     });
 
+    if (response.statusCode !== 200) {
+      console.error(response.json());
+    }
     expect(response.statusCode).toBe(200);
-    expect(mockEmailService.sendVerificationEmail).toHaveBeenCalledWith('newuser@example.com', 'Test User', expect.any(String));
+    expect(mockEmailService.sendVerificationEmail).toHaveBeenCalledWith(
+      "newuser@example.com",
+      "Test User",
+      expect.any(String),
+    );
   });
 
-  it('should prevent enumeration by returning ok when forgot-password user not found', async () => {
+  it("should prevent enumeration by returning ok when forgot-password user not found", async () => {
     mockDb.limit.mockResolvedValueOnce([]); // not found
 
     const response = await app.inject({
-      method: 'POST',
-      url: '/api/v1/auth/forgot-password',
-      payload: { email: 'notfound@example.com' },
+      method: "POST",
+      url: "/api/v1/auth/forgot-password",
+      payload: { email: "notfound@example.com" },
     });
 
     expect(response.statusCode).toBe(200);
     expect(mockEmailService.sendPasswordResetEmail).not.toHaveBeenCalled();
   });
-  
-  it('should return error for email not verified on login', async () => {
-    mockDb.limit.mockResolvedValueOnce([{ 
-      id: '1', 
-      email: 'test@example.com', 
-      passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$dummysalt$dummyhash', 
-      isActive: true, 
-      emailVerified: false 
-    }]);
 
-    // We skip the argon2 verify mock here or assume it fails since we mock db but not argon2, 
+  it("should return error for email not verified on login", async () => {
+    mockDb.limit.mockResolvedValueOnce([
+      {
+        id: "1",
+        email: "test@example.com",
+        passwordHash: "$argon2id$v=19$m=65536,t=3,p=4$dummysalt$dummyhash",
+        isActive: true,
+        emailVerified: false,
+      },
+    ]);
+
+    // We skip the argon2 verify mock here or assume it fails since we mock db but not argon2,
     // wait, argon2 will fail with dummy hash against Password123! but let's assume valid
     // For unit tests we probably mock argon2 verify, but in this integration test it actually hashes.
     // So the test will actually return invalid credentials unless we give the right argon2 hash.

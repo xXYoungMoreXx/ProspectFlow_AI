@@ -35,6 +35,7 @@ gcloud container backup-restore backup-plans create <PLAN_NAME> \
 ```
 
 **Options:**
+
 - `--all-namespaces` — back up everything
 - `--included-namespaces=<ns1>,<ns2>` — back up specific namespaces
 - `--backup-encryption-key=<KEY>` — encrypt with Customer-Managed Encryption Key (CMEK)

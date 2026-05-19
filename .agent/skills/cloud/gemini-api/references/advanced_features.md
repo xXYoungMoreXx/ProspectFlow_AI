@@ -1,6 +1,7 @@
 # Advanced Features
 
 ## Content Caching
+
 Cache large documents or contexts to reduce cost and latency.
 
 ```python
@@ -35,6 +36,7 @@ response = client.models.generate_content(
 ```
 
 ## Batch Prediction
+
 For processing large datasets asynchronously.
 
 ```python

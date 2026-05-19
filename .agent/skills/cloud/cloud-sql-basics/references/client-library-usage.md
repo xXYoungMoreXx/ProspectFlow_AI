@@ -17,100 +17,100 @@ certificates.
 
 #### Python
 
--   **Installation for a Cloud SQL for PostgreSQL instance:**
+- **Installation for a Cloud SQL for PostgreSQL instance:**
 
-    ```bash
-    pip install "cloud-sql-python-connector[pg8000]"
-    ```
+  ```bash
+  pip install "cloud-sql-python-connector[pg8000]"
+  ```
 
--   **Usage Example:**
+- **Usage Example:**
 
-    ```python
-    from google.cloud.sql.connector import Connector
-    connector = Connector()
-    def getconn():
-      conn = connector.connect(
-          "project:region:instance",
-          "pg8000",
-          user="my-user",
-          password="my-password",
-          db="my-db"
-      )
-      return conn
-    ```
+  ```python
+  from google.cloud.sql.connector import Connector
+  connector = Connector()
+  def getconn():
+    conn = connector.connect(
+        "project:region:instance",
+        "pg8000",
+        user="my-user",
+        password="my-password",
+        db="my-db"
+    )
+    return conn
+  ```
 
 #### Java
 
--   **Maven Dependencies:**
+- **Maven Dependencies:**
 
-    The recommended method is to use the Cloud SQL JDBC Socket Factory. Add the
-    BOM to your `<dependencyManagement>` section:
+  The recommended method is to use the Cloud SQL JDBC Socket Factory. Add the
+  BOM to your `<dependencyManagement>` section:
+
+  ```xml
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.google.cloud.sql</groupId>
+        <artifactId>jdbc-socket-factory-bom</artifactId>
+        <version>1.18.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  ```
+
+  Then add dependencies for your database:
+  - **PostgreSQL:**
 
     ```xml
-    <dependencyManagement>
-      <dependencies>
-        <dependency>
-          <groupId>com.google.cloud.sql</groupId>
-          <artifactId>jdbc-socket-factory-bom</artifactId>
-          <version>1.18.0</version>
-          <type>pom</type>
-          <scope>import</scope>
-        </dependency>
-      </dependencies>
-    </dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.7.3</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.cloud.sql</groupId>
+        <artifactId>postgres-socket-factory</artifactId>
+      </dependency>
+    </dependencies>
     ```
 
-    Then add dependencies for your database:
-
-    *   **PostgreSQL:**
-        ```xml  
-        <dependencies>
-          <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>42.7.3</version>
-          </dependency>
-          <dependency>
-            <groupId>com.google.cloud.sql</groupId>
-            <artifactId>postgres-socket-factory</artifactId>
-          </dependency>
-        </dependencies>
-        ```
-
-    *   **MySQL:**
-        ```xml 
-        <dependencies>
-          <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
-            <version>8.0.33</version>
-          </dependency>
-          <dependency>
-            <groupId>com.google.cloud.sql</groupId>
-            <artifactId>mysql-socket-factory-connector-j-8</artifactId>
-          </dependency>
-        </dependencies>
-        ```
+  - **MySQL:**
+    ```xml
+    <dependencies>
+      <dependency>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
+        <version>8.0.33</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.cloud.sql</groupId>
+        <artifactId>mysql-socket-factory-connector-j-8</artifactId>
+      </dependency>
+    </dependencies>
+    ```
 
 #### Node.js (TypeScript)
 
--   **Installation:**
+- **Installation:**
 
-    ```bash
-    npm install @google-cloud/cloud-sql-connector
-    ```
+  ```bash
+  npm install @google-cloud/cloud-sql-connector
+  ```
 
 #### Go
 
--   **Installation:**
+- **Installation:**
 
-    ```bash
-    go get cloud.google.com/go/cloudsqlconn
-    ```
+  ```bash
+  go get cloud.google.com/go/cloudsqlconn
+  ```
 
 ## Cloud SQL Admin API
 
 To manage Cloud SQL resources (e.g., list instances) programmatically, use the
 `sqladmin` libraries.
 
--   [Cloud SQL Admin API Overview](https://docs.cloud.google.com/sql/docs/mysql/admin-api)
+- [Cloud SQL Admin API Overview](https://docs.cloud.google.com/sql/docs/mysql/admin-api)

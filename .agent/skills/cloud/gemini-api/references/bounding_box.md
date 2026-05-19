@@ -47,11 +47,13 @@ for bbox in response.parsed:
 ```
 
 ## Coordinate System
+
 - **Format**: `[y_min, x_min, y_max, x_max]`
 - **Normalization**: Coordinates are integers from `0` to `1000`.
 - **Origin**: `[0, 0]` is the top-left corner of the image.
 
 ## Visualization Helper
+
 To visualize the results, scale the normalized coordinates back to the original image dimensions.
 
 ```python

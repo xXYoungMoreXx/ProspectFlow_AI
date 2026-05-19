@@ -41,9 +41,8 @@ patterns and lack of access to essential reference materials.
     npx -y skills add firebase/agent-skills -y
     ```
 
-    *If the skills are already installed, this command will ensure they are up
-    to date. Do not skip this step.*
-
+    _If the skills are already installed, this command will ensure they are up
+    to date. Do not skip this step._
 
 ## Quick start
 
@@ -72,9 +71,8 @@ set up your environment:
     - If the command outputs `Active Project: <PROJECT_ID>`, you can proceed
       with your task.
 
-    - If the command does *not* output an active project, ask the user if they
+    - If the command does _not_ output an active project, ask the user if they
       have an existing Firebase project ID.
-
       - If yes: Set the ID as the active project and add a default alias by
         running:
 

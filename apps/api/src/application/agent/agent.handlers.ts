@@ -1,25 +1,37 @@
-import { ulid } from 'ulid';
-import type { AgentRepository, AgentFilters, AgentListResult } from '../../domain/agent/AgentRepository.js';
-import { Agent, type LLMConfiguration } from '../../domain/agent/Agent.js';
-import { NotFoundError, ok, err, type Result } from '../../domain/shared/Result.js';
-import type { AgentPersona, LLMProvider } from '@agentepro/shared-types';
+import { ulid } from "ulid";
+import type {
+  AgentRepository,
+  AgentFilters,
+  AgentListResult,
+} from "../../domain/agent/AgentRepository.js";
+import { Agent, type LLMConfiguration } from "../../domain/agent/Agent.js";
+import {
+  NotFoundError,
+  ok,
+  err,
+  type Result,
+} from "../../domain/shared/Result.js";
+import type { AgentPersona, LLMProvider } from "@agentepro/shared-types";
 
 // ── Commands ──────────────────────────────────────────────────────────────────
 
 export class CreateAgentHandler {
   constructor(private readonly repo: AgentRepository) {}
 
-  async execute(operatorId: string, input: {
-    name: string;
-    persona: AgentPersona;
-    llmProvider: LLMProvider;
-    llmModel: string;
-    llmBaseUrl?: string;
-    llmApiKeyRef?: string;
-    llmTemperature?: number;
-    llmMaxTokens?: number;
-    llmSystemPrompt?: string;
-  }): Promise<Result<Agent, Error>> {
+  async execute(
+    operatorId: string,
+    input: {
+      name: string;
+      persona: AgentPersona;
+      llmProvider: LLMProvider;
+      llmModel: string;
+      llmBaseUrl?: string;
+      llmApiKeyRef?: string;
+      llmTemperature?: number;
+      llmMaxTokens?: number;
+      llmSystemPrompt?: string;
+    },
+  ): Promise<Result<Agent, Error>> {
     const llmConfig: LLMConfiguration = {
       provider: input.llmProvider,
       model: input.llmModel,
@@ -49,30 +61,57 @@ export class CreateAgentHandler {
 export class UpdateAgentHandler {
   constructor(private readonly repo: AgentRepository) {}
 
-  async execute(agentId: string, operatorId: string, updates: Record<string, unknown>): Promise<Result<Agent, Error>> {
+  async execute(
+    agentId: string,
+    operatorId: string,
+    updates: Record<string, unknown>,
+  ): Promise<Result<Agent, Error>> {
     const agent = await this.repo.findById(agentId, operatorId);
-    if (!agent) return err(new NotFoundError('Agent', agentId));
+    if (!agent) return err(new NotFoundError("Agent", agentId));
 
     // Map flat updates to domain model
-    const configUpdates: Parameters<Agent['updateConfig']>[0] = {};
-    if (updates['name'] !== undefined) configUpdates.name = updates['name'] as string;
-    if (updates['ragEnabled'] !== undefined) configUpdates.ragEnabled = updates['ragEnabled'] as boolean;
-    if (updates['ragCollection'] !== undefined) configUpdates.ragCollection = updates['ragCollection'] as string;
-    if (updates['ragTopK'] !== undefined) configUpdates.ragTopK = updates['ragTopK'] as number;
-    if (updates['ragThreshold'] !== undefined) configUpdates.ragThreshold = updates['ragThreshold'] as number;
-    if (updates['hitlTimeoutMinutes'] !== undefined) configUpdates.hitlTimeoutMinutes = updates['hitlTimeoutMinutes'] as number;
-    if (updates['hitlNotifyChannel'] !== undefined) configUpdates.hitlNotifyChannel = updates['hitlNotifyChannel'] as string;
+    const configUpdates: Parameters<Agent["updateConfig"]>[0] = {};
+    if (updates["name"] !== undefined)
+      configUpdates.name = updates["name"] as string;
+    if (updates["ragEnabled"] !== undefined)
+      configUpdates.ragEnabled = updates["ragEnabled"] as boolean;
+    if (updates["ragCollection"] !== undefined)
+      configUpdates.ragCollection = updates["ragCollection"] as string;
+    if (updates["ragTopK"] !== undefined)
+      configUpdates.ragTopK = updates["ragTopK"] as number;
+    if (updates["ragThreshold"] !== undefined)
+      configUpdates.ragThreshold = updates["ragThreshold"] as number;
+    if (updates["hitlTimeoutMinutes"] !== undefined)
+      configUpdates.hitlTimeoutMinutes = updates[
+        "hitlTimeoutMinutes"
+      ] as number;
+    if (updates["hitlNotifyChannel"] !== undefined)
+      configUpdates.hitlNotifyChannel = updates["hitlNotifyChannel"] as string;
 
     // LLM config rebuild if any llm field present
-    if (updates['llmProvider'] || updates['llmModel'] || updates['llmTemperature'] || updates['llmMaxTokens'] || updates['llmSystemPrompt']) {
+    if (
+      updates["llmProvider"] ||
+      updates["llmModel"] ||
+      updates["llmTemperature"] ||
+      updates["llmMaxTokens"] ||
+      updates["llmSystemPrompt"]
+    ) {
       configUpdates.llmConfig = {
-        provider: (updates['llmProvider'] ?? agent.llmConfig.provider) as LLMProvider,
-        model: (updates['llmModel'] ?? agent.llmConfig.model) as string,
-        baseUrl: (updates['llmBaseUrl'] ?? agent.llmConfig.baseUrl) as string | undefined,
-        apiKeyRef: (updates['llmApiKeyRef'] ?? agent.llmConfig.apiKeyRef) as string | undefined,
-        temperature: (updates['llmTemperature'] ?? agent.llmConfig.temperature) as number,
-        maxTokens: (updates['llmMaxTokens'] ?? agent.llmConfig.maxTokens) as number,
-        systemPrompt: (updates['llmSystemPrompt'] ?? agent.llmConfig.systemPrompt) as string | undefined,
+        provider: (updates["llmProvider"] ??
+          agent.llmConfig.provider) as LLMProvider,
+        model: (updates["llmModel"] ?? agent.llmConfig.model) as string,
+        baseUrl: (updates["llmBaseUrl"] ?? agent.llmConfig.baseUrl) as
+          | string
+          | undefined,
+        apiKeyRef: (updates["llmApiKeyRef"] ?? agent.llmConfig.apiKeyRef) as
+          | string
+          | undefined,
+        temperature: (updates["llmTemperature"] ??
+          agent.llmConfig.temperature) as number,
+        maxTokens: (updates["llmMaxTokens"] ??
+          agent.llmConfig.maxTokens) as number,
+        systemPrompt: (updates["llmSystemPrompt"] ??
+          agent.llmConfig.systemPrompt) as string | undefined,
       };
     }
 
@@ -85,9 +124,12 @@ export class UpdateAgentHandler {
 export class ActivateAgentHandler {
   constructor(private readonly repo: AgentRepository) {}
 
-  async execute(agentId: string, operatorId: string): Promise<Result<void, Error>> {
+  async execute(
+    agentId: string,
+    operatorId: string,
+  ): Promise<Result<void, Error>> {
     const agent = await this.repo.findById(agentId, operatorId);
-    if (!agent) return err(new NotFoundError('Agent', agentId));
+    if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const result = agent.activate();
     if (result.isErr()) return result;
@@ -100,9 +142,13 @@ export class ActivateAgentHandler {
 export class PauseAgentHandler {
   constructor(private readonly repo: AgentRepository) {}
 
-  async execute(agentId: string, operatorId: string, reason?: string): Promise<Result<void, Error>> {
+  async execute(
+    agentId: string,
+    operatorId: string,
+    reason?: string,
+  ): Promise<Result<void, Error>> {
     const agent = await this.repo.findById(agentId, operatorId);
-    if (!agent) return err(new NotFoundError('Agent', agentId));
+    if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const result = agent.pause(reason);
     if (result.isErr()) return result;
@@ -125,9 +171,12 @@ export class GetAgentsHandler {
 export class GetAgentByIdHandler {
   constructor(private readonly repo: AgentRepository) {}
 
-  async execute(agentId: string, operatorId: string): Promise<Result<Agent, NotFoundError>> {
+  async execute(
+    agentId: string,
+    operatorId: string,
+  ): Promise<Result<Agent, NotFoundError>> {
     const agent = await this.repo.findById(agentId, operatorId);
-    if (!agent) return err(new NotFoundError('Agent', agentId));
+    if (!agent) return err(new NotFoundError("Agent", agentId));
     return ok(agent);
   }
 }

@@ -84,13 +84,13 @@ routers get-status {router_name} --region {region}
 
 ## Key Fields
 
--   `jsonPayload.gateway_details.external_ip` / `external_port`: NAT exit point.
--   `jsonPayload.gateway_details.internal_ip` / `internal_port`: Source VM.
--   `jsonPayload.allocation_status`: `DROPPED` indicates failure to allocate a
-    NAT port.
+- `jsonPayload.gateway_details.external_ip` / `external_port`: NAT exit point.
+- `jsonPayload.gateway_details.internal_ip` / `internal_port`: Source VM.
+- `jsonPayload.allocation_status`: `DROPPED` indicates failure to allocate a
+  NAT port.
 
 ## Scenarios
 
--   **Audit Traffic**: Link internal sources to external destinations.
--   **Port Exhaustion**: Use `jsonPayload.allocation_status="DROPPED"` to
-    identify impacted VMs.
+- **Audit Traffic**: Link internal sources to external destinations.
+- **Port Exhaustion**: Use `jsonPayload.allocation_status="DROPPED"` to
+  identify impacted VMs.

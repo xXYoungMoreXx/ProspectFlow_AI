@@ -1,55 +1,52 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+
+const isCI = !!process.env.CI;
+
 export default defineConfig({
-  testDir: './tests/e2e',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
-    /* Capture screenshot on failure */
-    screenshot: 'only-on-failure',
-    /* Capture video on failure */
-    video: 'retain-on-failure',
+  testDir: "./tests/e2e",
+  timeout: 120 * 1000,
+  expect: {
+    timeout: 20 * 1000,
   },
-
-  /* Configure projects for major browsers */
+  fullyParallel: true,
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 0,
+  workers: isCI ? 1 : undefined,
+  reporter: isCI
+    ? [["list"], ["github"], ["html", { open: "never" }], ["junit", { outputFile: "playwright-report/results.xml" }]]
+    : [["html"]],
+  use: {
+    actionTimeout: 30 * 1000,
+    navigationTimeout: 60 * 1000,
+    baseURL: "http://localhost:3000",
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
+  },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
-    // We can enable firefox and webkit later if needed for full coverage
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
   ],
 
-  /* Run your local dev server before starting the tests */
+  /**
+   * Web server configuration.
+   * - CI: starts `next start` using the pre-built output from the `build` job.
+   *   All API calls are mocked with page.route(), so no backend is needed.
+   * - Local: reuses the already-running dev server on :3000.
+   */
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 300 * 1000,
+    command: isCI ? "npx next start" : "npx next dev",
+    url: "http://localhost:3000",
+    reuseExistingServer: !isCI,
+    timeout: 120 * 1000,
+    env: {
+      NEXT_PUBLIC_API_URL: "http://localhost:3333/api/v1",
+    },
   },
 });

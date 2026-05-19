@@ -1,6 +1,6 @@
-import type { Job } from 'bullmq';
-import type { BullMQAdapter } from './BullMQAdapter.js';
-import type { EmailAdapter } from '../messaging/EmailAdapter.js';
+import type { Job } from "bullmq";
+import type { BullMQAdapter } from "./BullMQAdapter.js";
+import type { EmailAdapter } from "../messaging/EmailAdapter.js";
 
 /**
  * EmailWorker — Processes email-sending queue jobs.
@@ -17,8 +17,10 @@ export class EmailWorker {
   ) {}
 
   start(): void {
-    this.queue.createWorker('email-sending', (job: Job) => this.processEmail(job));
-    console.info('[EmailWorker] Worker started on queue: email-sending');
+    this.queue.createWorker("email-sending", (job: Job) =>
+      this.processEmail(job),
+    );
+    console.info("[EmailWorker] Worker started on queue: email-sending");
   }
 
   private async processEmail(job: Job): Promise<void> {
@@ -29,7 +31,7 @@ export class EmailWorker {
     };
 
     if (!to || !subject) {
-      throw new Error('Email job missing required fields: to, subject');
+      throw new Error("Email job missing required fields: to, subject");
     }
 
     const startTime = performance.now();
@@ -41,9 +43,14 @@ export class EmailWorker {
         htmlContent: body,
       });
       const durationMs = Math.round(performance.now() - startTime);
-      console.info(`[EmailWorker] Email sent to=${to} subject="${subject}" duration=${durationMs}ms`);
+      console.info(
+        `[EmailWorker] Email sent to=${to} subject="${subject}" duration=${durationMs}ms`,
+      );
     } catch (error: any) {
-      console.error(`[EmailWorker] Failed to send email to=${to}:`, error.message);
+      console.error(
+        `[EmailWorker] Failed to send email to=${to}:`,
+        error.message,
+      );
       throw error; // Re-throw to trigger BullMQ retry
     }
   }

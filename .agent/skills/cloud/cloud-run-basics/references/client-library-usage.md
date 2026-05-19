@@ -77,10 +77,10 @@ Ensure you have the Google Cloud SDK installed and authenticated.
 - **Usage Example:**
 
   ```typescript
-  import {ServicesClient} from '@google-cloud/run';
+  import { ServicesClient } from "@google-cloud/run";
   const client = new ServicesClient();
   const [services] = await client.listServices({
-    parent: 'projects/my-project/locations/us-central1',
+    parent: "projects/my-project/locations/us-central1",
   });
   ```
 

@@ -47,12 +47,15 @@ A arquitetura é construída para ser **extensível por design**: novos serviço
 ## 2. Contexto e Problema
 
 ### Problema Central
+
 Profissionais e pequenas agências digitais perdem entre 40–70% do seu tempo em tarefas repetitivas: prospecção manual de clientes, elaboração de propostas, negociação básica e desenvolvimento de sites padronizados. O custo de aquisição de clientes é alto e o ciclo de vendas é lento.
 
 ### Solução Proposta
+
 Agentes de IA especializados por função, orquestrados numa plataforma configurável, que executam o funil completo de vendas e entrega. O operador humano foca em aprovações estratégicas e no crescimento do negócio.
 
 ### Diferencial
+
 - Configuração por UI (não por código) para cada agente: skills, rules, workflows, RAG, MCPs e fine-tuning
 - Escolha de LLM por agente: API key externa (OpenAI, Anthropic, Groq) ou Ollama local
 - Ciclo de entrega fechado no MVP: prospecta → vende → entrega → fatura
@@ -63,13 +66,13 @@ Agentes de IA especializados por função, orquestrados numa plataforma configur
 
 ### OKRs do MVP (90 dias pós-lançamento)
 
-| Objetivo | Key Result | Meta |
-|---|---|---|
-| Validar ciclo de vendas autônomo | Leads contatados por agente | ≥ 50/semana |
-| Validar entrega automatizada | Sites entregues sem intervenção técnica | ≥ 80% do total |
-| Validar confiança do operador | Taxa de aprovação HITL sem override manual | ≥ 70% |
-| Validar qualidade técnica | Score Lighthouse mínimo nos sites gerados | ≥ 85 performance, 100 a11y |
-| Segurança | Vulnerabilidades críticas (OWASP Top 10) em produção | 0 |
+| Objetivo                         | Key Result                                           | Meta                       |
+| -------------------------------- | ---------------------------------------------------- | -------------------------- |
+| Validar ciclo de vendas autônomo | Leads contatados por agente                          | ≥ 50/semana                |
+| Validar entrega automatizada     | Sites entregues sem intervenção técnica              | ≥ 80% do total             |
+| Validar confiança do operador    | Taxa de aprovação HITL sem override manual           | ≥ 70%                      |
+| Validar qualidade técnica        | Score Lighthouse mínimo nos sites gerados            | ≥ 85 performance, 100 a11y |
+| Segurança                        | Vulnerabilidades críticas (OWASP Top 10) em produção | 0                          |
 
 ### KPIs de Produto
 
@@ -97,7 +100,7 @@ Agentes de IA especializados por função, orquestrados numa plataforma configur
  │   ├── Qualificação por critérios configuráveis
  │   └── HITL: aprovação antes de contato externo
  ├── Agente de Vendas (Persona: Closer)
- │   ├── Negociação via chat (WhatsApp/Email simulado)
+ │   ├── Negociação via chat (WhatsApp/Telegram/Email simulado)
  │   ├── Geração de proposta com precificação dinâmica
  │   └── HITL: aprovação de proposta antes de enviar
  ├── Agente Desenvolvedor (Persona: Builder)
@@ -126,12 +129,15 @@ Agentes de IA especializados por função, orquestrados numa plataforma configur
 ## 5. Stakeholders e Personas
 
 ### Operador (usuário direto do sistema)
+
 Freelancer ou dono de micro-agência digital. Quer automatizar prospecção e entrega sem precisar codar. Técnico o suficiente para entender configurações básicas de agentes. Máxima prioridade: **não queimar a imagem dele com clientes por mensagens ruins dos agentes**.
 
 ### Cliente Final (prospect abordado pelos agentes)
+
 Pequeno empresário ou profissional liberal. Recebe contato via WhatsApp ou e-mail. Não sabe que está falando com um agente de IA inicialmente. Quer um site rápido, bonito e barato.
 
 ### Agente de IA (persona técnica)
+
 Entidade computacional com papel, skills, rules e memória. Não é usuário, mas é tratado como ator no sistema com seus próprios bounded contexts, configurações e logs de ação.
 
 ---
@@ -171,7 +177,7 @@ Entidade computacional com papel, skills, rules e memória. Não é usuário, ma
                    │ (Driven Side)
 ┌──────────────────▼──────────────────────────────────────────────┐
 │                     EXTERNAL SERVICES                           │
-│  WhatsApp (Evolution API) · SMTP · Vercel · Netlify · Web Search│
+│  WhatsApp (Evol. API) · Telegram · SMTP · Vercel · Railway · Web Search│
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -222,25 +228,25 @@ Cada sprint de desenvolvimento mapeia uma iteração GSD completa com Definition
 ```typescript
 // Domain Entity
 class Agent {
-  readonly id: AgentId                    // Value Object
-  readonly persona: AgentPersona          // Enum: HUNTER | CLOSER | BUILDER | QA
-  name: AgentName                         // Value Object (min 3, max 50 chars)
-  llmConfig: LLMConfiguration             // Value Object
-  skills: SkillCollection                 // Value Object Collection
-  rules: RuleCollection                   // Value Object Collection
-  status: AgentStatus                     // Enum: ACTIVE | INACTIVE | PAUSED
-  ragConfig?: RAGConfiguration            // Optional Value Object
-  mcpServers: MCPServerCollection         // Value Object Collection
-  createdAt: Timestamp
-  updatedAt: Timestamp
+  readonly id: AgentId; // Value Object
+  readonly persona: AgentPersona; // Enum: HUNTER | CLOSER | BUILDER | QA
+  name: AgentName; // Value Object (min 3, max 50 chars)
+  llmConfig: LLMConfiguration; // Value Object
+  skills: SkillCollection; // Value Object Collection
+  rules: RuleCollection; // Value Object Collection
+  status: AgentStatus; // Enum: ACTIVE | INACTIVE | PAUSED
+  ragConfig?: RAGConfiguration; // Optional Value Object
+  mcpServers: MCPServerCollection; // Value Object Collection
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 
   // Domain Methods
-  activate(): DomainEvent<AgentActivated>
-  pause(): DomainEvent<AgentPaused>
-  updateLLM(config: LLMConfiguration): void
-  addSkill(skill: Skill): void
-  removeSkill(skillId: SkillId): void
-  canExecuteTask(taskType: TaskType): boolean
+  activate(): DomainEvent<AgentActivated>;
+  pause(): DomainEvent<AgentPaused>;
+  updateLLM(config: LLMConfiguration): void;
+  addSkill(skill: Skill): void;
+  removeSkill(skillId: SkillId): void;
+  canExecuteTask(taskType: TaskType): boolean;
 }
 ```
 
@@ -248,21 +254,21 @@ class Agent {
 
 ```typescript
 class Lead {
-  readonly id: LeadId
-  contact: ContactInfo                    // Value Object (name, email, phone, company)
-  source: LeadSource                      // Enum: MANUAL | SCRAPED | REFERRAL
-  qualificationScore: QualificationScore  // Value Object (0-100)
-  status: LeadStatus                      // Enum: NEW | CONTACTED | QUALIFIED | CONVERTED | LOST
-  conversationHistory: Message[]          // Entity collection
-  assignedAgentId: AgentId
-  hitlApprovals: HITLApproval[]           // Audit trail
-  createdAt: Timestamp
+  readonly id: LeadId;
+  contact: ContactInfo; // Value Object (name, email, phone, company)
+  source: LeadSource; // Enum: MANUAL | SCRAPED | REFERRAL
+  qualificationScore: QualificationScore; // Value Object (0-100)
+  status: LeadStatus; // Enum: NEW | CONTACTED | QUALIFIED | CONVERTED | LOST
+  conversationHistory: Message[]; // Entity collection
+  assignedAgentId: AgentId;
+  hitlApprovals: HITLApproval[]; // Audit trail
+  createdAt: Timestamp;
 
   // Domain Methods
-  qualify(score: QualificationScore): DomainEvent<LeadQualified>
-  convert(deal: Deal): DomainEvent<LeadConverted>
-  recordMessage(message: Message): void
-  requiresHITLApproval(actionType: ActionType): boolean
+  qualify(score: QualificationScore): DomainEvent<LeadQualified>;
+  convert(deal: Deal): DomainEvent<LeadConverted>;
+  recordMessage(message: Message): void;
+  requiresHITLApproval(actionType: ActionType): boolean;
 }
 ```
 
@@ -270,20 +276,20 @@ class Lead {
 
 ```typescript
 class Deal {
-  readonly id: DealId
-  readonly leadId: LeadId
-  service: ServiceType                    // Enum: WEBSITE | TRAFFIC | SOCIAL_MEDIA
-  proposal: Proposal                      // Value Object
-  pricing: Pricing                        // Value Object (basePrice, addons, total)
-  status: DealStatus                      // Enum: PROPOSED | NEGOTIATING | CLOSED | CANCELLED
-  closedAt?: Timestamp
-  project?: ProjectRef                    // Reference após fechamento
+  readonly id: DealId;
+  readonly leadId: LeadId;
+  service: ServiceType; // Enum: WEBSITE | TRAFFIC | SOCIAL_MEDIA
+  proposal: Proposal; // Value Object
+  pricing: Pricing; // Value Object (basePrice, addons, total)
+  status: DealStatus; // Enum: PROPOSED | NEGOTIATING | CLOSED | CANCELLED
+  closedAt?: Timestamp;
+  project?: ProjectRef; // Reference após fechamento
 
   // Domain Methods
-  generateProposal(briefing: ClientBriefing): Proposal
-  updatePricing(pricing: Pricing): void
-  close(): DomainEvent<DealClosed>
-  cancel(reason: CancellationReason): DomainEvent<DealCancelled>
+  generateProposal(briefing: ClientBriefing): Proposal;
+  updatePricing(pricing: Pricing): void;
+  close(): DomainEvent<DealClosed>;
+  cancel(reason: CancellationReason): DomainEvent<DealCancelled>;
 }
 ```
 
@@ -291,23 +297,23 @@ class Deal {
 
 ```typescript
 class Project {
-  readonly id: ProjectId
-  readonly dealId: DealId
-  readonly clientId: ClientId
-  briefing: ClientBriefing                // Value Object
-  deliverable: Deliverable                // Value Object (url, files, metadata)
-  status: ProjectStatus                   // Enum: PLANNING | IN_PROGRESS | REVIEW | DELIVERED | REVISION
-  assignedAgentId: AgentId
-  qualityScore?: QualityScore             // Value Object (Lighthouse scores)
-  hitlApprovals: HITLApproval[]
-  createdAt: Timestamp
-  deliveredAt?: Timestamp
+  readonly id: ProjectId;
+  readonly dealId: DealId;
+  readonly clientId: ClientId;
+  briefing: ClientBriefing; // Value Object
+  deliverable: Deliverable; // Value Object (url, files, metadata)
+  status: ProjectStatus; // Enum: PLANNING | IN_PROGRESS | REVIEW | DELIVERED | REVISION
+  assignedAgentId: AgentId;
+  qualityScore?: QualityScore; // Value Object (Lighthouse scores)
+  hitlApprovals: HITLApproval[];
+  createdAt: Timestamp;
+  deliveredAt?: Timestamp;
 
   // Domain Methods
-  startDevelopment(): DomainEvent<ProjectStarted>
-  requestReview(): DomainEvent<ProjectReadyForReview>
-  deliver(deliverable: Deliverable): DomainEvent<ProjectDelivered>
-  requestRevision(notes: RevisionNotes): DomainEvent<RevisionRequested>
+  startDevelopment(): DomainEvent<ProjectStarted>;
+  requestReview(): DomainEvent<ProjectReadyForReview>;
+  deliver(deliverable: Deliverable): DomainEvent<ProjectDelivered>;
+  requestRevision(notes: RevisionNotes): DomainEvent<RevisionRequested>;
 }
 ```
 
@@ -316,39 +322,39 @@ class Project {
 ```typescript
 // LLM Configuration — imutável
 class LLMConfiguration {
-  readonly provider: LLMProvider          // Enum: OLLAMA | OPENAI | ANTHROPIC | GROQ | CUSTOM
-  readonly modelName: string
-  readonly baseUrl?: URL                  // Para Ollama local
-  readonly apiKeyRef: SecretRef           // Referência ao vault, NUNCA o valor direto
-  readonly temperature: Temperature       // Float 0.0–2.0
-  readonly maxTokens: MaxTokens           // Int 100–128000
-  readonly systemPrompt: SystemPrompt     // Max 8000 chars
+  readonly provider: LLMProvider; // Enum: OLLAMA | OPENAI | ANTHROPIC | GROQ | CUSTOM
+  readonly modelName: string;
+  readonly baseUrl?: URL; // Para Ollama local
+  readonly apiKeyRef: SecretRef; // Referência ao vault, NUNCA o valor direto
+  readonly temperature: Temperature; // Float 0.0–2.0
+  readonly maxTokens: MaxTokens; // Int 100–128000
+  readonly systemPrompt: SystemPrompt; // Max 8000 chars
 
-  validate(): ValidationResult
-  isLocal(): boolean
-  toSafeLog(): object                     // Sem apiKeyRef
+  validate(): ValidationResult;
+  isLocal(): boolean;
+  toSafeLog(): object; // Sem apiKeyRef
 }
 
 // HITL Approval — imutável após criação
 class HITLApproval {
-  readonly id: HITLApprovalId
-  readonly actionType: ActionType
-  readonly payload: RedactedPayload       // PII removido para audit log
-  readonly requestedAt: Timestamp
-  readonly decision?: HITLDecision        // APPROVED | REJECTED | EXPIRED
-  readonly decidedAt?: Timestamp
-  readonly operatorNote?: string
+  readonly id: HITLApprovalId;
+  readonly actionType: ActionType;
+  readonly payload: RedactedPayload; // PII removido para audit log
+  readonly requestedAt: Timestamp;
+  readonly decision?: HITLDecision; // APPROVED | REJECTED | EXPIRED
+  readonly decidedAt?: Timestamp;
+  readonly operatorNote?: string;
 }
 
 // Pricing — regras de negócio encapsuladas
 class Pricing {
-  readonly basePrice: Money               // Value Object com currency
-  readonly addons: PricingAddon[]
-  readonly discountPct: Percentage        // 0-100
-  
-  get total(): Money
-  get marginEstimate(): Money
-  isValid(): boolean
+  readonly basePrice: Money; // Value Object com currency
+  readonly addons: PricingAddon[];
+  readonly discountPct: Percentage; // 0-100
+
+  get total(): Money;
+  get marginEstimate(): Money;
+  isValid(): boolean;
 }
 ```
 
@@ -357,23 +363,23 @@ class Pricing {
 ```typescript
 // Todos os eventos são imutáveis e carregam timestamp + correlation ID
 type DomainEvent<T> = {
-  eventId: UUID
-  eventType: string
-  aggregateId: string
-  aggregateType: string
-  occurredAt: Timestamp
-  correlationId: UUID          // Para tracing distribuído
-  causationId?: UUID           // Event que causou este
-  payload: T
-}
+  eventId: UUID;
+  eventType: string;
+  aggregateId: string;
+  aggregateType: string;
+  occurredAt: Timestamp;
+  correlationId: UUID; // Para tracing distribuído
+  causationId?: UUID; // Event que causou este
+  payload: T;
+};
 
 // Eventos do MVP
-LeadCreated, LeadQualified, LeadConverted, LeadLost
-DealProposed, DealClosed, DealCancelled
-ProjectStarted, ProjectReadyForReview, ProjectDelivered, RevisionRequested
-AgentActivated, AgentPaused, AgentTaskCompleted, AgentTaskFailed
-HITLApprovalRequested, HITLApprovalDecided
-MessageSent, MessageReceived                           // Auditável
+(LeadCreated, LeadQualified, LeadConverted, LeadLost);
+(DealProposed, DealClosed, DealCancelled);
+(ProjectStarted, ProjectReadyForReview, ProjectDelivered, RevisionRequested);
+(AgentActivated, AgentPaused, AgentTaskCompleted, AgentTaskFailed);
+(HITLApprovalRequested, HITLApprovalDecided);
+(MessageSent, MessageReceived); // Auditável
 ```
 
 ---
@@ -389,56 +395,56 @@ agent:
   id: uuid
   persona: HUNTER | CLOSER | BUILDER | QA
   name: string
-  
+
   llm:
     provider: ollama | openai | anthropic | groq
-    model: string                         # ex: llama3:70b, gpt-4o, claude-sonnet-4-5
-    base_url: string?                     # Ollama: http://localhost:11434
-    api_key_ref: string                   # Referência ao vault: "secrets/agent_llm_key"
-    temperature: float                    # 0.0 – 1.0
+    model: string # ex: llama3:70b, gpt-4o, claude-sonnet-4-5
+    base_url: string? # Ollama: http://localhost:11434
+    api_key_ref: string # Referência ao vault: "secrets/agent_llm_key"
+    temperature: float # 0.0 – 1.0
     max_tokens: int
     system_prompt: |
       [prompt base do agente — carregado do template por persona]
-  
+
   skills:
     - id: uuid
       name: string
       type: web_search | scraping | email | whatsapp | file_gen | deploy | code_gen | rag_query
-      config: {}                          # Específico por tipo
+      config: {} # Específico por tipo
       enabled: boolean
-  
+
   rules:
     - id: uuid
       name: string
-      condition: string                   # Expressão CEL/JavaScript avaliada em runtime
+      condition: string # Expressão CEL/JavaScript avaliada em runtime
       action: BLOCK | WARN | LOG | ESCALATE_HITL
-      priority: int                       # Menor = maior prioridade
-  
+      priority: int # Menor = maior prioridade
+
   workflows:
     - id: uuid
       name: string
-      n8n_workflow_id: string             # ID do workflow no n8n
+      n8n_workflow_id: string # ID do workflow no n8n
       trigger: domain_event | schedule | manual
       trigger_config: {}
-  
+
   rag:
     enabled: boolean
-    collection_name: string              # ChromaDB collection
-    top_k: int                           # Número de docs recuperados
-    similarity_threshold: float          # 0.0–1.0
-  
+    collection_name: string # ChromaDB collection
+    top_k: int # Número de docs recuperados
+    similarity_threshold: float # 0.0–1.0
+
   mcp_servers:
     - name: string
-      url: string                        # Validado contra allowlist
-      auth_ref: string?                  # Referência ao vault
-  
+      url: string # Validado contra allowlist
+      auth_ref: string? # Referência ao vault
+
   hitl:
     require_approval_for:
       - SEND_EXTERNAL_MESSAGE
       - SEND_PROPOSAL
       - DEPLOY_SITE
       - CHARGE_CUSTOMER
-    approval_timeout_minutes: 60         # Auto-rejeita após timeout
+    approval_timeout_minutes: 60 # Auto-rejeita após timeout
     notify_channel: email | telegram | slack
 ```
 
@@ -449,25 +455,27 @@ agent:
 **Objetivo:** Identificar, qualificar e preparar leads para contato, com aprovação HITL antes de qualquer mensagem externa.
 
 **System Prompt Base:**
+
 ```
-Você é um especialista em prospecção digital B2B/B2C para agências de serviços web. 
-Sua missão é identificar negócios que se beneficiariam de um site profissional ou 
-de melhoria do site atual. Avalie cada lead nos critérios: presença digital atual, 
-porte do negócio, segmento, potencial de conversão (0-100). 
+Você é um especialista em prospecção digital B2B/B2C para agências de serviços web.
+Sua missão é identificar negócios que se beneficiariam de um site profissional ou
+de melhoria do site atual. Avalie cada lead nos critérios: presença digital atual,
+porte do negócio, segmento, potencial de conversão (0-100).
 NUNCA envie mensagens externas sem aprovação do operador humano.
 Responda sempre em pt-BR. Seja objetivo e preciso nas qualificações.
 ```
 
 **Skills configuradas no MVP:**
+
 ```yaml
 skills:
   - name: web_search
     type: web_search
     config:
-      engine: searxng_local              # SearXNG self-hosted, sem rastreadores
+      engine: searxng_local # SearXNG self-hosted, sem rastreadores
       max_results: 10
       safe_search: true
-  
+
   - name: site_analyzer
     type: scraping
     config:
@@ -475,7 +483,7 @@ skills:
       timeout_ms: 5000
       extract: [title, description, has_contact, has_mobile, performance_hint]
       user_agent: "AgentePro-Crawler/1.0 (+https://seudominio.com/bot)"
-  
+
   - name: lead_scorer
     type: rag_query
     config:
@@ -484,23 +492,24 @@ skills:
 ```
 
 **Rules:**
+
 ```yaml
 rules:
   - name: no_external_contact_without_hitl
     condition: "action.type == 'SEND_MESSAGE' && action.channel != 'INTERNAL'"
     action: ESCALATE_HITL
     priority: 1
-  
+
   - name: block_government_entities
     condition: "lead.sector == 'GOVERNMENT'"
     action: BLOCK
     priority: 2
-  
+
   - name: min_qualification_score
     condition: "lead.qualificationScore < 40"
     action: LOG
     priority: 3
-  
+
   - name: rate_limit_scraping
     condition: "agent.requestsInLastMinute > 30"
     action: BLOCK
@@ -508,6 +517,7 @@ rules:
 ```
 
 **Workflow Principal (n8n):**
+
 ```
 Trigger: Schedule (diário 09:00) ou Manual
 → Task: Gerar lista de nichos/regiões para prospectar
@@ -528,24 +538,26 @@ Trigger: Schedule (diário 09:00) ou Manual
 **Objetivo:** Conduzir a negociação com o lead qualificado, gerar proposta personalizada e fechar o deal.
 
 **System Prompt Base:**
+
 ```
 Você é um consultor de vendas especializado em serviços digitais para pequenos negócios.
-Seu estilo é consultivo, empático e direto. Você entende as necessidades do cliente antes 
+Seu estilo é consultivo, empático e direto. Você entende as necessidades do cliente antes
 de apresentar soluções. Você gera propostas honestas com preços justos.
 Nunca pressione o cliente. Nunca prometa o que não pode ser entregue.
 NUNCA envie proposta sem aprovação do operador. Responda em pt-BR.
 ```
 
 **Skills configuradas no MVP:**
+
 ```yaml
 skills:
   - name: whatsapp_sender
     type: whatsapp
     config:
-      evolution_api_url: "${EVOLUTION_API_URL}"   # Referência env
+      evolution_api_url: "${EVOLUTION_API_URL}" # Referência env
       instance_name: "${WPP_INSTANCE}"
-      require_hitl: true                           # SEMPRE
-  
+      require_hitl: true # SEMPRE
+
   - name: email_sender
     type: email
     config:
@@ -553,47 +565,49 @@ skills:
       from_name: "${OPERATOR_NAME}"
       from_email: "${OPERATOR_EMAIL}"
       require_hitl: true
-  
+
   - name: proposal_generator
     type: rag_query
     config:
       collection: proposal_templates
       top_k: 3
-  
+
   - name: pricing_calculator
     type: code_gen
     config:
       engine: internal
-      script: pricing_rules_v1.js          # Script versionado no repositório
+      script: pricing_rules_v1.js # Script versionado no repositório
 ```
 
 **Regras de Precificação (pricing_rules_v1.js):**
+
 ```javascript
 // pricing_rules_v1.js — versionado, auditável, sem side effects
 export function calculatePrice(briefing) {
-  const BASE = 800;                        // R$ mínimo
+  const BASE = 800; // R$ mínimo
   let price = BASE;
-  
+
   // Complexity multipliers
-  if (briefing.pages > 5)    price += (briefing.pages - 5) * 120;
-  if (briefing.hasEcommerce)  price += 600;
-  if (briefing.hasBlog)       price += 200;
+  if (briefing.pages > 5) price += (briefing.pages - 5) * 120;
+  if (briefing.hasEcommerce) price += 600;
+  if (briefing.hasBlog) price += 200;
   if (briefing.hasCustomForm) price += 150;
   if (briefing.needsCopywriting) price += 300;
-  
+
   // Urgency premium
   if (briefing.deliveryDays < 3) price *= 1.4;
-  
+
   // Cap máximo sem override humano
   if (price > 5000) {
     return { price, requiresHITL: true, reason: "above_threshold" };
   }
-  
+
   return { price, requiresHITL: false };
 }
 ```
 
 **Workflow Principal (n8n):**
+
 ```
 Trigger: DomainEvent[LeadApprovedForContact]
 → Task: Carregar histórico do lead no CRM
@@ -619,15 +633,17 @@ Trigger: DomainEvent[LeadApprovedForContact]
 **Objetivo:** Desenvolver e entregar o site contratado seguindo padrões de qualidade, segurança e performance.
 
 **System Prompt Base:**
+
 ```
-Você é um desenvolvedor web sênior especializado em criar sites profissionais, 
-performáticos e acessíveis. Você segue rigorosamente: WCAG 2.1 AA, OWASP Top 10, 
+Você é um desenvolvedor web sênior especializado em criar sites profissionais,
+performáticos e acessíveis. Você segue rigorosamente: WCAG 2.1 AA, OWASP Top 10,
 Core Web Vitals, Clean Code. Você usa apenas templates aprovados do catálogo interno.
 Nunca invente arquiteturas não testadas. Prefira simplicidade e confiabilidade.
 NUNCA faça deploy sem aprovação do operador. Documente tudo.
 ```
 
 **Skills configuradas no MVP:**
+
 ```yaml
 skills:
   - name: template_selector
@@ -635,8 +651,8 @@ skills:
     config:
       collection: site_templates
       top_k: 5
-      metadata_filter: {type: "website", status: "approved"}
-  
+      metadata_filter: { type: "website", status: "approved" }
+
   - name: code_customizer
     type: code_gen
     config:
@@ -644,15 +660,15 @@ skills:
       output_validation: true
       owasp_check: true
       max_file_size_kb: 500
-  
+
   - name: asset_handler
     type: file_gen
     config:
       allowed_mime_types: [image/jpeg, image/png, image/webp, image/svg+xml]
       max_size_mb: 5
-      validate_magic_bytes: true           # OBRIGATÓRIO
+      validate_magic_bytes: true # OBRIGATÓRIO
       optimize_images: true
-  
+
   - name: deployer
     type: deploy
     config:
@@ -665,6 +681,7 @@ skills:
 ```
 
 **Templates do Catálogo (RAG Collection: site_templates):**
+
 ```
 - template_01: Landing Page One-Page (Next.js 14, Tailwind, TypeScript)
 - template_02: Site Institucional 5 páginas (Next.js 14, Tailwind, TypeScript)
@@ -681,6 +698,7 @@ Cada template inclui:
 ```
 
 **Workflow Principal (n8n):**
+
 ```
 Trigger: DomainEvent[DealClosed]
 → Task: Carregar briefing completo do deal
@@ -707,6 +725,7 @@ Trigger: DomainEvent[DealClosed]
 **Objetivo:** Revisar código e outputs dos agentes antes da entrega, garantindo qualidade e segurança.
 
 **Skills:**
+
 ```yaml
 skills:
   - name: owasp_scanner
@@ -714,7 +733,7 @@ skills:
     config:
       engine: internal
       checks: [xss, sqli, csp_headers, open_redirect, path_traversal]
-  
+
   - name: lighthouse_runner
     type: code_gen
     config:
@@ -724,7 +743,7 @@ skills:
         accessibility: 100
         best_practices: 90
         seo: 90
-  
+
   - name: html_validator
     type: code_gen
     config:
@@ -736,6 +755,7 @@ skills:
 ## 9. Requisitos Funcionais
 
 ### RF-001: Autenticação do Operador
+
 - O sistema deve suportar login com e-mail + senha
 - Senha armazenada com Argon2id (memCost ≥ 65536, timeCost ≥ 3, parallelism ≥ 4)
 - JWT com expiração de 1 hora + refresh token rotativo (7 dias)
@@ -743,6 +763,7 @@ skills:
 - Resposta de erro genérica em falha de autenticação (anti-enumeração)
 
 ### RF-002: Gestão de Agentes
+
 - CRUD completo de agentes via interface web
 - Cada agente tem persona fixa (HUNTER, CLOSER, BUILDER, QA)
 - Configuração de LLM por agente: selecionar provider, modelo, temperatura, tokens
@@ -754,6 +775,7 @@ skills:
 - Histórico de alterações por agente (audit log)
 
 ### RF-003: HITL (Human-in-the-Loop)
+
 - Toda ação externa deve passar por aprovação antes de ser executada
 - Interface de aprovação com: preview da ação, payload completo, contexto do lead/deal
 - Botões: APROVAR / REJEITAR / EDITAR E APROVAR
@@ -762,6 +784,7 @@ skills:
 - Todas as decisões HITL registradas no audit log com timestamp e operador
 
 ### RF-004: CRM de Clientes
+
 - Listagem de clientes com filtros: status, agente responsável, valor, data
 - Perfil do cliente: dados de contato, histórico de conversas, deals, projetos
 - Histórico de conversas com reprodução fiel (sem alteração possível — append-only)
@@ -770,12 +793,14 @@ skills:
 - Exportação de dados em CSV (LGPD: apenas operador)
 
 ### RF-005: Configuração de Workflows
+
 - Interface para vincular workflows n8n a agentes
 - Visualização do status de execuções de workflows
 - Logs de execução por workflow
 - Possibilidade de reexecutar workflow manualmente
 
 ### RF-006: RAG por Agente
+
 - Upload de documentos para cada agente (PDF, MD, TXT)
 - Validação de MIME type + magic bytes em todos os uploads
 - Processamento assíncrono (chunking + embedding)
@@ -783,6 +808,7 @@ skills:
 - Gerenciamento da collection (adicionar, remover documentos)
 
 ### RF-007: Entrega de Sites (Builder)
+
 - Seleção de template a partir do catálogo curado
 - Preview do site gerado antes de qualquer deploy
 - Deploy em Vercel ou Netlify (free tier) com URL permanente
@@ -794,23 +820,27 @@ skills:
 ## 10. Requisitos Não-Funcionais
 
 ### Performance
+
 - Tempo de resposta da API: p95 < 500ms para endpoints síncronos
 - Geração de código pelo Builder: < 5 minutos por site (SLA interno)
 - Carregamento do painel: < 2 segundos (First Contentful Paint)
 - Sites entregues: Lighthouse Performance ≥ 80
 
 ### Escalabilidade
+
 - Arquitetura stateless na API (horizontal scaling ready)
 - Filas assíncronas para tarefas longas (bull/bullmq via Redis)
 - Sem lock de vendor: toda integração LLM via adapter desacoplado
 - ChromaDB e PostgreSQL com connection pooling (pgbouncer)
 
 ### Disponibilidade (MVP)
+
 - Uptime alvo: 99.5% (exceto janelas de manutenção programadas)
 - Health check endpoint: `GET /health` com status de dependências
 - Graceful shutdown com drain de filas
 
 ### Compatibilidade
+
 - API REST com OpenAPI 3.1 spec (gerada automaticamente)
 - Frontend: suporte a Chrome 120+, Firefox 120+, Safari 17+, Edge 120+
 - Mobile-first no painel (responsivo)
@@ -825,7 +855,7 @@ skills:
 // Exemplo de configuração Argon2id — NÃO alterar sem revisão de segurança
 const ARGON2_CONFIG = {
   type: argon2.argon2id,
-  memoryCost: 2 ** 16,      // 64 MB
+  memoryCost: 2 ** 16, // 64 MB
   timeCost: 3,
   parallelism: 4,
   hashLength: 32,
@@ -833,11 +863,11 @@ const ARGON2_CONFIG = {
 
 // JWT — assinar com RS256 (chave RSA), nunca HS256 com segredo fraco
 const JWT_CONFIG = {
-  algorithm: 'RS256',
-  accessTokenExpiry: '1h',
-  refreshTokenExpiry: '7d',
-  issuer: 'agentepro.yourdomain.com',
-  audience: 'agentepro-api',
+  algorithm: "RS256",
+  accessTokenExpiry: "1h",
+  refreshTokenExpiry: "7d",
+  issuer: "agentepro.yourdomain.com",
+  audience: "agentepro-api",
 } as const;
 ```
 
@@ -847,17 +877,17 @@ const JWT_CONFIG = {
 // CORRETO — resposta genérica sempre
 async function login(email: string, password: string): Promise<AuthResult> {
   const user = await userRepository.findByEmail(email);
-  
+
   // SEMPRE executar hash comparison, mesmo se usuário não existe
   // Isso previne timing attacks
-  const dummyHash = '$argon2id$v=19$m=65536,t=3,p=4$...';
+  const dummyHash = "$argon2id$v=19$m=65536,t=3,p=4$...";
   const hashToCompare = user?.passwordHash ?? dummyHash;
   const isValid = await argon2.verify(hashToCompare, password);
-  
+
   if (!user || !isValid) {
-    throw new AuthenticationError('Credenciais inválidas');  // Genérico
+    throw new AuthenticationError("Credenciais inválidas"); // Genérico
   }
-  
+
   return generateTokens(user);
 }
 ```
@@ -866,50 +896,59 @@ async function login(email: string, password: string): Promise<AuthResult> {
 
 ```typescript
 // Middleware de validação — TODA rota passa por isso
-const validateInput = (schema: ZodSchema) => async (req: Request, res: Response, next: NextFunction) => {
-  // Limite de tamanho antes de parsing (evita DoS/JSON bomb)
-  if (req.headers['content-length'] && parseInt(req.headers['content-length']) > MAX_BODY_SIZE) {
-    return res.status(413).json({ error: 'Payload too large' });
-  }
-  
-  const result = schema.safeParse(req.body);
-  if (!result.success) {
-    return res.status(400).json({ error: 'Dados inválidos', issues: result.error.flatten() });
-  }
-  
-  req.validatedBody = result.data;
-  next();
-};
+const validateInput =
+  (schema: ZodSchema) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    // Limite de tamanho antes de parsing (evita DoS/JSON bomb)
+    if (
+      req.headers["content-length"] &&
+      parseInt(req.headers["content-length"]) > MAX_BODY_SIZE
+    ) {
+      return res.status(413).json({ error: "Payload too large" });
+    }
+
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", issues: result.error.flatten() });
+    }
+
+    req.validatedBody = result.data;
+    next();
+  };
 ```
 
 ### 11.4 Validação de Uploads (Magic Bytes)
 
 ```typescript
 // NUNCA confiar apenas na extensão ou Content-Type do cliente
-async function validateUpload(file: Express.Multer.File): Promise<ValidationResult> {
+async function validateUpload(
+  file: Express.Multer.File,
+): Promise<ValidationResult> {
   // 1. Checar tamanho
-  if (file.size > MAX_FILE_SIZE) throw new ValidationError('File too large');
-  
+  if (file.size > MAX_FILE_SIZE) throw new ValidationError("File too large");
+
   // 2. Checar magic bytes (primeiros 12 bytes)
   const fileBuffer = file.buffer.slice(0, 12);
   const detectedType = await fileTypeFromBuffer(fileBuffer);
-  
+
   // 3. Validar contra allowlist
   const ALLOWED_TYPES = [
-    { mime: 'image/jpeg', magic: [0xFF, 0xD8, 0xFF] },
-    { mime: 'image/png',  magic: [0x89, 0x50, 0x4E, 0x47] },
-    { mime: 'image/webp', magic: [0x52, 0x49, 0x46, 0x46] },
-    { mime: 'application/pdf', magic: [0x25, 0x50, 0x44, 0x46] },
-    { mime: 'text/plain', magic: null },     // Validação por charset
-    { mime: 'text/markdown', magic: null },
+    { mime: "image/jpeg", magic: [0xff, 0xd8, 0xff] },
+    { mime: "image/png", magic: [0x89, 0x50, 0x4e, 0x47] },
+    { mime: "image/webp", magic: [0x52, 0x49, 0x46, 0x46] },
+    { mime: "application/pdf", magic: [0x25, 0x50, 0x44, 0x46] },
+    { mime: "text/plain", magic: null }, // Validação por charset
+    { mime: "text/markdown", magic: null },
   ];
-  
-  const isAllowed = ALLOWED_TYPES.some(t => t.mime === detectedType?.mime);
-  if (!isAllowed) throw new ValidationError('Tipo de arquivo não permitido');
-  
+
+  const isAllowed = ALLOWED_TYPES.some((t) => t.mime === detectedType?.mime);
+  if (!isAllowed) throw new ValidationError("Tipo de arquivo não permitido");
+
   // 4. Sanitizar nome do arquivo
   const safeName = sanitizeFilename(file.originalname);
-  
+
   return { valid: true, detectedMime: detectedType?.mime, safeName };
 }
 ```
@@ -919,24 +958,27 @@ async function validateUpload(file: Express.Multer.File): Promise<ValidationResu
 ```typescript
 // Para contadores e operações financeiras — SEMPRE atômico
 // Exemplo: incrementar crédito de tokens do agente
-async function consumeAgentTokens(agentId: string, tokensUsed: number): Promise<void> {
+async function consumeAgentTokens(
+  agentId: string,
+  tokensUsed: number,
+): Promise<void> {
   const result = await db.transaction(async (trx) => {
     // SELECT ... FOR UPDATE previne race condition
-    const agent = await trx('agents')
+    const agent = await trx("agents")
       .where({ id: agentId })
       .forUpdate()
       .first();
-    
-    if (!agent) throw new NotFoundError('Agent not found');
+
+    if (!agent) throw new NotFoundError("Agent not found");
     if (agent.tokenBudgetRemaining < tokensUsed) {
-      throw new InsufficientBudgetError('Token budget exceeded');
+      throw new InsufficientBudgetError("Token budget exceeded");
     }
-    
-    await trx('agents')
+
+    await trx("agents")
       .where({ id: agentId })
-      .decrement('token_budget_remaining', tokensUsed);
-    
-    await trx('token_usage_logs').insert({
+      .decrement("token_budget_remaining", tokensUsed);
+
+    await trx("token_usage_logs").insert({
       agent_id: agentId,
       tokens_used: tokensUsed,
       occurred_at: new Date(),
@@ -954,37 +996,41 @@ const SSRF_BLOCKED_RANGES = [
   /^10\./,
   /^172\.(1[6-9]|2[0-9]|3[01])\./,
   /^192\.168\./,
-  /^169\.254\./,           // Link-local
-  /^::1$/,                 // IPv6 loopback
-  /^fc00:/,                // IPv6 ULA
+  /^169\.254\./, // Link-local
+  /^::1$/, // IPv6 loopback
+  /^fc00:/, // IPv6 ULA
   /^localhost$/i,
 ];
 
 async function validateExternalUrl(url: string): Promise<URL> {
-  const parsed = new URL(url);                              // Lança se inválida
-  
-  if (!['http:', 'https:'].includes(parsed.protocol)) {
-    throw new SecurityError('Protocolo não permitido');
+  const parsed = new URL(url); // Lança se inválida
+
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new SecurityError("Protocolo não permitido");
   }
-  
+
   // Resolver DNS e checar IP resultante
   const { address } = await dns.resolve4(parsed.hostname);
-  if (SSRF_BLOCKED_RANGES.some(r => r.test(address))) {
-    throw new SecurityError('URL aponta para endereço interno');
+  if (SSRF_BLOCKED_RANGES.some((r) => r.test(address))) {
+    throw new SecurityError("URL aponta para endereço interno");
   }
-  
+
   return parsed;
 }
 
 // Para imagens/links inseridos pelo agente ou cliente
-async function validateUserProvidedUrl(url: string, allowlist?: string[]): Promise<void> {
+async function validateUserProvidedUrl(
+  url: string,
+  allowlist?: string[],
+): Promise<void> {
   const parsed = await validateExternalUrl(url);
-  
+
   if (allowlist && allowlist.length > 0) {
-    const isAllowed = allowlist.some(domain => 
-      parsed.hostname === domain || parsed.hostname.endsWith(`.${domain}`)
+    const isAllowed = allowlist.some(
+      (domain) =>
+        parsed.hostname === domain || parsed.hostname.endsWith(`.${domain}`),
     );
-    if (!isAllowed) throw new SecurityError('Domínio não autorizado');
+    if (!isAllowed) throw new SecurityError("Domínio não autorizado");
   }
 }
 ```
@@ -994,14 +1040,20 @@ async function validateUserProvidedUrl(url: string, allowlist?: string[]): Promi
 ```typescript
 // next.config.js — template base para todos os sites
 const securityHeaders = [
-  { key: 'X-DNS-Prefetch-Control',     value: 'on' },
-  { key: 'X-Frame-Options',            value: 'DENY' },
-  { key: 'X-Content-Type-Options',     value: 'nosniff' },
-  { key: 'Referrer-Policy',            value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy',         value: 'camera=(), microphone=(), geolocation=()' },
-  { key: 'Strict-Transport-Security',  value: 'max-age=63072000; includeSubDomains; preload' },
+  { key: "X-DNS-Prefetch-Control", value: "on" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
-    key: 'Content-Security-Policy',
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()",
+  },
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  },
+  {
+    key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
       "script-src 'self' 'nonce-{NONCE}'",
@@ -1010,7 +1062,7 @@ const securityHeaders = [
       "font-src 'self'",
       "connect-src 'self'",
       "frame-ancestors 'none'",
-    ].join('; '),
+    ].join("; "),
   },
 ];
 ```
@@ -1020,11 +1072,11 @@ const securityHeaders = [
 ```typescript
 // API Gateway level
 const rateLimits = {
-  login:           { windowMs: 15 * 60 * 1000, max: 5 },     // 5/15min por IP
-  api_general:     { windowMs: 60 * 1000,       max: 100 },   // 100/min por usuário
-  agent_execute:   { windowMs: 60 * 1000,       max: 10 },    // 10/min por agente
-  file_upload:     { windowMs: 60 * 1000,       max: 5 },     // 5 uploads/min
-  hitl_decision:   { windowMs: 5 * 1000,        max: 3 },     // Anti-double-click
+  login: { windowMs: 15 * 60 * 1000, max: 5 }, // 5/15min por IP
+  api_general: { windowMs: 60 * 1000, max: 100 }, // 100/min por usuário
+  agent_execute: { windowMs: 60 * 1000, max: 10 }, // 10/min por agente
+  file_upload: { windowMs: 60 * 1000, max: 5 }, // 5 uploads/min
+  hitl_decision: { windowMs: 5 * 1000, max: 3 }, // Anti-double-click
 };
 ```
 
@@ -1034,7 +1086,7 @@ const rateLimits = {
 Hierarquia de segredos:
   Desenvolvimento: .env.local (gitignored) + Docker secrets locais
   Staging/Produção: Infisical (self-hosted, free) ou Vault (HashiCorp)
-  
+
 Referências no código: sempre como "secrets/chave_nome"
 Nunca: process.env.API_KEY diretamente em lógica de domínio
 Sempre: injeção via constructor (DI) com interface SecretsProvider
@@ -1046,16 +1098,16 @@ Sempre: injeção via constructor (DI) com interface SecretsProvider
 // Append-only — sem UPDATE ou DELETE permitidos na tabela
 // PostgreSQL: Row Level Security + policy que bloqueia UPDATE/DELETE
 interface AuditEntry {
-  id: UUID                          // ULID para ordenação temporal
-  timestamp: Timestamp
-  actor: 'OPERATOR' | AgentPersona
-  actorId: string
-  action: string                    // ex: HITL_APPROVED, AGENT_MESSAGE_SENT
-  resourceType: string
-  resourceId: string
-  payload: Record<string, unknown>  // PII removido/mascarado
-  ipAddress?: string                // Apenas para ações de operador humano
-  correlationId: UUID
+  id: UUID; // ULID para ordenação temporal
+  timestamp: Timestamp;
+  actor: "OPERATOR" | AgentPersona;
+  actorId: string;
+  action: string; // ex: HITL_APPROVED, AGENT_MESSAGE_SENT
+  resourceType: string;
+  resourceId: string;
+  payload: Record<string, unknown>; // PII removido/mascarado
+  ipAddress?: string; // Apenas para ações de operador humano
+  correlationId: UUID;
 }
 ```
 
@@ -1064,6 +1116,7 @@ interface AuditEntry {
 ## 12. API Design
 
 ### Princípios
+
 - REST com nomenclatura de recursos no plural
 - CQRS refletido nas rotas: GET para queries, POST/PATCH/DELETE para commands
 - Versionamento via URL: `/api/v1/`
@@ -1448,6 +1501,7 @@ CREATE INDEX idx_audit_correlation ON audit_log(correlation_id);
 ### TDD — Ciclo Red-Green-Refactor
 
 Cada use case é desenvolvido seguindo TDD estrito:
+
 1. Escrever teste que falha (Red)
 2. Implementar mínimo para passar (Green)
 3. Refatorar mantendo testes passando (Refactor)
@@ -1493,90 +1547,109 @@ Feature: Qualificação de Lead pelo Agente Hunter
 ```typescript
 // tests/security/auth.security.test.ts
 
-describe('Security: Authentication', () => {
-  describe('Anti-enumeration', () => {
-    it('deve retornar o mesmo erro para e-mail inexistente e senha errada', async () => {
+describe("Security: Authentication", () => {
+  describe("Anti-enumeration", () => {
+    it("deve retornar o mesmo erro para e-mail inexistente e senha errada", async () => {
       const [res1, res2] = await Promise.all([
-        request.post('/api/v1/auth/login').send({ email: 'noexist@test.com', password: 'wrong' }),
-        request.post('/api/v1/auth/login').send({ email: 'real@test.com',   password: 'wrong' }),
+        request
+          .post("/api/v1/auth/login")
+          .send({ email: "noexist@test.com", password: "wrong" }),
+        request
+          .post("/api/v1/auth/login")
+          .send({ email: "real@test.com", password: "wrong" }),
       ]);
       expect(res1.status).toBe(401);
       expect(res2.status).toBe(401);
       expect(res1.body.errors[0].message).toBe(res2.body.errors[0].message);
     });
 
-    it('deve ter timing similar para e-mail inexistente e senha errada (anti-timing-attack)', async () => {
+    it("deve ter timing similar para e-mail inexistente e senha errada (anti-timing-attack)", async () => {
       const t1 = Date.now();
-      await request.post('/api/v1/auth/login').send({ email: 'noexist@test.com', password: 'wrong' });
+      await request
+        .post("/api/v1/auth/login")
+        .send({ email: "noexist@test.com", password: "wrong" });
       const d1 = Date.now() - t1;
 
       const t2 = Date.now();
-      await request.post('/api/v1/auth/login').send({ email: 'real@test.com', password: 'wrong' });
+      await request
+        .post("/api/v1/auth/login")
+        .send({ email: "real@test.com", password: "wrong" });
       const d2 = Date.now() - t2;
 
-      expect(Math.abs(d1 - d2)).toBeLessThan(200);  // Menos de 200ms de diferença
+      expect(Math.abs(d1 - d2)).toBeLessThan(200); // Menos de 200ms de diferença
     });
   });
 
-  describe('Rate limiting', () => {
-    it('deve bloquear após 5 tentativas de login em 15 minutos', async () => {
+  describe("Rate limiting", () => {
+    it("deve bloquear após 5 tentativas de login em 15 minutos", async () => {
       for (let i = 0; i < 5; i++) {
-        await request.post('/api/v1/auth/login').send({ email: 'test@test.com', password: 'wrong' });
+        await request
+          .post("/api/v1/auth/login")
+          .send({ email: "test@test.com", password: "wrong" });
       }
-      const res = await request.post('/api/v1/auth/login').send({ email: 'test@test.com', password: 'wrong' });
+      const res = await request
+        .post("/api/v1/auth/login")
+        .send({ email: "test@test.com", password: "wrong" });
       expect(res.status).toBe(429);
     });
   });
 
-  describe('JWT', () => {
-    it('deve rejeitar token expirado', async () => {
+  describe("JWT", () => {
+    it("deve rejeitar token expirado", async () => {
       const expiredToken = generateExpiredToken();
-      const res = await request.get('/api/v1/agents').set('Authorization', `Bearer ${expiredToken}`);
+      const res = await request
+        .get("/api/v1/agents")
+        .set("Authorization", `Bearer ${expiredToken}`);
       expect(res.status).toBe(401);
     });
 
     it('deve rejeitar token com algoritmo "none"', async () => {
       const noneToken = createNoneAlgorithmToken();
-      const res = await request.get('/api/v1/agents').set('Authorization', `Bearer ${noneToken}`);
+      const res = await request
+        .get("/api/v1/agents")
+        .set("Authorization", `Bearer ${noneToken}`);
       expect(res.status).toBe(401);
     });
   });
 });
 
 // tests/security/upload.security.test.ts
-describe('Security: File Upload', () => {
-  it('deve rejeitar arquivo .exe renomeado para .jpg', async () => {
-    const fakeImage = Buffer.from('MZ...', 'binary');  // Magic bytes de EXE
+describe("Security: File Upload", () => {
+  it("deve rejeitar arquivo .exe renomeado para .jpg", async () => {
+    const fakeImage = Buffer.from("MZ...", "binary"); // Magic bytes de EXE
     const res = await request
-      .post('/api/v1/agents/123/rag/documents')
-      .attach('file', fakeImage, { filename: 'nice_image.jpg', contentType: 'image/jpeg' });
+      .post("/api/v1/agents/123/rag/documents")
+      .attach("file", fakeImage, {
+        filename: "nice_image.jpg",
+        contentType: "image/jpeg",
+      });
     expect(res.status).toBe(400);
-    expect(res.body.errors[0].code).toBe('INVALID_FILE_TYPE');
+    expect(res.body.errors[0].code).toBe("INVALID_FILE_TYPE");
   });
 
-  it('deve rejeitar arquivo acima do limite de tamanho', async () => {
-    const bigFile = Buffer.alloc(10 * 1024 * 1024 + 1);  // 10MB + 1 byte
+  it("deve rejeitar arquivo acima do limite de tamanho", async () => {
+    const bigFile = Buffer.alloc(10 * 1024 * 1024 + 1); // 10MB + 1 byte
     const res = await request
-      .post('/api/v1/agents/123/rag/documents')
-      .attach('file', bigFile, 'doc.pdf');
+      .post("/api/v1/agents/123/rag/documents")
+      .attach("file", bigFile, "doc.pdf");
     expect(res.status).toBe(413);
   });
 });
 
 // tests/security/ssrf.security.test.ts
-describe('Security: SSRF Prevention', () => {
-  it('deve bloquear URL apontando para localhost', async () => {
-    const res = await request.post('/api/v1/agents/123/skills').send({
-      type: 'web_search',
-      config: { endpoint: 'http://localhost:8080/admin' }
+describe("Security: SSRF Prevention", () => {
+  it("deve bloquear URL apontando para localhost", async () => {
+    const res = await request.post("/api/v1/agents/123/skills").send({
+      type: "web_search",
+      config: { endpoint: "http://localhost:8080/admin" },
     });
     expect(res.status).toBe(400);
   });
 
-  it('deve bloquear URL com IP privado 192.168.x.x', async () => {
-    const res = await request.post('/api/v1/agents/123/skills').send({
-      type: 'scraping',
-      config: { target_url: 'http://192.168.1.1/config' }
+  it("deve bloquear URL com IP privado 192.168.x.x", async () => {
+    const res = await request.post("/api/v1/agents/123/skills").send({
+      type: "scraping",
+      config: { target_url: "http://192.168.1.1/config" },
     });
     expect(res.status).toBe(400);
   });
@@ -1591,7 +1664,7 @@ coverage:
   branches: 75%
   functions: 80%
   lines: 80%
-  security_tests: 100%      # Todos os testes de segurança devem passar
+  security_tests: 100% # Todos os testes de segurança devem passar
 ```
 
 ---
@@ -1605,10 +1678,10 @@ coverage:
 ```typescript
 // Formato de log — todos os serviços
 interface StructuredLog {
-  level: 'debug' | 'info' | 'warn' | 'error' | 'fatal';
-  timestamp: string;                // ISO 8601
-  service: string;                  // ex: 'agent-orchestrator'
-  traceId: string;                  // OpenTelemetry trace ID
+  level: "debug" | "info" | "warn" | "error" | "fatal";
+  timestamp: string; // ISO 8601
+  service: string; // ex: 'agent-orchestrator'
+  traceId: string; // OpenTelemetry trace ID
   spanId: string;
   correlationId: string;
   agentId?: string;
@@ -1691,54 +1764,55 @@ alerts:
 
 ### Backend
 
-| Componente | Tecnologia | Justificativa |
-|---|---|---|
-| Runtime | Node.js 22 LTS | TypeScript nativo, excelente ecosystem |
-| Framework API | Fastify 5 | Performance superior ao Express, schema-first |
-| ORM | Drizzle ORM | Type-safe, sem overhead de ORM pesado |
-| Validação | Zod | Type inference + runtime validation |
-| Queue | BullMQ + Redis | Filas confiáveis para tarefas assíncronas |
-| Auth | jose (JWT RS256) | RFC-compliant, sem deps extras |
-| Crypto | argon2 (node binding) | Argon2id nativo, sem implementação própria |
-| Testes | Vitest + Supertest | Rápido, compatível com TypeScript |
-| E2E | Playwright | Testcontainers para deps isoladas |
+| Componente    | Tecnologia            | Justificativa                                 |
+| ------------- | --------------------- | --------------------------------------------- |
+| Runtime       | Node.js 22 LTS        | TypeScript nativo, excelente ecosystem        |
+| Framework API | Fastify 5             | Performance superior ao Express, schema-first |
+| ORM           | Drizzle ORM           | Type-safe, sem overhead de ORM pesado         |
+| Validação     | Zod                   | Type inference + runtime validation           |
+| Queue         | BullMQ + Redis        | Filas confiáveis para tarefas assíncronas     |
+| Auth          | jose (JWT RS256)      | RFC-compliant, sem deps extras                |
+| Crypto        | argon2 (node binding) | Argon2id nativo, sem implementação própria    |
+| Testes        | Vitest + Supertest    | Rápido, compatível com TypeScript             |
+| E2E           | Playwright            | Testcontainers para deps isoladas             |
 
 ### Frontend
 
-| Componente | Tecnologia | Justificativa |
-|---|---|---|
-| Framework | Next.js 15 (App Router) | SSR/SSG, TypeScript, Vercel-friendly |
-| UI Components | shadcn/ui | Sem lock de vendor, acessível |
-| Styling | Tailwind CSS 4 | Utility-first, performance |
-| State | Zustand | Simples, sem boilerplate Redux |
-| Forms | React Hook Form + Zod | Validação compartilhada com backend |
-| Fetching | TanStack Query | Cache, refetch, optimistic updates |
+| Componente    | Tecnologia              | Justificativa                        |
+| ------------- | ----------------------- | ------------------------------------ |
+| Framework     | Next.js 15 (App Router) | SSR/SSG, TypeScript, Vercel-friendly |
+| UI Components | shadcn/ui               | Sem lock de vendor, acessível        |
+| Styling       | Tailwind CSS 4          | Utility-first, performance           |
+| State         | Zustand                 | Simples, sem boilerplate Redux       |
+| Forms         | React Hook Form + Zod   | Validação compartilhada com backend  |
+| Fetching      | TanStack Query          | Cache, refetch, optimistic updates   |
 
 ### Infraestrutura
 
-| Componente | Tecnologia | Custo |
-|---|---|---|
-| Banco de Dados | PostgreSQL 16 (Supabase free / self-hosted) | Grátis |
-| Vetorial (RAG) | ChromaDB (self-hosted Docker) | Grátis |
-| Queue/Cache | Redis 7 (self-hosted Docker) | Grátis |
-| LLM Local | Ollama + Llama 3.2, Mistral, CodeLlama | Grátis |
-| Workflow | n8n (self-hosted Docker) | Grátis |
-| Secrets | Infisical (self-hosted) | Grátis |
+| Componente      | Tecnologia                                     | Custo  |
+| --------------- | ---------------------------------------------- | ------ |
+| Banco de Dados  | PostgreSQL 16 (Supabase free / self-hosted)    | Grátis |
+| Vetorial (RAG)  | ChromaDB (self-hosted Docker)                  | Grátis |
+| Queue/Cache     | Redis 7 (self-hosted Docker)                   | Grátis |
+| LLM Local       | Ollama + Llama 3.2, Mistral, CodeLlama         | Grátis |
+| Workflow        | n8n (self-hosted Docker)                       | Grátis |
+| Secrets         | Infisical (self-hosted)                        | Grátis |
+| Hospedagem API  | Railway (Public Networking + BullMQ workers)   | Free Tier |
 | Observabilidade | Prometheus + Grafana + Jaeger (Docker Compose) | Grátis |
-| Deploy de Sites | Vercel / Netlify (free tier) | Grátis |
-| WhatsApp | Evolution API (self-hosted) | Grátis |
-| Busca (RAG) | SearXNG (self-hosted) | Grátis |
-| CI/CD | GitHub Actions (free tier) | Grátis |
+| Deploy de Sites | Vercel / Netlify (free tier)                   | Grátis |
+| WhatsApp        | Evolution API (self-hosted)                    | Grátis |
+| Busca (RAG)     | SearXNG (self-hosted)                          | Grátis |
+| CI/CD           | GitHub Actions (free tier)                     | Grátis |
 
 ### Agente Orchestration
 
-| Componente | Tecnologia | Justificativa |
-|---|---|---|
-| Framework | CrewAI (Python 3.12) | Multi-agent nativo, workflows, tools |
-| LLM Routing | LiteLLM | Abstração única para todos os providers |
-| RAG | LangChain + ChromaDB | Maturidade, conectores prontos |
-| Embeddings | Ollama nomic-embed-text | Gratuito, local |
-| Tracing | LangSmith (free tier) ou Phoenix Arize | Observabilidade de LLM calls |
+| Componente  | Tecnologia                             | Justificativa                           |
+| ----------- | -------------------------------------- | --------------------------------------- |
+| Framework   | CrewAI (Python 3.12)                   | Multi-agent nativo, workflows, tools    |
+| LLM Routing | LiteLLM                                | Abstração única para todos os providers |
+| RAG         | LangChain + ChromaDB                   | Maturidade, conectores prontos          |
+| Embeddings  | Ollama nomic-embed-text                | Gratuito, local                         |
+| Tracing     | LangSmith (free tier) ou Phoenix Arize | Observabilidade de LLM calls            |
 
 ---
 
@@ -1908,12 +1982,12 @@ interface AppConfig {
   db: { poolMin: number; poolMax: number };
   queue: { concurrency: number };
   hitl: { defaultTimeoutMinutes: number };
-  
+
   // Referências a segredos (não os valores)
   secretRefs: {
-    dbUrl: string;           // "secrets/db_url"
-    jwtPrivateKey: string;   // "secrets/jwt_private_key"
-    smtpConfig: string;      // "secrets/smtp_config"
+    dbUrl: string; // "secrets/db_url"
+    jwtPrivateKey: string; // "secrets/jwt_private_key"
+    smtpConfig: string; // "secrets/smtp_config"
   };
 }
 
@@ -1963,6 +2037,7 @@ FRONTEND_URL=http://localhost:3000
 ## 19. Roadmap e Fases
 
 ### Fase 0 — Fundação (Semanas 1-2)
+
 - [ ] Setup do repositório monorepo (Turborepo)
 - [ ] Docker Compose com todas as dependências locais
 - [ ] Schema do banco de dados + migrations
@@ -1972,6 +2047,7 @@ FRONTEND_URL=http://localhost:3000
 - [ ] Testes de segurança base (auth, rate limiting)
 
 ### Fase 1 — MVP Core (Semanas 3-6)
+
 - [ ] Agente Hunter: pesquisa + qualificação + HITL
 - [ ] Agente Closer: abordagem + negociação + proposta
 - [ ] Sistema HITL completo (aprovação, timeout, notificação)
@@ -1980,6 +2056,7 @@ FRONTEND_URL=http://localhost:3000
 - [ ] Integração WhatsApp (Evolution API)
 
 ### Fase 2 — Entrega Completa (Semanas 7-10)
+
 - [ ] Agente Builder: seleção de template + geração de código + customização
 - [ ] Agente QA: Lighthouse + OWASP check automático
 - [ ] Deploy automático (Vercel/Netlify)
@@ -1988,6 +2065,7 @@ FRONTEND_URL=http://localhost:3000
 - [ ] Testes E2E de fluxo completo
 
 ### Fase 3 — Qualidade e Polimento (Semanas 11-12)
+
 - [ ] Fine-tuning de system prompts por agente
 - [ ] Editor de rules com teste inline
 - [ ] Workflows n8n via interface
@@ -1996,6 +2074,7 @@ FRONTEND_URL=http://localhost:3000
 - [ ] Auditoria de segurança interna
 
 ### Fase 4+ — Expansão (v2)
+
 - [ ] Agente de tráfego pago
 - [ ] Agente de social media
 - [ ] Gateway de pagamento
@@ -2006,43 +2085,44 @@ FRONTEND_URL=http://localhost:3000
 
 ## 20. Riscos e Mitigações
 
-| Risco | Probabilidade | Impacto | Mitigação |
-|---|---|---|---|
-| Agente envia mensagem inadequada ao cliente | Média | Alto | HITL obrigatório antes de todo contato externo |
-| LGPD: armazenamento indevido de dados de leads | Média | Alto | Minimização de dados; política de retenção; consentimento explícito no contato |
-| LLM gera código com vulnerabilidades | Alta | Alto | QA Agent + OWASP scan automático antes de qualquer deploy |
-| Custo de tokens LLM além do planejado | Média | Médio | Budget por agente com bloqueio automático; preferência por Ollama local |
-| Plataformas de mensageria bloqueando o número | Alta | Alto | HITL evita spam; rate limiting de mensagens por dia; termos de uso respeitados |
-| Rate limiting do Vercel/Netlify no free tier | Baixa | Médio | Monitoramento de quota; fallback entre plataformas |
-| Complexidade do vibe coding gerar dívida técnica | Alta | Médio | PRD detalhado; GSD framework; testes automatizados bloqueantes no CI |
-| Quebra de contrato da Evolution API (WhatsApp) | Média | Alto | Adapter isolado; fácil troca de implementação |
+| Risco                                            | Probabilidade | Impacto | Mitigação                                                                      |
+| ------------------------------------------------ | ------------- | ------- | ------------------------------------------------------------------------------ |
+| Agente envia mensagem inadequada ao cliente      | Média         | Alto    | HITL obrigatório antes de todo contato externo                                 |
+| LGPD: armazenamento indevido de dados de leads   | Média         | Alto    | Minimização de dados; política de retenção; consentimento explícito no contato |
+| LLM gera código com vulnerabilidades             | Alta          | Alto    | QA Agent + OWASP scan automático antes de qualquer deploy                      |
+| Custo de tokens LLM além do planejado            | Média         | Médio   | Budget por agente com bloqueio automático; preferência por Ollama local        |
+| Plataformas de mensageria bloqueando o número    | Alta          | Alto    | HITL evita spam; rate limiting de mensagens por dia; termos de uso respeitados |
+| Rate limiting do Vercel/Netlify no free tier     | Baixa         | Médio   | Monitoramento de quota; fallback entre plataformas                             |
+| Complexidade do vibe coding gerar dívida técnica | Alta          | Médio   | PRD detalhado; GSD framework; testes automatizados bloqueantes no CI           |
+| Quebra de contrato da Evolution API (WhatsApp)   | Média         | Alto    | Adapter isolado; fácil troca de implementação                                  |
 
 ---
 
 ## 21. Glossário
 
-| Termo | Definição |
-|---|---|
-| HITL | Human-in-the-Loop: ponto de aprovação humana obrigatória antes de ações externas |
-| Persona | Papel funcional fixo de um agente (HUNTER, CLOSER, BUILDER, QA) |
-| Skill | Ferramenta/capacidade específica configurada num agente |
-| Rule | Condição + ação que o agente avalia antes de executar uma tarefa |
-| RAG | Retrieval-Augmented Generation: enriquecer prompts com documentos relevantes |
-| ACL | Anti-Corruption Layer: camada que isola o domínio de SDKs e APIs externas |
-| CQRS | Command Query Responsibility Segregation: separação de leitura e escrita |
-| Aggregate | Cluster de entidades de domínio tratadas como unidade transacional |
-| Bounded Context | Limite de responsabilidade de um subdomínio no DDD |
-| GSD | Framework Get Shit Done: metodologia iterativa de desenvolvimento focado em entrega |
-| Magic Bytes | Assinatura binária nos primeiros bytes de um arquivo que identifica seu tipo real |
-| SSRF | Server-Side Request Forgery: ataque que força o servidor a fazer requisições internas |
-| Argon2id | Algoritmo de hashing de senhas resistente a GPU e ataques de memória |
-| ULID | Universally Unique Lexicographically Sortable Identifier: substituto ao UUID com ordenação temporal |
+| Termo           | Definição                                                                                           |
+| --------------- | --------------------------------------------------------------------------------------------------- |
+| HITL            | Human-in-the-Loop: ponto de aprovação humana obrigatória antes de ações externas                    |
+| Persona         | Papel funcional fixo de um agente (HUNTER, CLOSER, BUILDER, QA)                                     |
+| Skill           | Ferramenta/capacidade específica configurada num agente                                             |
+| Rule            | Condição + ação que o agente avalia antes de executar uma tarefa                                    |
+| RAG             | Retrieval-Augmented Generation: enriquecer prompts com documentos relevantes                        |
+| ACL             | Anti-Corruption Layer: camada que isola o domínio de SDKs e APIs externas                           |
+| CQRS            | Command Query Responsibility Segregation: separação de leitura e escrita                            |
+| Aggregate       | Cluster de entidades de domínio tratadas como unidade transacional                                  |
+| Bounded Context | Limite de responsabilidade de um subdomínio no DDD                                                  |
+| GSD             | Framework Get Shit Done: metodologia iterativa de desenvolvimento focado em entrega                 |
+| Magic Bytes     | Assinatura binária nos primeiros bytes de um arquivo que identifica seu tipo real                   |
+| SSRF            | Server-Side Request Forgery: ataque que força o servidor a fazer requisições internas               |
+| Argon2id        | Algoritmo de hashing de senhas resistente a GPU e ataques de memória                                |
+| ULID            | Universally Unique Lexicographically Sortable Identifier: substituto ao UUID com ordenação temporal |
 
 ---
 
-*Este documento é vivo. Atualizações devem ser revisadas pelo arquiteto responsável e versionadas no repositório.*
+_Este documento é vivo. Atualizações devem ser revisadas pelo arquiteto responsável e versionadas no repositório._
 
 **Próximos passos:**
+
 1. Revisão e aprovação do PRD por todos os stakeholders
 2. Setup do repositório monorepo (Fase 0, Semana 1)
 3. Criação das Issues no GitHub a partir dos requisitos funcionais

@@ -1,21 +1,30 @@
-import type { LLMRouter, LLMCompletionRequest, LLMCompletionResponse } from './LLMRouter.js';
+import type {
+  LLMRouter,
+  LLMCompletionRequest,
+  LLMCompletionResponse,
+} from "./LLMRouter.js";
 
 /**
  * OllamaAdapter — connects to local Ollama instance.
  * No API key required. Uses standard /api/chat endpoint.
+ * Reads OLLAMA_BASE_URL env var to support Docker Compose sidecar
+ * (http://ollama:11434) while defaulting to localhost for dev.
  */
 export class OllamaAdapter implements LLMRouter {
   constructor(
-    private readonly baseUrl: string = 'http://localhost:11434',
+    private readonly baseUrl: string = process.env["OLLAMA_BASE_URL"] ?? "http://localhost:11434",
   ) {}
 
-  async complete(request: LLMCompletionRequest): Promise<LLMCompletionResponse> {
+
+  async complete(
+    request: LLMCompletionRequest,
+  ): Promise<LLMCompletionResponse> {
     const url = `${request.baseUrl ?? this.baseUrl}/api/chat`;
     const start = performance.now();
 
     const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: request.model,
         messages: request.messages,
@@ -44,14 +53,16 @@ export class OllamaAdapter implements LLMRouter {
     return {
       content: data.message.content,
       tokensUsed,
-      finishReason: 'stop',
+      finishReason: "stop",
       latencyMs,
     };
   }
 
   async isAvailable(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/tags`, { signal: AbortSignal.timeout(2000) });
+      const response = await fetch(`${this.baseUrl}/api/tags`, {
+        signal: AbortSignal.timeout(2000),
+      });
       return response.ok;
     } catch {
       return false;

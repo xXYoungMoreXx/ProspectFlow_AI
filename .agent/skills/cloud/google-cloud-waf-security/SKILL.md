@@ -20,56 +20,56 @@ workloads securely and at scale.
 The recommendations in the security pillar of the Well-Architected Framework are
 aligned with the following core principles:
 
--  **Implement security by design**: Integrate cloud security and network
-   security considerations starting from the initial design phase of your
-   applications and infrastructure. Google Cloud provides architecture
-   blueprints and recommendations to help you apply this principle. Grounding
-   document:
-   https://docs.cloud.google.com/architecture/framework/security/implement-security-by-design
+- **Implement security by design**: Integrate cloud security and network
+  security considerations starting from the initial design phase of your
+  applications and infrastructure. Google Cloud provides architecture
+  blueprints and recommendations to help you apply this principle. Grounding
+  document:
+  https://docs.cloud.google.com/architecture/framework/security/implement-security-by-design
 
--  **Implement zero trust**: Use a _never trust, always verify_ approach, where
-   access to resources is granted based on continuous verification of trust.
-   Google Cloud supports this principle through products like Chrome Enterprise
-   Premium and Identity-Aware Proxy (IAP). Grounding document:
-   https://docs.cloud.google.com/architecture/framework/security/implement-zero-trust
+- **Implement zero trust**: Use a _never trust, always verify_ approach, where
+  access to resources is granted based on continuous verification of trust.
+  Google Cloud supports this principle through products like Chrome Enterprise
+  Premium and Identity-Aware Proxy (IAP). Grounding document:
+  https://docs.cloud.google.com/architecture/framework/security/implement-zero-trust
 
--  **Implement shift-left security**: Implement security controls early in the
-   software development lifecycle. Avoid security defects before system changes
-   are made. Detect and fix security bugs early, fast, and reliably after the
-   system changes are committed. Google Cloud supports this principle through
-   products like Cloud Build, Binary Authorization, and Artifact Registry.
-   Grounding document:
-   https://docs.cloud.google.com/architecture/framework/security/implement-shift-left-security
+- **Implement shift-left security**: Implement security controls early in the
+  software development lifecycle. Avoid security defects before system changes
+  are made. Detect and fix security bugs early, fast, and reliably after the
+  system changes are committed. Google Cloud supports this principle through
+  products like Cloud Build, Binary Authorization, and Artifact Registry.
+  Grounding document:
+  https://docs.cloud.google.com/architecture/framework/security/implement-shift-left-security
 
--  **Implement preemptive cyber defense**: Adopt a proactive approach to
-   security by implementing robust fundamental measures like threat
-   intelligence. This approach helps you build a foundation for more effective
-   threat detection and response. Google Cloud's approach to layered security
-   controls aligns with this principle. Google Cloud supports this principle
-   through products like Security Command Center, Google Threat Intelligence,
-   and Google SecOps. Grounding document:
-   https://docs.cloud.google.com/architecture/framework/security/implement-preemptive-cyber-defense
+- **Implement preemptive cyber defense**: Adopt a proactive approach to
+  security by implementing robust fundamental measures like threat
+  intelligence. This approach helps you build a foundation for more effective
+  threat detection and response. Google Cloud's approach to layered security
+  controls aligns with this principle. Google Cloud supports this principle
+  through products like Security Command Center, Google Threat Intelligence,
+  and Google SecOps. Grounding document:
+  https://docs.cloud.google.com/architecture/framework/security/implement-preemptive-cyber-defense
 
--  **Use AI securely and responsibly**: Develop and deploy AI systems in a
-   responsible and secure manner. The recommendations for this principle are
-   aligned with guidance in the AI and ML perspective of the Well-Architected
-   Framework and in Google's Secure AI Framework (SAIF). Grounding document:
-   https://docs.cloud.google.com/architecture/framework/security/use-ai-securely-and-responsibly
+- **Use AI securely and responsibly**: Develop and deploy AI systems in a
+  responsible and secure manner. The recommendations for this principle are
+  aligned with guidance in the AI and ML perspective of the Well-Architected
+  Framework and in Google's Secure AI Framework (SAIF). Grounding document:
+  https://docs.cloud.google.com/architecture/framework/security/use-ai-securely-and-responsibly
 
--  **Use AI for security**: Use AI capabilities to improve your existing
-   security systems and processes through Gemini in Security and overall
-   platform-security capabilities. Use AI as a tool to increase the automation
-   of remedial work and ensure security hygiene to make other systems more
-   secure. Google Cloud supports this principle through products like Google
-   Threat Intelligence and Google SecOps. Grounding document:
-   https://docs.cloud.google.com/architecture/framework/security/use-ai-for-security
+- **Use AI for security**: Use AI capabilities to improve your existing
+  security systems and processes through Gemini in Security and overall
+  platform-security capabilities. Use AI as a tool to increase the automation
+  of remedial work and ensure security hygiene to make other systems more
+  secure. Google Cloud supports this principle through products like Google
+  Threat Intelligence and Google SecOps. Grounding document:
+  https://docs.cloud.google.com/architecture/framework/security/use-ai-for-security
 
--  **Meet regulatory, compliance, and privacy needs**: Adhere to
-   industry-specific regulations, compliance standards, and privacy
-   requirements. Google Cloud helps you meet these obligations through products
-   like Assured Workloads, Organization Policy Service, and our compliance
-   resource center. Grounding document:
-   https://docs.cloud.google.com/architecture/framework/security/meet-regulatory-compliance-and-privacy-needs
+- **Meet regulatory, compliance, and privacy needs**: Adhere to
+  industry-specific regulations, compliance standards, and privacy
+  requirements. Google Cloud helps you meet these obligations through products
+  like Assured Workloads, Organization Policy Service, and our compliance
+  resource center. Grounding document:
+  https://docs.cloud.google.com/architecture/framework/security/meet-regulatory-compliance-and-privacy-needs
 
 ## Relevant Google Cloud products
 
@@ -77,14 +77,12 @@ The following are _examples_ of Google Cloud products and features that are
 relevant to security:
 
 - **Identity and access management**
-
   - **Identity and Access Management (IAM)**: Fine-grained access control for
     Google Cloud resources.
   - **Identity-Aware Proxy (IAP)**: Secure access to applications without a VPN.
   - **Chrome Enterprise Premium**: Endpoint security and context-aware access.
 
 - **Network security**
-
   - **Google Cloud Armor**: DDoS protection and Web Application Firewall (WAF).
   - **VPC Service Controls**: Define security perimeters to prevent data
     exfiltration.
@@ -94,21 +92,18 @@ relevant to security:
   - **Cloud Interconnect and IPsec VPN**: Secure, private connectivity.
 
 - **Data security**
-
   - **Cloud Key Management Service (KMS)**: Manage encryption keys.
   - **Sensitive Data Protection (formerly Cloud DLP)**: Discover and redact
     sensitive data.
   - **Confidential Computing**: Encrypt data in use (memory).
 
 - **Security operations (SecOps)**
-
   - **Google SecOps (Chronicle)**: Threat detection and security analytics.
   - **Security Command Center (SCC)**: Centralized vulnerability and threat
     management.
   - **Cloud Logging and Cloud Monitoring**: Visibility into system activity.
 
 - **Automation and supply chain**
-
   - **Cloud Build**: Secure CI/CD pipelines.
   - **Artifact Analysis**: Vulnerability scanning for container images.
   - **Binary Authorization**: Deploy-time policy enforcement.
@@ -121,7 +116,6 @@ constraints of the workload and the user's organization. Choose questions from
 the following list:
 
 - **Security by design**:
-
   - How do you incorporate security considerations into your project's initial
     planning and design phases?
   - How do you define and document security requirements for new applications
@@ -144,7 +138,6 @@ the following list:
     design?
 
 - **Zero trust**:
-
   - How do you verify and authenticate users and devices accessing your Google
     Cloud resources?
   - How do you implement the principle of least privilege for access control?
@@ -166,7 +159,6 @@ the following list:
     practices?
 
 - **Shift-left security**:
-
   - How do you integrate security testing into your development pipeline early
     in the process?
   - What types of security testing do you perform during the development phase?
@@ -187,7 +179,6 @@ the following list:
     developers?
 
 - **Preemptive cyber defense**:
-
   - How do you proactively identify and mitigate potential security threats
     before they impact your systems?
   - What tools and techniques do you use for continuous security monitoring and
@@ -205,7 +196,6 @@ the following list:
   - How do you adapt your security posture to evolving threats and technologies?
 
 - **Security of AI workloads**:
-
   - How do you ensure the security of your AI models and data?
   - How do you address potential biases and ethical concerns in your AI models?
   - How do you protect your AI models from adversarial attacks and data
@@ -222,7 +212,6 @@ the following list:
     use of AI and ML?
 
 - **AI for security**:
-
   - How do you leverage AI and ML to enhance your security posture?
   - What types of AI models do you use for security purposes?
   - How do you train and validate your AI models for security applications?
@@ -241,7 +230,6 @@ the following list:
     posture?
 
 - **Regulatory compliance and privacy**:
-
   - What regulatory compliance frameworks and privacy standards do you need to
     adhere to?
   - How do you assess and manage compliance risks in your Google Cloud
@@ -267,7 +255,6 @@ Use the following checklist to evaluate the architecture's alignment with
 security recommendations:
 
 - **Security by design**:
-
   - Are system components selected based on their security features and
     hardening?
   - Is defense-in-depth implemented at the network, host, and application
@@ -277,7 +264,6 @@ security recommendations:
   - Is a risk assessment performed using industry standards?
 
 - **Zero trust**:
-
   - Is access control enforced based on user identity and context (device,
     location)?
   - Are private connectivity methods (Cloud Interconnect, VPN) used for internal
@@ -286,7 +272,6 @@ security recommendations:
   - Are VPC Service Controls perimeters established around sensitive data?
 
 - **Shift-left security**:
-
   - Is infrastructure provisioned using Infrastructure as Code
     (e.g., Terraform)?
   - Are automated security scans integrated into the CI/CD pipeline?
@@ -295,14 +280,12 @@ security recommendations:
   - Is Binary Authorization used to ensure only trusted images are deployed?
 
 - **Preemptive cyber defense**:
-
   - Is threat intelligence integrated into security operations?
   - Is security logging enabled and centralized for all critical resources?
   - Are automated responses configured for common security threats?
   - Are defenses validated through periodic testing or red-teaming?
 
 - **AI security and governance**:
-
   - Are AI pipelines secured against tampering and data poisoning?
   - Is differential privacy or data masking used for training data where
     appropriate?

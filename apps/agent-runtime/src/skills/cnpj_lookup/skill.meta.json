@@ -1,0 +1,10 @@
+{
+  "slug": "cnpj-lookup",
+  "name": "CNPJ Lookup",
+  "description": "Busca os dados iniciais de uma empresa pelo CNPJ (razão social, nome fantasia, status, endereço).",
+  "category": "capability",
+  "tags": ["b2b", "brasil", "cnpj", "receita_federal"],
+  "supported_platforms": ["crewai", "langchain"],
+  "entrypoint": "skill:CNPJLookupTool",
+  "version": "1.0.0"
+}

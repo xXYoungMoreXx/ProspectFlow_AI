@@ -29,6 +29,7 @@ asyncio.run(generate_content())
 ```
 
 For sending audio:
+
 ```python
 await session.send_realtime_input(
     media=Blob(data=audio_bytes, mime_type="audio/pcm;rate=16000")

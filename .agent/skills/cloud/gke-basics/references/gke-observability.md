@@ -6,24 +6,24 @@ This reference covers monitoring, logging, and metrics configuration for GKE. Th
 
 ## Golden Path Observability Defaults
 
-| Setting | Golden Path Value | Notes |
-|---------|-------------------|-------|
-| `loggingConfig` components | SYSTEM_COMPONENTS, WORKLOADS | Full workload logging |
-| `monitoringConfig` components | SYSTEM_COMPONENTS, STORAGE, POD, DEPLOYMENT, STATEFULSET, DAEMONSET, HPA, JOBSET, CADVISOR, KUBELET, DCGM, APISERVER, SCHEDULER, CONTROLLER_MANAGER | Full suite including control-plane |
-| `managedPrometheusConfig.enabled` | `true` | Google-managed Prometheus |
-| `advancedDatapathObservabilityConfig.enableMetrics` | `true` | Dataplane V2 flow metrics |
-| `loggingService` | `logging.googleapis.com/kubernetes` | Cloud Logging |
-| `monitoringService` | `monitoring.googleapis.com/kubernetes` | Cloud Monitoring |
+| Setting                                             | Golden Path Value                                                                                                                                   | Notes                              |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `loggingConfig` components                          | SYSTEM_COMPONENTS, WORKLOADS                                                                                                                        | Full workload logging              |
+| `monitoringConfig` components                       | SYSTEM_COMPONENTS, STORAGE, POD, DEPLOYMENT, STATEFULSET, DAEMONSET, HPA, JOBSET, CADVISOR, KUBELET, DCGM, APISERVER, SCHEDULER, CONTROLLER_MANAGER | Full suite including control-plane |
+| `managedPrometheusConfig.enabled`                   | `true`                                                                                                                                              | Google-managed Prometheus          |
+| `advancedDatapathObservabilityConfig.enableMetrics` | `true`                                                                                                                                              | Dataplane V2 flow metrics          |
+| `loggingService`                                    | `logging.googleapis.com/kubernetes`                                                                                                                 | Cloud Logging                      |
+| `monitoringService`                                 | `monitoring.googleapis.com/kubernetes`                                                                                                              | Cloud Monitoring                   |
 
 ### Control-Plane Metrics (Golden Path Addition)
 
 The golden path adds three control-plane monitoring components not present in default clusters:
 
-| Component | What It Monitors |
-|-----------|-----------------|
-| `APISERVER` | API server request latency, error rates, admission webhook performance |
-| `SCHEDULER` | Scheduling latency, pending pods, scheduling failures |
-| `CONTROLLER_MANAGER` | Controller work queue depth, reconciliation latency |
+| Component            | What It Monitors                                                       |
+| -------------------- | ---------------------------------------------------------------------- |
+| `APISERVER`          | API server request latency, error rates, admission webhook performance |
+| `SCHEDULER`          | Scheduling latency, pending pods, scheduling failures                  |
+| `CONTROLLER_MANAGER` | Controller work queue depth, reconciliation latency                    |
 
 These are critical for diagnosing cluster-level issues (slow API responses, scheduling delays, stuck controllers).
 
@@ -48,21 +48,22 @@ gcloud container clusters update <CLUSTER_NAME> --region <REGION> \
 Golden path enables Google Managed Prometheus for metrics collection and querying.
 
 **Querying metrics:**
+
 - Use Cloud Monitoring Metrics Explorer in the console
 - Use PromQL via the Prometheus UI or API
 - Grafana dashboards via Managed Grafana
 
 **Key GKE metrics:**
 
-| Metric | Source | Use |
-|--------|--------|-----|
-| `container_cpu_usage_seconds_total` | cAdvisor | Pod CPU usage |
-| `container_memory_working_set_bytes` | cAdvisor | Pod memory usage |
-| `kube_pod_status_phase` | kube-state-metrics | Pod lifecycle |
-| `apiserver_request_duration_seconds` | API Server | Control plane latency |
-| `scheduler_scheduling_duration_seconds` | Scheduler | Scheduling performance |
-| `node_cpu_seconds_total` | Kubelet | Node CPU |
-| `DCGM_FI_DEV_GPU_UTIL` | DCGM | GPU utilization |
+| Metric                                  | Source             | Use                    |
+| --------------------------------------- | ------------------ | ---------------------- |
+| `container_cpu_usage_seconds_total`     | cAdvisor           | Pod CPU usage          |
+| `container_memory_working_set_bytes`    | cAdvisor           | Pod memory usage       |
+| `kube_pod_status_phase`                 | kube-state-metrics | Pod lifecycle          |
+| `apiserver_request_duration_seconds`    | API Server         | Control plane latency  |
+| `scheduler_scheduling_duration_seconds` | Scheduler          | Scheduling performance |
+| `node_cpu_seconds_total`                | Kubelet            | Node CPU               |
+| `DCGM_FI_DEV_GPU_UTIL`                  | DCGM               | GPU utilization        |
 
 ## Live Resource Usage (kubectl-only)
 
@@ -109,14 +110,14 @@ gcloud container clusters describe <CLUSTER_NAME> --region <REGION> \
 
 Set up alerts for critical conditions:
 
-| Condition | Metric | Threshold |
-|-----------|--------|-----------|
-| High API server latency | `apiserver_request_duration_seconds` | P99 > 5s |
-| Pod crash loops | `kube_pod_container_status_restarts_total` | > 5 in 10min |
-| Node not ready | `kube_node_status_condition` | condition=Ready, status!=True |
-| High GPU utilization | `DCGM_FI_DEV_GPU_UTIL` | > 95% sustained |
-| PVC near capacity | `kubelet_volume_stats_used_bytes / capacity` | > 85% |
-| Scheduling failures | `scheduler_schedule_attempts_total{result="error"}` | > 0 |
+| Condition               | Metric                                              | Threshold                     |
+| ----------------------- | --------------------------------------------------- | ----------------------------- |
+| High API server latency | `apiserver_request_duration_seconds`                | P99 > 5s                      |
+| Pod crash loops         | `kube_pod_container_status_restarts_total`          | > 5 in 10min                  |
+| Node not ready          | `kube_node_status_condition`                        | condition=Ready, status!=True |
+| High GPU utilization    | `DCGM_FI_DEV_GPU_UTIL`                              | > 95% sustained               |
+| PVC near capacity       | `kubelet_volume_stats_used_bytes / capacity`        | > 85%                         |
+| Scheduling failures     | `scheduler_schedule_attempts_total{result="error"}` | > 0                           |
 
 ## Cost Considerations
 
@@ -127,6 +128,7 @@ Monitoring and logging have associated costs:
 - **Managed Prometheus**: Charged per samples ingested
 
 To reduce costs in non-production:
+
 ```bash
 # Reduce to system-only monitoring
 gcloud container clusters update <CLUSTER_NAME> --region <REGION> \
@@ -157,4 +159,3 @@ resource.type="k8s_event" AND jsonPayload.reason="FailedScheduling"
 # Audit logs (who did what)
 resource.type="k8s_cluster" AND logName:"cloudaudit.googleapis.com"
 ```
-

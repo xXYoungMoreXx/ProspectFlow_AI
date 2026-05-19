@@ -1,8 +1,11 @@
-import { eq } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as schema from '../schema.js';
-import { ContractAcceptance, type ContractAcceptanceProps } from '../../../domain/deal/ContractAcceptance.js';
-import type { ContractAcceptanceRepository } from '../../../domain/deal/ContractAcceptanceRepository.js';
+import { eq } from "drizzle-orm";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import * as schema from "../schema.js";
+import {
+  ContractAcceptance,
+  type ContractAcceptanceProps,
+} from "../../../domain/deal/ContractAcceptance.js";
+import type { ContractAcceptanceRepository } from "../../../domain/deal/ContractAcceptanceRepository.js";
 
 export class DrizzleContractAcceptanceRepository implements ContractAcceptanceRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}

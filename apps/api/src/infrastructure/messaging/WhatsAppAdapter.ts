@@ -1,4 +1,4 @@
-import { config } from '../../config.js';
+import { config } from "../../config.js";
 
 export interface WhatsAppMessagePayload {
   instanceName: string;
@@ -8,7 +8,7 @@ export interface WhatsAppMessagePayload {
 
 export interface WhatsAppMediaPayload extends WhatsAppMessagePayload {
   media: string; // Base64 encoded media or URL
-  mediatype: 'image' | 'video' | 'audio' | 'document';
+  mediatype: "image" | "video" | "audio" | "document";
   fileName?: string;
 }
 
@@ -18,32 +18,36 @@ export interface WhatsAppMediaPayload extends WhatsAppMessagePayload {
  */
 export class WhatsAppAdapter {
   private get baseUrl(): string {
-    if (!config.EVOLUTION_API_URL) throw new Error('EVOLUTION_API_URL is not configured.');
-    return config.EVOLUTION_API_URL.replace(/\/$/, '');
+    if (!config.EVOLUTION_API_URL)
+      throw new Error("EVOLUTION_API_URL is not configured.");
+    return config.EVOLUTION_API_URL.replace(/\/$/, "");
   }
 
   private get headers(): Record<string, string> {
-    if (!config.EVOLUTION_API_KEY) throw new Error('EVOLUTION_API_KEY is not configured.');
+    if (!config.EVOLUTION_API_KEY)
+      throw new Error("EVOLUTION_API_KEY is not configured.");
     return {
-      'Content-Type': 'application/json',
-      'apikey': config.EVOLUTION_API_KEY,
+      "Content-Type": "application/json",
+      apikey: config.EVOLUTION_API_KEY,
     };
   }
 
   /**
    * Sends a simple text message.
    */
-  async sendText(payload: WhatsAppMessagePayload): Promise<{ messageId: string }> {
+  async sendText(
+    payload: WhatsAppMessagePayload,
+  ): Promise<{ messageId: string }> {
     const url = `${this.baseUrl}/message/sendText/${payload.instanceName}`;
-    
+
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: this.headers,
       body: JSON.stringify({
         number: payload.remoteJid,
         options: {
           delay: 1200, // humanize delay
-          presence: 'composing', // shows "typing..."
+          presence: "composing", // shows "typing..."
         },
         textMessage: {
           text: payload.text,
@@ -56,30 +60,32 @@ export class WhatsAppAdapter {
       throw new Error(`Evolution API Error [${response.status}]: ${err}`);
     }
 
-    const data = await response.json() as any;
-    return { messageId: data.key?.id || 'unknown' };
+    const data = (await response.json()) as any;
+    return { messageId: data.key?.id || "unknown" };
   }
 
   /**
    * Sends a media message (image, video, document).
    */
-  async sendMedia(payload: WhatsAppMediaPayload): Promise<{ messageId: string }> {
+  async sendMedia(
+    payload: WhatsAppMediaPayload,
+  ): Promise<{ messageId: string }> {
     const url = `${this.baseUrl}/message/sendMedia/${payload.instanceName}`;
-    
+
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: this.headers,
       body: JSON.stringify({
         number: payload.remoteJid,
         options: {
           delay: 1200,
-          presence: 'composing',
+          presence: "composing",
         },
         mediaMessage: {
           mediatype: payload.mediatype,
           caption: payload.text,
           media: payload.media,
-          fileName: payload.fileName || 'file',
+          fileName: payload.fileName || "file",
         },
       }),
     });
@@ -89,30 +95,32 @@ export class WhatsAppAdapter {
       throw new Error(`Evolution API Error [${response.status}]: ${err}`);
     }
 
-    const data = await response.json() as any;
-    return { messageId: data.key?.id || 'unknown' };
+    const data = (await response.json()) as any;
+    return { messageId: data.key?.id || "unknown" };
   }
 
   /**
    * Checks connection status of an instance.
    */
-  async checkInstanceStatus(instanceName: string): Promise<{ state: string; isConnected: boolean }> {
+  async checkInstanceStatus(
+    instanceName: string,
+  ): Promise<{ state: string; isConnected: boolean }> {
     const url = `${this.baseUrl}/instance/connectionState/${instanceName}`;
-    
+
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: this.headers,
     });
 
     if (!response.ok) {
-      return { state: 'UNKNOWN', isConnected: false };
+      return { state: "UNKNOWN", isConnected: false };
     }
 
-    const data = await response.json() as any;
-    const state = data?.instance?.state || 'UNKNOWN';
-    return { 
-      state, 
-      isConnected: state === 'open' 
+    const data = (await response.json()) as any;
+    const state = data?.instance?.state || "UNKNOWN";
+    return {
+      state,
+      isConnected: state === "open",
     };
   }
 }

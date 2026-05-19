@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const ApproveSchema = z.object({
   note: z.string().max(1000).optional(),

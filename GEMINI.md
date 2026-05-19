@@ -17,7 +17,7 @@
   - API HTTP (Síncrona): `docs/api/openapi.yaml` (Spec 3.1)
   - Mensageria (Event-Driven): `docs/asyncapi/asyncapi.yaml`
 - **Segurança (STRIDE)**: Modelagem de ameaças mapeada em `docs/security/threat-models/`.
-- **System Prompts**: Tratados como código (*Prompt-as-Code*). Versionados em `docs/agents/prompts/` com respectivo CHANGELOG.
+- **System Prompts**: Tratados como código (_Prompt-as-Code_). Versionados em `docs/agents/prompts/` com respectivo CHANGELOG.
 
 ---
 

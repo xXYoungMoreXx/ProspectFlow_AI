@@ -6,14 +6,14 @@ This reference covers high availability and reliability configuration for GKE cl
 
 ## Golden Path Reliability Defaults
 
-| Setting | Golden Path Value | Notes |
-|---------|-------------------|-------|
-| Cluster type | Regional (4 zones: us-central1-a/b/c/f) | Control plane replicated across zones |
-| Upgrade strategy | SURGE (`maxSurge: 1`) | Rolling upgrades with extra capacity |
-| Auto-repair | `true` | Unhealthy nodes replaced automatically |
-| Auto-upgrade | `true` | Nodes follow control plane version |
-| Release channel | REGULAR | Balanced freshness and stability |
-| Stateful HA | Enabled | Leader election for stateful workloads |
+| Setting          | Golden Path Value                       | Notes                                  |
+| ---------------- | --------------------------------------- | -------------------------------------- |
+| Cluster type     | Regional (4 zones: us-central1-a/b/c/f) | Control plane replicated across zones  |
+| Upgrade strategy | SURGE (`maxSurge: 1`)                   | Rolling upgrades with extra capacity   |
+| Auto-repair      | `true`                                  | Unhealthy nodes replaced automatically |
+| Auto-upgrade     | `true`                                  | Nodes follow control plane version     |
+| Release channel  | REGULAR                                 | Balanced freshness and stability       |
+| Stateful HA      | Enabled                                 | Leader election for stateful workloads |
 
 ## Workflows
 
@@ -55,7 +55,7 @@ metadata:
   name: my-app-pdb
   namespace: default
 spec:
-  minAvailable: 2       # Or use maxUnavailable: 1
+  minAvailable: 2 # Or use maxUnavailable: 1
   selector:
     matchLabels:
       app: my-app
@@ -82,28 +82,28 @@ kubectl get deployment <APP> -n <NS> -o yaml | grep -E "livenessProbe|readinessP
 ```yaml
 spec:
   containers:
-  - name: app
-    livenessProbe:
-      httpGet:
-        path: /healthz
-        port: 8080
-      initialDelaySeconds: 15
-      periodSeconds: 10
-      failureThreshold: 3
-    readinessProbe:
-      httpGet:
-        path: /readyz
-        port: 8080
-      initialDelaySeconds: 5
-      periodSeconds: 5
-      failureThreshold: 3
-    startupProbe:             # For slow-starting apps
-      httpGet:
-        path: /healthz
-        port: 8080
-      initialDelaySeconds: 10
-      periodSeconds: 5
-      failureThreshold: 30    # 30 * 5s = 150s max startup time
+    - name: app
+      livenessProbe:
+        httpGet:
+          path: /healthz
+          port: 8080
+        initialDelaySeconds: 15
+        periodSeconds: 10
+        failureThreshold: 3
+      readinessProbe:
+        httpGet:
+          path: /readyz
+          port: 8080
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        failureThreshold: 3
+      startupProbe: # For slow-starting apps
+        httpGet:
+          path: /healthz
+          port: 8080
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        failureThreshold: 30 # 30 * 5s = 150s max startup time
 ```
 
 - **Readiness**: Determines when a pod can accept traffic
@@ -116,13 +116,13 @@ Ensure applications handle `SIGTERM` and drain in-flight requests:
 
 ```yaml
 spec:
-  terminationGracePeriodSeconds: 30    # Default; increase for long-running requests
+  terminationGracePeriodSeconds: 30 # Default; increase for long-running requests
   containers:
-  - name: app
-    lifecycle:
-      preStop:
-        exec:
-          command: ["/bin/sh", "-c", "sleep 5"]  # Allow LB to deregister
+    - name: app
+      lifecycle:
+        preStop:
+          exec:
+            command: ["/bin/sh", "-c", "sleep 5"] # Allow LB to deregister
 ```
 
 ### 5. Topology Spread Constraints
@@ -132,18 +132,18 @@ Distribute pods across zones and nodes to survive failures:
 ```yaml
 spec:
   topologySpreadConstraints:
-  - maxSkew: 1
-    topologyKey: topology.kubernetes.io/zone
-    whenUnsatisfiable: DoNotSchedule
-    labelSelector:
-      matchLabels:
-        app: my-app
-  - maxSkew: 1
-    topologyKey: kubernetes.io/hostname
-    whenUnsatisfiable: ScheduleAnyway
-    labelSelector:
-      matchLabels:
-        app: my-app
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app: my-app
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app: my-app
 ```
 
 - **Zone spread** (`DoNotSchedule`): Hard requirement -- pods must be balanced across zones
@@ -151,12 +151,12 @@ spec:
 
 ### 6. Replicas
 
-| Workload Type | Minimum Replicas | Reason |
-|--------------|-----------------|--------|
-| Stateless web/API | 2 | Survive single pod/node failure |
-| Critical services | 3 | Survive zone failure with zone spread |
-| Stateful (databases) | 3 (with replication) | Application-level quorum |
-| Batch/jobs | 1 | Ephemeral by nature |
+| Workload Type        | Minimum Replicas     | Reason                                |
+| -------------------- | -------------------- | ------------------------------------- |
+| Stateless web/API    | 2                    | Survive single pod/node failure       |
+| Critical services    | 3                    | Survive zone failure with zone spread |
+| Stateful (databases) | 3 (with replication) | Application-level quorum              |
+| Batch/jobs           | 1                    | Ephemeral by nature                   |
 
 ## Best Practices
 

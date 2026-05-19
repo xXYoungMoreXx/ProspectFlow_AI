@@ -38,12 +38,14 @@ ENTRYPOINT ["/server"]
 ```
 
 **Best practices:**
+
 - Use multi-stage builds to keep production images small
 - Use distroless or minimal base images to reduce attack surface
 - Run as non-root user
 - Log to `stdout` and `stderr` for Cloud Logging collection
 
 **Alternatives:**
+
 - **Cloud Native Buildpacks** — auto-detect language and build without a Dockerfile: `pack build <image> --builder gcr.io/buildpacks/builder:latest`
 - **Skaffold** — development workflow tool for iterating on containerized apps: `skaffold dev`
 
@@ -90,27 +92,27 @@ spec:
         app: my-app
     spec:
       containers:
-      - name: my-app
-        image: <REGION>-docker.pkg.dev/<PROJECT>/<REPO>/<IMAGE>:<TAG>
-        ports:
-        - containerPort: 8080
-        resources:
-          requests:
-            cpu: "250m"
-            memory: "256Mi"
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8080
-          initialDelaySeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /readyz
-            port: 8080
-          initialDelaySeconds: 5
+        - name: my-app
+          image: <REGION>-docker.pkg.dev/<PROJECT>/<REPO>/<IMAGE>:<TAG>
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
+            initialDelaySeconds: 5
 ---
 apiVersion: v1
 kind: Service
@@ -120,12 +122,13 @@ spec:
   selector:
     app: my-app
   ports:
-  - port: 80
-    targetPort: 8080
+    - port: 80
+      targetPort: 8080
   type: ClusterIP
 ```
 
 **Checklist for manifests:**
+
 - Resource requests and limits set
 - Liveness and readiness probes configured
 - At least 2 replicas for production
@@ -153,6 +156,7 @@ kubectl get pods -l app=my-app
 ## Next Steps
 
 Once the application is running on GKE:
+
 - Configure autoscaling — see [gke-scaling.md](./gke-scaling.md)
 - Set up observability — see [gke-observability.md](./gke-observability.md)
 - Harden security — see [gke-security.md](./gke-security.md)

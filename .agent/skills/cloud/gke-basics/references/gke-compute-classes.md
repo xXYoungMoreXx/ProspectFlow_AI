@@ -44,26 +44,26 @@ spec:
 
 ## PriorityRule Fields
 
-| Field | Type | Description | Example |
-|-------|------|-------------|---------|
-| `machineFamily` | string | Compute Engine machine family | `n4`, `c3`, `t2a` |
-| `machineType` | string | Specific machine type | `n4-standard-32` |
-| `spot` | boolean | Use Spot VMs | `true` |
-| `minCores` | int | Minimum vCPUs | `4` |
-| `minMemoryGb` | int | Minimum memory in GB | `16` |
-| `gpu` | object | GPU config: `type`, `count`, `driverVersion` | See below |
-| `tpu` | object | TPU config: `type`, `count`, `topology` | See below |
-| `storage` | object | Boot disk: `type`, `sizeGb`, `kmsKey`; Local SSD: `count`, `interface` | See below |
-| `location` | object | Zone targeting: `zones: [...]` or `type: "Any"` | See below |
-| `reservations` | object | Reservation consumption: `NO_RESERVATION`, `ANY_RESERVATION`, `SPECIFIC_RESERVATION` | See below |
+| Field           | Type    | Description                                                                          | Example           |
+| --------------- | ------- | ------------------------------------------------------------------------------------ | ----------------- |
+| `machineFamily` | string  | Compute Engine machine family                                                        | `n4`, `c3`, `t2a` |
+| `machineType`   | string  | Specific machine type                                                                | `n4-standard-32`  |
+| `spot`          | boolean | Use Spot VMs                                                                         | `true`            |
+| `minCores`      | int     | Minimum vCPUs                                                                        | `4`               |
+| `minMemoryGb`   | int     | Minimum memory in GB                                                                 | `16`              |
+| `gpu`           | object  | GPU config: `type`, `count`, `driverVersion`                                         | See below         |
+| `tpu`           | object  | TPU config: `type`, `count`, `topology`                                              | See below         |
+| `storage`       | object  | Boot disk: `type`, `sizeGb`, `kmsKey`; Local SSD: `count`, `interface`               | See below         |
+| `location`      | object  | Zone targeting: `zones: [...]` or `type: "Any"`                                      | See below         |
+| `reservations`  | object  | Reservation consumption: `NO_RESERVATION`, `ANY_RESERVATION`, `SPECIFIC_RESERVATION` | See below         |
 
 ### GPU Configuration
 
 ```yaml
 gpu:
-  type: "nvidia-l4"        # nvidia-l4, nvidia-h100-80gb, etc.
-  count: 1                 # GPUs per node
-  driverVersion: "latest"  # Optional
+  type: "nvidia-l4" # nvidia-l4, nvidia-h100-80gb, etc.
+  count: 1 # GPUs per node
+  driverVersion: "latest" # Optional
 ```
 
 ### TPU Configuration
@@ -80,9 +80,9 @@ tpu:
 ```yaml
 storage:
   bootDisk:
-    type: "pd-balanced"     # pd-balanced (golden path), pd-ssd, hyperdisk-balanced
+    type: "pd-balanced" # pd-balanced (golden path), pd-ssd, hyperdisk-balanced
     sizeGb: 100
-    kmsKey: "projects/.../cryptoKeys/..."  # Optional CMEK
+    kmsKey: "projects/.../cryptoKeys/..." # Optional CMEK
   localSsd:
     count: 1
     interface: "NVME"
@@ -96,7 +96,7 @@ location:
     - "us-central1-a"
     - "us-central1-b"
   # OR
-  type: "Any"              # Let GKE pick from cluster zones
+  type: "Any" # Let GKE pick from cluster zones
 ```
 
 ## Common Patterns
@@ -112,10 +112,10 @@ spec:
   nodePoolAutoCreation:
     enabled: true
   priorities:
-  - machineFamily: n4
-    spot: true
-  - machineFamily: n4
-    spot: false
+    - machineFamily: n4
+      spot: true
+    - machineFamily: n4
+      spot: false
 ```
 
 ### GPU Workload (L4)
@@ -127,16 +127,16 @@ metadata:
   name: l4-gpu-class
 spec:
   priorities:
-  - machineFamily: g2
-    gpu:
-      type: nvidia-l4
-      count: 1
-    minCores: 4
-    minMemoryGb: 16
-    storage:
-      bootDisk:
-        type: pd-balanced
-        sizeGb: 100
+    - machineFamily: g2
+      gpu:
+        type: nvidia-l4
+        count: 1
+      minCores: 4
+      minMemoryGb: 16
+      storage:
+        bootDisk:
+          type: pd-balanced
+          sizeGb: 100
 ```
 
 ### Spot with Active Migration (Return to Spot When Available)
@@ -148,10 +148,10 @@ spec:
   activeMigration:
     optimizeRulePriority: true
   priorities:
-  - machineFamily: n4
-    spot: true
-  - machineFamily: n4
-    spot: false
+    - machineFamily: n4
+      spot: true
+    - machineFamily: n4
+      spot: false
 ```
 
 > **Other patterns** — HPC (`machineFamily: c3`, `minCores: 8`) and zone targeting (`location.zones: [...]`) follow the same CRD structure. See the PriorityRule fields table and sub-config examples above.

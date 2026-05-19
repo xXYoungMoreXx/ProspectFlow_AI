@@ -1,0 +1,10 @@
+{
+  "slug": "cnpj-enricher",
+  "name": "CNPJ Enricher",
+  "description": "Busca dados avançados de uma empresa pelo CNPJ, como quadro de sócios (QSA) e CNAEs secundários.",
+  "category": "capability",
+  "tags": ["b2b", "brasil", "cnpj", "receita_federal", "qsa", "socios"],
+  "supported_platforms": ["crewai", "langchain"],
+  "entrypoint": "skill:CNPJEnricherTool",
+  "version": "1.0.0"
+}

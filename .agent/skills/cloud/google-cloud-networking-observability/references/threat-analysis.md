@@ -139,13 +139,13 @@ LIMIT 10
 
 ### Key Fields (Cloud Logging Filter Names)
 
--   **jsonPayload.threatDetails.threat**: Human-readable name of the threat.
--   **jsonPayload.threatDetails.severity**: Severity level (CRITICAL, HIGH,
-    MEDIUM, LOW, INFORMATIONAL).
--   **jsonPayload.threatDetails.category**: The category of threat.
--   **jsonPayload.action**: Action taken (for example, "ALLOW", "DENY",
-    "ALERT").
--   **jsonPayload.connection.clientIp**: The true source IP.
--   **jsonPayload.connection.serverIp**: The destination IP.
--   **jsonPayload.threatDetails.cves**: List of CVE IDs.
--   **jsonPayload.threatDetails.description**: Attack payload details.
+- **jsonPayload.threatDetails.threat**: Human-readable name of the threat.
+- **jsonPayload.threatDetails.severity**: Severity level (CRITICAL, HIGH,
+  MEDIUM, LOW, INFORMATIONAL).
+- **jsonPayload.threatDetails.category**: The category of threat.
+- **jsonPayload.action**: Action taken (for example, "ALLOW", "DENY",
+  "ALERT").
+- **jsonPayload.connection.clientIp**: The true source IP.
+- **jsonPayload.connection.serverIp**: The destination IP.
+- **jsonPayload.threatDetails.cves**: List of CVE IDs.
+- **jsonPayload.threatDetails.description**: Attack payload details.

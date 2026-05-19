@@ -1,4 +1,4 @@
-import { config } from '../../config.js';
+import { config } from "../../config.js";
 
 export interface EmailPayload {
   to: { email: string; name?: string }[];
@@ -13,14 +13,15 @@ export interface EmailPayload {
  * Uses native Node.js fetch to avoid extra dependencies.
  */
 export class EmailAdapter {
-  private readonly BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
+  private readonly BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
   private get headers(): Record<string, string> {
-    if (!config.BREVO_API_KEY) throw new Error('BREVO_API_KEY is not configured.');
+    if (!config.BREVO_API_KEY)
+      throw new Error("BREVO_API_KEY is not configured.");
     return {
-      'accept': 'application/json',
-      'api-key': config.BREVO_API_KEY,
-      'content-type': 'application/json',
+      accept: "application/json",
+      "api-key": config.BREVO_API_KEY,
+      "content-type": "application/json",
     };
   }
 
@@ -41,7 +42,7 @@ export class EmailAdapter {
     };
 
     const response = await fetch(this.BREVO_API_URL, {
-      method: 'POST',
+      method: "POST",
       headers: this.headers,
       body: JSON.stringify(body),
     });
@@ -51,7 +52,7 @@ export class EmailAdapter {
       throw new Error(`Brevo API Error [${response.status}]: ${err}`);
     }
 
-    const data = await response.json() as { messageId: string };
+    const data = (await response.json()) as { messageId: string };
     return { messageId: data.messageId };
   }
 }

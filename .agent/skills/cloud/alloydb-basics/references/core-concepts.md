@@ -30,13 +30,13 @@ socket and proxying connections to your AlloyDB instance.
 
 When connecting to AlloyDB, you can use either a Private IP or a Public IP:
 
--   **Private IP:** Your client must be deployed either in the same VPC network
-    as your AlloyDB cluster (when using PSA), or have a PSC endpoint in your VPC
-    (when using PSC) to connect directly using Private IP. For indirect methods
-    of connecting outside your VPC, see [Enable private services
-    access](https://cloud.google.com/alloydb/docs/configure-connectivity).
--   **Public IP:** If enabled on your instance, you can connect from outside the
-    VPC network.
+- **Private IP:** Your client must be deployed either in the same VPC network
+  as your AlloyDB cluster (when using PSA), or have a PSC endpoint in your VPC
+  (when using PSC) to connect directly using Private IP. For indirect methods
+  of connecting outside your VPC, see [Enable private services
+  access](https://cloud.google.com/alloydb/docs/configure-connectivity).
+- **Public IP:** If enabled on your instance, you can connect from outside the
+  VPC network.
 
 ## Connection Pooling
 

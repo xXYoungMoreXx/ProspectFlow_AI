@@ -1,4 +1,4 @@
-import type { DomainEventBase } from '@agentepro/shared-types';
+import type { DomainEventBase } from "@agentepro/shared-types";
 
 /**
  * Base class for Aggregate Roots.

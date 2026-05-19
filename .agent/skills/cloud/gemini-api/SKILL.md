@@ -45,10 +45,10 @@ Provide these key capabilities:
 
     ```xml
     <dependency>
-	    <groupId>com.google.genai</groupId>
-	    <artifactId>google-genai</artifactId>
-	    <version>${LAST_VERSION}</version>
-	</dependency>
+      <groupId>com.google.genai</groupId>
+      <artifactId>google-genai</artifactId>
+      <version>${LAST_VERSION}</version>
+    </dependency>
     ```
 
 > [!WARNING]
@@ -59,24 +59,31 @@ Provide these key capabilities:
 Prefer environment variables over hard-coding parameters when creating the client. Initialize the client without parameters to automatically pick up these values.
 
 ### Application Default Credentials (ADC)
+
 Set these variables for standard [Google Cloud authentication](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/start/gcp-auth):
+
 ```bash
 export GOOGLE_CLOUD_PROJECT='your-project-id'
 export GOOGLE_CLOUD_LOCATION='global'
 export GOOGLE_GENAI_USE_VERTEXAI=true
 ```
+
 - By default, use `location="global"` to access the global endpoint, which provides automatic routing to regions with available capacity.
 - If a user explicitly asks to use a specific region (e.g., `us-central1`, `europe-west4`), specify that region in the `GOOGLE_CLOUD_LOCATION` parameter instead. Reference the [supported regions documentation](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/locations) if needed.
 
 ### Agent Platform in Express Mode
+
 Set these variables when using [Express Mode](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/start/api-keys?usertype=expressmode) with an API key:
+
 ```bash
 export GOOGLE_API_KEY='your-api-key'
 export GOOGLE_GENAI_USE_VERTEXAI=true
 ```
 
 ### Initialization
+
 Initialize the client without arguments to pick up environment variables:
+
 ```python
 from google import genai
 client = genai.Client()
@@ -112,6 +119,7 @@ Use the following models only if explicitly requested:
 ## Quick Start
 
 ### Python
+
 ```python
 from google import genai
 client = genai.Client()
@@ -123,17 +131,21 @@ print(response.text)
 ```
 
 ### TypeScript/JavaScript
+
 ```typescript
 import { GoogleGenAI } from "@google/genai";
-const ai = new GoogleGenAI({ vertexai: { project: "your-project-id", location: "global" } });
+const ai = new GoogleGenAI({
+  vertexai: { project: "your-project-id", location: "global" },
+});
 const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: "Explain quantum computing"
+  model: "gemini-3-flash-preview",
+  contents: "Explain quantum computing",
 });
 console.log(response.text);
 ```
 
 ### Go
+
 ```go
 package main
 
@@ -165,6 +177,7 @@ func main() {
 ```
 
 ### Java
+
 ```java
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
@@ -184,6 +197,7 @@ public class GenerateTextFromTextInput {
 ```
 
 ### C#/.NET
+
 ```csharp
 using Google.GenAI;
 
@@ -204,6 +218,7 @@ Console.WriteLine(response.Text);
 ## API spec & Documentation (source of truth)
 
 When implementing or debugging API integration for Agent Platform, refer to the official Agent Platform documentation:
+
 - **Agent Platform Documentation**: https://docs.cloud.google.com/gemini-enterprise-agent-platform/overview
 - **REST API Reference**: https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/rest
 

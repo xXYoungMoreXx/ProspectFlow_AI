@@ -6,17 +6,17 @@ This reference covers security configuration for GKE clusters. The golden path e
 
 ## Golden Path Security Defaults
 
-| Setting | Golden Path Value | Day-0/1 | Notes |
-|---------|-------------------|---------|-------|
-| `workloadIdentityConfig.workloadPool` | `<PROJECT>.svc.id.goog` | Day-0 | Workload Identity Federation for Pods |
-| `secretManagerConfig.enabled` | `true` | Day-1 | Google Secret Manager integration |
-| `secretManagerConfig.rotationConfig` | `enabled: true, rotationInterval: 120s` | Day-1 | Automatic secret rotation |
-| `rbacBindingConfig.enableInsecureBindingSystemAuthenticated` | `false` | Day-0 | Blocks legacy `system:authenticated` bindings |
-| `rbacBindingConfig.enableInsecureBindingSystemUnauthenticated` | `false` | Day-0 | Blocks legacy `system:unauthenticated` bindings |
-| `nodeConfig.shieldedInstanceConfig.enableSecureBoot` | `true` | Day-0 | Verifiable boot integrity |
-| `nodeConfig.shieldedInstanceConfig.enableIntegrityMonitoring` | `true` | Day-0 | Runtime integrity checks |
-| `nodeConfig.workloadMetadataConfig.mode` | `GKE_METADATA` | Day-0 | Blocks legacy metadata API, enforces Workload Identity |
-| Private cluster + Dataplane V2 settings | See [gke-networking.md](./gke-networking.md) | Day-0 | Private nodes, private endpoint enforcement, ADVANCED_DATAPATH |
+| Setting                                                        | Golden Path Value                            | Day-0/1 | Notes                                                          |
+| -------------------------------------------------------------- | -------------------------------------------- | ------- | -------------------------------------------------------------- |
+| `workloadIdentityConfig.workloadPool`                          | `<PROJECT>.svc.id.goog`                      | Day-0   | Workload Identity Federation for Pods                          |
+| `secretManagerConfig.enabled`                                  | `true`                                       | Day-1   | Google Secret Manager integration                              |
+| `secretManagerConfig.rotationConfig`                           | `enabled: true, rotationInterval: 120s`      | Day-1   | Automatic secret rotation                                      |
+| `rbacBindingConfig.enableInsecureBindingSystemAuthenticated`   | `false`                                      | Day-0   | Blocks legacy `system:authenticated` bindings                  |
+| `rbacBindingConfig.enableInsecureBindingSystemUnauthenticated` | `false`                                      | Day-0   | Blocks legacy `system:unauthenticated` bindings                |
+| `nodeConfig.shieldedInstanceConfig.enableSecureBoot`           | `true`                                       | Day-0   | Verifiable boot integrity                                      |
+| `nodeConfig.shieldedInstanceConfig.enableIntegrityMonitoring`  | `true`                                       | Day-0   | Runtime integrity checks                                       |
+| `nodeConfig.workloadMetadataConfig.mode`                       | `GKE_METADATA`                               | Day-0   | Blocks legacy metadata API, enforces Workload Identity         |
+| Private cluster + Dataplane V2 settings                        | See [gke-networking.md](./gke-networking.md) | Day-0   | Private nodes, private endpoint enforcement, ADVANCED_DATAPATH |
 
 ## Workload Identity Federation
 
@@ -88,6 +88,7 @@ gcloud container clusters describe <CLUSTER_NAME> --region <REGION> \
 ```
 
 **Best practices for RBAC:**
+
 - Use namespace-scoped Roles over cluster-wide ClusterRoles
 - Bind to specific Groups or ServiceAccounts, never to `system:authenticated`
 - Audit permissions via MCP: `check_k8s_auth(parent="...", verb="list", resourceType="pods", namespace="...")` (or `kubectl auth can-i --list --as=<user>`)
@@ -133,11 +134,11 @@ gcloud container clusters update <CLUSTER_NAME> --region <REGION> --enable-gke-s
 
 Pod Security Standards define three profiles that restrict what pods can do. The **`restricted` profile is the golden path default** for production namespaces.
 
-| Profile | Level | Use Case |
-|---------|-------|----------|
-| `privileged` | Unrestricted | System namespaces (`kube-system`), infrastructure controllers |
-| `baseline` | Minimally restrictive | Shared/dev namespaces, legacy apps being migrated |
-| `restricted` | **Golden path** | Production workloads -- blocks privilege escalation, host access, root |
+| Profile      | Level                 | Use Case                                                               |
+| ------------ | --------------------- | ---------------------------------------------------------------------- |
+| `privileged` | Unrestricted          | System namespaces (`kube-system`), infrastructure controllers          |
+| `baseline`   | Minimally restrictive | Shared/dev namespaces, legacy apps being migrated                      |
+| `restricted` | **Golden path**       | Production workloads -- blocks privilege escalation, host access, root |
 
 **Enforce via namespace labels (Pod Security Admission):**
 
@@ -153,6 +154,7 @@ metadata:
 ```
 
 **Gradual rollout strategy:**
+
 1. Start with `warn` + `audit` on existing namespaces to identify violations
 2. Fix non-compliant workloads (remove `privileged`, `hostNetwork`, root user, etc.)
 3. Enable `enforce` once all workloads pass
@@ -174,13 +176,13 @@ This logs allowed and denied connections, useful for troubleshooting Network Pol
 
 The five most common predefined IAM roles for GKE:
 
-| Role | Purpose | When to Use |
-|------|---------|-------------|
-| `roles/container.admin` | Full control over clusters and Kubernetes resources | Platform team admins managing cluster lifecycle |
-| `roles/container.clusterAdmin` | Manage clusters but not project-level IAM | Cluster operators who create/delete clusters |
-| `roles/container.developer` | Deploy workloads (pods, services, deployments) | Application developers deploying to existing clusters |
-| `roles/container.viewer` | Read-only access to clusters and Kubernetes resources | Monitoring, auditing, or read-only dashboards |
-| `roles/container.clusterViewer` | List and get cluster details only | CI/CD pipelines that need cluster metadata |
+| Role                            | Purpose                                               | When to Use                                           |
+| ------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
+| `roles/container.admin`         | Full control over clusters and Kubernetes resources   | Platform team admins managing cluster lifecycle       |
+| `roles/container.clusterAdmin`  | Manage clusters but not project-level IAM             | Cluster operators who create/delete clusters          |
+| `roles/container.developer`     | Deploy workloads (pods, services, deployments)        | Application developers deploying to existing clusters |
+| `roles/container.viewer`        | Read-only access to clusters and Kubernetes resources | Monitoring, auditing, or read-only dashboards         |
+| `roles/container.clusterViewer` | List and get cluster details only                     | CI/CD pipelines that need cluster metadata            |
 
 > **Principle of least privilege**: Start with `roles/container.viewer` or `roles/container.developer` and escalate only as needed. Avoid granting `roles/container.admin` broadly.
 
@@ -212,4 +214,3 @@ gcloud projects add-iam-policy-binding <PROJECT_ID> \
 ```
 
 In all cases, the GSA must be bound to a KSA via Workload Identity (see setup above). The pod then uses the KSA to authenticate as the GSA.
-

@@ -6,10 +6,10 @@
 export class Money {
   private constructor(private readonly cents: number) {
     if (!Number.isInteger(cents)) {
-      throw new Error('Money value must be an integer (cents)');
+      throw new Error("Money value must be an integer (cents)");
     }
     if (cents < 0) {
-      throw new Error('Money value cannot be negative');
+      throw new Error("Money value cannot be negative");
     }
   }
 
@@ -38,9 +38,9 @@ export class Money {
   }
 
   public format(): string {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(this.cents / 100);
   }
 }
