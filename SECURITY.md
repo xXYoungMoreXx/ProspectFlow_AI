@@ -11,7 +11,7 @@ At AgentePro, security is a fundamental pillar of our architecture. We employ a 
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability within AgentePro, please send an e-mail to our security team at `morekaik27@gmail.com`. All security vulnerabilities will be promptly addressed.
+If you discover a security vulnerability within AgentePro, please contact me immediately. A única forma de contato deve ser meu email pessoal (**morekaik27@gmail.com**) ou Discord (**youngmore** / **YoungMore#1752**). All security vulnerabilities will be promptly addressed.
 
 Please include the following information in your report:
 
@@ -25,3 +25,7 @@ Please include the following information in your report:
 Vulnerabilities involving the Agent Runtime (e.g., LLM Jailbreaking, Prompt Injection bypassing our filters, or SSRF evasion in the Python CrewAI skills) are treated with critical severity. Please report them immediately.
 
 We appreciate your effort in making AgentePro safer!
+
+## ⚖️ Aviso Legal (Disclaimer)
+
+Deixo bem claro e de forma legal que não me responsabilizo pela forma como este sistema será utilizado, nem pelos resultados gerados por ele ou quaisquer prejuízos decorrentes de sua operação. O uso do software ocorre por conta e risco exclusivos de quem o utiliza.
