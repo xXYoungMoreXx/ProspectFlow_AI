@@ -156,5 +156,10 @@ python -m pytest tests/
 
 Copyright (c) 2026 AgentePro / ProspectFlow AI
 
-Este projeto é disponibilizado sob uma **Licença Não-Comercial (Non-Commercial License)**. 
-Você está livre para usar, modificar, aprender e contribuir com o código fonte do sistema localmente. **No entanto, é estritamente proibida a comercialização do software**, seja revendendo-o diretamente, empacotando-o como serviço (SaaS), ou extraindo vantagem monetária de suas funções e código sem permissão explícita prévia.
+Este projeto é disponibilizado sob uma **Licença Proprietária de Uso Restrito**. 
+
+**O QUE VOCÊ PODE FAZER:**
+Você está livre para usar o sistema para automatizar suas próprias vendas, prospectar clientes para o seu negócio e, dessa forma, gerar lucro. Integrações e extensões próprias são permitidas e incentivadas.
+
+**O QUE É ESTRITAMENTE PROIBIDO:**
+A **comercialização do sistema em si** é estritamente proibida. Você **não pode** vender o código, alugá-lo, distribuí-lo como produto pago, ou empacotar e oferecer o sistema como um serviço hospedado para terceiros (SaaS - Software as a Service) sem permissão explícita e prévia.
