@@ -15,10 +15,8 @@ let publicKey: JoseKey | null = null;
 
 async function getPublicKey(): Promise<JoseKey> {
   if (!publicKey) {
-    publicKey = await importSPKI(
-      config.JWT_PUBLIC_KEY.replace(/\\n/g, "\n"),
-      "RS256",
-    );
+    const pk = config.JWT_PUBLIC_KEY.split("\\n").join("\n");
+    publicKey = await importSPKI(pk, "RS256");
   }
   return publicKey;
 }
