@@ -33,10 +33,8 @@ let privateKey: Awaited<ReturnType<typeof importPKCS8>> | null = null;
 
 async function getPrivateKey() {
   if (!privateKey) {
-    privateKey = await importPKCS8(
-      config.JWT_PRIVATE_KEY.replace(/\n/g, "\n"),
-      "RS256",
-    );
+    const pk = config.JWT_PRIVATE_KEY.split("\\n").join("\n");
+    privateKey = await importPKCS8(pk, "RS256");
   }
   return privateKey;
 }
@@ -317,7 +315,7 @@ export class LoginHandler {
 
     const hashToVerify =
       operator?.passwordHash ??
-      "=19=65536,t=3,p=4";
+      "$argon2id$v=19$m=65536,t=3,p=4$dummysalt$dummyhash";
     const isValid = await verify(hashToVerify, password).catch(() => false);
 
     if (!operator || !isValid || !operator.isActive) {
@@ -393,7 +391,7 @@ export class RefreshTokenHandler {
       .limit(1);
 
     if (!token || new Date() > token.expiresAt) {
-      await verify("=19=65536,t=3,p=4", "dummy").catch(() => {});
+      await verify("$argon2id$v=19$m=65536,t=3,p=4$dummysalt$dummyhash", "dummy").catch(() => {});
       return err(new AuthenticationError());
     }
 
