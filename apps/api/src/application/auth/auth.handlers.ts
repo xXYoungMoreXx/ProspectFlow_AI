@@ -33,10 +33,8 @@ let privateKey: Awaited<ReturnType<typeof importPKCS8>> | null = null;
 
 async function getPrivateKey() {
   if (!privateKey) {
-    privateKey = await importPKCS8(
-      config.JWT_PRIVATE_KEY.replace(/\\n/g, "\n"),
-      "RS256",
-    );
+    const pk = config.JWT_PRIVATE_KEY.split("\\n").join("\n");
+    privateKey = await importPKCS8(pk, "RS256");
   }
   return privateKey;
 }
@@ -62,8 +60,6 @@ function verifyTokenHash(providedToken: string, storedHash: string): boolean {
     return false;
   }
 }
-
-// ── Handlers ─────────────────────────────────────────────────────────────────
 
 export class RegisterHandler {
   constructor(
@@ -116,7 +112,6 @@ export class RegisterHandler {
     } catch (e: any) {
       // If email already exists (unique constraint violation)
       // Anti-enumeration: We return OK, but we do NOT send the verification email.
-      // Alternatively, we could send a "you already have an account" email, but for now we just return OK.
       if (e.code === "23505") {
         return ok(undefined);
       }
@@ -142,20 +137,18 @@ export class VerifyEmailHandler {
       )
       .limit(1);
 
-    if (!verification) {
-      return err(new Error("Invalid token"));
+    if (
+      !verification ||
+      verification.usedAt ||
+      new Date() > verification.expiresAt
+    ) {
+      return err(new Error("Invalid or expired token"));
     }
 
-    if (verification.usedAt || new Date() > verification.expiresAt) {
-      return err(new Error("Token expired or already used"));
-    }
-
-    // Verify constant time just to be safe, though db query already matched it
     if (!verifyTokenHash(token, verification.tokenHash)) {
       return err(new Error("Invalid token"));
     }
 
-    // Mark user as verified and token as used
     await this.db.transaction(async (tx) => {
       await tx
         .update(schema.operators)
@@ -187,7 +180,6 @@ export class ResendVerificationHandler {
       .where(eq(schema.operators.email, emailLower))
       .limit(1);
 
-    // Anti-enumeration: Return ok even if user doesn't exist or is already verified
     if (!operator || operator.emailVerified) {
       return ok(undefined);
     }
@@ -226,12 +218,13 @@ export class ForgotPasswordHandler {
       .where(eq(schema.operators.email, emailLower))
       .limit(1);
 
-    // Anti-enumeration: Return ok even if user doesn't exist
+    const { token, tokenHash } = generateSecureToken();
+
     if (!operator || !operator.isActive) {
+      // VULN-003 Remediation: Perform dummy work
+      await hash(token, { ...ARGON2_OPTIONS, memoryCost: 2048, timeCost: 2 });
       return ok(undefined);
     }
-
-    const { token, tokenHash } = generateSecureToken();
 
     await this.db.insert(schema.emailVerifications).values({
       operatorId: operator.id,
@@ -272,7 +265,6 @@ export class ResetPasswordHandler {
       verification.usedAt ||
       new Date() > verification.expiresAt
     ) {
-      // Provide generic error
       return err(new Error("Invalid or expired token"));
     }
 
@@ -293,7 +285,6 @@ export class ResetPasswordHandler {
         .set({ usedAt: new Date() })
         .where(eq(schema.emailVerifications.id, verification.id));
 
-      // Revoke all existing refresh tokens
       await tx
         .update(schema.refreshTokens)
         .set({ revokedAt: new Date() })
@@ -312,23 +303,16 @@ export class ResetPasswordHandler {
 export class LoginHandler {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
-  /**
-   * Login with email + password.
-   * Anti-enumeration: always hash even if user doesn't exist (timing attack prevention).
-   * PRD §11.2 + §14 security tests.
-   */
   async execute(
     email: string,
     password: string,
   ): Promise<Result<AuthTokens, AuthenticationError>> {
-    // Always execute Argon2 verify to prevent timing attacks
     const [operator] = await this.db
       .select()
       .from(schema.operators)
       .where(eq(schema.operators.email, email.toLowerCase().trim()))
       .limit(1);
 
-    // Dummy hash for timing consistency when user not found
     const hashToVerify =
       operator?.passwordHash ??
       "$argon2id$v=19$m=65536,t=3,p=4$dummysalt$dummyhash";
@@ -348,7 +332,6 @@ export class LoginHandler {
       );
     }
 
-    // Generate tokens
     const key = await getPrivateKey();
     const jti = ulid();
     const now = Math.floor(Date.now() / 1000);
@@ -365,16 +348,15 @@ export class LoginHandler {
       .setJti(jti)
       .sign(key);
 
-    // Create refresh token (opaque, stored hashed)
-    const rawRefreshToken = ulid() + ulid(); // 52-char opaque token
+    const tokenId = ulid();
+    const rawRefreshToken = `${tokenId}.${ulid()}`;
     const refreshHash = await hash(rawRefreshToken, ARGON2_OPTIONS);
 
-    // Calculate refresh expiry
     const refreshExpiryMs = parseDuration(config.JWT_REFRESH_EXPIRY);
     const expiresAt = new Date(Date.now() + refreshExpiryMs);
 
-    // Store refresh token
     await this.db.insert(schema.refreshTokens).values({
+      id: tokenId,
       operatorId: operator.id,
       tokenHash: refreshHash,
       expiresAt,
@@ -391,53 +373,48 @@ export class LoginHandler {
 export class RefreshTokenHandler {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
-  /**
-   * Rotate refresh token.
-   * Old token is revoked, new token is issued.
-   */
   async execute(
     rawRefreshToken: string,
   ): Promise<Result<AuthTokens, AuthenticationError>> {
-    // Find all non-revoked tokens and verify
-    const tokens = await this.db
+    const [tokenId] = rawRefreshToken.split(".");
+    if (!tokenId) return err(new AuthenticationError());
+
+    const [token] = await this.db
       .select()
       .from(schema.refreshTokens)
-      .where(eq(schema.refreshTokens.revokedAt, null as unknown as Date))
-      .limit(50);
+      .where(
+        and(
+          eq(schema.refreshTokens.id, tokenId),
+          eq(schema.refreshTokens.revokedAt, null as unknown as Date)
+        )
+      )
+      .limit(1);
 
-    let matchedToken: (typeof tokens)[0] | undefined;
-    for (const token of tokens) {
-      const isMatch = await verify(token.tokenHash, rawRefreshToken).catch(
-        () => false,
-      );
-      if (isMatch) {
-        matchedToken = token;
-        break;
-      }
-    }
-
-    if (!matchedToken || new Date() > matchedToken.expiresAt) {
+    if (!token || new Date() > token.expiresAt) {
+      await verify("$argon2id$v=19$m=65536,t=3,p=4$dummysalt$dummyhash", "dummy").catch(() => {});
       return err(new AuthenticationError());
     }
 
-    // Revoke old token
+    const isMatch = await verify(token.tokenHash, rawRefreshToken).catch(() => false);
+    if (!isMatch) {
+      return err(new AuthenticationError());
+    }
+
     await this.db
       .update(schema.refreshTokens)
       .set({ revokedAt: new Date() })
-      .where(eq(schema.refreshTokens.id, matchedToken.id));
+      .where(eq(schema.refreshTokens.id, token.id));
 
-    // Get operator
     const [operator] = await this.db
       .select()
       .from(schema.operators)
-      .where(eq(schema.operators.id, matchedToken.operatorId))
+      .where(eq(schema.operators.id, token.operatorId))
       .limit(1);
 
     if (!operator || !operator.isActive || !operator.emailVerified) {
       return err(new AuthenticationError());
     }
 
-    // Issue new tokens
     const key = await getPrivateKey();
     const jti = ulid();
 
@@ -453,11 +430,13 @@ export class RefreshTokenHandler {
       .setJti(jti)
       .sign(key);
 
-    const newRawRefresh = ulid() + ulid();
+    const newTokenId = ulid();
+    const newRawRefresh = `${newTokenId}.${ulid()}`;
     const newRefreshHash = await hash(newRawRefresh, ARGON2_OPTIONS);
     const refreshExpiryMs = parseDuration(config.JWT_REFRESH_EXPIRY);
 
     await this.db.insert(schema.refreshTokens).values({
+      id: newTokenId,
       operatorId: operator.id,
       tokenHash: newRefreshHash,
       expiresAt: new Date(Date.now() + refreshExpiryMs),
@@ -475,7 +454,6 @@ export class LogoutHandler {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
   async execute(operatorId: string): Promise<void> {
-    // Revoke all active refresh tokens for this operator
     await this.db
       .update(schema.refreshTokens)
       .set({ revokedAt: new Date() })
@@ -488,10 +466,9 @@ export class LogoutHandler {
   }
 }
 
-/** Parse duration string (e.g. "7d", "1h") to milliseconds */
 function parseDuration(duration: string): number {
   const match = duration.match(/^(\d+)([smhd])$/);
-  if (!match) return 3600000; // fallback 1h
+  if (!match) return 3600000;
   const value = parseInt(match[1]!, 10);
   const unit = match[2]!;
   const multipliers: Record<string, number> = {
