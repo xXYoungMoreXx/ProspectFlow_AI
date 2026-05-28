@@ -71,76 +71,60 @@ Todo o ciclo de vida do Agente e da API possui rastreio (Tracing) transparente e
 
 Nossos agentes evoluem através de código. Todos os comportamentos, regras de HITL, checklists de segurança (ex: OWASP, WCAG) e tons de voz estão versionados no diretório `docs/agents/prompts/`. Cada atualização (como a versão robusta do `qa-v1.md`) é documentada em um CHANGELOG estrito. Nunca alteramos comportamento de IA sem revisão de código e merge request.
 
-## ⚙️ Guia Rápido: Do Zero ao Funcionamento
+## ⚙️ Guia Rápido: Do Zero ao Funcionamento (DX Otimizado)
 
-A arquitetura do AgentePro evoluiu! O sistema agora utiliza o **Settings Hub**: um painel centralizado no frontend (protegido por banco de dados criptografado) para você gerenciar todas as suas chaves de API (OpenAI, Anthropic, WhatsApp, etc). Diga adeus aos gigantescos arquivos `.env` manuais para chaves de negócio!
+A arquitetura do AgentePro evoluiu para proporcionar a melhor Experiência do Desenvolvedor (DX). Criamos um inicializador inteligente multiplataforma que faz todo o trabalho pesado por você. Além disso, o sistema utiliza o **Settings Hub**: um painel centralizado no frontend (protegido por banco de dados criptografado) para você gerenciar todas as suas chaves de API (OpenAI, Anthropic, WhatsApp, etc). Diga adeus aos gigantescos arquivos `.env` manuais para chaves de negócio!
 
-### Pré-Requisitos do Sistema
+### Requisitos Mínimos Obrigatórios
 
-Para rodar este ambiente, garanta que sua máquina possua:
+Para executar o ecossistema AgentePro localmente, certifique-se de que sua máquina atenda aos seguintes requisitos:
 
-- **Node.js** (versão 22 ou superior) & `npm`
-- **Docker** e **Docker Compose** (Obrigatório para banco de dados e Ollama local)
-- Se utilizar Windows, instale via **WSL2**.
+- **Node.js**: Versão 22 ou superior (incluindo `npm`).
+- **Docker**: Engine e Docker Compose instalados e rodando (Obrigatório para o PostgreSQL, Redis, ChromaDB e Ollama).
+- **Sistema Operacional**: Suporte nativo multiplataforma (Windows via CMD/PowerShell, WSL2, Linux ou macOS).
 
-### 1. Preparação de Credenciais de Segurança
+### 1. Preparação (Opcional - Chave de Criptografia)
 
-O sistema precisa de pouquíssimas variáveis locais, mas as que exige são voltadas estritamente à criptografia da infraestrutura.
+O sistema de inicialização criará o `.env` automaticamente para você, mas é **altamente recomendado** que você gere uma chave AES-256 para o `SETTINGS_ENCRYPTION_KEY` e adicione ao seu arquivo `.env` gerado. Esta chave blinda as credenciais no banco de dados.
 
-Copie o arquivo base:
 ```bash
-cp .env.example .env
-```
-
-**MUITO IMPORTANTE:** Você **DEVE** gerar uma chave AES-256 de 32 bytes para a variável `SETTINGS_ENCRYPTION_KEY` dentro do `.env`. Esta chave blinda suas senhas no banco de dados.
-
-Para gerar sua chave, rode no terminal:
-```bash
+# Gere uma chave segura no seu terminal e copie a saída
 node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
-Copie o valor impresso e cole no seu `.env` em `SETTINGS_ENCRYPTION_KEY=`.
 
-### 2. Bootstrapping da Infraestrutura (Docker)
+### 2. O Inicializador Inteligente (One-Click Start)
 
-O projeto disponibiliza um script que sobe o banco de dados (PostgreSQL), Redis, ChromaDB, Observabilidade (Grafana/Prometheus) e o container Ollama em _background_, além de já aplicar as migrations automáticas.
-
-```bash
-# Rode na raiz do projeto (Recomendado via bash/WSL2)
-chmod +x infra/scripts/setup.sh
-./infra/scripts/setup.sh
-```
-
-*(Alternativamente, você pode rodar manualmente `docker compose -f infra/docker-compose.yml up -d` e aplicar as migrations na pasta `apps/api` via `npm run db:push`).*
-
-### 3. Instalação das Dependências
-
-O Turborepo cuidará de instalar e linkar os pacotes de toda a stack:
+Chega de rodar `docker-compose` manualmente, descobrir portas presas ou esquecer de aplicar as migrations. Na raiz do projeto, instale as dependências e rode o inicializador:
 
 ```bash
+# 1. Instale as dependências do Turborepo e dos Workspaces
 npm install
+
+# 2. Rode o inicializador Mágico
+npm run init
 ```
 
-### 4. Inicializando Todos os Serviços
+**O que o Inicializador (`scripts/init.js`) faz por baixo dos panos?**
+1. **Pre-flight Checks**: Valida se o Docker está em execução e cria seu arquivo `.env` padrão caso não exista.
+2. **Infra Bootstrap**: Sobe todos os contêineres vitais (`docker compose up -d`) em background.
+3. **Health Checks**: Realiza *polling* nativo e seguro para garantir que o banco de dados PostgreSQL esteja aceitando conexões antes de prosseguir.
+4. **Data Sync**: Dispara silenciosamente o `npm run db:push` no contexto da API para sincronizar as migrations.
+5. **Diagnóstico Proativo**: Intercepta erros comuns. Por exemplo, se o WSL não tiver suporte a NVIDIA GPUs e o *Ollama* falhar, ou se a porta `5432` já estiver em uso, o script abortará informando exatamente como consertar em português claro.
+6. **Live Attach**: Finalizado o setup, ele automaticamente levanta todo o projeto (`npm run dev`) e acopla a saída no mesmo terminal.
 
-Agora, suba o ambiente de desenvolvimento completo (API, Runtime e Frontend):
+### 3. Configurando suas Integrações via Settings Hub
 
-```bash
-npm run dev
-```
-
-### 5. Configurando suas Integrações via Settings Hub
-
-Pronto! Seus painéis ficarão online:
+Com o projeto rodando (`npm run dev` ativado pelo inicializador), acesse seus painéis locais:
 
 - 💻 **Dashboard CRM (Next.js)**: `http://localhost:3000`
 - ⚙️ **API Gateway**: `http://localhost:3001`
 - 🤖 **Agent Runtime (FastAPI)**: `http://localhost:8001`
 
-**Como configurar a Inteligência Artificial e Mensageria?**
-1. Acesse o painel web em `http://localhost:3000/settings`
-2. Utilize a aba **AI Providers** para ativar e colar chaves da OpenAI, Anthropic, etc.
-3. Se estiver usando o Docker, na seção **Ollama**, você já poderá dar "Pull" em modelos (ex: `llama3`) localmente com barra de progresso em tempo real, sem digitar linhas de comando.
-4. As abas **Messaging** e **Integrations** controlam WhatsApp, MCPs, Webhooks e E-mail.
+**Como plugar a Inteligência Artificial?**
+1. Acesse o painel web em `http://localhost:3000/settings`.
+2. Utilize a aba **AI Providers** para ativar e colar chaves de APIs.
+3. Na seção **Ollama**, puxe modelos locais (ex: `llama3`) com 1-clique na interface.
+4. Configure canais de mensageria (WhatsApp) e integrações MCP.
 
 ---
 
@@ -171,4 +155,6 @@ python -m pytest tests/
 ## ⚖️ Licença
 
 Copyright (c) 2026 AgentePro / ProspectFlow AI
-Todos os direitos reservados. Uso proprietário e confidencial. O uso, distribuição ou cópia não autorizada do código presente neste repositório é estritamente proibido.
+
+Este projeto é disponibilizado sob uma **Licença Não-Comercial (Non-Commercial License)**. 
+Você está livre para usar, modificar, aprender e contribuir com o código fonte do sistema localmente. **No entanto, é estritamente proibida a comercialização do software**, seja revendendo-o diretamente, empacotando-o como serviço (SaaS), ou extraindo vantagem monetária de suas funções e código sem permissão explícita prévia.
