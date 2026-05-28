@@ -7,12 +7,15 @@ in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, and/or sublicense copies
 of the Software, subject to the following conditions:
 
-1. NON-COMMERCIAL USE ONLY: You may not use the Software or any modifications
-   thereof for any commercial purpose. "Commercial purpose" means any use 
-   which is intended for or directed toward commercial advantage or monetary 
-   compensation, including but not limited to selling the Software, using the 
-   Software to provide commercial services, or incorporating the Software into 
-   a commercial product.
+1. RESTRICTIONS ON COMMERCIALIZATION OF THE SOFTWARE: 
+   You are expressly permitted to use this Software to generate profit in your 
+   own business operations (e.g., using it to prospect clients for your company,
+   automating your sales, or building integrations). 
+   
+   HOWEVER, you are strictly PROHIBITED from commercializing the Software *itself*. 
+   This means you may not sell, rent, lease, or distribute the Software as a standalone 
+   product, nor may you offer the Software to third parties as a hosted service 
+   (Software-as-a-Service / SaaS).
 
 2. The above copyright notice and this permission notice shall be included in
    all copies or substantial portions of the Software.

@@ -1,59 +1,51 @@
-# Contributing to ProspectFlow AI (AgentePro)
+# Contribuindo para o ProspectFlow AI (AgentePro)
 
-First off, thank you for considering contributing to ProspectFlow AI! It's people like you that make this tool great.
+Antes de tudo, muito obrigado por considerar contribuir para o ProspectFlow AI! São pessoas como você que tornam esta ferramenta incrível.
 
-## 🚀 Getting Started
+## 🚀 Começando
 
-### Prerequisites
+### Pré-requisitos
 
 - **Node.js**: v22+ (LTS)
-- **pnpm**: v9+
-- **Docker Desktop**: For infrastructure (Postgres, Redis, etc.)
-- **Python**: v3.12+ (for Agent Runtime)
+- **npm**: (gerenciador de pacotes padrão)
+- **Docker Desktop**: Para infraestrutura (Postgres, Redis, ChromaDB, etc.)
+- **Python**: v3.12+ (para o Agent Runtime)
 
-### Local Development Setup
+### Configuração do Ambiente Local
 
-1.  **Clone the repository**:
+O jeito mais fácil e seguro de iniciar o ambiente é através do inicializador mágico.
+
+1.  **Clone o repositório**:
 
     ```bash
     git clone https://github.com/xXYoungMoreXx/ProspectFlow_AI.git
     cd ProspectFlow_AI
     ```
 
-2.  **Install dependencies**:
+2.  **Instale as dependências**:
 
     ```bash
-    pnpm install
+    npm install
     ```
 
-3.  **Start Infrastructure**:
+3.  **Inicie Tudo Magicamente**:
 
     ```bash
-    docker-compose -f infra/docker-compose.yml up -d
+    npm run init
     ```
+    *(O script subirá o Docker, aplicará migrações e acoplará o `npm run dev` no terminal)*
 
-4.  **Database Migration**:
+## 🛠️ Estrutura do Monorepo
 
-    ```bash
-    pnpm --filter @agentepro/api db:migrate
-    ```
+- `apps/api`: Backend de alta performance (Fastify / Node.js)
+- `apps/web`: Painel CRM e Settings Hub (Next.js / Frontend)
+- `apps/agent-runtime`: Motor de IA nativo (Python / LangGraph)
+- `packages/shared-types`: Interfaces e Tipos TypeScript compartilhados
 
-5.  **Run Development Servers**:
-    ```bash
-    pnpm dev
-    ```
+## 🧪 Testes
 
-## 🛠️ Monorepo Structure
-
-- `apps/api`: Fastify backend (Node.js)
-- `apps/web`: Next.js dashboard (Frontend)
-- `apps/agent-runtime`: CrewAI/FastAPI runtime (Python)
-- `packages/shared-types`: Shared TypeScript interfaces
-
-## 🧪 Testing
-
-- **Unit/Integration**: `pnpm test`
-- **E2E (Playwright)**: `pnpm --filter @agentepro/web exec playwright test`
+- **Unidade/Integração**: `npm run test` (na raiz ou dentro de `apps/api`)
+- **E2E (Playwright)**: `npm --prefix apps/web run test:e2e`
 
 ## 📜 Regras de Contribuição e Pull Requests (OBRIGATÓRIO)
 
@@ -80,4 +72,4 @@ Por favor, veja também nosso [SECURITY.md](SECURITY.md).
 
 ---
 
-Thank you for your contribution!
+Obrigado por contribuir!

@@ -1,30 +1,30 @@
-# Security Policy
+# Política de Segurança
 
-At AgentePro, security is a fundamental pillar of our architecture. We employ a Zero Trust model, strict SSRF protections, advanced payload validations, and AI-specific safeguards.
+No AgentePro, a segurança é um pilar fundamental da nossa arquitetura. Empregamos um modelo Zero Trust, proteções estritas contra SSRF, validações avançadas de payloads e salvaguardas específicas para Inteligência Artificial.
 
-## Supported Versions
+## Versões Suportadas
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| 0.1.x   | :white_check_mark: |
+| Versão | Suporte            |
+| ------ | ------------------ |
+| 1.0.x  | :white_check_mark: |
+| 0.1.x  | :white_check_mark: |
 
-## Reporting a Vulnerability
+## Relatando uma Vulnerabilidade
 
-If you discover a security vulnerability within AgentePro, please contact me immediately. A única forma de contato deve ser meu email pessoal (**morekaik27@gmail.com**) ou Discord (**youngmore** / **YoungMore#1752**). All security vulnerabilities will be promptly addressed.
+Se você descobrir uma vulnerabilidade de segurança dentro do AgentePro, por favor, entre em contato comigo imediatamente. A única forma de contato oficial deve ser meu email pessoal (**morekaik27@gmail.com**) ou Discord (**youngmore** / **YoungMore#1752**). Todas as vulnerabilidades de segurança serão prontamente abordadas.
 
-Please include the following information in your report:
+Por favor, inclua as seguintes informações no seu relato:
 
-- Type of vulnerability (e.g., SSRF, XSS, Prompt Injection, IDOR).
-- Step-by-step instructions to reproduce the issue.
-- Potential impact and risk assessment.
-- Proof of Concept (PoC) code or screenshots.
+- Tipo de vulnerabilidade (ex: SSRF, XSS, Prompt Injection, IDOR).
+- Instruções passo-a-passo para reproduzir o problema.
+- Impacto potencial e avaliação de risco.
+- Código de Prova de Conceito (PoC) ou screenshots.
 
-### AI and Agentic Security
+### Segurança de IA e Agentes
 
-Vulnerabilities involving the Agent Runtime (e.g., LLM Jailbreaking, Prompt Injection bypassing our filters, or SSRF evasion in the Python CrewAI skills) are treated with critical severity. Please report them immediately.
+Vulnerabilidades envolvendo o Agent Runtime (ex: LLM Jailbreaking, Prompt Injection contornando nossos filtros ou evasão de SSRF nas Skills de Python do CrewAI) são tratadas com severidade **CRÍTICA**. Por favor, relate-as imediatamente.
 
-We appreciate your effort in making AgentePro safer!
+Agradecemos o seu esforço em tornar o AgentePro mais seguro!
 
 ## ⚖️ Aviso Legal (Disclaimer)
 
