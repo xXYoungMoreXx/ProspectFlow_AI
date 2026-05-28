@@ -54,7 +54,7 @@ jobs:
     needs: setup
     environment: ${{ needs.setup.outputs.environment }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Deploy Instructions
         run: |
@@ -69,7 +69,7 @@ jobs:
     needs: [deploy-mvp, setup]
     environment: ${{ needs.setup.outputs.environment }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Notify Success
         if: success()
