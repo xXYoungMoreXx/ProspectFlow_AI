@@ -130,6 +130,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: build-output
+          path: .
 
       - name: Install Playwright Browsers
         working-directory: apps/web
