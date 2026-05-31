@@ -1,8 +1,8 @@
-## 2026-05-27 — Initial Security Audit
-**Module:** apps/api/src/application/auth
-**VULN-ID:** VULN-001, VULN-003, VULN-004
-**Vulnerability:** Timing attacks in RefreshTokenHandler and ForgotPasswordHandler.
-**Root Cause:** Linear search with slow hashing (Argon2) and early returns in auth flows.
-**Architectural Impact:** Application layer (Handlers) leaking metadata via response timing.
-**Learning:** Even with "anti-enumeration" comments, subtle timing differences in DB writes and email enqueuing can still leak information.
-**Prevention:** Use dummy operations (hashing, DB-like delays) in failure paths to match success path latency.
+## 2025-05-22 — Idempotency in Clickwrap Flows
+**Module:** src/application/deal
+**VULN-ID:** VULN-004
+**Vulnerability:** Deal Acceptance Replay
+**Root Cause:** The system followed an append-only philosophy for the `contract_acceptances` table but failed to enforce business-level idempotency in the application layer. It assumed frontend validation or "once-sent-once-signed" logic without server-side enforcement.
+**Architectural Impact:** Application (Use Case) layer.
+**Learning:** Append-only tables are great for audit logs, but the Use Case that writes to them must often implement its own idempotency check against the aggregate's state or the existence of a previous record to prevent business logic replay.
+**Prevention:** Always check if a terminal state (like "ACCEPTED") has already been reached before performing the write operation in public or sensitive use cases.

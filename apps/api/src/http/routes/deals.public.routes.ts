@@ -3,7 +3,7 @@ import { RecordContractAcceptanceHandler } from "../../application/deal/RecordCo
 import { z } from "zod";
 
 const AcceptProposalSchema = z.object({
-  contractText: z.string(),
+  contractText: z.string().max(100000, "Contract text is too long"),
 });
 
 export async function publicDealRoutes(app: FastifyInstance): Promise<void> {
@@ -11,6 +11,14 @@ export async function publicDealRoutes(app: FastifyInstance): Promise<void> {
 
   app.get<{ Params: { id: string }; Querystring: { token: string } }>(
     "/:id/proposal",
+    {
+      config: {
+        rateLimit: {
+          max: 10,
+          timeWindow: "1 minute",
+        },
+      },
+    },
     async (request, reply) => {
       // In a real app, this would return an HTML page or redirect to frontend
       // For API purposes, we just return the proposal details if token is valid.
@@ -28,7 +36,14 @@ export async function publicDealRoutes(app: FastifyInstance): Promise<void> {
     Params: { id: string };
     Querystring: { token: string };
     Body: z.infer<typeof AcceptProposalSchema>;
-  }>("/:id/accept", async (request, reply) => {
+  }>("/:id/accept", {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: "1 minute",
+      },
+    },
+  }, async (request, reply) => {
     const parsed = AcceptProposalSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({

@@ -23,6 +23,14 @@ export class RecordContractAcceptanceHandler {
     contractText: string;
   }): Promise<Result<void, ValidationError>> {
     try {
+      // 0. Check for existing acceptance (Idempotency/Replay Prevention)
+      const existing = await this.acceptanceRepository.findByDealId(
+        input.dealId,
+      );
+      if (existing) {
+        return err(new ValidationError("This deal has already been accepted."));
+      }
+
       // 1. Validate JWT
       const secret = new TextEncoder().encode(this.jwtSecret);
       const { payload } = await jose.jwtVerify(input.token, secret);
@@ -70,11 +78,9 @@ export class RecordContractAcceptanceHandler {
           ),
         );
       }
-      return err(
-        new ValidationError(
-          `Failed to record acceptance: ${(e as Error).message}`,
-        ),
-      );
+      // VULN-007: Sanitize error message to prevent leaking sensitive input in logs
+      // if this error is subsequently logged by the global handler.
+      return err(new ValidationError("Failed to record acceptance"));
     }
   }
 }
