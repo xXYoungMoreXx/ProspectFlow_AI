@@ -1,0 +1,906 @@
+openapi: "3.1.0"
+info:
+  title: AgentePro API
+  version: "2.0.0"
+  description: |
+    API REST da plataforma AgentePro — agentes de IA para prospecção e entrega de sites.
+    Autenticação: Bearer JWT RS256.
+    Todos os endpoints retornam envelope { data, meta } ou { errors }.
+  contact:
+    name: AgentePro
+servers:
+  - url: http://localhost:3001
+    description: Desenvolvimento local
+  - url: https://api.seudominio.com
+    description: Produção
+
+# ===========================================================================
+# SECURITY
+# ===========================================================================
+securitySchemes:
+  BearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT
+
+security:
+  - BearerAuth: []
+
+# ===========================================================================
+# COMPONENTS — Schemas reutilizáveis
+# ===========================================================================
+components:
+  schemas:
+
+    # --- Erros ---
+    ApiError:
+      type: object
+      required: [code, message, requestId]
+      properties:
+        code:      { type: string, example: "VALIDATION_ERROR" }
+        message:   { type: string, example: "Email inválido" }
+        field:     { type: string, example: "email" }
+        requestId: { type: string, example: "01HZ..." }
+
+    ApiErrorResponse:
+      type: object
+      required: [errors]
+      properties:
+        errors:
+          type: array
+          items: { $ref: '#/components/schemas/ApiError' }
+
+    # --- Paginação ---
+    PaginationMeta:
+      type: object
+      properties:
+        cursor:
+          type: object
+          properties:
+            next: { type: string, nullable: true }
+            prev: { type: string, nullable: true }
+        total:  { type: integer }
+        limit:  { type: integer }
+
+    # --- Auth ---
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:    { type: string, format: email }
+        password: { type: string, minLength: 8 }
+
+    AuthTokens:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            accessToken:  { type: string }
+            refreshToken: { type: string }
+            expiresIn:    { type: integer, example: 3600 }
+
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken: { type: string }
+
+    # --- Agents ---
+    AgentPersona:
+      type: string
+      enum: [HUNTER, CLOSER, BRIEFING, BUILDER, QA, DELIVERY, ORCHESTRATOR]
+
+    LLMProvider:
+      type: string
+      enum: [OLLAMA, OPENAI, ANTHROPIC, GROQ, GEMINI, CUSTOM]
+
+    AgentStatus:
+      type: string
+      enum: [ACTIVE, INACTIVE, PAUSED]
+
+    LLMConfig:
+      type: object
+      required: [provider, modelName, temperature, maxTokens]
+      properties:
+        provider:     { $ref: '#/components/schemas/LLMProvider' }
+        modelName:    { type: string, example: "claude-sonnet-4-6" }
+        baseUrl:      { type: string, nullable: true }
+        apiKeyRef:    { type: string, example: "secrets/anthropic_key" }
+        temperature:  { type: number, minimum: 0, maximum: 2 }
+        maxTokens:    { type: integer, minimum: 100, maximum: 200000 }
+        systemPrompt: { type: string, maxLength: 32000 }
+
+    SubAgent:
+      type: object
+      required: [role, llmProvider, llmModel, executionMode]
+      properties:
+        id:            { type: string, format: uuid }
+        role:          { type: string, example: "PROSPECTOR" }
+        llmProvider:   { $ref: '#/components/schemas/LLMProvider' }
+        llmModel:      { type: string }
+        llmTemperature:{ type: number }
+        llmMaxTokens:  { type: integer }
+        executionMode: { type: string, enum: [sequential, parallel] }
+        parallelGroup: { type: integer, nullable: true }
+        maxRetries:    { type: integer, default: 2 }
+        timeoutSeconds:{ type: integer, default: 120 }
+        isEnabled:     { type: boolean }
+
+    Agent:
+      type: object
+      properties:
+        id:          { type: string, format: uuid }
+        name:        { type: string, minLength: 3, maxLength: 50 }
+        persona:     { $ref: '#/components/schemas/AgentPersona' }
+        status:      { $ref: '#/components/schemas/AgentStatus' }
+        llmConfig:   { $ref: '#/components/schemas/LLMConfig' }
+        subAgents:
+          type: array
+          items: { $ref: '#/components/schemas/SubAgent' }
+        parallelExecutionEnabled: { type: boolean }
+        maxParallelSubAgents: { type: integer }
+        tokenBudgetTotal:     { type: integer }
+        tokenBudgetRemaining: { type: integer }
+        tokenBudgetCostUsd:   { type: number }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    CreateAgentRequest:
+      type: object
+      required: [name, persona, llmConfig]
+      properties:
+        name:        { type: string, minLength: 3, maxLength: 50 }
+        persona:     { $ref: '#/components/schemas/AgentPersona' }
+        llmConfig:   { $ref: '#/components/schemas/LLMConfig' }
+        tokenBudgetTotal: { type: integer, default: 1000000 }
+        hitlTimeoutMinutes: { type: integer, default: 60 }
+        hitlNotifyChannel: { type: string, enum: [telegram, email], default: telegram }
+
+    # --- Leads ---
+    LeadStatus:
+      type: string
+      enum: [NEW, CONTACTED, QUALIFIED, NEGOTIATING, CONVERTED, LOST]
+
+    LeadSource:
+      type: string
+      enum: [MANUAL, GOOGLE_MAPS, SCRAPED, REFERRAL, APOLLO]
+
+    MessageChannel:
+      type: string
+      enum: [WHATSAPP, TELEGRAM, EMAIL, INTERNAL]
+
+    EnrichmentData:
+      type: object
+      properties:
+        cnpj:               { type: string, nullable: true }
+        cnpjStatus:         { type: string, enum: [ATIVA, SUSPENSA, INAPTA, BAIXADA, NULA], nullable: true }
+        yearsInBusiness:    { type: integer, nullable: true }
+        googleMapsPlaceId:  { type: string, nullable: true }
+        googleRating:       { type: number, nullable: true }
+        googleReviewsCount: { type: integer, nullable: true }
+        hasWebsite:         { type: boolean }
+        websiteQualityHint: { type: string, enum: [modern, outdated, mobile_broken, none], nullable: true }
+        neighborhood:       { type: string, nullable: true }
+        city:               { type: string, nullable: true }
+        state:              { type: string, nullable: true }
+
+    Lead:
+      type: object
+      properties:
+        id:                 { type: string, format: uuid }
+        contactName:        { type: string }
+        businessName:       { type: string, nullable: true }
+        contactPhone:       { type: string, nullable: true }
+        contactEmail:       { type: string, format: email, nullable: true }
+        source:             { $ref: '#/components/schemas/LeadSource' }
+        status:             { $ref: '#/components/schemas/LeadStatus' }
+        preferredChannel:   { $ref: '#/components/schemas/MessageChannel' }
+        qualificationScore: { type: integer, minimum: 0, maximum: 100, nullable: true }
+        enrichmentData:     { $ref: '#/components/schemas/EnrichmentData' }
+        followUpCount:      { type: integer }
+        nextFollowUpAt:     { type: string, format: date-time, nullable: true }
+        assignedAgentId:    { type: string, format: uuid, nullable: true }
+        createdAt:          { type: string, format: date-time }
+        updatedAt:          { type: string, format: date-time }
+
+    CreateLeadRequest:
+      type: object
+      required: [contactName, source]
+      properties:
+        contactName:      { type: string, minLength: 2, maxLength: 100 }
+        businessName:     { type: string, maxLength: 200 }
+        contactPhone:     { type: string, pattern: '^\+55\d{10,11}$' }
+        contactEmail:     { type: string, format: email }
+        source:           { $ref: '#/components/schemas/LeadSource' }
+        preferredChannel: { $ref: '#/components/schemas/MessageChannel' }
+        # Ao menos um de contactPhone ou contactEmail é obrigatório
+
+    # --- HITL ---
+    HITLStatus:
+      type: string
+      enum: [PENDING, APPROVED, REJECTED, EXPIRED, EDITED_APPROVED]
+
+    HITLApproval:
+      type: object
+      properties:
+        id:              { type: string, format: uuid }
+        actionType:      { type: string }
+        contextType:     { type: string }
+        contextId:       { type: string, format: uuid }
+        agentPersona:    { $ref: '#/components/schemas/AgentPersona' }
+        subAgentRole:    { type: string, nullable: true }
+        payloadPreview:
+          type: object
+          description: Payload com PII mascarado
+        status:          { $ref: '#/components/schemas/HITLStatus' }
+        expiresAt:       { type: string, format: date-time }
+        timeRemainingMinutes: { type: integer }
+        decidedAt:       { type: string, format: date-time, nullable: true }
+        operatorNote:    { type: string, nullable: true }
+        createdAt:       { type: string, format: date-time }
+
+    # --- Deals ---
+    DealStatus:
+      type: string
+      enum: [PROPOSED, NEGOTIATING, CLOSED, CANCELLED]
+
+    Deal:
+      type: object
+      properties:
+        id:              { type: string, format: uuid }
+        leadId:          { type: string, format: uuid }
+        serviceType:     { type: string, enum: [WEBSITE, TRAFFIC, SOCIAL_MEDIA, OTHER] }
+        status:          { $ref: '#/components/schemas/DealStatus' }
+        basePriceCents:  { type: integer }
+        discountPct:     { type: number }
+        totalCents:      { type: integer }
+        currency:        { type: string, default: BRL }
+        priceBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              item:  { type: string }
+              value: {}
+        proposalSentAt:  { type: string, format: date-time, nullable: true }
+        closedAt:        { type: string, format: date-time, nullable: true }
+        createdAt:       { type: string, format: date-time }
+
+    # --- Briefings ---
+    SiteType:
+      type: string
+      enum: [institutional, ecommerce, scheduling, portfolio, landing]
+
+    BriefingStatus:
+      type: string
+      enum: [IN_PROGRESS, COMPLETED, APPROVED]
+
+    ClientBriefingDTO:
+      type: object
+      required: [businessName, siteType, pages]
+      properties:
+        businessName:       { type: string }
+        businessDescription:{ type: string }
+        niche:              { type: string }
+        targetAudience:     { type: string }
+        siteType:           { $ref: '#/components/schemas/SiteType' }
+        pages:
+          type: array
+          items: { type: string }
+        colorPreferences:
+          type: array
+          items: { type: string }
+        fontStyle:          { type: string, enum: [modern, classic, bold, minimal] }
+        differentials:
+          type: array
+          items: { type: string }
+        hasEcommerce:       { type: boolean }
+        hasBlog:            { type: boolean }
+        hasCustomForm:      { type: boolean }
+        hasScheduling:      { type: boolean }
+        hasWhatsAppButton:  { type: boolean }
+        needsCopywriting:   { type: boolean }
+        deliveryDays:       { type: integer }
+        contactPhone:       { type: string, nullable: true }
+        contactWhatsApp:    { type: string, nullable: true }
+        address:            { type: string, nullable: true }
+        openingHours:       { type: string, nullable: true }
+        socialLinks:
+          type: object
+          additionalProperties: { type: string }
+        logoProvided:       { type: boolean }
+        photosProvided:     { type: boolean }
+        referenceWebsites:
+          type: array
+          items: { type: string, format: uri }
+
+    # --- Projects ---
+    ProjectStatus:
+      type: string
+      enum: [PLANNING, DESIGNING, BUILDING, QA, STAGING, DELIVERED, REVISION, CANCELLED]
+
+    GeneratedAsset:
+      type: object
+      properties:
+        id:                   { type: string, format: uuid }
+        assetType:            { type: string, enum: [hero, about, service_icon, gallery] }
+        provider:             { type: string, enum: [nano_banana_pro, dalle3, ollama] }
+        storageUrl:           { type: string, format: uri }
+        resolution:           { type: string }
+        format:               { type: string, enum: [webp, jpeg, png] }
+        synthIdPresent:       { type: boolean }
+        magicBytesValidated:  { type: boolean }
+        generationCostUsd:    { type: number, nullable: true }
+
+    Project:
+      type: object
+      properties:
+        id:                   { type: string, format: uuid }
+        dealId:               { type: string, format: uuid }
+        briefingId:           { type: string, format: uuid, nullable: true }
+        status:               { $ref: '#/components/schemas/ProjectStatus' }
+        siteType:             { $ref: '#/components/schemas/SiteType' }
+        niche:                { type: string, nullable: true }
+        mockupUrl:            { type: string, format: uri, nullable: true }
+        mockupApprovedAt:     { type: string, format: date-time, nullable: true }
+        generatedAssets:
+          type: array
+          items: { $ref: '#/components/schemas/GeneratedAsset' }
+        deployPlatform:       { type: string, nullable: true }
+        stagingUrl:           { type: string, format: uri, nullable: true }
+        deliverableUrl:       { type: string, format: uri, nullable: true }
+        lighthousePerf:       { type: integer, nullable: true }
+        lighthouseA11y:       { type: integer, nullable: true }
+        lighthouseSeo:        { type: integer, nullable: true }
+        owaspScanPassed:      { type: boolean, nullable: true }
+        deliveryTutorialUrl:  { type: string, format: uri, nullable: true }
+        deliveryDocUrl:       { type: string, format: uri, nullable: true }
+        revisionCount:        { type: integer }
+        qaCycleCount:         { type: integer }
+        deliveredAt:          { type: string, format: date-time, nullable: true }
+
+  # --- Responses reutilizáveis ---
+  responses:
+    Unauthorized:
+      description: Token inválido ou ausente
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiErrorResponse' }
+
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiErrorResponse' }
+
+    ValidationError:
+      description: Dados inválidos
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiErrorResponse' }
+
+    RateLimitError:
+      description: Rate limit excedido
+      headers:
+        Retry-After:
+          schema: { type: integer }
+          description: Segundos até poder tentar novamente
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiErrorResponse' }
+
+    HITLRequired:
+      description: Ação requer aprovação HITL
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiErrorResponse' }
+
+# ===========================================================================
+# PATHS
+# ===========================================================================
+paths:
+
+  # --- AUTH ---
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login do operador
+      security: []   # sem auth no login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthTokens' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimitError' }
+
+  /api/v1/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Renovar access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshRequest' }
+      responses:
+        '200':
+          description: Tokens renovados
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthTokens' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/v1/auth/logout:
+    delete:
+      tags: [Auth]
+      summary: Logout (revogar refresh token)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '204': { description: Logout bem-sucedido }
+
+  # --- AGENTS ---
+  /api/v1/agents:
+    get:
+      tags: [Agents]
+      summary: Listar agentes do operador
+      parameters:
+        - name: persona
+          in: query
+          schema: { $ref: '#/components/schemas/AgentPersona' }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/AgentStatus' }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20, maximum: 100 }
+        - name: cursor
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista de agentes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Agent' }
+                  meta: { $ref: '#/components/schemas/PaginationMeta' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+    post:
+      tags: [Agents]
+      summary: Criar novo agente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateAgentRequest' }
+      responses:
+        '201':
+          description: Agente criado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Agent' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/v1/agents/{id}:
+    get:
+      tags: [Agents]
+      summary: Buscar agente por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Dados do agente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Agent' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    patch:
+      tags: [Agents]
+      summary: Atualizar agente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:              { type: string }
+                llmConfig:         { $ref: '#/components/schemas/LLMConfig' }
+                tokenBudgetTotal:  { type: integer }
+                hitlTimeoutMinutes:{ type: integer }
+      responses:
+        '200':
+          description: Agente atualizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Agent' }
+
+  /api/v1/agents/{id}/activate:
+    post:
+      tags: [Agents]
+      summary: Ativar agente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Agente ativado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      status: { type: string, example: ACTIVE }
+
+  /api/v1/agents/{id}/pause:
+    post:
+      tags: [Agents]
+      summary: Pausar agente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Agente pausado
+
+  # --- LEADS ---
+  /api/v1/leads:
+    get:
+      tags: [Leads]
+      summary: Listar leads com filtros
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/LeadStatus' }
+        - name: source
+          in: query
+          schema: { $ref: '#/components/schemas/LeadSource' }
+        - name: channel
+          in: query
+          schema: { $ref: '#/components/schemas/MessageChannel' }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+        - name: cursor
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista de leads
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Lead' }
+                  meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    post:
+      tags: [Leads]
+      summary: Criar lead manualmente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateLeadRequest' }
+      responses:
+        '201':
+          description: Lead criado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Lead' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /api/v1/leads/{id}:
+    get:
+      tags: [Leads]
+      summary: Buscar lead por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Lead com todos os dados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Lead' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # --- HITL ---
+  /api/v1/hitl/pending:
+    get:
+      tags: [HITL]
+      summary: Listar aprovações pendentes (ordenadas por expiração)
+      responses:
+        '200':
+          description: Lista de HITLs pendentes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/HITLApproval' }
+                  meta:
+                    type: object
+                    properties:
+                      total: { type: integer }
+
+  /api/v1/hitl/{id}/approve:
+    post:
+      tags: [HITL]
+      summary: Aprovar HITL
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note: { type: string, maxLength: 500 }
+      responses:
+        '200':
+          description: HITL aprovado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:         { type: string }
+                      status:     { type: string, example: APPROVED }
+                      decidedAt:  { type: string, format: date-time }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: HITL já foi decidido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiErrorResponse' }
+        '410':
+          description: HITL expirado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiErrorResponse' }
+
+  /api/v1/hitl/{id}/reject:
+    post:
+      tags: [HITL]
+      summary: Rejeitar HITL
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note: { type: string, maxLength: 500 }
+      responses:
+        '200':
+          description: HITL rejeitado
+
+  /api/v1/hitl/{id}/edit-and-approve:
+    patch:
+      tags: [HITL]
+      summary: Editar payload e aprovar
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [editedPayload, note]
+              properties:
+                editedPayload: { type: object }
+                note:          { type: string, minLength: 1, maxLength: 500 }
+      responses:
+        '200':
+          description: HITL editado e aprovado
+
+  # --- PROSPECTING ---
+  /api/v1/prospecting/search-maps:
+    post:
+      tags: [Prospecting]
+      summary: Disparar prospecção no Google Maps
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [categories, region]
+              properties:
+                categories:
+                  type: array
+                  items: { type: string }
+                  example: [restaurant, beauty_salon]
+                region:
+                  type: object
+                  required: [city, state, radiusKm]
+                  properties:
+                    city:     { type: string, example: Salvador }
+                    state:    { type: string, example: BA }
+                    radiusKm: { type: integer, minimum: 1, maximum: 50 }
+                minScore:   { type: integer, default: 40, minimum: 0, maximum: 100 }
+                limit:      { type: integer, default: 50, maximum: 200 }
+      responses:
+        '202':
+          description: Prospecção enfileirada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      jobId:                     { type: string }
+                      estimatedDurationSeconds:  { type: integer }
+
+  /api/v1/prospecting/queue:
+    get:
+      tags: [Prospecting]
+      summary: Leads qualificados aguardando HITL
+      responses:
+        '200':
+          description: Fila de leads qualificados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      leads:
+                        type: array
+                        items: { $ref: '#/components/schemas/Lead' }
+                  meta:
+                    type: object
+                    properties:
+                      total:       { type: integer }
+                      pendingHitl: { type: integer }
+
+  # --- SYSTEM ---
+  /health:
+    get:
+      tags: [System]
+      summary: Health check
+      security: []
+      responses:
+        '200':
+          description: Sistema saudável
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:    { type: string, enum: [ok, degraded, down] }
+                  version:   { type: string }
+                  timestamp: { type: string, format: date-time }
+                  dependencies:
+                    type: object
+                    properties:
+                      postgres:     { type: object }
+                      redis:        { type: object }
+                      chromadb:     { type: object }
+                      ollama:       { type: object }
+                      agentRuntime: { type: object }
+        '503':
+          description: Sistema com falha crítica
+
+  /api/v1/costs:
+    get:
+      tags: [System]
+      summary: Dashboard de custos de tokens LLM
+      parameters:
+        - name: period
+          in: query
+          schema: { type: string, enum: [today, week, month], default: month }
+        - name: agentId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Dados de custo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      totalCostUsd:       { type: number }
+                      totalCostBrl:       { type: number }
+                      costPerSiteAvg:     { type: number }
+                      byAgent:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            agentId:    { type: string }
+                            agentName:  { type: string }
+                            costUsd:    { type: number }
+                            tokens:     { type: integer }
+                      byProvider:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            provider:   { type: string }
+                            model:      { type: string }
+                            costUsd:    { type: number }
+                            tokens:     { type: integer }

@@ -1,0 +1,632 @@
+openapi: "3.1.0"
+info:
+  title: AgentePro — Agent Runtime Internal API
+  version: "2.0.0"
+  description: |
+    API interna do agent-runtime (Python/FastAPI).
+    Consumida pela API Node.js e pelos workflows n8n.
+    Acesso restrito à rede Docker interna — não exposta externamente.
+    URL base: http://agent-runtime:8000
+
+servers:
+  - url: http://agent-runtime:8000
+    description: Docker interno (dev e prod)
+  - url: http://localhost:8000
+    description: Dev local
+
+# Sem autenticação — rede Docker interna é confiável
+# Em produção: adicionar mTLS ou API key simples entre serviços
+
+components:
+  schemas:
+
+    SubAgentInput:
+      type: object
+      required: [agentId, correlationId, payload]
+      properties:
+        agentId:       { type: string, format: uuid }
+        subAgentId:    { type: string, format: uuid }
+        operatorId:    { type: string, format: uuid }
+        correlationId: { type: string, format: uuid }
+        projectId:     { type: string, format: uuid, nullable: true }
+        leadId:        { type: string, format: uuid, nullable: true }
+        payload:       { type: object }  # Varia por sub-agente
+
+    SubAgentResult:
+      type: object
+      required: [success]
+      properties:
+        success:     { type: boolean }
+        output:      { type: object }
+        durationMs:  { type: integer }
+        costUsd:     { type: number }
+        tokensUsed:  { type: integer }
+        error:       { type: string, nullable: true }
+
+    AgentRunRequest:
+      type: object
+      required: [agentId, correlationId, params]
+      properties:
+        agentId:       { type: string, format: uuid }
+        operatorId:    { type: string, format: uuid }
+        correlationId: { type: string, format: uuid }
+        params:        { type: object }
+
+    JobStatus:
+      type: object
+      properties:
+        jobId:       { type: string }
+        status:      { type: string, enum: [queued, running, completed, failed] }
+        result:      { type: object, nullable: true }
+        error:       { type: string, nullable: true }
+        startedAt:   { type: string, format: date-time, nullable: true }
+        completedAt: { type: string, format: date-time, nullable: true }
+        durationMs:  { type: integer, nullable: true }
+
+    HealthStatus:
+      type: object
+      properties:
+        status:   { type: string, enum: [ok, degraded, down] }
+        ollama:   { type: object, properties: { ok: { type: boolean }, latencyMs: { type: integer } } }
+        chromadb: { type: object, properties: { ok: { type: boolean }, latencyMs: { type: integer } } }
+        redis:    { type: object, properties: { ok: { type: boolean } } }
+
+    # Payloads específicos por sub-agente
+    ProspectorPayload:
+      type: object
+      required: [categories, region]
+      properties:
+        categories:
+          type: array
+          items: { type: string }
+          example: [restaurant, beauty_salon]
+        region:
+          type: object
+          properties:
+            city:     { type: string }
+            state:    { type: string }
+            radiusKm: { type: integer }
+        minScore:   { type: integer, default: 40 }
+        limit:      { type: integer, default: 50 }
+
+    OutreachWriterPayload:
+      type: object
+      required: [lead]
+      properties:
+        lead:
+          type: object
+          properties:
+            id:              { type: string }
+            contactName:     { type: string }
+            businessName:    { type: string }
+            niche:           { type: string }
+            preferredChannel:{ type: string }
+            enrichmentData:  { type: object }
+        tone:       { type: string, enum: [friendly, professional], default: friendly }
+
+    InterviewerPayload:
+      type: object
+      required: [lead, deal]
+      properties:
+        lead:
+          type: object
+          properties:
+            contactName: { type: string }
+            businessName:{ type: string }
+            niche:       { type: string }
+            preferredChannel: { type: string }
+        deal:
+          type: object
+          properties:
+            id: { type: string }
+            serviceType: { type: string }
+
+    BriefingExtractorPayload:
+      type: object
+      required: [transcript, niche]
+      properties:
+        transcript:  { type: string }  # Transcrição bruta da entrevista
+        niche:       { type: string }
+        leadId:      { type: string }
+
+    BuilderPayload:
+      type: object
+      required: [briefing, templateId]
+      properties:
+        briefing:
+          type: object
+          description: ClientBriefingDTO completo
+        templateId:   { type: string }
+        projectId:    { type: string }
+
+    CopywriterPayload:
+      type: object
+      required: [briefing]
+      properties:
+        briefing: { type: object }  # ClientBriefingDTO
+
+    DesignerPayload:
+      type: object
+      required: [briefing, templateId]
+      properties:
+        briefing:   { type: object }
+        templateId: { type: string }
+
+    ImagerPayload:
+      type: object
+      required: [briefing]
+      properties:
+        briefing: { type: object }
+        imageTypes:
+          type: array
+          items: { type: string, enum: [hero, about, service_icon, gallery] }
+          default: [hero, about, service_icon, service_icon, service_icon, gallery]
+
+    CoderPayload:
+      type: object
+      required: [briefing, texts, mockupHtml, assets, templateId]
+      properties:
+        briefing:    { type: object }
+        texts:       { type: object }  # Output do Copywriter
+        mockupHtml:  { type: string }  # Output do Designer (HTML)
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              type:        { type: string }
+              storagePath: { type: string }
+              format:      { type: string }
+        templateId:  { type: string }
+        projectId:   { type: string }
+
+    QAPayload:
+      type: object
+      required: [siteUrl, projectId]
+      properties:
+        siteUrl:   { type: string, format: uri }  # URL do staging
+        projectId: { type: string }
+        codeRef:   { type: string }  # Referência ao código gerado
+
+    DeliveryPayload:
+      type: object
+      required: [project, client, operator]
+      properties:
+        project:
+          type: object
+          properties:
+            id:                { type: string }
+            deliverableUrl:    { type: string }
+            siteType:          { type: string }
+            deployPlatform:    { type: string }
+            lighthousePerf:    { type: integer }
+            lighthouseA11y:    { type: integer }
+            lighthouseSeo:     { type: integer }
+            owaspScanPassed:   { type: boolean }
+        client:
+          type: object
+          properties:
+            contactName:     { type: string }
+            businessName:    { type: string }
+            contactEmail:    { type: string }
+            contactWhatsApp: { type: string }
+            preferredChannel:{ type: string }
+        operator:
+          type: object
+          properties:
+            name:  { type: string }
+            email: { type: string }
+            phone: { type: string }
+
+paths:
+
+  /health:
+    get:
+      summary: Health check do runtime
+      responses:
+        '200':
+          description: Status do runtime
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HealthStatus' }
+        '503':
+          description: Runtime degradado ou down
+
+  /metrics:
+    get:
+      summary: Métricas Prometheus
+      responses:
+        '200':
+          description: Métricas em formato texto Prometheus
+          content:
+            text/plain:
+              schema: { type: string }
+
+  # ===========================================================================
+  # AGENTES PRIMÁRIOS — execução assíncrona via job
+  # ===========================================================================
+  /agents/{persona}/run:
+    post:
+      summary: Executar agente primário (assíncrono)
+      parameters:
+        - name: persona
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [hunter, closer, briefing, builder, qa, delivery, orchestrator]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AgentRunRequest' }
+      responses:
+        '202':
+          description: Job enfileirado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:      { type: string }
+                  estimatedSeconds: { type: integer }
+        '400':
+          description: Parâmetros inválidos
+        '422':
+          description: Agente não configurado corretamente
+
+  /agents/{persona}/jobs/{jobId}:
+    get:
+      summary: Status de execução de job
+      parameters:
+        - name: persona
+          in: path
+          required: true
+          schema: { type: string }
+        - name: jobId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Status do job
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/JobStatus' }
+        '404':
+          description: Job não encontrado
+
+  # ===========================================================================
+  # SUB-AGENTES — execução síncrona para tarefas rápidas
+  # ===========================================================================
+
+  /agents/hunter/sub-agents/prospector/run:
+    post:
+      summary: PROSPECTOR — busca leads no Google Maps
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: '#/components/schemas/SubAgentInput' }
+                - properties:
+                    payload: { $ref: '#/components/schemas/ProspectorPayload' }
+      responses:
+        '200':
+          description: Leads encontrados
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - properties:
+                      output:
+                        type: object
+                        properties:
+                          places:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:          { type: string }
+                                displayName: { type: string }
+                                address:     { type: string }
+                                phone:       { type: string, nullable: true }
+                                website:     { type: string, nullable: true }
+                                rating:      { type: number, nullable: true }
+                                reviewsCount:{ type: integer, nullable: true }
+                          fromCache: { type: boolean }
+
+  /agents/hunter/sub-agents/data_enricher/run:
+    post:
+      summary: DATA_ENRICHER — valida CNPJ via MCP Brasil
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: '#/components/schemas/SubAgentInput' }
+                - properties:
+                    payload:
+                      type: object
+                      properties:
+                        place: { type: object }
+                        businessName: { type: string }
+      responses:
+        '200':
+          description: Dados enriquecidos
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - properties:
+                      output:
+                        type: object
+                        properties:
+                          cnpj:            { type: string, nullable: true }
+                          cnpjStatus:      { type: string, nullable: true }
+                          yearsInBusiness: { type: integer, nullable: true }
+                          qualificationBonus: { type: integer }
+
+  /agents/closer/sub-agents/outreach_writer/run:
+    post:
+      summary: OUTREACH_WRITER — gera 1º contato personalizado
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: '#/components/schemas/SubAgentInput' }
+                - properties:
+                    payload: { $ref: '#/components/schemas/OutreachWriterPayload' }
+      responses:
+        '200':
+          description: Mensagem gerada
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - properties:
+                      output:
+                        type: object
+                        properties:
+                          message: { type: string }
+                          channel: { type: string }
+
+  /agents/briefing/sub-agents/interviewer/run:
+    post:
+      summary: INTERVIEWER — conduz entrevista de briefing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: '#/components/schemas/SubAgentInput' }
+                - properties:
+                    payload: { $ref: '#/components/schemas/InterviewerPayload' }
+      responses:
+        '200':
+          description: Entrevista iniciada (retorna primeiro conjunto de perguntas)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - properties:
+                      output:
+                        type: object
+                        properties:
+                          firstMessage: { type: string }
+                          questionsCount: { type: integer }
+                          niche: { type: string }
+
+  /agents/briefing/sub-agents/brief_extractor/run:
+    post:
+      summary: BRIEF_EXTRACTOR — extrai ClientBriefingDTO da transcrição
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: '#/components/schemas/SubAgentInput' }
+                - properties:
+                    payload: { $ref: '#/components/schemas/BriefingExtractorPayload' }
+      responses:
+        '200':
+          description: JSON estruturado gerado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - properties:
+                      output:
+                        type: object
+                        description: ClientBriefingDTO completo
+
+  /agents/builder/sub-agents/copywriter/run:
+    post:
+      summary: COPYWRITER — gera textos de todas as páginas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: '#/components/schemas/SubAgentInput' }
+                - properties:
+                    payload: { $ref: '#/components/schemas/CopywriterPayload' }
+      responses:
+        '200':
+          description: Textos gerados
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - properties:
+                      output:
+                        type: object
+                        description: SiteTexts com textos por página
+
+  /agents/builder/sub-agents/designer/run:
+    post:
+      summary: DESIGNER — gera mockup HTML via Claude Design
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: '#/components/schemas/SubAgentInput' }
+                - properties:
+                    payload: { $ref: '#/components/schemas/DesignerPayload' }
+      responses:
+        '200':
+          description: Mockup HTML gerado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - properties:
+                      output:
+                        type: object
+                        properties:
+                          mockupHtml: { type: string }
+                          mockupUrl:  { type: string, format: uri }
+                          # URL público para o operador revisar via HITL
+
+  /agents/builder/sub-agents/imager/run:
+    post:
+      summary: IMAGER — gera imagens via Nano Banana Pro
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: '#/components/schemas/SubAgentInput' }
+                - properties:
+                    payload: { $ref: '#/components/schemas/ImagerPayload' }
+      responses:
+        '200':
+          description: Imagens geradas e validadas
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - properties:
+                      output:
+                        type: object
+                        properties:
+                          assets:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                type:               { type: string }
+                                storageUrl:         { type: string }
+                                provider:           { type: string }
+                                format:             { type: string }
+                                magicBytesValidated:{ type: boolean }
+                                synthIdPresent:     { type: boolean }
+
+  /agents/builder/sub-agents/coder/run:
+    post:
+      summary: CODER — gera código Next.js completo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: '#/components/schemas/SubAgentInput' }
+                - properties:
+                    payload: { $ref: '#/components/schemas/CoderPayload' }
+      responses:
+        '202':
+          description: Geração de código iniciada (pode levar vários minutos)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId: { type: string }
+
+  /agents/qa/run:
+    post:
+      summary: QA — executa auditoria completa (sec + perf + content em paralelo)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: '#/components/schemas/SubAgentInput' }
+                - properties:
+                    payload: { $ref: '#/components/schemas/QAPayload' }
+      responses:
+        '200':
+          description: Resultado do QA
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - properties:
+                      output:
+                        type: object
+                        properties:
+                          approved: { type: boolean }
+                          reason:   { type: string, nullable: true }
+                          scores:
+                            type: object
+                            properties:
+                              lighthousePerf:  { type: integer }
+                              lighthouseA11y:  { type: integer }
+                              lighthouseSeo:   { type: integer }
+                              owaspPassed:     { type: boolean }
+                              contentPassed:   { type: boolean }
+                          issues:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                type:     { type: string }
+                                severity: { type: string }
+                                message:  { type: string }
+
+  /agents/delivery/run:
+    post:
+      summary: DELIVERY — entrega completa (tutorial + PDF + notificação)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: '#/components/schemas/SubAgentInput' }
+                - properties:
+                    payload: { $ref: '#/components/schemas/DeliveryPayload' }
+      responses:
+        '200':
+          description: Entrega realizada
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - properties:
+                      output:
+                        type: object
+                        properties:
+                          tutorialUrl: { type: string, format: uri }
+                          docUrl:      { type: string, format: uri }
+                          sentChannels:
+                            type: array
+                            items: { type: string }
+                          followupsScheduled:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                daysAfter: { type: integer }
+                                jobId:     { type: string }
