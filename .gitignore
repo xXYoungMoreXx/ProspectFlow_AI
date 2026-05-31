@@ -65,3 +65,32 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .cache/
+test_output.txt
+
+# ─── Security Reports (GitHub exports — never commit) ─────────────────────────
+# Expose unpatched CVEs, secret strings, and CodeQL findings.
+# Regenerate from GitHub Security tab when needed; never store in VCS.
+secret_scanning_alerts.json
+code_scanning_alerts.json
+dependabot_alerts.json
+open_codeql.json
+open_code.txt
+open_dep.txt
+open_dependabot.json
+
+# ─── ChromaDB local vector store ──────────────────────────────────────────────
+# Binary HNSW index + SQLite — machine-specific, may embed ingested user data.
+# Repopulate via: python scripts/seed_builder_rag.py
+chroma_db/
+
+# ─── Agent / AI tooling config ────────────────────────────────────────────────
+# May contain MCP server URLs with internal project refs or local machine paths.
+.agent/
+.sentinel/
+GEMINI.md
+
+# ─── Personal / ephemeral working notes ───────────────────────────────────────
+task.md
+auth-refactor.md
+scratch_*.js
+tasks/
