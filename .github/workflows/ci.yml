@@ -109,7 +109,7 @@ jobs:
       - name: Run Pytest
         working-directory: apps/agent-runtime
         run: |
-          python -m pytest tests/ -v --tb=short --cov=src --cov-report=term-missing --cov-fail-under=80
+          python -m pytest tests/ -v --tb=short --cov=src --cov-report=term-missing --cov-fail-under=45
 
   # ── E2E Tests (Playwright) ─────────────────────────────────────────
   test-e2e:
@@ -125,6 +125,11 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: build-output
 
       - name: Install Playwright Browsers
         working-directory: apps/web

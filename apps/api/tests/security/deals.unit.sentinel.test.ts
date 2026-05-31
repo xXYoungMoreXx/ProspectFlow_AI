@@ -53,8 +53,7 @@ describe("Deal Security Audit - Unit Tests (Sentinel)", () => {
       // This is EXPECTED TO PASS now
       expect(result.isErr()).toBe(true);
       if (result.isErr()) {
-        const msg = result.error.message.toLowerCase();
-        expect(msg).toContain("already been accepted");
+        expect(result.error.message).toContain("already been accepted");
       }
     });
   });
