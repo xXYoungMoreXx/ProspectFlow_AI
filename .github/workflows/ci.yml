@@ -84,8 +84,9 @@ jobs:
         with:
           name: build-output
           path: |
-            apps/api/dist/
-            apps/web/.next/
+            apps/api/dist
+            apps/web/.next
+          include-hidden-files: true
           retention-days: 7
 
   # ── Agent Runtime Tests (Python) ────────────────────────────────────
@@ -130,7 +131,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: build-output
-          path: .
+          path: apps
 
       - name: Install Playwright Browsers
         working-directory: apps/web
