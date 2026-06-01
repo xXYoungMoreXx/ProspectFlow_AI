@@ -3,28 +3,27 @@ AgentePro Agent Runtime — FastAPI bridge.
 Receives task requests from the Node.js API (via BullMQ HTTP bridge)
 and dispatches them to the appropriate CrewAI agent.
 """
+
 from __future__ import annotations
 
 import logging
+import time
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Response
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 from pydantic import BaseModel
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
-import time
 
+from src.agents.callbacks import RequiresApprovalException
+from src.agents.state import AgentSessionManager
 from src.config import config
 
 # Prometheus Metrics
 agent_sessions_total = Counter(
-    "agentepro_agent_sessions_total",
-    "Total number of agent sessions executed",
-    ["persona", "status"]
+    "agentepro_agent_sessions_total", "Total number of agent sessions executed", ["persona", "status"]
 )
 agent_session_duration_seconds = Histogram(
-    "agentepro_agent_session_duration_seconds",
-    "Duration of agent sessions in seconds",
-    ["persona"]
+    "agentepro_agent_session_duration_seconds", "Duration of agent sessions in seconds", ["persona"]
 )
 
 logging.basicConfig(
@@ -32,6 +31,12 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+
+def _s(value: str) -> str:
+    """Sanitize a user-supplied string for safe log output (prevent log injection)."""
+    return str(value).replace("\n", "\\n").replace("\r", "\\r")
+
 
 app = FastAPI(
     title="AgentePro Runtime",
@@ -42,7 +47,8 @@ app = FastAPI(
 
 class TaskRequest(BaseModel):
     """Incoming task from the Node.js API."""
-    task_type: str           # hunter.search | closer.negotiate | builder.generate | qa.review
+
+    task_type: str  # hunter.search | closer.negotiate | builder.generate | qa.review
     agent_id: str
     payload: dict
     correlation_id: str
@@ -50,7 +56,8 @@ class TaskRequest(BaseModel):
 
 class TaskResponse(BaseModel):
     """Task execution result."""
-    status: str              # completed | failed | pending_hitl
+
+    status: str  # completed | failed | pending_hitl
     result: dict | None = None
     error: str | None = None
     correlation_id: str
@@ -58,6 +65,7 @@ class TaskResponse(BaseModel):
 
 class TaskApprovalRequest(BaseModel):
     """Request from Node.js API to approve a paused HITL task."""
+
     session_id: str
     approval_id: str
     operator_id: str
@@ -73,10 +81,6 @@ async def metrics():
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
-from src.agents.callbacks import RequiresApprovalException
-from src.agents.state import AgentSessionManager
-
-
 @app.post("/tasks", response_model=TaskResponse)
 async def execute_task(request: TaskRequest):
     """
@@ -85,9 +89,9 @@ async def execute_task(request: TaskRequest):
     """
     logger.info(
         "Task received: type=%s agent=%s correlation=%s",
-        request.task_type,
-        request.agent_id,
-        request.correlation_id,
+        _s(request.task_type),
+        _s(request.agent_id),
+        _s(request.correlation_id),
     )
 
     # Route to the appropriate agent
@@ -97,30 +101,27 @@ async def execute_task(request: TaskRequest):
 
     try:
         if domain == "hunter":
+            from crewai import Crew
+
             from src.agents.hunter.agent import HunterAgent
             from src.agents.hunter.tasks import create_search_and_qualify_task
-            from crewai import Crew
 
             hunter = HunterAgent(request.agent_id, request.correlation_id, request.payload)
             agent_instance = hunter.build()
-            
+
             category = request.payload.get("category", "empresas")
             city = request.payload.get("city", "São Paulo")
-            
+
             search_task = create_search_and_qualify_task(agent_instance, category, city)
-            
-            crew = Crew(
-                agents=[agent_instance],
-                tasks=[search_task],
-                verbose=True
-            )
-            
+
+            crew = Crew(agents=[agent_instance], tasks=[search_task], verbose=True)
+
             output = crew.kickoff()
-            
+
             # CrewAI returns an Output object in newer versions, or string in older.
             # We coerce it to string to be safe.
             raw_result = str(output)
-            
+
             # Since expected output is a JSON array, we can return it inside the result
             agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
             agent_sessions_total.labels(persona=persona, status="completed").inc()
@@ -130,35 +131,28 @@ async def execute_task(request: TaskRequest):
                 correlation_id=request.correlation_id,
             )
         elif domain == "closer":
+            from crewai import Crew
+
             from src.agents.closer.agent import CloserAgent
             from src.agents.closer.tasks import create_negotiate_task
-            from crewai import Crew
 
             closer = CloserAgent(request.agent_id, request.correlation_id, request.payload)
             agent_instance = closer.build()
-            
+
             current_stage = request.payload.get("current_stage", "opening")
             lead_data = request.payload.get("lead_data", {})
             conversation_history = request.payload.get("conversation_history", [])
             user_message = request.payload.get("user_message", "")
-            
+
             negotiate_task = create_negotiate_task(
-                agent_instance, 
-                current_stage, 
-                lead_data, 
-                conversation_history, 
-                user_message
+                agent_instance, current_stage, lead_data, conversation_history, user_message
             )
-            
-            crew = Crew(
-                agents=[agent_instance],
-                tasks=[negotiate_task],
-                verbose=True
-            )
-            
+
+            crew = Crew(agents=[agent_instance], tasks=[negotiate_task], verbose=True)
+
             output = crew.kickoff()
             raw_result = str(output)
-            
+
             agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
             agent_sessions_total.labels(persona=persona, status="completed").inc()
             return TaskResponse(
@@ -167,27 +161,24 @@ async def execute_task(request: TaskRequest):
                 correlation_id=request.correlation_id,
             )
         elif domain == "builder":
+            from crewai import Crew
+
             from src.agents.builder.agent import BuilderAgent
             from src.agents.builder.tasks import create_build_site_task
-            from crewai import Crew
 
             builder = BuilderAgent(request.agent_id, request.correlation_id, request.payload)
             agent_instance = builder.build()
-            
+
             lead_data = request.payload.get("lead_data", {})
             design_system = request.payload.get("design_system", {})
-            
+
             build_task = create_build_site_task(agent_instance, lead_data, design_system)
-            
-            crew = Crew(
-                agents=[agent_instance],
-                tasks=[build_task],
-                verbose=True
-            )
-            
+
+            crew = Crew(agents=[agent_instance], tasks=[build_task], verbose=True)
+
             output = crew.kickoff()
             raw_html = str(output)
-            
+
             agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
             agent_sessions_total.labels(persona=persona, status="completed").inc()
             return TaskResponse(
@@ -196,26 +187,23 @@ async def execute_task(request: TaskRequest):
                 correlation_id=request.correlation_id,
             )
         elif domain == "qa":
+            from crewai import Crew
+
             from src.agents.qa.agent import QAAgent
             from src.agents.qa.tasks import create_qa_audit_task
-            from crewai import Crew
 
             qa = QAAgent(request.agent_id, request.correlation_id, request.payload)
             agent_instance = qa.build()
-            
+
             html_code = request.payload.get("html_code", "")
-            
+
             audit_task = create_qa_audit_task(agent_instance, html_code)
-            
-            crew = Crew(
-                agents=[agent_instance],
-                tasks=[audit_task],
-                verbose=True
-            )
-            
+
+            crew = Crew(agents=[agent_instance], tasks=[audit_task], verbose=True)
+
             output = crew.kickoff()
             raw_result = str(output)
-            
+
             agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
             agent_sessions_total.labels(persona=persona, status="completed").inc()
             return TaskResponse(
@@ -252,18 +240,20 @@ async def approve_task(request: TaskApprovalRequest):
     Called by the Node.js API when a human operator approves a pending tool.
     This unblocks the state so the task can be safely retried.
     """
-    logger.info("Received approval for session %s, tool/approval %s from operator %s", 
-                request.session_id, request.approval_id, request.operator_id)
-                
-    success = AgentSessionManager.grant_approval(
-        session_id=request.session_id,
-        approval_id=request.approval_id,
-        operator_id=request.operator_id
+    logger.info(
+        "Received approval for session %s, tool/approval %s from operator %s",
+        _s(request.session_id),
+        _s(request.approval_id),
+        _s(request.operator_id),
     )
-    
+
+    success = AgentSessionManager.grant_approval(
+        session_id=request.session_id, approval_id=request.approval_id, operator_id=request.operator_id
+    )
+
     if not success:
         raise HTTPException(status_code=404, detail="Pending approval not found or already approved.")
-        
+
     return {"status": "approved", "session_id": request.session_id}
 
 

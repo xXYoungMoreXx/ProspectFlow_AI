@@ -47,14 +47,14 @@ export class ApproveHITLHandler {
           operator_id: operatorId,
         }),
       });
-      console.info(
-        `[ApproveHITLHandler] Notified Agent Runtime of approval for ${approvalId}`,
-      );
+      console.info("[ApproveHITLHandler] Notified Agent Runtime of approval", {
+        approvalId,
+      });
     } catch (error) {
-      console.error(
-        `[ApproveHITLHandler] Failed to notify Agent Runtime:`,
+      console.error("[ApproveHITLHandler] Failed to notify Agent Runtime", {
+        approvalId,
         error,
-      );
+      });
       // Non-fatal for the Node API, but the agent won't unblock until retried
     }
 

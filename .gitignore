@@ -94,3 +94,13 @@ task.md
 auth-refactor.md
 scratch_*.js
 tasks/
+# Empty placeholder created by tooling — no real content
+ARCHITECTURE.md
+
+# ─── Claude Code / AI tooling ─────────────────────────────────────────────────
+# settings.local.json is personal (local paths, tokens) — never commit
+.claude/settings.local.json
+# ad-hoc test/debug scripts that slipped to root
+apps/api/test.cjs
+# agent output / analysis artifacts that shouldn't be tracked
+apps/api/test_output.txt

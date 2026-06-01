@@ -1,18 +1,22 @@
 import logging
-import json
-from enum import Enum
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from enum import StrEnum
+from typing import Any
 
 import redis
+from pydantic import BaseModel, Field
 
 from src.config import config
 
 logger = logging.getLogger(__name__)
 
 
-class SessionStatus(str, Enum):
+def _s(value: str) -> str:
+    """Sanitize user-supplied string for safe log output (prevent log injection)."""
+    return str(value).replace("\n", "\\n").replace("\r", "\\r")
+
+
+class SessionStatus(StrEnum):
     RUNNING = "RUNNING"
     PAUSED_FOR_APPROVAL = "PAUSED_FOR_APPROVAL"
     COMPLETED = "COMPLETED"
@@ -23,16 +27,16 @@ class ToolApprovalState(BaseModel):
     tool_name: str
     tool_input: str
     approved: bool = False
-    approved_by: Optional[str] = None
-    approved_at: Optional[datetime] = None
+    approved_by: str | None = None
+    approved_at: datetime | None = None
 
 
 class SessionState(BaseModel):
     session_id: str
     status: SessionStatus = SessionStatus.RUNNING
-    history: List[Dict[str, Any]] = Field(default_factory=list)
-    pending_approvals: Dict[str, ToolApprovalState] = Field(default_factory=dict)
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    history: list[dict[str, Any]] = Field(default_factory=list)
+    pending_approvals: dict[str, ToolApprovalState] = Field(default_factory=dict)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 # ── Redis Key Prefix ─────────────────────────────────────────────────────────
@@ -50,11 +54,12 @@ class AgentSessionManager:
     Uses Redis as persistent backend so sessions are shared across workers.
     Falls back to in-memory dict if Redis is unavailable.
     """
-    _redis: Optional[redis.Redis] = None
-    _fallback_store: Dict[str, SessionState] = {}
+
+    _redis: redis.Redis | None = None
+    _fallback_store: dict[str, SessionState] = {}
 
     @classmethod
-    def _get_redis(cls) -> Optional[redis.Redis]:
+    def _get_redis(cls) -> redis.Redis | None:
         """Lazy-connect to Redis. Returns None if unavailable."""
         if cls._redis is None:
             try:
@@ -69,9 +74,7 @@ class AgentSessionManager:
                 cls._redis.ping()
                 logger.info("AgentSessionManager connected to Redis at %s", config.redis_url)
             except (redis.ConnectionError, redis.TimeoutError) as e:
-                logger.warning(
-                    "Redis unavailable for session management, falling back to in-memory: %s", str(e)
-                )
+                logger.warning("Redis unavailable for session management, falling back to in-memory: %s", str(e))
                 cls._redis = None
         return cls._redis
 
@@ -84,7 +87,7 @@ class AgentSessionManager:
                 if data:
                     return SessionState.model_validate_json(data)
             except (redis.RedisError, Exception) as e:
-                logger.warning("Redis read failed for session %s, using fallback: %s", session_id, str(e))
+                logger.warning("Redis read failed for session %s, using fallback: %s", _s(session_id), str(e))
 
         # Fallback to in-memory
         if session_id not in cls._fallback_store:
@@ -93,39 +96,33 @@ class AgentSessionManager:
 
     @classmethod
     def save_session(cls, state: SessionState) -> None:
-        state.updated_at = datetime.now(timezone.utc)
+        state.updated_at = datetime.now(UTC)
         serialized = state.model_dump_json()
 
         r = cls._get_redis()
         if r is not None:
             try:
                 r.set(_build_key(state.session_id), serialized, ex=_SESSION_TTL_SECONDS)
-                logger.info("Session %s saved to Redis. Status: %s", state.session_id, state.status.value)
+                logger.info("Session %s saved to Redis. Status: %s", _s(state.session_id), state.status.value)
                 return
             except (redis.RedisError, Exception) as e:
-                logger.warning("Redis write failed for session %s, using fallback: %s", state.session_id, str(e))
+                logger.warning("Redis write failed for session %s, using fallback: %s", _s(state.session_id), str(e))
 
         # Fallback
         cls._fallback_store[state.session_id] = state
-        logger.info("Session %s saved to fallback store. Status: %s", state.session_id, state.status.value)
+        logger.info("Session %s saved to fallback store. Status: %s", _s(state.session_id), state.status.value)
 
     @classmethod
-    def log_step(cls, session_id: str, step_data: Dict[str, Any]) -> None:
+    def log_step(cls, session_id: str, step_data: dict[str, Any]) -> None:
         state = cls.get_session(session_id)
-        state.history.append({
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "step": step_data
-        })
+        state.history.append({"timestamp": datetime.now(UTC).isoformat(), "step": step_data})
         cls.save_session(state)
 
     @classmethod
     def request_approval(cls, session_id: str, tool_name: str, tool_input: str) -> None:
         state = cls.get_session(session_id)
         approval_id = f"{tool_name}_{len(state.pending_approvals)}"
-        state.pending_approvals[approval_id] = ToolApprovalState(
-            tool_name=tool_name,
-            tool_input=tool_input
-        )
+        state.pending_approvals[approval_id] = ToolApprovalState(tool_name=tool_name, tool_input=tool_input)
         state.status = SessionStatus.PAUSED_FOR_APPROVAL
         cls.save_session(state)
         logger.warning("Session %s paused for human approval on %s", session_id, tool_name)
@@ -137,7 +134,7 @@ class AgentSessionManager:
             approval = state.pending_approvals[approval_id]
             approval.approved = True
             approval.approved_by = operator_id
-            approval.approved_at = datetime.now(timezone.utc)
+            approval.approved_at = datetime.now(UTC)
             state.status = SessionStatus.RUNNING
             cls.save_session(state)
             return True

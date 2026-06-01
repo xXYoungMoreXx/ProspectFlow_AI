@@ -32,7 +32,9 @@ interface TelegramUpdate {
  *        -d "url=https://your-api.com/api/v1/telegram/webhook" \
  *        -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>"
  */
-export async function telegramWebhookRoutes(app: FastifyInstance): Promise<void> {
+export async function telegramWebhookRoutes(
+  app: FastifyInstance,
+): Promise<void> {
   app.post<{ Body: TelegramUpdate }>("/webhook", async (request, reply) => {
     // ── 1. Validate incoming request ────────────────────────────────────────
     const webhookSecret = config.TELEGRAM_WEBHOOK_SECRET;
@@ -53,7 +55,10 @@ export async function telegramWebhookRoutes(app: FastifyInstance): Promise<void>
 
     const [action, approvalId] = callbackQuery.data.split(":");
 
-    if (!approvalId || (action !== "hitl_approve" && action !== "hitl_reject")) {
+    if (
+      !approvalId ||
+      (action !== "hitl_approve" && action !== "hitl_reject")
+    ) {
       await safeSendAnswer(app, callbackQuery.id, "⚠️ Ação desconhecida.");
       return reply.status(200).send({ ok: true });
     }
@@ -71,12 +76,20 @@ export async function telegramWebhookRoutes(app: FastifyInstance): Promise<void>
       .limit(1);
 
     if (!hitlRow) {
-      await safeSendAnswer(app, callbackQuery.id, "❌ Aprovação não encontrada.");
+      await safeSendAnswer(
+        app,
+        callbackQuery.id,
+        "❌ Aprovação não encontrada.",
+      );
       return reply.status(200).send({ ok: true });
     }
 
     if (hitlRow.status !== "PENDING") {
-      await safeSendAnswer(app, callbackQuery.id, `ℹ️ Esta aprovação já foi ${hitlRow.status.toLowerCase()}.`);
+      await safeSendAnswer(
+        app,
+        callbackQuery.id,
+        `ℹ️ Esta aprovação já foi ${hitlRow.status.toLowerCase()}.`,
+      );
       return reply.status(200).send({ ok: true });
     }
 
@@ -90,14 +103,28 @@ export async function telegramWebhookRoutes(app: FastifyInstance): Promise<void>
       );
 
       if (result.isErr()) {
-        request.log.error({ err: result.error }, "[TelegramWebhook] Approve failed");
-        await safeSendAnswer(app, callbackQuery.id, `❌ Erro ao aprovar: ${result.error.message}`);
+        request.log.error(
+          { err: result.error },
+          "[TelegramWebhook] Approve failed",
+        );
+        await safeSendAnswer(
+          app,
+          callbackQuery.id,
+          `❌ Erro ao aprovar: ${result.error.message}`,
+        );
       } else {
-        request.log.info(`[TelegramWebhook] Approval ${approvalId} approved via Telegram`);
+        request.log.info(
+          { approvalId },
+          "[TelegramWebhook] Approval approved via Telegram",
+        );
         await safeSendAnswer(app, callbackQuery.id, "✅ Aprovação confirmada!");
         if (callbackQuery.message) {
-          await safeEditMessage(app, callbackQuery.message.chat.id, callbackQuery.message.message_id, 
-            `${callbackQuery.message.text || "Alerta de HITL"}\n\n✅ <b>Aprovado por Telegram</b>`);
+          await safeEditMessage(
+            app,
+            callbackQuery.message.chat.id,
+            callbackQuery.message.message_id,
+            `${callbackQuery.message.text || "Alerta de HITL"}\n\n✅ <b>Aprovado por Telegram</b>`,
+          );
         }
       }
     } else {
@@ -109,14 +136,28 @@ export async function telegramWebhookRoutes(app: FastifyInstance): Promise<void>
       );
 
       if (result.isErr()) {
-        request.log.error({ err: result.error }, "[TelegramWebhook] Reject failed");
-        await safeSendAnswer(app, callbackQuery.id, `❌ Erro ao rejeitar: ${result.error.message}`);
+        request.log.error(
+          { err: result.error },
+          "[TelegramWebhook] Reject failed",
+        );
+        await safeSendAnswer(
+          app,
+          callbackQuery.id,
+          `❌ Erro ao rejeitar: ${result.error.message}`,
+        );
       } else {
-        request.log.info(`[TelegramWebhook] Approval ${approvalId} rejected via Telegram`);
+        request.log.info(
+          { approvalId },
+          "[TelegramWebhook] Approval rejected via Telegram",
+        );
         await safeSendAnswer(app, callbackQuery.id, "✅ Rejeição registrada!");
         if (callbackQuery.message) {
-          await safeEditMessage(app, callbackQuery.message.chat.id, callbackQuery.message.message_id, 
-            `${callbackQuery.message.text || "Alerta de HITL"}\n\n❌ <b>Rejeitado por Telegram</b>`);
+          await safeEditMessage(
+            app,
+            callbackQuery.message.chat.id,
+            callbackQuery.message.message_id,
+            `${callbackQuery.message.text || "Alerta de HITL"}\n\n❌ <b>Rejeitado por Telegram</b>`,
+          );
         }
       }
     }

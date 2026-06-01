@@ -33,7 +33,10 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     const schema = app.container.settingsService.getSettingsSchema();
     return reply.status(200).send({
       data: schema,
-      meta: { requestId: request.requestId, timestamp: new Date().toISOString() },
+      meta: {
+        requestId: request.requestId,
+        timestamp: new Date().toISOString(),
+      },
     });
   });
 
@@ -45,7 +48,10 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     );
     return reply.status(200).send({
       data: settings,
-      meta: { requestId: request.requestId, timestamp: new Date().toISOString() },
+      meta: {
+        requestId: request.requestId,
+        timestamp: new Date().toISOString(),
+      },
     });
   });
 
@@ -70,7 +76,10 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
       );
       return reply.status(200).send({
         data: settings,
-        meta: { requestId: request.requestId, timestamp: new Date().toISOString() },
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
       });
     },
   );
@@ -97,12 +106,17 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
       );
       return reply.status(200).send({
         data: results,
-        meta: { requestId: request.requestId, timestamp: new Date().toISOString() },
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Update failed";
       return reply.status(400).send({
-        errors: [{ code: "VALIDATION_ERROR", message, requestId: request.requestId }],
+        errors: [
+          { code: "VALIDATION_ERROR", message, requestId: request.requestId },
+        ],
       });
     }
   });
@@ -128,13 +142,22 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
 
     if (!deleted) {
       return reply.status(404).send({
-        errors: [{ code: "NOT_FOUND", message: `Setting '${parsed.data.key}' not found`, requestId: request.requestId }],
+        errors: [
+          {
+            code: "NOT_FOUND",
+            message: `Setting '${parsed.data.key}' not found`,
+            requestId: request.requestId,
+          },
+        ],
       });
     }
 
     return reply.status(200).send({
       data: { deleted: true, key: parsed.data.key },
-      meta: { requestId: request.requestId, timestamp: new Date().toISOString() },
+      meta: {
+        requestId: request.requestId,
+        timestamp: new Date().toISOString(),
+      },
     });
   });
 
@@ -159,7 +182,10 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
 
     return reply.status(200).send({
       data: result,
-      meta: { requestId: request.requestId, timestamp: new Date().toISOString() },
+      meta: {
+        requestId: request.requestId,
+        timestamp: new Date().toISOString(),
+      },
     });
   };
 
@@ -174,7 +200,10 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     const status = await app.container.ollamaProxy.getStatus();
     return reply.status(200).send({
       data: status,
-      meta: { requestId: request.requestId, timestamp: new Date().toISOString() },
+      meta: {
+        requestId: request.requestId,
+        timestamp: new Date().toISOString(),
+      },
     });
   });
 
@@ -183,12 +212,22 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
       const models = await app.container.ollamaProxy.listModels();
       return reply.status(200).send({
         data: models,
-        meta: { requestId: request.requestId, timestamp: new Date().toISOString() },
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Ollama unavailable";
+      const message =
+        error instanceof Error ? error.message : "Ollama unavailable";
       return reply.status(503).send({
-        errors: [{ code: "SERVICE_UNAVAILABLE", message, requestId: request.requestId }],
+        errors: [
+          {
+            code: "SERVICE_UNAVAILABLE",
+            message,
+            requestId: request.requestId,
+          },
+        ],
       });
     }
   });
@@ -197,7 +236,10 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     const catalog = app.container.ollamaProxy.getAvailableModels();
     return reply.status(200).send({
       data: catalog,
-      meta: { requestId: request.requestId, timestamp: new Date().toISOString() },
+      meta: {
+        requestId: request.requestId,
+        timestamp: new Date().toISOString(),
+      },
     });
   });
 
@@ -213,11 +255,18 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
         token?: string;
       };
 
-      // Authenticate via query token when EventSource is used
-      if (!request.operatorId && queryToken) {
+      // SSE cannot send Authorization headers, so a short-lived token is passed as ?token=
+      // We require either the preHandler to have set operatorId (Bearer header) or a valid token param.
+      if (!request.operatorId) {
+        if (!queryToken) {
+          reply.raw.writeHead(401);
+          reply.raw.end();
+          return;
+        }
         try {
           const jwt = app.container.jwtService;
           const payload = await jwt.verifyAccessToken(queryToken);
+          if (!payload.sub) throw new Error("missing sub");
           (request as any).operatorId = payload.sub;
         } catch {
           reply.raw.writeHead(401);
@@ -228,7 +277,13 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
 
       if (!model) {
         return reply.status(400).send({
-          errors: [{ code: "VALIDATION_ERROR", message: "model is required", requestId: request.requestId }],
+          errors: [
+            {
+              code: "VALIDATION_ERROR",
+              message: "model is required",
+              requestId: request.requestId,
+            },
+          ],
         });
       }
 
@@ -240,7 +295,9 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
       });
 
       try {
-        for await (const progress of app.container.ollamaProxy.pullModel(model)) {
+        for await (const progress of app.container.ollamaProxy.pullModel(
+          model,
+        )) {
           reply.raw.write(`data: ${JSON.stringify(progress)}\n\n`);
         }
         reply.raw.write(
@@ -277,12 +334,18 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
         await app.container.ollamaProxy.deleteModel(parsed.data.name);
         return reply.status(200).send({
           data: { deleted: true, model: parsed.data.name },
-          meta: { requestId: request.requestId, timestamp: new Date().toISOString() },
+          meta: {
+            requestId: request.requestId,
+            timestamp: new Date().toISOString(),
+          },
         });
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Delete failed";
+        const message =
+          error instanceof Error ? error.message : "Delete failed";
         return reply.status(400).send({
-          errors: [{ code: "DELETE_FAILED", message, requestId: request.requestId }],
+          errors: [
+            { code: "DELETE_FAILED", message, requestId: request.requestId },
+          ],
         });
       }
     },
