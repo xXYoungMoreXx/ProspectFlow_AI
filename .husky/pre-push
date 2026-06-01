@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+# ── pre-push ──────────────────────────────────────────────────────────────────
+# Heavier checks before push. Skip only in emergencies: git push --no-verify
+
+set -e
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# 1. Block direct push to main
+if [ "$BRANCH" = "main" ]; then
+  echo "✗ Direct push to 'main' blocked. Open a pull request." >&2
+  exit 1
+fi
+
+# 2. Enforce branch naming convention
+if ! echo "$BRANCH" | grep -qE '^(feat|fix|chore|docs|refactor|test|security|hotfix|release)/.+'; then
+  echo "✗ Branch '$BRANCH' doesn't follow naming convention." >&2
+  echo "  Expected: feat/<slug>, fix/<slug>, chore/<slug>, etc." >&2
+  exit 1
+fi
+
+# 3. TypeScript typecheck
+echo "→ TypeScript typecheck..."
+npm run typecheck --silent
+
+# 4. Domain unit tests (fast, no Docker)
+echo "→ Unit tests (domain only)..."
+npm run test:unit -w @agentepro/api --silent

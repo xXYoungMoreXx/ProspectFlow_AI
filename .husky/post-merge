@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# ── post-merge ────────────────────────────────────────────────────────────────
+# Runs after `git merge` (includes `git pull`).
+# Auto-installs deps when lock files change.
+
+changed=$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD 2>/dev/null || echo "")
+
+if echo "$changed" | grep -q "package-lock.json"; then
+  echo "📦 package-lock.json changed — running npm install..."
+  npm install
+fi
+
+if echo "$changed" | grep -q "apps/agent-runtime/pyproject.toml"; then
+  echo "🐍 pyproject.toml changed."
+  echo "   Run: cd apps/agent-runtime && pip install -e '.[dev]'"
+fi
+
+if echo "$changed" | grep -q "apps/api/src/infrastructure/db/migrations/"; then
+  echo "⚠️  New DB migration detected."
+  echo "   Run: npm run db:migrate -w @agentepro/api"
+fi

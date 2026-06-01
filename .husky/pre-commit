@@ -1,0 +1,48 @@
+#!/usr/bin/env sh
+# ── pre-commit ────────────────────────────────────────────────────────────────
+# Runs on every `git commit`. Fast: only staged files.
+
+set -e
+
+# 1. Lint + format staged files
+npx lint-staged
+
+# 2. Block files > 1 MB
+MAX_BYTES=1048576
+git diff --cached --name-only | while IFS= read -r file; do
+  [ -f "$file" ] || continue
+  size=$(wc -c < "$file")
+  if [ "$size" -gt "$MAX_BYTES" ]; then
+    printf "✗ File too large: %s (%s bytes). Add to .gitignore or use Git LFS.\n" "$file" "$size" >&2
+    exit 1
+  fi
+done
+
+# 3. Block merge conflict markers
+if git diff --cached --check 2>/dev/null | grep -qE "^(<{7}|={7}|>{7})"; then
+  echo "✗ Merge conflict markers found in staged files." >&2
+  exit 1
+fi
+
+# 4. Block hardcoded secrets (OWASP A02)
+SECRET_PATTERN='(password|passwd|secret|api_key|apikey|private_key|access_token|auth_token)[[:space:]]*[=:][[:space:]]*["'"'"'][^"'"'"'${}][^"'"'"'${}]{7,}'
+if git diff --cached --unified=0 \
+    -- ':!*.env.example' ':!*test*' ':!*spec*' ':!*fixture*' ':!*.md' \
+  | grep -iE "$SECRET_PATTERN" \
+  | grep -vE '(YOUR_|FILL_IN|changeme|placeholder|example|dummy|<|>|\$\{)'; then
+  echo "✗ Potential hardcoded secret detected. Use environment variables." >&2
+  exit 1
+fi
+
+# 5. Block console.log in production TS/JS (CLAUDE.md §5)
+STAGED_TS=$(git diff --cached --name-only \
+  | grep -E '\.(ts|tsx|js|jsx)$' \
+  | grep -vE '(\.test\.|\.spec\.|__tests__)' || true)
+if [ -n "$STAGED_TS" ]; then
+  if git diff --cached -- $STAGED_TS \
+    | grep '^\+' | grep -v '^\+\+\+' \
+    | grep -qE 'console\.(log|debug|info|warn|error)'; then
+    echo "✗ console.log found in staged TS/JS. Use pino logger instead (CLAUDE.md §8)." >&2
+    exit 1
+  fi
+fi

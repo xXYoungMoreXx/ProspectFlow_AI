@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+# ── post-checkout ─────────────────────────────────────────────────────────────
+# Runs after `git checkout` and `git switch`.
+# $3 = 1 → branch checkout (not file checkout)
+
+[ "$3" = "1" ] || exit 0   # skip file checkouts
+
+changed=$(git diff --name-only "$1" "$2" 2>/dev/null || echo "")
+
+if echo "$changed" | grep -q "package-lock.json"; then
+  echo "📦 package-lock.json changed — running npm install..."
+  npm install
+fi
+
+if echo "$changed" | grep -q "apps/api/src/infrastructure/db/migrations/"; then
+  echo "⚠️  DB migration files changed between branches."
+  echo "   Run: npm run db:migrate -w @agentepro/api"
+fi

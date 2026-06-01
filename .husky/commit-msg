@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# ── commit-msg ────────────────────────────────────────────────────────────────
+# Enforces Conventional Commits (CLAUDE.md §17).
+# Format: <type>(<scope>): <description>
+
+npx --no -- commitlint --edit "$1"
