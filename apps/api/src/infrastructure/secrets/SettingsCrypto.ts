@@ -31,7 +31,7 @@ export class SettingsCrypto {
 
     const iv = Buffer.from(ivHex, "hex");
     const tag = Buffer.from(tagHex, "hex");
-    const decipher = createDecipheriv(this.algorithm, this.key, iv);
+    const decipher = createDecipheriv(this.algorithm, this.key, iv, { authTagLength: 16 });
 
     decipher.setAuthTag(tag);
 

@@ -19,8 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Reject non-localhost deploy
+        env:
+          CONFIRM: ${{ github.event.inputs.confirm }}
         run: |
-          if [[ "${{ github.event.inputs.confirm }}" != "DEPLOY" ]]; then
+          if [[ "$CONFIRM" != "DEPLOY" ]]; then
             echo "::error::Cloud deployment is disabled. Run locally: docker compose -f infra/docker-compose.yml up -d"
             exit 1
           fi
