@@ -232,19 +232,21 @@ export default function HITLPage() {
                 )}
 
                 <div className="flex items-center gap-2 justify-end">
-                  {/* Reject dialog */}
+                  {/* Reject dialog — base-ui uses render= not asChild */}
                   <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="gap-1.5"
-                        onClick={() => setNote("")}
-                        data-testid="btn-reject"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                        Rejeitar
-                      </Button>
+                    <DialogTrigger
+                      render={
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="gap-1.5"
+                          data-testid="btn-reject"
+                          onClick={() => setNote("")}
+                        />
+                      }
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      Rejeitar
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
@@ -263,8 +265,8 @@ export default function HITLPage() {
                         />
                       </div>
                       <DialogFooter>
-                        <DialogClose asChild>
-                          <Button variant="ghost">Cancelar</Button>
+                        <DialogClose render={<Button variant="ghost" />}>
+                          Cancelar
                         </DialogClose>
                         <Button
                           variant="destructive"
