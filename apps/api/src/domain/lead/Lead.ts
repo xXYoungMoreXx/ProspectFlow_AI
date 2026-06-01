@@ -46,13 +46,19 @@ export class Lead extends AggregateRoot {
     }
 
     const now = new Date();
+    // Leads discovered by automated agents start as PROSPECTED (pending HITL approval)
+    const initialStatus: LeadStatus =
+      input.source === "GOOGLE_MAPS" || input.source === "APOLLO"
+        ? "PROSPECTED"
+        : "NEW";
+
     const lead = new Lead({
       id: input.id,
       operatorId: input.operatorId,
       assignedAgentId: input.assignedAgentId,
       contact: input.contact,
       source: input.source,
-      status: "NEW",
+      status: initialStatus,
       createdAt: now,
       updatedAt: now,
     });
@@ -126,9 +132,39 @@ export class Lead extends AggregateRoot {
     return ok(undefined);
   }
 
+  // PROSPECTED → APPROVED (only after HITL operator approval)
+  approveProspect(): Result<void, ValidationError> {
+    if (this.props.status !== "PROSPECTED") {
+      return err(
+        new ValidationError(
+          `Cannot approve: expected PROSPECTED but status is ${this.props.status}`,
+          "status",
+        ),
+      );
+    }
+    this.props.status = "APPROVED";
+    this.props.updatedAt = new Date();
+    this.addDomainEvent(
+      createDomainEvent("lead.approved", "Lead", this.props.id, {
+        leadId: this.props.id,
+      }),
+    );
+    return ok(undefined);
+  }
+
   markContacted(): void {
-    if (this.props.status === "NEW") {
+    if (this.props.status === "NEW" || this.props.status === "APPROVED") {
       this.props.status = "CONTACTED";
+      this.props.updatedAt = new Date();
+    }
+  }
+
+  markNegotiating(): void {
+    if (
+      this.props.status === "CONTACTED" ||
+      this.props.status === "QUALIFIED"
+    ) {
+      this.props.status = "NEGOTIATING";
       this.props.updatedAt = new Date();
     }
   }

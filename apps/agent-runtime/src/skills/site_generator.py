@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-import json
 import logging
-import re
-import anthropic
 import os
-import httpx
-from typing import Type
+import re
+
+import anthropic
 import chromadb
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
+
 
 class SiteGeneratorInput(BaseModel):
     business_name: str = Field(..., description="Nome do negócio")
@@ -19,12 +18,15 @@ class SiteGeneratorInput(BaseModel):
     phone: str = Field(..., description="Telefone de contato")
     reference_url: str = Field("", description="URL do site de referência (opcional)")
 
+
 class SiteGeneratorTool(BaseTool):
     name: str = "site_generator"
     description: str = "Gera um código HTML completo e moderno para um site usando Anthropic Claude e faz o mock do deploy para Vercel."
-    args_schema: Type[BaseModel] = SiteGeneratorInput
+    args_schema: type[BaseModel] = SiteGeneratorInput
 
-    def _run(self, business_name: str, category: str, city: str, description: str, phone: str, reference_url: str = "") -> str:
+    def _run(
+        self, business_name: str, category: str, city: str, description: str, phone: str, reference_url: str = ""
+    ) -> str:
         api_key = os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
             return "Error: ANTHROPIC_API_KEY environment variable is not set."
@@ -56,7 +58,7 @@ class SiteGeneratorTool(BaseTool):
         - Google Fonts via CDN
         - Sem dependências externas além de Google Fonts
         - Imagens do Unsplash para placeholders
-        
+
         Retorne APENAS o código HTML completo.
         """
 
@@ -66,19 +68,18 @@ class SiteGeneratorTool(BaseTool):
             try:
                 chroma_client = chromadb.PersistentClient(path="./chroma_db")
                 collection = chroma_client.get_collection(name="builder_knowledge")
-                
+
                 # Search based on the category and general best practices
-                results = collection.query(
-                    query_texts=[category, "guideline"],
-                    n_results=3
-                )
-                
-                if results['documents'] and results['documents'][0]:
-                    rag_context = "\nCONHECIMENTO EXTRAÍDO (RAG / Templates / Diretrizes):\n" + "\n---\n".join(results['documents'][0])
+                results = collection.query(query_texts=[category, "guideline"], n_results=3)
+
+                if results["documents"] and results["documents"][0]:
+                    rag_context = "\nCONHECIMENTO EXTRAÍDO (RAG / Templates / Diretrizes):\n" + "\n---\n".join(
+                        results["documents"][0]
+                    )
                     prompt += f"\n\n{rag_context}\n"
             except Exception as e:
                 logging.warning(f"Failed to query ChromaDB: {e}")
-                
+
             client = anthropic.Anthropic(api_key=api_key)
             resp = client.messages.create(
                 model="claude-3-haiku-20240307",
@@ -87,15 +88,15 @@ class SiteGeneratorTool(BaseTool):
                 temperature=0.5,
             )
             html = resp.content[0].text.strip()
-            
+
             if html.startswith("```"):
                 html = re.sub(r"^```(?:html)?\n?", "", html)
                 html = re.sub(r"\n?```$", "", html)
-                
+
             # Mock deployment to Vercel/Local
-            slug = business_name.lower().replace(' ', '-')
+            slug = business_name.lower().replace(" ", "-")
             local_url = f"file:///tmp/sites/{slug}/index.html"
-            
+
             return f"Site gerado com sucesso! (Tamanho: {len(html)} bytes)\nURL de preview: {local_url}"
         except Exception as e:
             return f"Error generating site: {str(e)}"

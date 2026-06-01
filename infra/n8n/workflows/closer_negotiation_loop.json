@@ -1,0 +1,31 @@
+{
+  "name": "Closer — Negotiation Loop (Inbound Reply)",
+  "nodes": [
+    {
+      "id": "webhook",
+      "name": "Inbound Message Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": { "path": "closer-inbound", "responseMode": "onReceived" },
+      "position": [0, 0]
+    },
+    {
+      "id": "route_closer",
+      "name": "Dispatch to Closer Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.AGENTEPRO_API_URL }}/api/v1/agent-tasks",
+        "body": {
+          "mode": "json",
+          "json": "={ \"taskType\": \"closer.negotiate\", \"payload\": $json }"
+        }
+      },
+      "position": [200, 0]
+    }
+  ],
+  "connections": {
+    "webhook": {
+      "main": [[{ "node": "route_closer", "type": "main", "index": 0 }]]
+    }
+  }
+}

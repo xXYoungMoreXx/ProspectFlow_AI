@@ -131,6 +131,65 @@ export class ChromaDBAdapter {
   }
 
   /**
+   * Lists all documents in a collection (up to limit).
+   */
+  async listDocuments(
+    collectionName: string,
+    limit = 100,
+  ): Promise<QueryResult[]> {
+    let collectionId: string;
+    try {
+      collectionId = await this.getOrCreateCollection(collectionName);
+    } catch {
+      return [];
+    }
+
+    const res = await fetch(`${this.baseUrl}/collections/${collectionId}/get`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ limit }),
+    });
+
+    if (!res.ok) return [];
+
+    const data = (await res.json()) as {
+      ids: string[];
+      documents: string[];
+      metadatas: Record<string, unknown>[];
+    };
+
+    return (data.ids ?? []).map((id, i) => ({
+      id,
+      document: data.documents?.[i] ?? "",
+      metadata: data.metadatas?.[i] ?? {},
+      distance: 0,
+    }));
+  }
+
+  /**
+   * Deletes a specific document from a collection.
+   */
+  async deleteDocument(collectionName: string, docId: string): Promise<void> {
+    const collectionId = await this.getOrCreateCollection(collectionName);
+
+    const res = await fetch(
+      `${this.baseUrl}/collections/${collectionId}/delete`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [docId] }),
+      },
+    );
+
+    if (!res.ok && res.status !== 404) {
+      const err = await res.text();
+      throw new Error(
+        `ChromaDB Error deleting document [${res.status}]: ${err}`,
+      );
+    }
+  }
+
+  /**
    * Deletes a collection completely.
    */
   async deleteCollection(name: string): Promise<void> {

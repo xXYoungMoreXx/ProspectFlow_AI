@@ -27,6 +27,7 @@ import { TelegramAdapter } from "./infrastructure/messaging/TelegramAdapter.js";
 import { ChromaDBAdapter } from "./infrastructure/rag/ChromaDBAdapter.js";
 import { HITLExpirationWorker } from "./infrastructure/queue/HITLExpirationWorker.js";
 import { EmailWorker } from "./infrastructure/queue/EmailWorker.js";
+import { FollowUpWorker } from "./infrastructure/queue/FollowUpWorker.js";
 import { AgentExecutionService } from "./application/agent/AgentExecutionService.js";
 import { AuthEmailService } from "./application/auth/auth-email.service.js";
 
@@ -109,6 +110,7 @@ export interface Container {
   // Workers
   hitlWorker: HITLExpirationWorker;
   emailWorker: EmailWorker;
+  followUpWorker: FollowUpWorker;
   agentExecutionService: AgentExecutionService;
 
   // Application Services
@@ -137,18 +139,26 @@ export function createContainer(): Container {
 
   const hitlWorker = new HITLExpirationWorker(queue, db, telegram);
   const emailWorker = new EmailWorker(queue, email);
+  const followUpWorker = new FollowUpWorker(queue, db);
 
   const agentRepo = new DrizzleAgentRepository(db);
-  const agentExecutionService = new AgentExecutionService(agentRepo, queue);
+  const leadRepo = new DrizzleLeadRepository(db);
+  const hitlRepo = new DrizzleHITLRepository(db);
+  const agentExecutionService = new AgentExecutionService(
+    agentRepo,
+    queue,
+    leadRepo,
+    hitlRepo,
+  );
 
   return {
     db,
     redis,
     agentRepo,
-    leadRepo: new DrizzleLeadRepository(db),
+    leadRepo,
     dealRepo: new DrizzleDealRepository(db),
     projectRepo: new DrizzleProjectRepository(db),
-    hitlRepo: new DrizzleHITLRepository(db),
+    hitlRepo,
     auditRepo: new DrizzleAuditLogRepository(db),
     contractAcceptanceRepo: new DrizzleContractAcceptanceRepository(db),
     optOutRepo: new DrizzleOptOutRepository(db),
@@ -163,6 +173,7 @@ export function createContainer(): Container {
     rag,
     hitlWorker,
     emailWorker,
+    followUpWorker,
     agentExecutionService,
     authEmailService: new AuthEmailService(queue),
     settingsService,

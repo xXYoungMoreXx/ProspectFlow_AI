@@ -22,7 +22,18 @@
     },
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "E:/Dev/ProspectFlow_AI"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "E:/Dev/ProspectFlow_AI"
+      ]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
     }
   }
 }

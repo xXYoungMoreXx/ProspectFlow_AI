@@ -43,11 +43,16 @@ export const leadSourceEnum = pgEnum("lead_source", [
   "MANUAL",
   "SCRAPED",
   "REFERRAL",
+  "GOOGLE_MAPS",
+  "APOLLO",
 ]);
 export const leadStatusEnum = pgEnum("lead_status", [
   "NEW",
+  "PROSPECTED",
+  "APPROVED",
   "CONTACTED",
   "QUALIFIED",
+  "NEGOTIATING",
   "CONVERTED",
   "LOST",
 ]);
@@ -258,6 +263,43 @@ export const mcpServers = pgTable("mcp_servers", {
     .defaultNow(),
 });
 
+// SPEC-02: Sub-agents are independently-configurable LLM workers within an Agent.
+export const executionModeEnum = pgEnum("execution_mode", [
+  "sequential",
+  "parallel",
+]);
+
+export const subAgents = pgTable(
+  "sub_agents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agentId: uuid("agent_id")
+      .notNull()
+      .references(() => agents.id, { onDelete: "cascade" }),
+    role: text("role").notNull(),
+    llmProvider: llmProviderEnum("llm_provider").notNull(),
+    llmModel: text("llm_model").notNull(),
+    llmTemperature: numeric("llm_temperature", { precision: 3, scale: 2 })
+      .notNull()
+      .default("0.70"),
+    llmMaxTokens: integer("llm_max_tokens").notNull().default(4096),
+    executionMode: executionModeEnum("execution_mode")
+      .notNull()
+      .default("sequential"),
+    parallelGroup: integer("parallel_group"),
+    maxRetries: integer("max_retries").notNull().default(3),
+    timeoutSeconds: integer("timeout_seconds").notNull().default(120),
+    isEnabled: boolean("is_enabled").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("idx_sub_agents_agent").on(table.agentId)],
+);
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // LEAD & PROSPECTING CONTEXT
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -359,6 +401,111 @@ export const deals = pgTable(
   ],
 );
 
+// SPEC-04: Follow-ups — cadência [3, 7, 14] dias após closedAt
+export const followUpStatusEnum = pgEnum("follow_up_status", [
+  "SCHEDULED",
+  "SENT",
+  "FAILED",
+  "CANCELLED",
+]);
+
+export const followUps = pgTable(
+  "follow_ups",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deals.id, { onDelete: "cascade" }),
+    leadId: uuid("lead_id")
+      .notNull()
+      .references(() => leads.id),
+    operatorId: uuid("operator_id")
+      .notNull()
+      .references(() => operators.id),
+    attempt: integer("attempt").notNull().default(1), // 1, 2, or 3
+    scheduledDate: timestamp("scheduled_date", {
+      withTimezone: true,
+    }).notNull(),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    channel: messageChannelEnum("channel").notNull(),
+    status: followUpStatusEnum("status").notNull().default("SCHEDULED"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_follow_ups_deal").on(table.dealId),
+    index("idx_follow_ups_scheduled").on(table.scheduledDate, table.status),
+  ],
+);
+
+// SPEC-05: Briefings — coleta de requisitos pós-deal
+export const briefingStatusEnum = pgEnum("briefing_status", [
+  "IN_PROGRESS",
+  "COMPLETED",
+  "APPROVED",
+]);
+
+export const briefings = pgTable(
+  "briefings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deals.id)
+      .unique(),
+    operatorId: uuid("operator_id")
+      .notNull()
+      .references(() => operators.id),
+    agentId: uuid("agent_id").references(() => agents.id),
+    status: briefingStatusEnum("status").notNull().default("IN_PROGRESS"),
+    nicheTemplate: text("niche_template"),
+    briefingData: jsonb("briefing_data").notNull().default({}),
+    interviewTranscriptRef: text("interview_transcript_ref"),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("idx_briefings_deal").on(table.dealId)],
+);
+
+// SPEC-05: Briefing assets — logos, fotos, documentos (validação magic bytes obrigatória)
+export const briefingAssetTypeEnum = pgEnum("briefing_asset_type", [
+  "logo",
+  "photo",
+  "document",
+  "other",
+]);
+
+export const briefingAssets = pgTable(
+  "briefing_assets",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    briefingId: uuid("briefing_id")
+      .notNull()
+      .references(() => briefings.id, { onDelete: "cascade" }),
+    assetType: briefingAssetTypeEnum("asset_type").notNull(),
+    mimeType: text("mime_type").notNull(),
+    storageRef: text("storage_ref").notNull(),
+    sizeBytes: integer("size_bytes").notNull(),
+    magicBytesValidated: boolean("magic_bytes_validated")
+      .notNull()
+      .default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("idx_briefing_assets_briefing").on(table.briefingId)],
+);
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPLIANCE & CLICKWRAP CONTEXT
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -441,6 +588,38 @@ export const projects = pgTable(
   (table) => [index("idx_projects_status").on(table.status, table.operatorId)],
 );
 
+// SPEC-10: media_assets — imagens geradas por IA (magic bytes obrigatório)
+export const mediaAssetStatusEnum = pgEnum("media_asset_status", [
+  "PENDING",
+  "VALIDATED",
+  "REJECTED",
+]);
+
+export const mediaAssets = pgTable(
+  "media_assets",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(), // NanaBanana | DALLE | OllamaVision
+    url: text("url").notNull(),
+    mimeType: text("mime_type").notNull(),
+    sizeBytes: integer("size_bytes"),
+    validationStatus: mediaAssetStatusEnum("validation_status")
+      .notNull()
+      .default("PENDING"),
+    magicBytesValidated: boolean("magic_bytes_validated")
+      .notNull()
+      .default(false),
+    metadata: jsonb("metadata").default({}),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("idx_media_assets_project").on(table.projectId)],
+);
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // HITL CONTEXT
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -472,6 +651,37 @@ export const hitlApprovals = pgTable(
   (table) => [
     index("idx_hitl_pending").on(table.operatorId, table.status),
     index("idx_hitl_level_status").on(table.hitlLevel, table.status),
+  ],
+);
+
+// BUILD_ORDER 3.1: token_usage — custo por execução de agente
+export const tokenUsage = pgTable(
+  "token_usage",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agentId: uuid("agent_id")
+      .notNull()
+      .references(() => agents.id, { onDelete: "cascade" }),
+    operatorId: uuid("operator_id")
+      .notNull()
+      .references(() => operators.id),
+    subAgentType: text("sub_agent_type"), // PROSPECTOR | OUTREACH_WRITER | etc.
+    provider: text("provider").notNull(),
+    promptTokens: integer("prompt_tokens").notNull().default(0),
+    completionTokens: integer("completion_tokens").notNull().default(0),
+    totalTokens: integer("total_tokens").notNull().default(0),
+    costUsd: numeric("cost_usd", { precision: 10, scale: 8 })
+      .notNull()
+      .default("0"),
+    taskType: text("task_type"),
+    correlationId: uuid("correlation_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_token_usage_agent").on(table.agentId, table.createdAt),
+    index("idx_token_usage_operator").on(table.operatorId, table.createdAt),
   ],
 );
 

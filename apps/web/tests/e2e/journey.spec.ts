@@ -1,81 +1,105 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("E2E User Journey: Lead Management and HITL", () => {
-  test.beforeEach(async ({ page }) => {
-    // 1. Mock Login
-    await page.route("**/api/v1/auth/login", async (route) => {
-      await route.fulfill({
+// ── Shared mock setup ─────────────────────────────────────────────────────────
+
+async function setupMocks(page: import("@playwright/test").Page) {
+  await page.route("**/api/v1/auth/login", (route) =>
+    route.fulfill({
+      json: {
+        data: { accessToken: "mocked-jwt", refreshToken: "mocked-refresh" },
+      },
+    }),
+  );
+
+  await page.route("**/api/v1/leads", (route) => {
+    if (route.request().method() === "POST") {
+      return route.fulfill({
         json: {
-          data: { accessToken: "mocked-jwt", refreshToken: "mocked-refresh" },
+          data: { id: "lead-999", contactName: "Novo Lead", status: "NEW" },
         },
       });
-    });
-
-    // 2. Mock Initial Leads Data
-    await page.route("**/api/v1/leads", async (route) => {
-      if (route.request().method() === "POST") {
-        // Mock Lead Creation
-        await route.fulfill({
-          json: {
-            data: {
-              id: "lead-999",
-              contactName: "New Test Lead",
-              status: "NEW",
-            },
+    }
+    return route.fulfill({
+      json: {
+        data: [
+          { id: "lead-1", contactName: "João Silva", status: "PROSPECTED" },
+          { id: "lead-2", contactName: "Maria Santos", status: "CONTACTED" },
+          {
+            id: "lead-3",
+            contactName: "Carlos Oliveira",
+            status: "NEGOTIATING",
           },
-        });
-      } else {
-        // Mock Lead List
-        await route.fulfill({
-          json: {
-            data: [
-              { id: "lead-1", contactName: "John Doe", status: "NEW" },
-              { id: "lead-2", contactName: "Jane Smith", status: "CONTACTED" },
-            ],
-          },
-        });
-      }
-    });
-
-    // 3. Mock Lead Update (PATCH)
-    await page.route("**/api/v1/leads/*", async (route) => {
-      if (route.request().method() === "PATCH") {
-        await route.fulfill({ json: { data: { success: true } } });
-      }
-    });
-
-    // 4. Mock HITL Data
-    await page.route("**/api/v1/hitl/pending", async (route) => {
-      await route.fulfill({
-        json: {
-          data: [
-            {
-              id: "hitl-1",
-              agentId: "agent-xyz",
-              actionType: "Send Proposal Email",
-              status: "PENDING",
-              createdAt: new Date().toISOString(),
-            },
-          ],
-        },
-      });
-    });
-
-    // 5. Mock HITL Approve
-    await page.route("**/api/v1/hitl/*/approve", async (route) => {
-      await route.fulfill({ json: { data: { success: true } } });
-    });
-
-    // 6. Mock SSE endpoint to prevent hanging connections in tests
-    await page.route("**/api/events", async (route) => {
-      await route.fulfill({
-        body: 'event: connected\ndata: {"status":"ok"}\n\n',
-        headers: { "Content-Type": "text/event-stream" },
-      });
+        ],
+        meta: { total: 3 },
+      },
     });
   });
 
-  test("Full Journey: Login -> View Leads -> Update Lead -> Approve HITL", async ({
+  await page.route("**/api/v1/leads/*", (route) => {
+    if (route.request().method() === "PATCH")
+      return route.fulfill({ json: { data: { success: true } } });
+  });
+
+  await page.route("**/api/v1/hitl**", (route) => {
+    const url = route.request().url();
+    if (url.includes("/approve") || url.includes("/reject")) {
+      return route.fulfill({ json: { data: { success: true } } });
+    }
+    // GET /hitl/pending
+    return route.fulfill({
+      json: {
+        data: [
+          {
+            id: "hitl-1",
+            agentId: "agent-xyz123",
+            actionType: "APPROVE_LEAD_LIST",
+            status: "PENDING",
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1h
+            payloadPreview: { leadsCount: 5, minScore: 40 },
+          },
+        ],
+      },
+    });
+  });
+
+  await page.route("**/api/v1/prospecting/**", (route) => {
+    const url = route.request().url();
+    if (url.includes("search-maps")) {
+      return route.fulfill({
+        json: { data: { jobId: "job-abc123", estimatedDurationSeconds: 60 } },
+        status: 202,
+      });
+    }
+    if (url.includes("queue")) {
+      return route.fulfill({
+        json: {
+          data: {
+            leads: [
+              {
+                id: "l-1",
+                contactName: "Joa***",
+                businessName: "Restaurante do João",
+                qualificationScore: 78,
+                source: "GOOGLE_MAPS",
+                createdAt: new Date().toISOString(),
+              },
+            ],
+          },
+          meta: { total: 1, pendingHitl: 1 },
+        },
+      });
+    }
+    return route.fulfill({ json: { data: {} } });
+  });
+}
+
+// ── Journey 1: Login → Leads → HITL approve ──────────────────────────────────
+
+test.describe("E2E Journey: Login → Leads → HITL", () => {
+  test.beforeEach(({ page }) => setupMocks(page));
+
+  test("full flow — login, view leads funnel, approve HITL", async ({
     page,
   }) => {
     // A. Login
@@ -83,29 +107,74 @@ test.describe("E2E User Journey: Lead Management and HITL", () => {
     await page.getByLabel(/e-mail/i).fill("operator@test.com");
     await page.getByLabel(/senha/i).fill("password123");
     await page.getByRole("button", { name: /entrar/i }).click();
-
-    // Wait for successful login redirect
     await expect(page).toHaveURL(/.*\/agents/);
 
-    // B. Navigate to Leads
+    // B. Leads kanban shows new statuses
     await page.goto("/leads");
-    await expect(page).toHaveURL(/.*\/leads/);
+    await expect(page.getByText("Prospectado")).toBeVisible();
+    await expect(page.getByText("Negociando")).toBeVisible();
+    await expect(page.getByText("João Silva")).toBeVisible();
+    await expect(page.getByText("Carlos Oliveira")).toBeVisible();
 
-    // Check if the Kanban loaded with the initial leads
-    await expect(page.getByText("John Doe")).toBeVisible();
-    await expect(page.getByText("Jane Smith")).toBeVisible();
-
-    // C. Navigate to HITL Approvals
+    // C. HITL page shows countdown + action label
     await page.goto("/hitl");
-    await expect(page).toHaveURL(/.*\/hitl/);
+    await expect(page.getByText("Aprovar Lista de Leads")).toBeVisible();
+    // Countdown badge should be present
+    await expect(page.locator('[data-testid="badge-countdown"]')).toBeVisible();
 
-    // Check if pending HITL is visible
-    await expect(page.getByText("Send Proposal Email")).toBeVisible();
+    // D. Approve inline
+    await page.locator('[data-testid="btn-approve"]').first().click();
+    await expect(page.getByText("Tudo limpo!")).toBeVisible();
+  });
+});
 
-    // Approve the action
-    await page.getByRole("button", { name: "Approve" }).click();
+// ── Journey 2: Prospecting trigger ───────────────────────────────────────────
 
-    // The HITL store optimistic update should remove it from the list immediately
-    await expect(page.getByText("All clear!")).toBeVisible();
+test.describe("E2E Journey: Prospecting", () => {
+  test.beforeEach(({ page }) => setupMocks(page));
+
+  test("navigate to prospecting queue and view masked leads", async ({
+    page,
+  }) => {
+    // Inject auth state
+    await page.goto("/login");
+    await page.evaluate(() => {
+      localStorage.setItem("agentepro_token", "mocked-jwt");
+    });
+
+    // Queue page shows prospected leads (via GET /prospecting/queue)
+    await page.goto("/leads");
+    await expect(page.getByText("Prospectado")).toBeVisible();
+  });
+});
+
+// ── Journey 3: HITL reject with reason ───────────────────────────────────────
+
+test.describe("E2E Journey: HITL Reject", () => {
+  test.beforeEach(({ page }) => setupMocks(page));
+
+  test("reject HITL action with a reason", async ({ page }) => {
+    await page.goto("/login");
+    await page.evaluate(() =>
+      localStorage.setItem("agentepro_token", "mocked-jwt"),
+    );
+    await page.goto("/hitl");
+
+    await expect(page.getByText("Aprovar Lista de Leads")).toBeVisible();
+
+    // Click reject button
+    await page.locator('[data-testid="btn-reject"]').first().click();
+
+    // Dialog should appear
+    await expect(page.getByText("Rejeitar Ação")).toBeVisible();
+
+    // Type reason
+    await page.getByLabel(/Motivo/i).fill("Lista com leads fora do nicho");
+
+    // Confirm
+    await page.getByRole("button", { name: "Confirmar Rejeição" }).click();
+
+    // Should return to empty state
+    await expect(page.getByText("Tudo limpo!")).toBeVisible();
   });
 });

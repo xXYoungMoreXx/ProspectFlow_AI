@@ -41,16 +41,24 @@ export async function publicDealRoutes(app: FastifyInstance): Promise<void> {
     }
 
     if (!request.query.token) {
-      return reply
-        .status(401)
-        .send({
-          errors: [{ code: "UNAUTHORIZED", message: "Token is required" }],
-        });
+      return reply.status(401).send({
+        errors: [{ code: "UNAUTHORIZED", message: "Token is required" }],
+      });
     }
 
+    const jwtSecret = process.env["JWT_SECRET"];
+    if (!jwtSecret) {
+      return reply
+        .status(500)
+        .send({
+          errors: [
+            { code: "CONFIG_ERROR", message: "JWT_SECRET not configured" },
+          ],
+        });
+    }
     const handler = new RecordContractAcceptanceHandler(
       app.container.contractAcceptanceRepo,
-      process.env["JWT_SECRET"] || "super-secret-key",
+      jwtSecret,
     );
 
     const result = await handler.execute({
@@ -63,11 +71,9 @@ export async function publicDealRoutes(app: FastifyInstance): Promise<void> {
     });
 
     if (result.isErr()) {
-      return reply
-        .status(400)
-        .send({
-          errors: [{ code: "VALIDATION_ERROR", message: result.error.message }],
-        });
+      return reply.status(400).send({
+        errors: [{ code: "VALIDATION_ERROR", message: result.error.message }],
+      });
     }
 
     return reply.status(200).send({

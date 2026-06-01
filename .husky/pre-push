@@ -6,17 +6,21 @@ set -e
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-# 1. Block direct push to main
+# 1. Block direct push to main — always goes through develop → PR
 if [ "$BRANCH" = "main" ]; then
-  echo "✗ Direct push to 'main' blocked. Open a pull request." >&2
+  echo "✗ Direct push to 'main' blocked. Push to 'develop' and open a PR." >&2
   exit 1
 fi
 
-# 2. Enforce branch naming convention
-if ! echo "$BRANCH" | grep -qE '^(feat|fix|chore|docs|refactor|test|security|hotfix|release)/.+'; then
-  echo "✗ Branch '$BRANCH' doesn't follow naming convention." >&2
-  echo "  Expected: feat/<slug>, fix/<slug>, chore/<slug>, etc." >&2
-  exit 1
+# 2. 'develop' is the integration branch — skip naming convention
+if [ "$BRANCH" != "develop" ]; then
+  # Enforce branch naming convention for all other branches
+  if ! echo "$BRANCH" | grep -qE '^(feat|fix|chore|docs|refactor|test|security|hotfix|release)/.+'; then
+    echo "✗ Branch '$BRANCH' doesn't follow naming convention." >&2
+    echo "  Expected: feat/<slug>, fix/<slug>, chore/<slug>, etc." >&2
+    echo "  Integration branch 'develop' is also allowed." >&2
+    exit 1
+  fi
 fi
 
 # 3. TypeScript typecheck

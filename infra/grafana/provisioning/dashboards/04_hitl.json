@@ -1,0 +1,28 @@
+{
+  "title": "AgentePro — HITL Queue",
+  "uid": "agentepro-hitl",
+  "tags": ["agentepro", "hitl"],
+  "panels": [
+    {
+      "title": "HITL Pending by Operator",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "agentepro_hitl_pending", "legendFormat": "{{operator_id}}" }
+      ]
+    },
+    {
+      "title": "HITL Decisions Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(agentepro_hitl_approvals_total[5m])",
+          "legendFormat": "{{action_type}} {{decision}}"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1
+}

@@ -30,3 +30,29 @@ export const invalidUploadTotal = new promClient.Counter({
   help: "Total invalid uploads rejected",
   labelNames: ["reason"],
 });
+
+// S3-08: Additional SPEC-00 Fase 3 metrics
+
+export const agentTasksTotal = new promClient.Counter({
+  name: "agentepro_agent_tasks_total",
+  help: "Total agent tasks by persona and status",
+  labelNames: ["persona", "status"],
+});
+
+export const hitlApprovalsTotal = new promClient.Counter({
+  name: "agentepro_hitl_approvals_total",
+  help: "Total HITL decisions",
+  labelNames: ["action_type", "decision"],
+});
+
+export const leadQualificationScoreHistogram = new promClient.Histogram({
+  name: "agentepro_lead_qualification_score",
+  help: "Distribution of lead qualification scores",
+  buckets: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+});
+
+export const llmRequestsTotal = new promClient.Counter({
+  name: "agentepro_llm_requests_total",
+  help: "Total LLM API requests",
+  labelNames: ["provider", "model", "status"],
+});

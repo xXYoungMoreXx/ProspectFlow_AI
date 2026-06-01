@@ -1,5 +1,5 @@
 # Base node image
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 # Enable npm to run cleanly
 ENV npm_config_loglevel=warn
 
@@ -21,6 +21,8 @@ RUN npm ci
 
 # Build the project and its dependencies
 COPY --from=builder /app/out/full/ .
+# tsconfig.base.json lives at repo root — turbo prune omits it from out/full/
+COPY --from=builder /app/tsconfig.base.json ./tsconfig.base.json
 RUN npx turbo run build --filter=@agentepro/api...
 
 # 3. Production runner

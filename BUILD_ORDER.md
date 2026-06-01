@@ -1,8 +1,11 @@
 # BUILD_ORDER.md — Ordem de Implementação e Grafo de Dependências
 
+> **Estado atual (2026-06-01):** Sprints 0–3 concluídas. MVP funcional em localhost.
+> Próximas iniciativas: frontend avançado (S3-05/06 feitos), testes de carga, deploy cloud.
+>
 > O agente DEVE seguir esta ordem. Implementar fora de sequência
 > cria acoplamentos que violam a arquitetura hexagonal.
-> Última atualização: 2026-05-29 | Versão: 2.0.0
+> Última atualização: 2026-06-01 | Versão: 2.1.0
 
 ---
 
@@ -19,6 +22,7 @@ de que está faltando uma interface/port entre as duas camadas.
 ## Fase 0 — Fundação (Semanas 1–2)
 
 ### 0.1 — Monorepo e Configuração Base
+
 ```
 Ordem:  package.json (raiz) → turbo.json → .gitignore → .nvmrc
         tsconfig.base.json → apps/api/tsconfig.json
@@ -30,6 +34,7 @@ Critério: `turbo build` passa sem erros de configuração.
 ```
 
 ### 0.2 — Shared Types (packages/shared-types)
+
 ```
 Ordem:  packages/shared-types/src/errors.types.ts
         packages/shared-types/src/pagination.types.ts
@@ -46,6 +51,7 @@ Critério: `tsc --noEmit` passa no pacote shared-types.
 ```
 
 ### 0.3 — Domain Layer Camada 0 (sem dependências)
+
 ```
 Ordem:  domain/shared/Result.ts
         domain/shared/Money.ts
@@ -60,6 +66,7 @@ Critério: todos os unit tests desta camada passam.
 ```
 
 ### 0.4 — Domain Layer Camada 1 (Value Objects de ID)
+
 ```
 Depende de: 0.3
 
@@ -75,6 +82,7 @@ Critério: cada ID valida UUID v4, rejeita string vazia.
 ```
 
 ### 0.5 — Domain Layer Camada 2 (Value Objects de dados)
+
 ```
 Depende de: 0.3, 0.4
 
@@ -104,6 +112,7 @@ Critério: todos os VOs imutáveis e com validação testada.
 ```
 
 ### 0.6 — Domain Layer Camada 3 (Aggregates)
+
 ```
 Depende de: 0.3, 0.4, 0.5
 
@@ -126,6 +135,7 @@ Critério: unit tests de invariantes de domínio passam.
 ```
 
 ### 0.7 — Repository Interfaces (Ports)
+
 ```
 Depende de: 0.6
 
@@ -141,6 +151,7 @@ Critério: interfaces compilam sem erros.
 ```
 
 ### 0.8 — External Ports (Interfaces de infra)
+
 ```
 Depende de: 0.5, 0.6
 
@@ -161,6 +172,7 @@ Critério: interfaces compilam sem erros.
 ```
 
 ### 0.9 — Infrastructure: Config e Secrets
+
 ```
 Depende de: 0.8
 
@@ -176,6 +188,7 @@ Critério: app não sobe com env inválida; sobe com env completa.
 ```
 
 ### 0.10 — Infrastructure: Database
+
 ```
 Depende de: 0.9
 
@@ -205,6 +218,7 @@ Critério: migrations rodam sem erro em banco limpo; repos passam em testes de i
 ```
 
 ### 0.11 — Infrastructure: Cache e Queue
+
 ```
 Depende de: 0.9
 
@@ -217,6 +231,7 @@ Critério: cache get/set/TTL funciona; job enqueue/dequeue funciona.
 ```
 
 ### 0.12 — Infrastructure: Logger e Tracing
+
 ```
 Depende de: 0.9
 
@@ -227,6 +242,7 @@ Critério: log estruturado com redact de PII; traceId propagado.
 ```
 
 ### 0.13 — Container DI
+
 ```
 Depende de: 0.7, 0.8, 0.10, 0.11, 0.12
 
@@ -237,6 +253,7 @@ Critério: container.resolve(QualifyLeadUseCase) não lança erro.
 ```
 
 ### 0.14 — HTTP: Middlewares Base
+
 ```
 Depende de: 0.9, 0.12
 
@@ -250,6 +267,7 @@ Critério: request sem token retorna 401; rate limit retorna 429.
 ```
 
 ### 0.15 — Auth Use Cases e Rotas
+
 ```
 Depende de: 0.6, 0.10, 0.14
 
@@ -268,6 +286,7 @@ Critério: login OK, login errado = 401 genérico, brute force = 429, timing < 2
 ## Fase 1 — MVP v0: Hunter + Closer (Semanas 3–6)
 
 ### 1.1 — Agent Management
+
 ```
 Depende de: 0.10, 0.13, 0.14
 
@@ -284,6 +303,7 @@ Critério: CRUD completo de agentes e sub-agentes com validação.
 ```
 
 ### 1.2 — HITL Infrastructure
+
 ```
 Depende de: 0.10, 0.11
 
@@ -300,6 +320,7 @@ Critério: criar HITL, aprovar via API, rejeitar via API, timeout automático.
 ```
 
 ### 1.3 — Google Maps + MCP Brasil Adapters
+
 ```
 Depende de: 0.8, 0.9, 0.11
 
@@ -311,6 +332,7 @@ Critério: testes com mocks retornam GooglePlace[] e CNPJData corretos.
 ```
 
 ### 1.4 — Lead Domain: Score e Enriquecimento
+
 ```
 Depende de: 0.6, 1.3
 
@@ -325,6 +347,7 @@ Critério: lead sem site + CNPJ ativo → score >= 60; CNPJ suspenso → bloquea
 ```
 
 ### 1.5 — WhatsApp + Telegram (Sales) Adapters
+
 ```
 Depende de: 0.8, 0.9, 1.2
 
@@ -338,6 +361,7 @@ Critério: mock de envio funciona; sem HITL aprovado = 403 HITL_REQUIRED.
 ```
 
 ### 1.6 — Agent Runtime Base (Python)
+
 ```
 Depende de: 0.9 (secrets), 1.5
 
@@ -353,6 +377,7 @@ Critério: /health retorna 200 com status de Ollama e ChromaDB.
 ```
 
 ### 1.7 — Hunter Agent (Python)
+
 ```
 Depende de: 1.6, 1.4
 
@@ -365,6 +390,7 @@ Critério: Hunter executa via API, retorna leads qualificados, cria HITL.
 ```
 
 ### 1.8 — Deal Domain
+
 ```
 Depende de: 0.6, 0.10
 
@@ -378,6 +404,7 @@ Critério: deal fechado emite DealClosed event; follow-up incrementa contador.
 ```
 
 ### 1.9 — Closer Agent (Python)
+
 ```
 Depende de: 1.6, 1.8, 1.5
 
@@ -391,6 +418,7 @@ Critério: outreach personalizado com enrichmentData; HITL criado antes de envia
 ```
 
 ### 1.10 — CRM Queries
+
 ```
 Depende de: 1.4, 1.8
 
@@ -405,6 +433,7 @@ Critério: funil com contagem por status; filtros funcionando; paginação por c
 ```
 
 ### 1.11 — n8n Workflows Fase 1
+
 ```
 Depende de: 1.7, 1.9
 
@@ -420,6 +449,7 @@ Critério: workflows importam no n8n sem erro; execução manual funciona.
 ## Fase 2 — MVP v1: Builder, QA, Delivery (Semanas 7–13)
 
 ### 2.1 — Briefing Domain
+
 ```
 Depende de: 0.6, 0.10, 1.5
 
@@ -433,6 +463,7 @@ Critério: magic bytes validados em upload; briefing JSON válido segundo Client
 ```
 
 ### 2.2 — Briefing Agent (Python)
+
 ```
 Depende de: 1.6, 2.1
 
@@ -445,6 +476,7 @@ Critério: perguntas adaptativas por nicho (restaurant ≠ clinic ≠ salon).
 ```
 
 ### 2.3 — Media Generation Service
+
 ```
 Depende de: 0.8, 0.9
 
@@ -461,6 +493,7 @@ Critério: NanaBanana falha → DALL-E automaticamente; magic bytes inválidos �
 ```
 
 ### 2.4 — Builder Agent (Python) — Paralelismo Grupo 1
+
 ```
 Depende de: 1.6, 2.2, 2.3
 
@@ -484,6 +517,7 @@ Critério: copywriter + designer + imager rodam simultaneamente; coder espera os
 ```
 
 ### 2.5 — Deploy Adapters
+
 ```
 Depende de: 0.8, 0.9
 
@@ -497,6 +531,7 @@ Critério: deploy staging funciona; HITL de aprovação criado antes de produç�
 ```
 
 ### 2.6 — QA Agent (Python) — Paralelismo Grupo 2
+
 ```
 Depende de: 1.6, 2.4
 
@@ -511,6 +546,7 @@ Critério: sec + perf + content rodam simultaneamente; QA falha bloqueia deploy.
 ```
 
 ### 2.7 — Delivery Agent (Python)
+
 ```
 Depende de: 1.6, 2.6
 
@@ -524,6 +560,7 @@ Critério: tutorial HeyGen + PDF gerados em paralelo; enviados ao cliente após 
 ```
 
 ### 2.8 — Orchestrator
+
 ```
 Depende de: 1.7, 1.9, 2.2, 2.4, 2.6, 2.7
 
@@ -534,6 +571,7 @@ Critério: ciclo completo lead → site entregue sem intervenção humana (excet
 ```
 
 ### 2.9 — Cal.com Integration
+
 ```
 Depende de: 0.8, 0.9
 
@@ -546,6 +584,7 @@ Critério: link de agendamento gerado; webhook recebido cria MeetingScheduled ev
 ```
 
 ### 2.10 — n8n Workflows Fase 2
+
 ```
 Depende de: 2.2, 2.4, 2.6, 2.7
 
@@ -561,6 +600,7 @@ Critério: workflows completos; paralelismo verificado nos logs de execução.
 ## Fase 3 — Qualidade e Polimento (Semanas 14–17)
 
 ### 3.1 — Cost Tracking
+
 ```
 Depende de: 0.10, 1.6
 
@@ -572,6 +612,7 @@ Critério: custo por site calculado corretamente; dashboard mostra breakdown.
 ```
 
 ### 3.2 — Observabilidade
+
 ```
 Depende de: 0.12
 
@@ -588,6 +629,7 @@ Critério: 6 dashboards funcionando; alertas disparando em condições de teste.
 ```
 
 ### 3.3 — Frontend Web
+
 ```
 Depende de: 0.14, 1.10, 1.2
 

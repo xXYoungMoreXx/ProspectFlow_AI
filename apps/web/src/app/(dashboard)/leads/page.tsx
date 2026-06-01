@@ -26,13 +26,37 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-const COLUMNS = ["NEW", "CONTACTED", "QUALIFIED", "CONVERTED", "LOST"] as const;
+// S3-06: full funnel with PROSPECTED, APPROVED, NEGOTIATING (S0-03 additions)
+const COLUMNS = [
+  "PROSPECTED",
+  "APPROVED",
+  "NEW",
+  "CONTACTED",
+  "QUALIFIED",
+  "NEGOTIATING",
+  "CONVERTED",
+  "LOST",
+] as const;
 type ColumnType = (typeof COLUMNS)[number];
 
+const COLUMN_LABELS: Record<ColumnType, string> = {
+  PROSPECTED: "Prospectado",
+  APPROVED: "Aprovado",
+  NEW: "Novo",
+  CONTACTED: "Contactado",
+  QUALIFIED: "Qualificado",
+  NEGOTIATING: "Negociando",
+  CONVERTED: "Convertido",
+  LOST: "Perdido",
+};
+
 const statusColors: Record<string, string> = {
+  PROSPECTED: "bg-violet-500/10 text-violet-400 border-violet-500/20",
+  APPROVED: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
   NEW: "bg-sky-500/10 text-sky-400 border-sky-500/20",
   CONTACTED: "bg-amber-500/10 text-amber-400 border-amber-500/20",
   QUALIFIED: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  NEGOTIATING: "bg-orange-500/10 text-orange-400 border-orange-500/20",
   CONVERTED: "bg-primary/10 text-primary border-primary/20",
   LOST: "bg-destructive/10 text-destructive border-destructive/20",
 };
@@ -84,7 +108,7 @@ function SortableLeadCard({ lead }: { lead: Lead }) {
                 variant="outline"
                 className={`text-[9px] px-1.5 py-0 ${statusColors[lead.status] || ""}`}
               >
-                {lead.status}
+                {COLUMN_LABELS[lead.status as ColumnType] ?? lead.status}
               </Badge>
             </div>
           </div>
@@ -200,7 +224,7 @@ export default function LeadsPage() {
                       className={`w-2 h-2 rounded-full ${statusColors[col]?.split(" ")[0] || "bg-muted"}`}
                     />
                     <h3 className="font-semibold text-sm tracking-tight">
-                      {col}
+                      {COLUMN_LABELS[col] ?? col}
                     </h3>
                   </div>
                   <Badge variant="secondary" className="bg-background">

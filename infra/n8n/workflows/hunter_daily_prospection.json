@@ -1,0 +1,67 @@
+{
+  "name": "Hunter — Daily Prospection (09:00)",
+  "nodes": [
+    {
+      "id": "trigger",
+      "name": "Daily 09:00 Cron",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "cronExpression", "expression": "0 9 * * 1-5" }
+          ]
+        }
+      },
+      "position": [0, 0]
+    },
+    {
+      "id": "get_agents",
+      "name": "Get Active Hunter Agents",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.AGENTEPRO_API_URL }}/api/v1/agents?status=ACTIVE&persona=HUNTER",
+        "authentication": "headerAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.AGENTEPRO_SERVICE_TOKEN }}"
+            }
+          ]
+        }
+      },
+      "position": [200, 0]
+    },
+    {
+      "id": "for_each_agent",
+      "name": "For Each Hunter Agent",
+      "type": "n8n-nodes-base.splitInBatches",
+      "parameters": { "batchSize": 1 },
+      "position": [400, 0]
+    },
+    {
+      "id": "trigger_search",
+      "name": "POST /prospecting/search-maps",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.AGENTEPRO_API_URL }}/api/v1/prospecting/search-maps",
+        "authentication": "headerAuth",
+        "body": { "mode": "json", "json": "={{ JSON.stringify($json) }}" }
+      },
+      "position": [600, 0]
+    }
+  ],
+  "connections": {
+    "trigger": {
+      "main": [[{ "node": "get_agents", "type": "main", "index": 0 }]]
+    },
+    "get_agents": {
+      "main": [[{ "node": "for_each_agent", "type": "main", "index": 0 }]]
+    },
+    "for_each_agent": {
+      "main": [[{ "node": "trigger_search", "type": "main", "index": 0 }]]
+    }
+  }
+}

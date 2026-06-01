@@ -1,5 +1,54 @@
 import type { Agent, AgentSkill, AgentRule } from "./Agent.js";
-import type { AgentStatus, AgentPersona } from "@agentepro/shared-types";
+import type {
+  AgentStatus,
+  AgentPersona,
+  LLMProvider,
+} from "@agentepro/shared-types";
+
+// ── Sub-agent types ───────────────────────────────────────────────────────────
+
+export interface SubAgentData {
+  id: string;
+  agentId: string;
+  role: string;
+  llmProvider: LLMProvider;
+  llmModel: string;
+  llmTemperature: number;
+  llmMaxTokens: number;
+  executionMode: "sequential" | "parallel";
+  parallelGroup?: number;
+  maxRetries: number;
+  timeoutSeconds: number;
+  isEnabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateSubAgentData {
+  agentId: string;
+  role: string;
+  llmProvider: LLMProvider;
+  llmModel: string;
+  llmTemperature?: number;
+  llmMaxTokens?: number;
+  executionMode: "sequential" | "parallel";
+  parallelGroup?: number;
+  maxRetries?: number;
+  timeoutSeconds?: number;
+}
+
+export interface UpdateSubAgentData {
+  role?: string;
+  llmProvider?: LLMProvider;
+  llmModel?: string;
+  llmTemperature?: number;
+  llmMaxTokens?: number;
+  executionMode?: "sequential" | "parallel";
+  parallelGroup?: number | null;
+  maxRetries?: number;
+  timeoutSeconds?: number;
+  isEnabled?: boolean;
+}
 
 export interface AgentFilters {
   operatorId: string;
@@ -76,4 +125,18 @@ export interface AgentRepository {
   ): Promise<AgentRule | null>;
   removeRule(ruleId: string, agentId: string): Promise<boolean>;
   listRules(agentId: string): Promise<AgentRule[]>;
+
+  // ── Sub-agent sub-resource methods ─────────────────────────────────────
+  addSubAgent(data: CreateSubAgentData): Promise<SubAgentData>;
+  getSubAgent(
+    subAgentId: string,
+    agentId: string,
+  ): Promise<SubAgentData | null>;
+  updateSubAgent(
+    subAgentId: string,
+    agentId: string,
+    data: UpdateSubAgentData,
+  ): Promise<SubAgentData | null>;
+  removeSubAgent(subAgentId: string, agentId: string): Promise<boolean>;
+  listSubAgents(agentId: string): Promise<SubAgentData[]>;
 }

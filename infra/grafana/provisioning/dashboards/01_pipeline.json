@@ -1,0 +1,61 @@
+{
+  "title": "AgentePro — Pipeline Overview",
+  "uid": "agentepro-pipeline",
+  "tags": ["agentepro", "pipeline"],
+  "panels": [
+    {
+      "title": "Agent Tasks (last 24h)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(increase(agentepro_agent_tasks_total[24h]))",
+          "legendFormat": "Total Tasks"
+        }
+      ]
+    },
+    {
+      "title": "HITL Pending",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        { "expr": "sum(agentepro_hitl_pending)", "legendFormat": "Pending" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Tasks by Persona (rate)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "expr": "rate(agentepro_agent_tasks_total[5m])",
+          "legendFormat": "{{persona}} {{status}}"
+        }
+      ]
+    },
+    {
+      "title": "Auth Failures",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        {
+          "expr": "rate(agentepro_auth_failures_total[5m])",
+          "legendFormat": "{{reason}}"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1
+}

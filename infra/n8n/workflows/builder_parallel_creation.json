@@ -1,0 +1,31 @@
+{
+  "name": "Builder — Parallel Site Creation",
+  "nodes": [
+    {
+      "id": "trigger",
+      "name": "BriefingApproved Event",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": { "path": "briefing-approved" },
+      "position": [0, 0]
+    },
+    {
+      "id": "spawn_builder",
+      "name": "Trigger builder.generate",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.AGENTEPRO_API_URL }}/api/v1/agent-tasks",
+        "body": {
+          "mode": "json",
+          "json": "={ \"taskType\": \"builder.generate\", \"payload\": $json }"
+        }
+      },
+      "position": [200, 0]
+    }
+  ],
+  "connections": {
+    "trigger": {
+      "main": [[{ "node": "spawn_builder", "type": "main", "index": 0 }]]
+    }
+  }
+}

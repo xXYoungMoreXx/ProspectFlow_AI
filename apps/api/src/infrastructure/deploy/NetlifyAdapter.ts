@@ -6,6 +6,7 @@ import type {
 } from "./DeploymentRouter.js";
 
 export class NetlifyAdapter implements DeploymentProvider {
+  readonly name = "Netlify";
   constructor(private readonly apiKey: string) {}
 
   async deploy(
