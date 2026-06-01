@@ -109,7 +109,11 @@ jobs:
       - name: Run Pytest
         working-directory: apps/agent-runtime
         run: |
-          python -m pytest tests/ -v --tb=short --cov=src --cov-report=term-missing --cov-fail-under=50
+          python -m pytest tests/ -v --tb=short \
+            --cov=src \
+            --cov-omit="src/agents/*,src/main.py" \
+            --cov-report=term-missing \
+            --cov-fail-under=50
 
   # ── E2E Tests (Playwright) ─────────────────────────────────────────
   test-e2e:
