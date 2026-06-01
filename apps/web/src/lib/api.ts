@@ -162,8 +162,7 @@ export const api = {
   },
 
   settings: {
-    list: (token: string) =>
-      request<{ data: any[] }>("/settings", { token }),
+    list: (token: string) => request<{ data: any[] }>("/settings", { token }),
     listByCategory: (category: string, token: string) =>
       request<{ data: any[] }>(`/settings/${category}`, { token }),
     upsert: (settings: any[], token: string) =>
@@ -188,16 +187,38 @@ export const api = {
       ),
   },
 
+  costs: {
+    dashboard: (period: "day" | "week" | "month", token: string) =>
+      request<{
+        data: {
+          period: string;
+          since: string;
+          totalCostUsd: number;
+          totalTokens: number;
+          byAgent: Array<{
+            agentId: string;
+            provider: string;
+            totalTokens: number;
+            costUsd: number;
+            requests: number;
+          }>;
+        };
+      }>(`/costs/dashboard?period=${period}`, { token }),
+  },
+
   ollama: {
     status: (token: string) =>
       request<{ data: any }>("/settings/ollama/status", { token }),
     models: (token: string) =>
       request<{ data: any[] }>("/settings/ollama/models", { token }),
     delete: (name: string, token: string) =>
-      request<{ data: any }>(`/settings/ollama/models/${encodeURIComponent(name)}`, {
-        method: "DELETE",
-        token,
-      }),
+      request<{ data: any }>(
+        `/settings/ollama/models/${encodeURIComponent(name)}`,
+        {
+          method: "DELETE",
+          token,
+        },
+      ),
   },
 };
 

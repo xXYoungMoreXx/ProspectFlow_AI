@@ -32,6 +32,7 @@ import {
   Sun,
   Moon,
   ChevronRight,
+  DollarSign,
 } from "lucide-react";
 
 const navItems = [
@@ -40,6 +41,7 @@ const navItems = [
   { href: "/deals", label: "Deals", icon: Handshake, badge: null },
   { href: "/projects", label: "Projects", icon: FolderKanban, badge: null },
   { href: "/hitl", label: "Approvals", icon: ShieldCheck, badge: "3" },
+  { href: "/costs", label: "Costs", icon: DollarSign, badge: null },
 ];
 
 function SidebarContent({ pathname }: { pathname: string }) {
