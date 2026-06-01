@@ -50,6 +50,20 @@
       "when": 1779136287261,
       "tag": "0006_wonderful_apocalypse",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780292465684,
+      "tag": "0007_flaky_power_pack",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1780292585347,
+      "tag": "0008_parched_shiva",
+      "breakpoints": true
     }
   ]
 }

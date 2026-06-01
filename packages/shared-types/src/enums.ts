@@ -31,13 +31,18 @@ export const LeadSource = {
   MANUAL: "MANUAL",
   SCRAPED: "SCRAPED",
   REFERRAL: "REFERRAL",
+  GOOGLE_MAPS: "GOOGLE_MAPS",
+  APOLLO: "APOLLO",
 } as const;
 export type LeadSource = (typeof LeadSource)[keyof typeof LeadSource];
 
 export const LeadStatus = {
   NEW: "NEW",
+  PROSPECTED: "PROSPECTED",
+  APPROVED: "APPROVED",
   CONTACTED: "CONTACTED",
   QUALIFIED: "QUALIFIED",
+  NEGOTIATING: "NEGOTIATING",
   CONVERTED: "CONVERTED",
   LOST: "LOST",
 } as const;

@@ -15,6 +15,7 @@ import { telegramWebhookRoutes } from "./http/routes/telegram.webhook.routes.js"
 import { systemRoutes } from "./http/routes/system.routes.js";
 import { uploadRoutes } from "./http/routes/upload.routes.js";
 import { settingsRoutes } from "./http/routes/settings.routes.js";
+import { prospectingRoutes } from "./http/routes/prospecting.routes.js";
 import { errorHandler } from "./http/middleware/errorHandler.js";
 import { requestIdHook } from "./http/middleware/requestId.middleware.js";
 import { ssrfMiddleware } from "./http/middleware/ssrf.middleware.js";
@@ -78,6 +79,7 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
   await app.register(hitlRoutes, { prefix: "/api/v1/hitl" });
   await app.register(uploadRoutes, { prefix: "/api/v1/upload" });
   await app.register(settingsRoutes, { prefix: "/api/v1/settings" });
+  await app.register(prospectingRoutes, { prefix: "/api/v1/prospecting" });
   await app.register(telegramWebhookRoutes, { prefix: "/api/v1/telegram" });
 
   return app;
