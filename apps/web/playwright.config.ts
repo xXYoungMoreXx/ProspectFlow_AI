@@ -17,7 +17,12 @@ export default defineConfig({
   retries: isCI ? 2 : 0,
   workers: isCI ? 1 : undefined,
   reporter: isCI
-    ? [["list"], ["github"], ["html", { open: "never" }], ["junit", { outputFile: "playwright-report/results.xml" }]]
+    ? [
+        ["list"],
+        ["github"],
+        ["html", { open: "never" }],
+        ["junit", { outputFile: "playwright-report/results.xml" }],
+      ]
     : [["html"]],
   use: {
     actionTimeout: 30 * 1000,
@@ -36,17 +41,20 @@ export default defineConfig({
 
   /**
    * Web server configuration.
-   * - CI: starts `next start` using the pre-built output from the `build` job.
+   * - CI: uses standalone output (next.config.ts output:'standalone').
+   *   `next start` does not work with standalone — must use server.js directly.
    *   All API calls are mocked with page.route(), so no backend is needed.
    * - Local: reuses the already-running dev server on :3000.
    */
   webServer: {
-    command: isCI ? "npx next start" : "npx next dev",
+    command: isCI ? "node .next/standalone/server.js" : "npx next dev",
     url: "http://localhost:3000",
     reuseExistingServer: !isCI,
     timeout: 120 * 1000,
     env: {
       NEXT_PUBLIC_API_URL: "http://localhost:3333/api/v1",
+      PORT: "3000",
+      HOSTNAME: "0.0.0.0",
     },
   },
 });
