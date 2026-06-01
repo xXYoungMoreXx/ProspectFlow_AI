@@ -63,7 +63,8 @@ describe("DrizzleHITLRepository (integration)", () => {
       operatorId,
       name: "Test Agent",
       persona: "HUNTER",
-      isActive: true,
+      llmProvider: "ANTHROPIC",
+      llmModel: "claude-haiku-4-5-20251001",
     });
   });
 
@@ -111,7 +112,7 @@ describe("DrizzleHITLRepository (integration)", () => {
 
   it("reject persists REJECTED status + rejectedReason", async () => {
     const approval = await createApproval();
-    approval.reject("spam", "reviewer-123");
+    approval.reject("spam");
     await hitlRepo.save(approval);
 
     const found = await hitlRepo.findById(approval.id, operatorId);

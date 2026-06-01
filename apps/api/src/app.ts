@@ -2,6 +2,8 @@ import Fastify, { type FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
+import swagger from "@fastify/swagger";
+import swaggerUi from "@fastify/swagger-ui";
 import metricsPlugin from "fastify-metrics";
 import { config } from "./config.js";
 import { authRoutes } from "./http/routes/auth.routes.js";
@@ -56,6 +58,33 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
   if (config.NODE_ENV !== "test") {
     // @ts-expect-error plugin typing mismatch
     await app.register(metricsPlugin, { endpoint: "/api/v1/metrics" });
+  }
+
+  // ── API Documentation (dev + staging only) ─────────────────────────────
+  if (config.NODE_ENV !== "production") {
+    await app.register(swagger, {
+      openapi: {
+        info: {
+          title: "AgentePro API",
+          description:
+            "REST API para plataforma de agentes de IA — prospecção e entrega de sites",
+          version: "1.0.0",
+        },
+        servers: [{ url: `http://localhost:${config.PORT}` }],
+        components: {
+          securitySchemes: {
+            bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+          },
+        },
+        security: [{ bearerAuth: [] }],
+      },
+    });
+
+    await app.register(swaggerUi, {
+      routePrefix: "/api/docs",
+      uiConfig: { docExpansion: "list", deepLinking: true },
+      staticCSP: true,
+    });
   }
 
   app.addHook("onRequest", requestIdHook);

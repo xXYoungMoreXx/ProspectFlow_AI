@@ -25,7 +25,7 @@ describe("DrizzleAgentRepository (integration)", () => {
       name: overrides.name ?? "Hunter Agent",
       persona: "HUNTER",
       llmConfig: {
-        provider: "anthropic",
+        provider: "ANTHROPIC",
         model: "claude-haiku-4-5-20251001",
         temperature: 0.7,
         maxTokens: 4096,
