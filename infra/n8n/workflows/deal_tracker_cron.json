@@ -1,0 +1,32 @@
+{
+  "name": "Deal Tracker — Daily Follow-up (09:00)",
+  "nodes": [
+    {
+      "id": "cron",
+      "name": "Daily 09:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 9 * * *" }]
+        }
+      },
+      "position": [0, 0]
+    },
+    {
+      "id": "check_followups",
+      "name": "Check Overdue Follow-ups",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.AGENTEPRO_API_URL }}/api/v1/leads?status=NEGOTIATING",
+        "authentication": "headerAuth"
+      },
+      "position": [200, 0]
+    }
+  ],
+  "connections": {
+    "cron": {
+      "main": [[{ "node": "check_followups", "type": "main", "index": 0 }]]
+    }
+  }
+}

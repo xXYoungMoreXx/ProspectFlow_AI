@@ -588,6 +588,38 @@ export const projects = pgTable(
   (table) => [index("idx_projects_status").on(table.status, table.operatorId)],
 );
 
+// SPEC-10: media_assets — imagens geradas por IA (magic bytes obrigatório)
+export const mediaAssetStatusEnum = pgEnum("media_asset_status", [
+  "PENDING",
+  "VALIDATED",
+  "REJECTED",
+]);
+
+export const mediaAssets = pgTable(
+  "media_assets",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(), // NanaBanana | DALLE | OllamaVision
+    url: text("url").notNull(),
+    mimeType: text("mime_type").notNull(),
+    sizeBytes: integer("size_bytes"),
+    validationStatus: mediaAssetStatusEnum("validation_status")
+      .notNull()
+      .default("PENDING"),
+    magicBytesValidated: boolean("magic_bytes_validated")
+      .notNull()
+      .default(false),
+    metadata: jsonb("metadata").default({}),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("idx_media_assets_project").on(table.projectId)],
+);
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // HITL CONTEXT
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -619,6 +651,37 @@ export const hitlApprovals = pgTable(
   (table) => [
     index("idx_hitl_pending").on(table.operatorId, table.status),
     index("idx_hitl_level_status").on(table.hitlLevel, table.status),
+  ],
+);
+
+// BUILD_ORDER 3.1: token_usage — custo por execução de agente
+export const tokenUsage = pgTable(
+  "token_usage",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agentId: uuid("agent_id")
+      .notNull()
+      .references(() => agents.id, { onDelete: "cascade" }),
+    operatorId: uuid("operator_id")
+      .notNull()
+      .references(() => operators.id),
+    subAgentType: text("sub_agent_type"), // PROSPECTOR | OUTREACH_WRITER | etc.
+    provider: text("provider").notNull(),
+    promptTokens: integer("prompt_tokens").notNull().default(0),
+    completionTokens: integer("completion_tokens").notNull().default(0),
+    totalTokens: integer("total_tokens").notNull().default(0),
+    costUsd: numeric("cost_usd", { precision: 10, scale: 8 })
+      .notNull()
+      .default("0"),
+    taskType: text("task_type"),
+    correlationId: uuid("correlation_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_token_usage_agent").on(table.agentId, table.createdAt),
+    index("idx_token_usage_operator").on(table.operatorId, table.createdAt),
   ],
 );
 

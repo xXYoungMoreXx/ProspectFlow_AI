@@ -19,6 +19,7 @@ import { prospectingRoutes } from "./http/routes/prospecting.routes.js";
 import { briefingRoutes } from "./http/routes/briefings.routes.js";
 import { whatsappWebhookRoutes } from "./http/routes/whatsapp.webhook.routes.js";
 import { telegramSalesRoutes } from "./http/routes/telegram.sales.routes.js";
+import { costsRoutes } from "./http/routes/costs.routes.js";
 import { errorHandler } from "./http/middleware/errorHandler.js";
 import { requestIdHook } from "./http/middleware/requestId.middleware.js";
 import { ssrfMiddleware } from "./http/middleware/ssrf.middleware.js";
@@ -87,6 +88,7 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
   await app.register(briefingRoutes, { prefix: "/api/v1/briefings" });
   await app.register(whatsappWebhookRoutes, { prefix: "/webhooks" });
   await app.register(telegramSalesRoutes, { prefix: "/webhooks" });
+  await app.register(costsRoutes, { prefix: "/api/v1/costs" });
   await app.register(telegramWebhookRoutes, { prefix: "/api/v1/telegram" });
 
   return app;

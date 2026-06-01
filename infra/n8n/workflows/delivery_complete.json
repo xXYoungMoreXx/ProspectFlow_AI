@@ -1,0 +1,50 @@
+{
+  "name": "Delivery — Site Delivered to Client",
+  "nodes": [
+    {
+      "id": "trigger",
+      "name": "ProjectDelivered Event",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": { "path": "project-delivered" },
+      "position": [0, 0]
+    },
+    {
+      "id": "send_delivery_msg",
+      "name": "Create SEND_DELIVERY HITL",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.AGENTEPRO_API_URL }}/api/v1/hitl",
+        "body": {
+          "mode": "json",
+          "json": "={ \"actionType\": \"SEND_DELIVERY\", \"contextType\": \"PROJECT\", \"contextId\": $json.projectId, \"payloadPreview\": { \"message\": \"Seu site está pronto!\", \"siteUrl\": $json.siteUrl } }"
+        }
+      },
+      "position": [200, 0]
+    },
+    {
+      "id": "schedule_nps",
+      "name": "Schedule NPS Follow-ups",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.AGENTEPRO_API_URL }}/api/v1/deals/{{ $json.dealId }}/schedule-followup-nps",
+        "body": {
+          "mode": "json",
+          "json": "={ \"deliveredAt\": $json.deliveredAt }"
+        }
+      },
+      "position": [200, 200]
+    }
+  ],
+  "connections": {
+    "trigger": {
+      "main": [
+        [
+          { "node": "send_delivery_msg", "type": "main", "index": 0 },
+          { "node": "schedule_nps", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  }
+}

@@ -6,6 +6,7 @@ import type {
 } from "./DeploymentRouter.js";
 
 export class VercelAdapter implements DeploymentProvider {
+  readonly name = "Vercel";
   constructor(private readonly apiKey: string) {}
 
   async deploy(

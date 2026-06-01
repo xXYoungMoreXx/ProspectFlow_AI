@@ -22,6 +22,36 @@ export class FollowUpWorker {
     });
   }
 
+  // S2-06: Called after project is delivered — schedule +7d satisfaction + +30d NPS
+  async schedulePostDelivery(
+    dealId: string,
+    leadId: string,
+    operatorId: string,
+    deliveredAt: Date,
+    channel: "WHATSAPP" | "EMAIL" | "INTERNAL" | "TELEGRAM",
+  ): Promise<void> {
+    const CADENCE = [
+      { days: 7, label: "satisfaction" },
+      { days: 30, label: "nps" },
+    ] as const;
+
+    for (let i = 0; i < CADENCE.length; i++) {
+      const { days } = CADENCE[i]!;
+      const scheduledDate = new Date(deliveredAt.getTime() + days * 86_400_000);
+      await this.db.insert(schema.followUps).values({
+        id: ulid(),
+        dealId,
+        leadId,
+        operatorId,
+        attempt: i + 1,
+        scheduledDate,
+        channel,
+        status: "SCHEDULED",
+        notes: CADENCE[i]!.label,
+      });
+    }
+  }
+
   // Called on deal closed to schedule the 3 follow-up attempts
   async scheduleForDeal(
     dealId: string,

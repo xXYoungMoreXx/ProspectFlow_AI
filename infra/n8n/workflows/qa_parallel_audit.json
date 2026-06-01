@@ -1,0 +1,66 @@
+{
+  "name": "QA — Parallel Audit (SEC + PERF + CONTENT)",
+  "nodes": [
+    {
+      "id": "trigger",
+      "name": "Site Built Event",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": { "path": "site-built" },
+      "position": [0, 0]
+    },
+    {
+      "id": "audit",
+      "name": "Trigger qa.review",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.AGENTEPRO_API_URL }}/api/v1/agent-tasks",
+        "body": {
+          "mode": "json",
+          "json": "={ \"taskType\": \"qa.review\", \"payload\": $json }"
+        }
+      },
+      "position": [200, 0]
+    },
+    {
+      "id": "check_result",
+      "name": "QA Passed?",
+      "type": "n8n-nodes-base.if",
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "operation": "equal",
+              "value2": "completed"
+            }
+          ]
+        }
+      },
+      "position": [400, 0]
+    },
+    {
+      "id": "trigger_deploy",
+      "name": "Trigger Deploy HITL",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.AGENTEPRO_API_URL }}/api/v1/hitl",
+        "body": {
+          "mode": "json",
+          "json": "={ \"actionType\": \"DEPLOY_PRODUCTION\", \"payload\": $json }"
+        }
+      },
+      "position": [600, -100]
+    }
+  ],
+  "connections": {
+    "trigger": { "main": [[{ "node": "audit", "type": "main", "index": 0 }]] },
+    "audit": {
+      "main": [[{ "node": "check_result", "type": "main", "index": 0 }]]
+    },
+    "check_result": {
+      "main": [[{ "node": "trigger_deploy", "type": "main", "index": 0 }], []]
+    }
+  }
+}
