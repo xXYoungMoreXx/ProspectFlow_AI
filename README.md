@@ -1,5 +1,8 @@
 # AgentePro (ex-ProspectFlow AI) 🚀
 
+> **Status:** 4 sprints concluídas (S0–S3). MVP funcional em localhost. CD desativado — deploy via `docker compose` por enquanto.
+> **Branch de integração:** `develop` → `main` via PR com CI obrigatório.
+
 > **"E se o seu melhor vendedor nunca dormisse, falasse todos os idiomas e qualificasse mil leads antes do seu café da manhã?"** ☕🤖
 
 O **AgentePro** nasceu de uma dor real: o "grind" insuportável da prospecção manual. Enquanto times comerciais perdiam horas filtrando planilhas, nós decidimos construir um ecossistema onde a Inteligência Artificial não apenas ajuda, mas **lidera** o processo.
@@ -105,11 +108,12 @@ npm run init
 ```
 
 **O que o Inicializador (`scripts/init.js`) faz por baixo dos panos?**
+
 1. **Pre-flight Checks**: Valida se o Docker está em execução e cria seu arquivo `.env` padrão caso não exista.
 2. **Infra Bootstrap**: Sobe todos os contêineres vitais (`docker compose up -d`) em background.
-3. **Health Checks**: Realiza *polling* nativo e seguro para garantir que o banco de dados PostgreSQL esteja aceitando conexões antes de prosseguir.
+3. **Health Checks**: Realiza _polling_ nativo e seguro para garantir que o banco de dados PostgreSQL esteja aceitando conexões antes de prosseguir.
 4. **Data Sync**: Dispara silenciosamente o `npm run db:push` no contexto da API para sincronizar as migrations.
-5. **Diagnóstico Proativo**: Intercepta erros comuns. Por exemplo, se o WSL não tiver suporte a NVIDIA GPUs e o *Ollama* falhar, ou se a porta `5432` já estiver em uso, o script abortará informando exatamente como consertar em português claro.
+5. **Diagnóstico Proativo**: Intercepta erros comuns. Por exemplo, se o WSL não tiver suporte a NVIDIA GPUs e o _Ollama_ falhar, ou se a porta `5432` já estiver em uso, o script abortará informando exatamente como consertar em português claro.
 6. **Live Attach**: Finalizado o setup, ele automaticamente levanta todo o projeto (`npm run dev`) e acopla a saída no mesmo terminal.
 
 ### 3. Configurando suas Integrações via Settings Hub
@@ -117,10 +121,11 @@ npm run init
 Com o projeto rodando (`npm run dev` ativado pelo inicializador), acesse seus painéis locais:
 
 - 💻 **Dashboard CRM (Next.js)**: `http://localhost:3000`
-- ⚙️ **API Gateway**: `http://localhost:3001`
+- ⚙️ **API Gateway (Fastify)**: `http://localhost:3001`
 - 🤖 **Agent Runtime (FastAPI)**: `http://localhost:8001`
 
 **Como plugar a Inteligência Artificial?**
+
 1. Acesse o painel web em `http://localhost:3000/settings`.
 2. Utilize a aba **AI Providers** para ativar e colar chaves de APIs.
 3. Na seção **Ollama**, puxe modelos locais (ex: `llama3`) com 1-clique na interface.
@@ -131,7 +136,7 @@ Com o projeto rodando (`npm run dev` ativado pelo inicializador), acesse seus pa
 ## 🧪 CI/CD e Testes Automatizados
 
 O repositório é guardado por testes que garantem a **Imutabilidade e Segurança** dos deploys futuros.
-Na nuvem, as _Github Actions_ validam a integridade de qualquer PR garantindo ao menos 80% de cobertura nos statements, testes End-To-End (E2E Playwright) e escaneamento SAST em busca de vulnerabilidades de supply-chain.
+O repositório CI valida qualquer PR com ≥50% de cobertura Python, testes unitários de domínio Node.js, testes E2E Playwright e escaneamento SAST (CodeQL + Semgrep + Trivy). **O pipeline de CD está desativado** — deploy local via `docker compose -f infra/docker-compose.yml up -d` (ver `docs/runbooks/01_iniciar_sistema.md`).
 
 Para testar localmente na sua máquina:
 
@@ -156,7 +161,7 @@ python -m pytest tests/
 
 Copyright (c) 2026 AgentePro / ProspectFlow AI
 
-Este projeto é disponibilizado sob uma **Licença Proprietária de Uso Restrito**. 
+Este projeto é disponibilizado sob uma **Licença Proprietária de Uso Restrito**.
 
 **O QUE VOCÊ PODE FAZER:**
 Você está livre para usar o sistema para automatizar suas próprias vendas, prospectar clientes para o seu negócio e, dessa forma, gerar lucro. Integrações e extensões próprias são permitidas e incentivadas.
