@@ -12,6 +12,7 @@ import {
   type Result,
 } from "../../domain/shared/Result.js";
 import type { AgentPersona, LLMProvider } from "@agentepro/shared-types";
+import type { CompositeLLMRouter } from "../../infrastructure/llm/CompositeLLMRouter.js";
 
 // ── Commands ──────────────────────────────────────────────────────────────────
 
@@ -122,7 +123,10 @@ export class UpdateAgentHandler {
 }
 
 export class ActivateAgentHandler {
-  constructor(private readonly repo: AgentRepository) {}
+  constructor(
+    private readonly repo: AgentRepository,
+    private readonly llm?: CompositeLLMRouter,
+  ) {}
 
   async execute(
     agentId: string,
@@ -130,6 +134,20 @@ export class ActivateAgentHandler {
   ): Promise<Result<void, Error>> {
     const agent = await this.repo.findById(agentId, operatorId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
+
+    // SPEC-02 rule 3: verify LLM connectivity before activation
+    if (this.llm) {
+      const available = await this.llm
+        .isAvailable(agent.llmConfig.provider)
+        .catch(() => false);
+      if (!available) {
+        const e = new Error(
+          `LLM provider '${agent.llmConfig.provider}' is not reachable`,
+        );
+        (e as NodeJS.ErrnoException).code = "LLM_CONNECTIVITY_ERROR";
+        return err(e);
+      }
+    }
 
     const result = agent.activate();
     if (result.isErr()) return result;

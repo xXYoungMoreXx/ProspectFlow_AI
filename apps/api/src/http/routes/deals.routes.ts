@@ -8,6 +8,7 @@ import {
 } from "../../application/deal/deal.handlers.js";
 import { GenerateQuoteHandler } from "../../application/deal/GenerateQuoteHandler.js";
 import type { DealStatus } from "@agentepro/shared-types";
+import { CalComAdapter } from "../../infrastructure/integrations/CalComAdapter.js";
 
 export async function dealRoutes(app: FastifyInstance): Promise<void> {
   app.addHook("preHandler", authMiddleware);
@@ -51,17 +52,15 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
       request.operatorId,
     );
     if (result.isErr()) {
-      return reply
-        .status(404)
-        .send({
-          errors: [
-            {
-              code: "NOT_FOUND",
-              message: result.error.message,
-              requestId: request.requestId,
-            },
-          ],
-        });
+      return reply.status(404).send({
+        errors: [
+          {
+            code: "NOT_FOUND",
+            message: result.error.message,
+            requestId: request.requestId,
+          },
+        ],
+      });
     }
     return reply.status(200).send({
       data: result.value.toJSON(),
@@ -94,17 +93,15 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
       );
       if (result.isErr()) {
         const status = result.error.message.includes("not found") ? 404 : 400;
-        return reply
-          .status(status)
-          .send({
-            errors: [
-              {
-                code: status === 404 ? "NOT_FOUND" : "VALIDATION_ERROR",
-                message: result.error.message,
-                requestId: request.requestId,
-              },
-            ],
-          });
+        return reply.status(status).send({
+          errors: [
+            {
+              code: status === 404 ? "NOT_FOUND" : "VALIDATION_ERROR",
+              message: result.error.message,
+              requestId: request.requestId,
+            },
+          ],
+        });
       }
       return reply.status(200).send({
         data: result.value.toJSON(),
@@ -131,17 +128,15 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
 
     if (result.isErr()) {
       const status = result.error.message.includes("not found") ? 404 : 400;
-      return reply
-        .status(status)
-        .send({
-          errors: [
-            {
-              code: status === 404 ? "NOT_FOUND" : "GENERATION_ERROR",
-              message: result.error.message,
-              requestId: request.requestId,
-            },
-          ],
-        });
+      return reply.status(status).send({
+        errors: [
+          {
+            code: status === 404 ? "NOT_FOUND" : "GENERATION_ERROR",
+            message: result.error.message,
+            requestId: request.requestId,
+          },
+        ],
+      });
     }
 
     return reply.status(201).send({
@@ -152,4 +147,93 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
       },
     });
   });
+
+  // POST /api/v1/deals/:id/schedule-meeting  (S1-06 — CalCom)
+  app.post<{ Params: { id: string } }>(
+    "/:id/schedule-meeting",
+    async (request, reply) => {
+      const deal = await app.container.dealRepo.findById(
+        request.params.id,
+        request.operatorId,
+      );
+      if (!deal) {
+        return reply.status(404).send({
+          errors: [
+            {
+              code: "NOT_FOUND",
+              message: "Deal not found",
+              requestId: request.requestId,
+            },
+          ],
+        });
+      }
+
+      const body = request.body as {
+        eventTypeId?: number;
+        startTime?: string;
+        timeZone?: string;
+        notes?: string;
+      };
+
+      if (!body.eventTypeId || !body.startTime) {
+        return reply.status(400).send({
+          errors: [
+            {
+              code: "VALIDATION_ERROR",
+              message: "eventTypeId and startTime required",
+              requestId: request.requestId,
+            },
+          ],
+        });
+      }
+
+      const lead = await app.container.leadRepo.findById(
+        deal.leadId,
+        request.operatorId,
+      );
+      if (!lead) {
+        return reply.status(404).send({
+          errors: [
+            {
+              code: "NOT_FOUND",
+              message: "Lead not found",
+              requestId: request.requestId,
+            },
+          ],
+        });
+      }
+
+      try {
+        const calcom = new CalComAdapter(app.container.secrets);
+        const booking = await calcom.scheduleBooking({
+          eventTypeId: body.eventTypeId,
+          name: lead.contact.name,
+          email: lead.contact.email ?? "",
+          phone: lead.contact.phone,
+          notes: body.notes,
+          startTime: body.startTime,
+          timeZone: body.timeZone,
+        });
+
+        return reply.status(201).send({
+          data: booking,
+          meta: {
+            requestId: request.requestId,
+            timestamp: new Date().toISOString(),
+          },
+        });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        return reply.status(502).send({
+          errors: [
+            {
+              code: "CALCOM_ERROR",
+              message: msg,
+              requestId: request.requestId,
+            },
+          ],
+        });
+      }
+    },
+  );
 }

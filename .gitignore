@@ -100,6 +100,9 @@ ARCHITECTURE.md
 # ─── Claude Code / AI tooling ─────────────────────────────────────────────────
 # settings.local.json is personal (local paths, tokens) — never commit
 .claude/settings.local.json
+# Claude Code plugin cache (local machine skill downloads)
+.claude/plugins/
+.claude/skills/
 # ad-hoc test/debug scripts that slipped to root
 apps/api/test.cjs
 # agent output / analysis artifacts that shouldn't be tracked

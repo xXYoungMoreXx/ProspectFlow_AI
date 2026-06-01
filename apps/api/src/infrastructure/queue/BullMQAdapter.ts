@@ -82,6 +82,20 @@ export class BullMQAdapter {
     );
   }
 
+  // Enqueue follow-up cron job (daily 09:00 — DealTracker)
+  async scheduleFollowUpCron(): Promise<void> {
+    const queue = this.getQueue("follow-up-cron");
+    await queue.add(
+      "deal_tracker_daily",
+      {},
+      {
+        repeat: { pattern: "0 9 * * *" },
+        removeOnComplete: 10,
+        removeOnFail: 5,
+      },
+    );
+  }
+
   createWorker(
     queueName: string,
     processor: (job: Job) => Promise<void>,

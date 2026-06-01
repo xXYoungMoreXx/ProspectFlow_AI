@@ -16,6 +16,9 @@ import type {
   UpdateSkillData,
   CreateRuleData,
   UpdateRuleData,
+  SubAgentData,
+  CreateSubAgentData,
+  UpdateSubAgentData,
 } from "../../../domain/agent/AgentRepository.js";
 import type {
   AgentPersona,
@@ -374,6 +377,104 @@ export class DrizzleAgentRepository implements AgentRepository {
     }));
   }
 
+  // ── Sub-agent CRUD ────────────────────────────────────────────────────────
+
+  async addSubAgent(data: CreateSubAgentData): Promise<SubAgentData> {
+    if (data.executionMode === "parallel" && data.parallelGroup === undefined) {
+      throw new Error("parallelGroup required when executionMode=parallel");
+    }
+    const [row] = await this.db
+      .insert(schema.subAgents)
+      .values({
+        agentId: data.agentId,
+        role: data.role,
+        llmProvider: data.llmProvider,
+        llmModel: data.llmModel,
+        llmTemperature: String(data.llmTemperature ?? 0.7),
+        llmMaxTokens: data.llmMaxTokens ?? 4096,
+        executionMode: data.executionMode,
+        parallelGroup: data.parallelGroup ?? null,
+        maxRetries: data.maxRetries ?? 3,
+        timeoutSeconds: data.timeoutSeconds ?? 120,
+        isEnabled: true,
+      })
+      .returning();
+    return this.subAgentToDomain(row!);
+  }
+
+  async getSubAgent(
+    subAgentId: string,
+    agentId: string,
+  ): Promise<SubAgentData | null> {
+    const [row] = await this.db
+      .select()
+      .from(schema.subAgents)
+      .where(
+        and(
+          eq(schema.subAgents.id, subAgentId),
+          eq(schema.subAgents.agentId, agentId),
+        ),
+      )
+      .limit(1);
+    return row ? this.subAgentToDomain(row) : null;
+  }
+
+  async updateSubAgent(
+    subAgentId: string,
+    agentId: string,
+    data: UpdateSubAgentData,
+  ): Promise<SubAgentData | null> {
+    const updates: Record<string, unknown> = { updatedAt: new Date() };
+    if (data.role !== undefined) updates["role"] = data.role;
+    if (data.llmProvider !== undefined)
+      updates["llmProvider"] = data.llmProvider;
+    if (data.llmModel !== undefined) updates["llmModel"] = data.llmModel;
+    if (data.llmTemperature !== undefined)
+      updates["llmTemperature"] = String(data.llmTemperature);
+    if (data.llmMaxTokens !== undefined)
+      updates["llmMaxTokens"] = data.llmMaxTokens;
+    if (data.executionMode !== undefined)
+      updates["executionMode"] = data.executionMode;
+    if (data.parallelGroup !== undefined)
+      updates["parallelGroup"] = data.parallelGroup;
+    if (data.maxRetries !== undefined) updates["maxRetries"] = data.maxRetries;
+    if (data.timeoutSeconds !== undefined)
+      updates["timeoutSeconds"] = data.timeoutSeconds;
+    if (data.isEnabled !== undefined) updates["isEnabled"] = data.isEnabled;
+
+    const rows = await this.db
+      .update(schema.subAgents)
+      .set(updates)
+      .where(
+        and(
+          eq(schema.subAgents.id, subAgentId),
+          eq(schema.subAgents.agentId, agentId),
+        ),
+      )
+      .returning();
+    return rows[0] ? this.subAgentToDomain(rows[0]) : null;
+  }
+
+  async removeSubAgent(subAgentId: string, agentId: string): Promise<boolean> {
+    const result = await this.db
+      .delete(schema.subAgents)
+      .where(
+        and(
+          eq(schema.subAgents.id, subAgentId),
+          eq(schema.subAgents.agentId, agentId),
+        ),
+      );
+    return (result as unknown as { rowCount: number }).rowCount > 0;
+  }
+
+  async listSubAgents(agentId: string): Promise<SubAgentData[]> {
+    const rows = await this.db
+      .select()
+      .from(schema.subAgents)
+      .where(eq(schema.subAgents.agentId, agentId));
+    return rows.map((r) => this.subAgentToDomain(r));
+  }
+
   // ── Private helpers ─────────────────────────────────────────────────────
 
   private toDomain(
@@ -430,5 +531,26 @@ export class DrizzleAgentRepository implements AgentRepository {
     };
 
     return Agent.reconstitute(props);
+  }
+
+  private subAgentToDomain(
+    row: typeof schema.subAgents.$inferSelect,
+  ): SubAgentData {
+    return {
+      id: row.id,
+      agentId: row.agentId,
+      role: row.role,
+      llmProvider: row.llmProvider as SubAgentData["llmProvider"],
+      llmModel: row.llmModel,
+      llmTemperature: Number(row.llmTemperature),
+      llmMaxTokens: row.llmMaxTokens,
+      executionMode: row.executionMode as "sequential" | "parallel",
+      parallelGroup: row.parallelGroup ?? undefined,
+      maxRetries: row.maxRetries,
+      timeoutSeconds: row.timeoutSeconds,
+      isEnabled: row.isEnabled,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
   }
 }

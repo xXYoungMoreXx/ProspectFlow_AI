@@ -191,6 +191,24 @@ export class Agent extends AggregateRoot {
     if (this.props.status === "ACTIVE") {
       return err(new ValidationError("Agent is already active"));
     }
+    // SPEC-02 rule 1: must have at least 1 skill
+    if (this.props.skills.length === 0) {
+      const e = new ValidationError(
+        "Agent needs at least 1 skill to be activated",
+        "skills",
+      );
+      (e as NodeJS.ErrnoException).code = "AGENT_NO_SKILLS";
+      return err(e);
+    }
+    // SPEC-02 rule 2: budget must be > 0
+    if (this.props.tokenBudgetRemaining <= 0) {
+      const e = new ValidationError(
+        "Token budget exhausted",
+        "tokenBudgetRemaining",
+      );
+      (e as NodeJS.ErrnoException).code = "BUDGET_EXHAUSTED";
+      return err(e);
+    }
     this.props.status = "ACTIVE";
     this.props.updatedAt = new Date();
     this.addDomainEvent(

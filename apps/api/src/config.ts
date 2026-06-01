@@ -56,6 +56,12 @@ const envSchema = z.object({
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_CHAT_ID: z.string().optional(),
   TELEGRAM_WEBHOOK_SECRET: z.string().optional(),
+  // Telegram Sales bot (separate from HITL bot — SPEC-11)
+  TELEGRAM_SALES_BOT_TOKEN: z.string().optional(),
+  TELEGRAM_SALES_WEBHOOK_SECRET: z.string().optional(),
+
+  // Messaging - WhatsApp (Evolution API)
+  WHATSAPP_WEBHOOK_SECRET: z.string().optional(),
 
   // Max body size in bytes (1MB default — Zero Trust)
   MAX_BODY_SIZE: z.coerce.number().default(1_048_576),

@@ -6,84 +6,127 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # Weekly scan on Sundays at 02:00 UTC
-    - cron: '0 2 * * 0'
+    # Weekly — Sunday 02:00 UTC
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
 
 concurrency:
   group: security-${{ github.ref }}
   cancel-in-progress: true
 
+# Minimum permissions by default — each job opts in to what it needs
 permissions:
   contents: read
-  security-events: write
 
 jobs:
-  # ── Dependency Audit ────────────────────────────────────────────────
+  # ── 1. Dependency Audit — OWASP A06 (Vulnerable and Outdated Components) ───
   dependency-audit:
     name: Dependency Audit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - run: npm ci
 
-      - name: NPM Audit (Node.js)
-        run: npm audit --audit-level=high
-        continue-on-error: true
+      # audit-level=moderate catches OWASP A06 medium-severity CVEs (was 'high')
+      - name: NPM Audit
+        run: npm audit --audit-level=moderate --json | tee npm-audit.json
+        continue-on-error: false
 
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: "3.12"
+          cache: "pip"
 
-      - name: Pip Audit (Python)
+      - name: Pip Audit
+        working-directory: apps/agent-runtime
         run: |
           pip install pip-audit
-          cd apps/agent-runtime && pip-audit
-        continue-on-error: true
+          pip-audit --format=json --output=pip-audit.json || pip-audit
+        continue-on-error: false
 
-  # ── Secret Scanning ─────────────────────────────────────────────────
+      # OSV Scanner — cross-ecosystem CVE database (OWASP A06)
+      - name: OSV Scanner
+        uses: google/osv-scanner-action@v2
+        with:
+          scan-args: |-
+            --recursive
+            --format=sarif
+            --output=osv-results.sarif
+            ./
+        continue-on-error: false
+
+      - name: Upload OSV SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: osv-results.sarif
+          category: osv-scanner
+
+  # ── 2. Secret Detection — OWASP A02 (Cryptographic Failures) ───────────────
   secrets-scan:
     name: Secret Scanning
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Full history — catch secrets in any commit
 
+      # Pinned to v3 tag — never use @main (supply chain risk, OWASP A08)
       - name: TruffleHog Secret Scan
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3
         with:
-          extra_args: --only-verified
+          extra_args: --only-verified --fail
+        continue-on-error: false
 
-  # ── SAST (Semgrep) ──────────────────────────────────────────────────
-  sast:
-    name: Static Analysis (Semgrep)
+  # ── 3. SAST Semgrep — OWASP A03/A07/A10 ────────────────────────────────────
+  sast-semgrep:
+    name: SAST (Semgrep)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     container:
       image: semgrep/semgrep
     steps:
       - uses: actions/checkout@v6
 
+      # OWASP Top-10 rules + language-specific security rulesets
       - name: Run Semgrep
-        run: semgrep scan --config auto --error --json --output semgrep-results.json .
-        continue-on-error: true
+        run: |
+          semgrep scan \
+            --config p/owasp-top-ten \
+            --config p/javascript \
+            --config p/typescript \
+            --config p/python \
+            --config p/secrets \
+            --config p/supply-chain \
+            --error \
+            --sarif \
+            --output semgrep-results.sarif \
+            .
+        continue-on-error: false
 
-      - name: Upload SAST Report
+      - name: Upload Semgrep SARIF
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: github/codeql-action/upload-sarif@v4
         with:
-          name: semgrep-report
-          path: semgrep-results.json
-          retention-days: 30
+          sarif_file: semgrep-results.sarif
+          category: semgrep
 
-  # ── SAST (CodeQL) ───────────────────────────────────────────────────
+  # ── 4. CodeQL — OWASP A01/A03/A07 ──────────────────────────────────────────
   codeql:
-    name: CodeQL Analysis
+    name: CodeQL (${{ matrix.language }})
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -92,15 +135,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript-typescript', 'python' ]
+        language: ["javascript-typescript", "python"]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
+          # security-extended: OWASP A01-A10 + CWE top 25
+          # security-and-quality: + code quality gates
           queries: security-extended,security-and-quality
 
       - name: Autobuild
@@ -109,9 +153,97 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
-          category: "/language:${{matrix.language}}"
+          category: "/language:${{ matrix.language }}"
 
-  # ── License Compliance ──────────────────────────────────────────────
+  # ── 5. Container Scan — OWASP A05 (Security Misconfiguration) ───────────────
+  container-scan:
+    name: Container Scan (Trivy)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build API image for scanning
+        run: docker build -t agentepro-api:scan -f Dockerfile.api .
+
+      # Trivy: CVEs + misconfigurations + secrets in image layers
+      - name: Trivy — Image Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "agentepro-api:scan"
+          format: "sarif"
+          output: "trivy-image.sarif"
+          severity: "CRITICAL,HIGH,MEDIUM"
+          exit-code: "1"
+        continue-on-error: false
+
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-image.sarif
+          category: trivy-image
+
+      # Dockerfile misconfiguration scan (separate from image scan)
+      - name: Trivy — Dockerfile Config Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "config"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-config.sarif"
+          severity: "CRITICAL,HIGH"
+          exit-code: "0" # Advisory only for config issues
+
+      - name: Upload Trivy Config SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-config.sarif
+          category: trivy-config
+
+  # ── 6. SBOM Generation — OWASP A08 (Software Integrity Failures) ────────────
+  sbom:
+    name: SBOM (CycloneDX)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to attach SBOM to release
+    steps:
+      - uses: actions/checkout@v6
+
+      # CycloneDX SBOM for npm — covers all workspaces
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Generate SBOM (npm)
+        run: npx @cyclonedx/cyclonedx-npm --output-file sbom-npm.json --output-format JSON
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Generate SBOM (Python)
+        working-directory: apps/agent-runtime
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-py environment --of JSON -o ../sbom-python.json
+
+      - name: Upload SBOMs
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-${{ github.sha }}
+          path: |
+            sbom-npm.json
+            sbom-python.json
+          retention-days: 90
+
+  # ── 7. License Compliance ────────────────────────────────────────────────────
   license-check:
     name: License Compliance
     runs-on: ubuntu-latest
@@ -120,11 +252,27 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - run: npm ci
 
-      - name: Check Licenses
-        run: npx license-checker --failOn "GPL-3.0;AGPL-3.0" --summary
-        continue-on-error: true
+      # Block copyleft licenses incompatible with commercial SaaS
+      - name: Check npm Licenses
+        run: |
+          npx license-checker \
+            --failOn "GPL-1.0;GPL-2.0;GPL-3.0;AGPL-1.0;AGPL-3.0;LGPL-2.0;LGPL-2.1;LGPL-3.0;EUPL-1.0;EUPL-1.1;EUPL-1.2;SSPL-1.0" \
+            --summary
+        continue-on-error: false
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Check Python Licenses
+        working-directory: apps/agent-runtime
+        run: |
+          pip install pip-licenses
+          pip-licenses --from=mixed --format=json --output-file=python-licenses.json
+          pip-licenses --from=mixed --fail-on="GPL;AGPL;EUPL;SSPL"
+        continue-on-error: false

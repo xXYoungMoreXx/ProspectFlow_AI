@@ -1,31 +1,123 @@
 version: 2
+
 updates:
+  # ── Node.js / npm workspaces ────────────────────────────────────────────────
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 10
-    groups:
-      dependencies:
-        patterns:
-          - "*"
+    target-branch: "main"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
     labels:
       - "dependencies"
       - "javascript"
+    groups:
+      # Security patches → separate PR so they can be merged immediately
+      security-patches:
+        applies-to: security-updates
+        patterns: ["*"]
+      # Non-breaking minor/patch updates bundled together
+      non-breaking:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+        patterns: ["*"]
+    ignore:
+      # Versions fixed by CLAUDE.md §2 — never auto-update
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "fastify"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "drizzle-orm"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "zod"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "bullmq"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
 
+  # ── Python / pip (agent-runtime) ────────────────────────────────────────────
   - package-ecosystem: "pip"
     directory: "/apps/agent-runtime"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 5
+    target-branch: "main"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
     labels:
       - "dependencies"
       - "python"
+    groups:
+      security-patches:
+        applies-to: security-updates
+        patterns: ["*"]
+      non-breaking:
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
+        patterns: ["*"]
+    ignore:
+      # Fixed versions — see CLAUDE.md §2
+      - dependency-name: "crewai"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "litellm"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "fastapi"
+        update-types: ["version-update:semver-major"]
 
+  # ── Docker (Dockerfile.api + infra/) ────────────────────────────────────────
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # ── GitHub Actions ──────────────────────────────────────────────────────────
+  # Weekly (not monthly) — action vulnerabilities are supply chain risk (OWASP A08)
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
     labels:
       - "dependencies"
       - "github-actions"
+    groups:
+      actions-security:
+        applies-to: security-updates
+        patterns: ["*"]
+      actions-updates:
+        applies-to: version-updates
+        patterns: ["*"]

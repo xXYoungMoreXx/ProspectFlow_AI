@@ -14,6 +14,8 @@ import {
 import type { LeadStatus } from "@agentepro/shared-types";
 import { CheckOptOutHandler } from "../../application/lead/CheckOptOutHandler.js";
 import { z } from "zod";
+import { eq, and, desc } from "drizzle-orm";
+import * as schema from "../../infrastructure/db/schema.js";
 export async function leadRoutes(app: FastifyInstance): Promise<void> {
   app.addHook("preHandler", authMiddleware);
 
@@ -56,17 +58,15 @@ export async function leadRoutes(app: FastifyInstance): Promise<void> {
       request.operatorId,
     );
     if (result.isErr()) {
-      return reply
-        .status(404)
-        .send({
-          errors: [
-            {
-              code: "NOT_FOUND",
-              message: result.error.message,
-              requestId: request.requestId,
-            },
-          ],
-        });
+      return reply.status(404).send({
+        errors: [
+          {
+            code: "NOT_FOUND",
+            message: result.error.message,
+            requestId: request.requestId,
+          },
+        ],
+      });
     }
     return reply.status(200).send({
       data: result.value.toJSON(),
@@ -89,14 +89,12 @@ export async function leadRoutes(app: FastifyInstance): Promise<void> {
   app.get("/optout/check", async (request, reply) => {
     const parsed = CheckOptOutQuery.safeParse(request.query);
     if (!parsed.success) {
-      return reply
-        .status(400)
-        .send({
-          errors: parsed.error.issues.map((i) => ({
-            code: "VALIDATION_ERROR",
-            message: i.message,
-          })),
-        });
+      return reply.status(400).send({
+        errors: parsed.error.issues.map((i) => ({
+          code: "VALIDATION_ERROR",
+          message: i.message,
+        })),
+      });
     }
 
     const handler = new CheckOptOutHandler(app.container.optOutRepo);
@@ -107,11 +105,9 @@ export async function leadRoutes(app: FastifyInstance): Promise<void> {
     });
 
     if (result.isErr()) {
-      return reply
-        .status(500)
-        .send({
-          errors: [{ code: "INTERNAL_ERROR", message: result.error.message }],
-        });
+      return reply.status(500).send({
+        errors: [{ code: "INTERNAL_ERROR", message: result.error.message }],
+      });
     }
 
     return reply.status(200).send({ isBlocked: result.value });
@@ -135,17 +131,15 @@ export async function leadRoutes(app: FastifyInstance): Promise<void> {
       parsed.data as Parameters<typeof createHandler.execute>[1],
     );
     if (result.isErr()) {
-      return reply
-        .status(400)
-        .send({
-          errors: [
-            {
-              code: "VALIDATION_ERROR",
-              message: result.error.message,
-              requestId: request.requestId,
-            },
-          ],
-        });
+      return reply.status(400).send({
+        errors: [
+          {
+            code: "VALIDATION_ERROR",
+            message: result.error.message,
+            requestId: request.requestId,
+          },
+        ],
+      });
     }
     return reply.status(201).send({
       data: result.value.toJSON(),
@@ -181,20 +175,59 @@ export async function leadRoutes(app: FastifyInstance): Promise<void> {
       );
       if (result.isErr()) {
         const status = result.error.message.includes("not found") ? 404 : 400;
-        return reply
-          .status(status)
-          .send({
-            errors: [
-              {
-                code: status === 404 ? "NOT_FOUND" : "VALIDATION_ERROR",
-                message: result.error.message,
-                requestId: request.requestId,
-              },
-            ],
-          });
+        return reply.status(status).send({
+          errors: [
+            {
+              code: status === 404 ? "NOT_FOUND" : "VALIDATION_ERROR",
+              message: result.error.message,
+              requestId: request.requestId,
+            },
+          ],
+        });
       }
       return reply.status(200).send({
         data: result.value.toJSON(),
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    },
+  );
+
+  // GET /api/v1/leads/:id/follow-ups  (S1-05)
+  app.get<{ Params: { id: string } }>(
+    "/:id/follow-ups",
+    async (request, reply) => {
+      const lead = await app.container.leadRepo.findById(
+        request.params.id,
+        request.operatorId,
+      );
+      if (!lead) {
+        return reply.status(404).send({
+          errors: [
+            {
+              code: "NOT_FOUND",
+              message: "Lead not found",
+              requestId: request.requestId,
+            },
+          ],
+        });
+      }
+
+      const followUps = await app.container.db
+        .select()
+        .from(schema.followUps)
+        .where(
+          and(
+            eq(schema.followUps.leadId, request.params.id),
+            eq(schema.followUps.operatorId, request.operatorId),
+          ),
+        )
+        .orderBy(desc(schema.followUps.scheduledDate));
+
+      return reply.status(200).send({
+        data: followUps,
         meta: {
           requestId: request.requestId,
           timestamp: new Date().toISOString(),
