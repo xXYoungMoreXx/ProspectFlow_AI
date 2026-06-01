@@ -58,7 +58,7 @@ jobs:
 
       # OSV Scanner — cross-ecosystem CVE database (OWASP A06)
       - name: OSV Scanner
-        uses: google/osv-scanner-action@v1
+        uses: google/osv-scanner-action@v2.3.8
         with:
           scan-args: |-
             --recursive
@@ -85,9 +85,9 @@ jobs:
         with:
           fetch-depth: 0 # Full history — catch secrets in any commit
 
-      # Pinned to v3 tag — never use @main (supply chain risk, OWASP A08)
+      # Pinned to exact version — never use @main (supply chain risk, OWASP A08)
       - name: TruffleHog Secret Scan
-        uses: trufflesecurity/trufflehog@v3
+        uses: trufflesecurity/trufflehog@v3.95.3
         with:
           extra_args: --only-verified --fail
         continue-on-error: false

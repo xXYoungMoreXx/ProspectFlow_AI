@@ -1,0 +1,10 @@
+# Legacy directory — unmaintained, not deployed
+_legacy/
+
+# Virtual environments
+apps/agent-runtime/.venv/
+node_modules/
+
+# Build artifacts
+apps/api/dist/
+apps/web/.next/
