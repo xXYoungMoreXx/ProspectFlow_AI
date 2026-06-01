@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,27 +53,49 @@ function formatTokens(n: number): string {
 export default function CostsDashboardPage() {
   const { token } = useAuthStore();
   const [period, setPeriod] = useState<Period>("month");
+  const [refreshCount, setRefreshCount] = useState(0);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  async function load(p: Period) {
-    if (!token) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.costs.dashboard(p, token);
-      setData(res.data);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erro ao carregar dados");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const mounted = useRef(true);
 
   useEffect(() => {
-    load(period);
-  }, [period, token]);
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!token) return;
+    api.costs
+      .dashboard(period, token)
+      .then((res) => {
+        if (mounted.current) {
+          setData(res.data);
+          setError(null);
+          setLoading(false);
+        }
+      })
+      .catch((e: unknown) => {
+        if (mounted.current) {
+          setError(e instanceof Error ? e.message : "Erro ao carregar dados");
+          setLoading(false);
+        }
+      });
+  }, [period, token, refreshCount]);
+
+  function handlePeriodChange(p: Period) {
+    setLoading(true);
+    setError(null);
+    setPeriod(p);
+  }
+
+  function handleRefresh() {
+    setLoading(true);
+    setError(null);
+    setRefreshCount((c) => c + 1);
+  }
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -91,7 +113,7 @@ export default function CostsDashboardPage() {
               key={p}
               variant={period === p ? "default" : "outline"}
               size="sm"
-              onClick={() => setPeriod(p)}
+              onClick={() => handlePeriodChange(p)}
             >
               {PERIOD_LABELS[p]}
             </Button>
@@ -99,7 +121,7 @@ export default function CostsDashboardPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => load(period)}
+            onClick={handleRefresh}
             disabled={loading}
           >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
