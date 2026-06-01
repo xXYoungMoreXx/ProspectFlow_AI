@@ -1,0 +1,31 @@
+{
+  "title": "AgentePro — Cost Tracking",
+  "uid": "agentepro-costs",
+  "tags": ["agentepro", "costs"],
+  "panels": [
+    {
+      "title": "Lead Qualification Score Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "agentepro_lead_qualification_score_bucket",
+          "legendFormat": "Score"
+        }
+      ]
+    },
+    {
+      "title": "LLM Error Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(agentepro_llm_requests_total{status='error'}[5m]) / rate(agentepro_llm_requests_total[5m])",
+          "legendFormat": "Error Rate {{provider}}"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1
+}

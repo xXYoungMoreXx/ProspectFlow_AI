@@ -1,0 +1,46 @@
+{
+  "title": "AgentePro — Security",
+  "uid": "agentepro-security",
+  "tags": ["agentepro", "security"],
+  "panels": [
+    {
+      "title": "Auth Failures (rate)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(agentepro_auth_failures_total[5m])",
+          "legendFormat": "{{reason}}"
+        }
+      ],
+      "alert": {
+        "name": "High Auth Failure Rate",
+        "conditions": [{ "evaluator": { "type": "gt", "params": [10] } }]
+      }
+    },
+    {
+      "title": "SSRF Blocked",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(increase(agentepro_ssrf_blocked_total[24h]))",
+          "legendFormat": "Blocked (24h)"
+        }
+      ]
+    },
+    {
+      "title": "Invalid Uploads",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "rate(agentepro_invalid_upload_total[5m])",
+          "legendFormat": "{{reason}}"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1
+}
