@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,23 +57,26 @@ export default function CostsDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function load(p: Period) {
-    if (!token) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.costs.dashboard(p, token);
-      setData(res.data);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erro ao carregar dados");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const load = useCallback(
+    async (p: Period) => {
+      if (!token) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await api.costs.dashboard(p, token);
+        setData(res.data);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Erro ao carregar dados");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token],
+  );
 
   useEffect(() => {
-    load(period);
-  }, [period, token]);
+    void load(period);
+  }, [period, load]);
 
   return (
     <div className="flex flex-col gap-6 p-6">

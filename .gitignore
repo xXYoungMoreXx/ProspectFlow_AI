@@ -17,7 +17,7 @@ build/
 .env
 .env.*
 !.env.example
-secrets/
+/secrets/
 *.pem
 *.key
 *.p12

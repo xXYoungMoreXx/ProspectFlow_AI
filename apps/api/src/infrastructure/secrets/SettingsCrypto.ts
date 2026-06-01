@@ -7,13 +7,17 @@ export class SettingsCrypto {
   constructor(encryptionKey: string) {
     this.key = Buffer.from(encryptionKey, "base64");
     if (this.key.length !== 32) {
-      throw new Error("Invalid encryption key length. Expected 32 bytes (base64 encoded).");
+      throw new Error(
+        "Invalid encryption key length. Expected 32 bytes (base64 encoded).",
+      );
     }
   }
 
   encrypt(text: string): string {
     const iv = randomBytes(12);
-    const cipher = createCipheriv(this.algorithm, this.key, iv);
+    const cipher = createCipheriv(this.algorithm, this.key, iv, {
+      authTagLength: 16,
+    });
 
     let encrypted = cipher.update(text, "utf8", "hex");
     encrypted += cipher.final("hex");
@@ -31,7 +35,9 @@ export class SettingsCrypto {
 
     const iv = Buffer.from(ivHex, "hex");
     const tag = Buffer.from(tagHex, "hex");
-    const decipher = createDecipheriv(this.algorithm, this.key, iv, { authTagLength: 16 });
+    const decipher = createDecipheriv(this.algorithm, this.key, iv, {
+      authTagLength: 16,
+    });
 
     decipher.setAuthTag(tag);
 
