@@ -3,6 +3,11 @@ import { randomUUID } from "node:crypto";
 import { StartBriefingUseCase } from "../StartBriefingUseCase.js";
 import { ApproveBriefingUseCase } from "../ApproveBriefingUseCase.js";
 import { GetBriefingQuery } from "../GetBriefingQuery.js";
+import { DomainEventRouter } from "../../../infrastructure/queue/DomainEventRouter.js";
+import type { DealRepository } from "../../../domain/deal/DealRepository.js";
+import type { LeadRepository } from "../../../domain/lead/LeadRepository.js";
+import type { BullMQAdapter } from "../../../infrastructure/queue/BullMQAdapter.js";
+import type { Redis } from "ioredis";
 import { ListBriefingsQuery } from "../ListBriefingsQuery.js";
 import type { BriefingRepository } from "../../../domain/briefing/BriefingRepository.js";
 import { Briefing } from "../../../domain/briefing/Briefing.js";
@@ -206,5 +211,111 @@ describe("ListBriefingsQuery", () => {
 
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toHaveLength(2);
+  });
+});
+
+// ── DomainEventRouter WhatsApp session tests ──────────────────────────────
+
+describe("DomainEventRouter.handleDealClosed — Redis session", () => {
+  function makeRouter(
+    deal: Record<string, unknown> | null,
+    lead: { id: string; phone?: string } | null,
+    redisMock: Partial<Redis>,
+    briefingFindByDealId: unknown = null,
+  ) {
+    const dealRepo = {
+      findByIdInternal: vi.fn().mockResolvedValue(deal),
+    } as unknown as DealRepository;
+
+    const leadRepo = {
+      findById: vi.fn().mockResolvedValue(lead),
+    } as unknown as LeadRepository;
+
+    const briefingRepoMock = {
+      findByDealId: vi.fn().mockResolvedValue(briefingFindByDealId),
+      save: vi.fn().mockResolvedValue(undefined),
+    } as unknown as Mocked<BriefingRepository>;
+
+    const queue = {
+      createWorker: vi.fn(),
+      enqueueAgentTask: vi.fn(),
+    } as unknown as BullMQAdapter;
+
+    return new DomainEventRouter(
+      dealRepo,
+      briefingRepoMock,
+      queue,
+      leadRepo,
+      redisMock as Redis,
+    );
+  }
+
+  const baseEvent = {
+    eventType: "deal.closed",
+    correlationId: "corr-1",
+    payload: { dealId: "deal-1" },
+  } as any;
+
+  it("grava chave whatsapp:{phone} no Redis quando lead tem telefone", async () => {
+    const redisMock = {
+      set: vi.fn().mockResolvedValue("OK"),
+    } as Partial<Redis>;
+    const router = makeRouter(
+      { id: "deal-1", operatorId: "op-1", leadId: "lead-1" },
+      { id: "lead-1", phone: "+5511999990000" },
+      redisMock,
+    );
+
+    await router.handleDealClosed(baseEvent);
+
+    expect(redisMock.set).toHaveBeenCalledWith(
+      "whatsapp:+5511999990000",
+      expect.any(String),
+      "EX",
+      86400,
+    );
+  });
+
+  it("não chama Redis.set quando lead não tem telefone", async () => {
+    const redisMock = { set: vi.fn() } as Partial<Redis>;
+    const router = makeRouter(
+      { id: "deal-2", operatorId: "op-1", leadId: "lead-2" },
+      { id: "lead-2", phone: undefined },
+      redisMock,
+    );
+
+    await router.handleDealClosed({
+      ...baseEvent,
+      payload: { dealId: "deal-2" },
+    });
+
+    expect(redisMock.set).not.toHaveBeenCalled();
+  });
+
+  it("não chama Redis.set quando leadRepo não fornecido", async () => {
+    const redisMock = { set: vi.fn() } as Partial<Redis>;
+    const dealRepo = {
+      findByIdInternal: vi
+        .fn()
+        .mockResolvedValue({
+          id: "deal-3",
+          operatorId: "op-1",
+          leadId: "lead-3",
+        }),
+    } as unknown as DealRepository;
+    const briefingRepoMock = {
+      findByDealId: vi.fn().mockResolvedValue(null),
+      save: vi.fn(),
+    } as unknown as BriefingRepository;
+    const queue = { createWorker: vi.fn() } as unknown as BullMQAdapter;
+
+    // No leadRepo, no redis passed
+    const router = new DomainEventRouter(dealRepo, briefingRepoMock, queue);
+    await router.handleDealClosed({
+      ...baseEvent,
+      payload: { dealId: "deal-3" },
+    });
+
+    expect(redisMock.set).not.toHaveBeenCalled();
   });
 });

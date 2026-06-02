@@ -1,12 +1,16 @@
 import pino from "pino";
 import type { Job } from "bullmq";
+import type { Redis } from "ioredis";
 import type { DomainEventBase } from "@agentepro/shared-types";
 import type { DealRepository } from "../../domain/deal/DealRepository.js";
 import type { BriefingRepository } from "../../domain/briefing/BriefingRepository.js";
+import type { LeadRepository } from "../../domain/lead/LeadRepository.js";
 import { StartBriefingUseCase } from "../../application/briefing/StartBriefingUseCase.js";
 import type { BullMQAdapter } from "./BullMQAdapter.js";
 
 const log = pino({ level: process.env["LOG_LEVEL"] ?? "info" });
+
+const WHATSAPP_SESSION_TTL = 86400; // 24h
 
 /**
  * Consumes the "domain-events" queue and fans out to typed handlers.
@@ -17,6 +21,8 @@ export class DomainEventRouter {
     private readonly dealRepo: DealRepository,
     private readonly briefingRepo: BriefingRepository,
     private readonly queue: BullMQAdapter,
+    private readonly leadRepo?: LeadRepository,
+    private readonly redis?: Redis,
   ) {}
 
   start(): void {
@@ -76,9 +82,29 @@ export class DomainEventRouter {
       throw result.error;
     }
 
-    log.info(
-      { dealId, briefingId: result.unwrap().id },
-      "briefing_started_on_deal_close",
-    );
+    const briefingId = result.unwrap().id;
+    log.info({ dealId, briefingId }, "briefing_started_on_deal_close");
+
+    // Store WhatsApp session in Redis so webhook can auto-extract on finalization
+    if (this.leadRepo && this.redis && deal.leadId) {
+      try {
+        const lead = await this.leadRepo.findById(deal.leadId, deal.operatorId);
+        if (lead?.phone) {
+          await this.redis.set(
+            `whatsapp:${lead.phone}`,
+            briefingId,
+            "EX",
+            WHATSAPP_SESSION_TTL,
+          );
+          log.info(
+            { phone: `${lead.phone.slice(0, 4)}***`, briefingId },
+            "whatsapp_session_stored",
+          );
+        }
+      } catch (err) {
+        // Non-fatal: briefing was created, WhatsApp session is best-effort
+        log.warn({ err, dealId }, "whatsapp_session_store_failed");
+      }
+    }
   }
 }

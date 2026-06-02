@@ -163,6 +163,8 @@ export function createContainer(): Container {
     dealRepo,
     briefingRepo,
     queue,
+    leadRepo,
+    redis,
   );
 
   const mediaRouter = new MediaGenerationRouter({
