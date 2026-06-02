@@ -136,6 +136,11 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3333/api/v1
 
+      - name: Prepare Next.js standalone assets
+        run: |
+          cp -r apps/web/.next/static apps/web/.next/standalone/.next/static
+          cp -r apps/web/public apps/web/.next/standalone/public
+
       - name: Install Playwright Browsers
         working-directory: apps/web
         run: npx playwright install --with-deps chromium
