@@ -84,6 +84,10 @@ export class Project extends AggregateRoot {
   get status(): ProjectStatus {
     return this.props.status;
   }
+  get deliverableMeta(): Record<string, unknown> {
+    return this.props.deliverableMeta;
+  }
+
   get deliverableUrl(): string | undefined {
     return this.props.deliverableUrl;
   }

@@ -1,3 +1,6 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import type { HITLApprovalRepository } from "../../domain/hitl/HITLApprovalRepository.js";
 import {
   NotFoundError,
@@ -6,6 +9,9 @@ import {
   type Result,
 } from "../../domain/shared/Result.js";
 import type { HITLApproval } from "../../domain/hitl/HITLApproval.js";
+import { HITLActionType } from "../../domain/hitl/HITLActionType.js";
+import type { ProjectRepository } from "../../domain/project/ProjectRepository.js";
+import type { DeploymentRouter } from "../../infrastructure/deploy/DeploymentRouter.js";
 import { hitlPendingGauge } from "../../infrastructure/metrics/registry.js";
 
 export class GetPendingApprovalsHandler {
@@ -17,7 +23,11 @@ export class GetPendingApprovalsHandler {
 }
 
 export class ApproveHITLHandler {
-  constructor(private readonly repo: HITLApprovalRepository) {}
+  constructor(
+    private readonly repo: HITLApprovalRepository,
+    private readonly projectRepo?: ProjectRepository,
+    private readonly deploymentRouter?: DeploymentRouter,
+  ) {}
 
   async execute(
     approvalId: string,
@@ -42,7 +52,7 @@ export class ApproveHITLHandler {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          session_id: approval.agentId, // Using agentId as session_id context
+          session_id: approval.agentId,
           approval_id: approval.id,
           operator_id: operatorId,
         }),
@@ -55,10 +65,89 @@ export class ApproveHITLHandler {
         approvalId,
         error,
       });
-      // Non-fatal for the Node API, but the agent won't unblock until retried
+    }
+
+    // APPROVE_STAGING: trigger deployment after HITL approved
+    if (
+      approval.actionType === HITLActionType.APPROVE_STAGING &&
+      this.projectRepo &&
+      this.deploymentRouter
+    ) {
+      await this.triggerDeploy(approval, operatorId);
     }
 
     return ok(approval);
+  }
+
+  private async triggerDeploy(
+    approval: HITLApproval,
+    operatorId: string,
+  ): Promise<void> {
+    const projectId = (approval.payloadPreview as Record<string, unknown>)?.[
+      "projectId"
+    ] as string | undefined;
+    if (!projectId) {
+      console.warn(
+        "[ApproveHITLHandler] APPROVE_STAGING: no projectId in payload",
+      );
+      return;
+    }
+
+    const project = await this.projectRepo!.findById(projectId, operatorId);
+    if (!project) {
+      console.warn(
+        `[ApproveHITLHandler] APPROVE_STAGING: project ${projectId} not found`,
+      );
+      return;
+    }
+
+    const html = (project.deliverableMeta as Record<string, unknown>)?.[
+      "html"
+    ] as string | undefined;
+    if (!html) {
+      console.warn(
+        `[ApproveHITLHandler] APPROVE_STAGING: no build artifact for project ${projectId}`,
+      );
+      return;
+    }
+
+    let tmpDir: string | undefined;
+    try {
+      tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "agentepro-deploy-"));
+      await fs.writeFile(path.join(tmpDir, "index.html"), html, "utf8");
+
+      const deployResult = await this.deploymentRouter!.deploy({
+        projectId,
+        sourceCodePath: tmpDir,
+        requireHITL: false, // HITL already approved — invariant guaranteed
+      });
+
+      if (deployResult.isOk()) {
+        const { url } = deployResult.unwrap();
+        project.deliver(url, {
+          performance: 0,
+          accessibility: 0,
+          seo: 0,
+          bestPractices: 0,
+        });
+        await this.projectRepo!.save(project);
+        console.info(
+          `[ApproveHITLHandler] Deployed project ${projectId} → ${url}`,
+        );
+      } else {
+        console.error(
+          `[ApproveHITLHandler] Deploy failed for project ${projectId}`,
+        );
+      }
+    } catch (err) {
+      console.error("[ApproveHITLHandler] triggerDeploy error:", err);
+    } finally {
+      if (tmpDir) {
+        await fs
+          .rm(tmpDir, { recursive: true, force: true })
+          .catch(() => undefined);
+      }
+    }
   }
 }
 

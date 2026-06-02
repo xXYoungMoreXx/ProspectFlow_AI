@@ -32,6 +32,11 @@ import { FollowUpWorker } from "./infrastructure/queue/FollowUpWorker.js";
 import { AgentExecutionService } from "./application/agent/AgentExecutionService.js";
 import { DomainEventRouter } from "./infrastructure/queue/DomainEventRouter.js";
 import { MediaGenerationRouter } from "./infrastructure/media/MediaGenerationRouter.js";
+import { DeploymentRouter } from "./infrastructure/deploy/DeploymentRouter.js";
+import { VercelAdapter } from "./infrastructure/deploy/VercelAdapter.js";
+import { NetlifyAdapter } from "./infrastructure/deploy/NetlifyAdapter.js";
+import { CloudflarePagesAdapter } from "./infrastructure/deploy/CloudflarePagesAdapter.js";
+import { RenderAdapter } from "./infrastructure/deploy/RenderAdapter.js";
 import { AuthEmailService } from "./application/auth/auth-email.service.js";
 
 // Application Services
@@ -118,6 +123,7 @@ export interface Container {
   agentExecutionService: AgentExecutionService;
   domainEventRouter: DomainEventRouter;
   mediaRouter: MediaGenerationRouter;
+  deploymentRouter: DeploymentRouter;
 
   // Application Services
   authEmailService: AuthEmailService;
@@ -175,6 +181,16 @@ export function createContainer(): Container {
       secrets.getSecretGlobal("OPENAI_API_KEY").then((v) => v ?? null),
   });
 
+  const deploymentRouter = new DeploymentRouter([
+    new VercelAdapter(process.env["VERCEL_TOKEN"] ?? ""),
+    new CloudflarePagesAdapter(
+      process.env["CF_ACCOUNT_ID"] ?? "",
+      process.env["CF_API_TOKEN"] ?? "",
+    ),
+    new RenderAdapter(process.env["RENDER_API_KEY"] ?? ""),
+    new NetlifyAdapter(process.env["NETLIFY_TOKEN"] ?? ""),
+  ]);
+
   return {
     db,
     redis,
@@ -202,6 +218,7 @@ export function createContainer(): Container {
     agentExecutionService,
     domainEventRouter,
     mediaRouter,
+    deploymentRouter,
     authEmailService: new AuthEmailService(queue),
     settingsService,
     ollamaProxy,
