@@ -98,6 +98,7 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
   container.emailWorker.start();
   container.followUpWorker.start();
   container.agentExecutionService.start();
+  container.domainEventRouter.start();
 
   app.addHook("onClose", async () => {
     await container.queue.close();

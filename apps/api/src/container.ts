@@ -30,6 +30,7 @@ import { HITLExpirationWorker } from "./infrastructure/queue/HITLExpirationWorke
 import { EmailWorker } from "./infrastructure/queue/EmailWorker.js";
 import { FollowUpWorker } from "./infrastructure/queue/FollowUpWorker.js";
 import { AgentExecutionService } from "./application/agent/AgentExecutionService.js";
+import { DomainEventRouter } from "./infrastructure/queue/DomainEventRouter.js";
 import { AuthEmailService } from "./application/auth/auth-email.service.js";
 
 // Application Services
@@ -114,6 +115,7 @@ export interface Container {
   emailWorker: EmailWorker;
   followUpWorker: FollowUpWorker;
   agentExecutionService: AgentExecutionService;
+  domainEventRouter: DomainEventRouter;
 
   // Application Services
   authEmailService: AuthEmailService;
@@ -153,15 +155,23 @@ export function createContainer(): Container {
     hitlRepo,
   );
 
+  const dealRepo = new DrizzleDealRepository(db);
+  const briefingRepo = new DrizzleBriefingRepository(db);
+  const domainEventRouter = new DomainEventRouter(
+    dealRepo,
+    briefingRepo,
+    queue,
+  );
+
   return {
     db,
     redis,
     agentRepo,
     leadRepo,
-    dealRepo: new DrizzleDealRepository(db),
+    dealRepo,
     projectRepo: new DrizzleProjectRepository(db),
     hitlRepo,
-    briefingRepo: new DrizzleBriefingRepository(db),
+    briefingRepo,
     auditRepo: new DrizzleAuditLogRepository(db),
     contractAcceptanceRepo: new DrizzleContractAcceptanceRepository(db),
     optOutRepo: new DrizzleOptOutRepository(db),
@@ -178,6 +188,7 @@ export function createContainer(): Container {
     emailWorker,
     followUpWorker,
     agentExecutionService,
+    domainEventRouter,
     authEmailService: new AuthEmailService(queue),
     settingsService,
     ollamaProxy,
