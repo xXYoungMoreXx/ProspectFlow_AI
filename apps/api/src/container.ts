@@ -155,6 +155,7 @@ export function createContainer(): Container {
     queue,
     leadRepo,
     hitlRepo,
+    new DrizzleProjectRepository(db),
   );
 
   const dealRepo = new DrizzleDealRepository(db);
