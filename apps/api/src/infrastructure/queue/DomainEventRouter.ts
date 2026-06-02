@@ -89,15 +89,15 @@ export class DomainEventRouter {
     if (this.leadRepo && this.redis && deal.leadId) {
       try {
         const lead = await this.leadRepo.findById(deal.leadId, deal.operatorId);
-        if (lead?.phone) {
+        if (lead?.contact.phone) {
           await this.redis.set(
-            `whatsapp:${lead.phone}`,
+            `whatsapp:${lead.contact.phone}`,
             briefingId,
             "EX",
             WHATSAPP_SESSION_TTL,
           );
           log.info(
-            { phone: `${lead.phone.slice(0, 4)}***`, briefingId },
+            { phone: `${lead.contact.phone.slice(0, 4)}***`, briefingId },
             "whatsapp_session_stored",
           );
         }

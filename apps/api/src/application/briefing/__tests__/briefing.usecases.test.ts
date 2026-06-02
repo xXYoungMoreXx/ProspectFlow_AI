@@ -11,7 +11,6 @@ import type { Redis } from "ioredis";
 import { ListBriefingsQuery } from "../ListBriefingsQuery.js";
 import type { BriefingRepository } from "../../../domain/briefing/BriefingRepository.js";
 import { Briefing } from "../../../domain/briefing/Briefing.js";
-import type { BullMQAdapter } from "../../../infrastructure/queue/BullMQAdapter.js";
 import type { Err } from "../../../domain/shared/Result.js";
 import type { DomainError } from "../../../domain/shared/Result.js";
 
@@ -219,7 +218,7 @@ describe("ListBriefingsQuery", () => {
 describe("DomainEventRouter.handleDealClosed — Redis session", () => {
   function makeRouter(
     deal: Record<string, unknown> | null,
-    lead: { id: string; phone?: string } | null,
+    lead: { id: string; contact: { name: string; phone?: string } } | null,
     redisMock: Partial<Redis>,
     briefingFindByDealId: unknown = null,
   ) {
@@ -262,7 +261,7 @@ describe("DomainEventRouter.handleDealClosed — Redis session", () => {
     } as Partial<Redis>;
     const router = makeRouter(
       { id: "deal-1", operatorId: "op-1", leadId: "lead-1" },
-      { id: "lead-1", phone: "+5511999990000" },
+      { id: "lead-1", contact: { name: "Fulano", phone: "+5511999990000" } },
       redisMock,
     );
 
@@ -280,7 +279,7 @@ describe("DomainEventRouter.handleDealClosed — Redis session", () => {
     const redisMock = { set: vi.fn() } as Partial<Redis>;
     const router = makeRouter(
       { id: "deal-2", operatorId: "op-1", leadId: "lead-2" },
-      { id: "lead-2", phone: undefined },
+      { id: "lead-2", contact: { name: "Ciclano", phone: undefined } },
       redisMock,
     );
 
@@ -295,13 +294,11 @@ describe("DomainEventRouter.handleDealClosed — Redis session", () => {
   it("não chama Redis.set quando leadRepo não fornecido", async () => {
     const redisMock = { set: vi.fn() } as Partial<Redis>;
     const dealRepo = {
-      findByIdInternal: vi
-        .fn()
-        .mockResolvedValue({
-          id: "deal-3",
-          operatorId: "op-1",
-          leadId: "lead-3",
-        }),
+      findByIdInternal: vi.fn().mockResolvedValue({
+        id: "deal-3",
+        operatorId: "op-1",
+        leadId: "lead-3",
+      }),
     } as unknown as DealRepository;
     const briefingRepoMock = {
       findByDealId: vi.fn().mockResolvedValue(null),
