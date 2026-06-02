@@ -1,4 +1,4 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as schema from "../schema.js";
 import {
@@ -74,6 +74,21 @@ export class DrizzleBriefingRepository implements BriefingRepository {
           updatedAt: json.updatedAt,
         },
       });
+  }
+
+  async listByOperator(
+    operatorId: string,
+    limit: number,
+    offset = 0,
+  ): Promise<Briefing[]> {
+    const rows = await this.db
+      .select()
+      .from(schema.briefings)
+      .where(eq(schema.briefings.operatorId, operatorId))
+      .orderBy(desc(schema.briefings.createdAt))
+      .limit(limit)
+      .offset(offset);
+    return rows.map((r) => this.toDomain(r));
   }
 
   private toDomain(row: BriefingRow): Briefing {
