@@ -31,6 +31,7 @@ import { EmailWorker } from "./infrastructure/queue/EmailWorker.js";
 import { FollowUpWorker } from "./infrastructure/queue/FollowUpWorker.js";
 import { AgentExecutionService } from "./application/agent/AgentExecutionService.js";
 import { DomainEventRouter } from "./infrastructure/queue/DomainEventRouter.js";
+import { MediaGenerationRouter } from "./infrastructure/media/MediaGenerationRouter.js";
 import { AuthEmailService } from "./application/auth/auth-email.service.js";
 
 // Application Services
@@ -116,6 +117,7 @@ export interface Container {
   followUpWorker: FollowUpWorker;
   agentExecutionService: AgentExecutionService;
   domainEventRouter: DomainEventRouter;
+  mediaRouter: MediaGenerationRouter;
 
   // Application Services
   authEmailService: AuthEmailService;
@@ -163,6 +165,13 @@ export function createContainer(): Container {
     queue,
   );
 
+  const mediaRouter = new MediaGenerationRouter({
+    getNanaBananaKey: () =>
+      secrets.getSecretGlobal("NANABANANA_API_KEY").then((v) => v ?? null),
+    getDalleKey: () =>
+      secrets.getSecretGlobal("OPENAI_API_KEY").then((v) => v ?? null),
+  });
+
   return {
     db,
     redis,
@@ -189,6 +198,7 @@ export function createContainer(): Container {
     followUpWorker,
     agentExecutionService,
     domainEventRouter,
+    mediaRouter,
     authEmailService: new AuthEmailService(queue),
     settingsService,
     ollamaProxy,
