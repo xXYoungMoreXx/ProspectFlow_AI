@@ -13,6 +13,7 @@ import type { BriefingRepository } from "../../../domain/briefing/BriefingReposi
 import { Briefing } from "../../../domain/briefing/Briefing.js";
 import type { Err } from "../../../domain/shared/Result.js";
 import type { DomainError } from "../../../domain/shared/Result.js";
+import { ExtractBriefingUseCase } from "../ExtractBriefingUseCase.js";
 
 // Helper to extract error code from a Result.Err
 function errCode(result: { isErr(): boolean; error?: unknown }): string {
@@ -314,5 +315,90 @@ describe("DomainEventRouter.handleDealClosed — Redis session", () => {
     });
 
     expect(redisMock.set).not.toHaveBeenCalled();
+  });
+});
+
+describe("ExtractBriefingUseCase", () => {
+  let repo: Mocked<BriefingRepository>;
+  let redis: Mocked<Pick<Redis, "lrange">>;
+  let uc: ExtractBriefingUseCase;
+
+  beforeEach(() => {
+    repo = {
+      findById: vi.fn(),
+      findByDealId: vi.fn(),
+      listByOperator: vi.fn(),
+      save: vi.fn(),
+    };
+    redis = { lrange: vi.fn() } as unknown as Mocked<Pick<Redis, "lrange">>;
+    uc = new ExtractBriefingUseCase(repo, redis as unknown as Redis);
+  });
+
+  it("returns transcript when briefing is IN_PROGRESS and transcript exists", async () => {
+    const briefing = makeBriefing();
+    repo.findById.mockResolvedValue(briefing);
+    redis.lrange.mockResolvedValue([
+      JSON.stringify({
+        from: "+5511999990000",
+        body: "sim",
+        timestamp: "2026-06-02T10:00:00.000Z",
+      }),
+    ]);
+
+    const result = await uc.execute({
+      briefingId: briefing.id,
+      operatorId: "op-1",
+      correlationId: randomUUID(),
+    });
+
+    expect(result.isOk()).toBe(true);
+    expect(result.unwrap().transcript).toContain("sim");
+    expect(redis.lrange).toHaveBeenCalledWith(
+      `whatsapp:transcript:${briefing.id}`,
+      0,
+      -1,
+    );
+  });
+
+  it("returns NOT_FOUND when briefing does not exist", async () => {
+    repo.findById.mockResolvedValue(null);
+
+    const result = await uc.execute({
+      briefingId: randomUUID(),
+      operatorId: "op-1",
+      correlationId: randomUUID(),
+    });
+
+    expect(result.isErr()).toBe(true);
+    expect(errCode(result)).toBe("NOT_FOUND");
+  });
+
+  it("returns INVALID_STATE when briefing is not IN_PROGRESS", async () => {
+    const briefing = makeBriefing("COMPLETED");
+    repo.findById.mockResolvedValue(briefing);
+
+    const result = await uc.execute({
+      briefingId: briefing.id,
+      operatorId: "op-1",
+      correlationId: randomUUID(),
+    });
+
+    expect(result.isErr()).toBe(true);
+    expect(errCode(result)).toBe("INVALID_STATE");
+  });
+
+  it("returns VALIDATION_ERROR when transcript is empty in Redis", async () => {
+    const briefing = makeBriefing();
+    repo.findById.mockResolvedValue(briefing);
+    redis.lrange.mockResolvedValue([]);
+
+    const result = await uc.execute({
+      briefingId: briefing.id,
+      operatorId: "op-1",
+      correlationId: randomUUID(),
+    });
+
+    expect(result.isErr()).toBe(true);
+    expect(errCode(result)).toBe("VALIDATION_ERROR");
   });
 });
