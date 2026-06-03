@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Loader2, X, Plus } from "lucide-react";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export default function ProspectingPage() {
   const token = useAuthStore((s) => s.token);
@@ -62,6 +64,12 @@ export default function ProspectingPage() {
     categories.length > 0 && city.trim().length >= 2 && state.length === 2;
 
   const leads: any[] = queueQuery.data?.data?.leads ?? [];
+  const {
+    page,
+    totalPages,
+    paginatedItems: paginatedLeads,
+    goToPage,
+  } = usePagination(leads, 10);
 
   return (
     <div className="space-y-6">
@@ -217,72 +225,79 @@ export default function ProspectingPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="rounded-lg border border-border overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-muted/50 border-b border-border">
-                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                      Business
-                    </th>
-                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                      Score
-                    </th>
-                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                      Source
-                    </th>
-                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                      Date
-                    </th>
-                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                      HITL
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {leads.map((lead: any) => (
-                    <tr
-                      key={lead.id}
-                      className="hover:bg-muted/20 transition-colors"
-                    >
-                      <td className="px-4 py-3 font-medium">
-                        {lead.businessName ?? "—"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`font-mono font-semibold ${
-                            (lead.qualificationScore ?? 0) >= 70
-                              ? "text-emerald-400"
-                              : (lead.qualificationScore ?? 0) >= 40
-                                ? "text-amber-400"
-                                : "text-muted-foreground"
-                          }`}
-                        >
-                          {lead.qualificationScore ?? "—"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
-                        {lead.source ?? "—"}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
-                        {lead.createdAt
-                          ? new Date(lead.createdAt).toLocaleDateString()
-                          : "—"}
-                      </td>
-                      <td className="px-4 py-3">
-                        {lead.pendingHitl && (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] bg-amber-500/10 text-amber-400 border-amber-500/20"
-                          >
-                            HITL
-                          </Badge>
-                        )}
-                      </td>
+            <>
+              <div className="rounded-lg border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-muted/50 border-b border-border">
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                        Business
+                      </th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                        Score
+                      </th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                        Source
+                      </th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                        Date
+                      </th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                        HITL
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {paginatedLeads.map((lead: any) => (
+                      <tr
+                        key={lead.id}
+                        className="hover:bg-muted/20 transition-colors"
+                      >
+                        <td className="px-4 py-3 font-medium">
+                          {lead.businessName ?? "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`font-mono font-semibold ${
+                              (lead.qualificationScore ?? 0) >= 70
+                                ? "text-emerald-400"
+                                : (lead.qualificationScore ?? 0) >= 40
+                                  ? "text-amber-400"
+                                  : "text-muted-foreground"
+                            }`}
+                          >
+                            {lead.qualificationScore ?? "—"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                          {lead.source ?? "—"}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                          {lead.createdAt
+                            ? new Date(lead.createdAt).toLocaleDateString()
+                            : "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          {lead.pendingHitl && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] bg-amber-500/10 text-amber-400 border-amber-500/20"
+                            >
+                              HITL
+                            </Badge>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <PaginationControls
+                page={page}
+                totalPages={totalPages}
+                onPageChange={goToPage}
+              />
+            </>
           )}
         </TabsContent>
 

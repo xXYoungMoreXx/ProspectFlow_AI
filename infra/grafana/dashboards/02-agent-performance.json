@@ -1,0 +1,30 @@
+{
+  "title": "AgentePro — Agent Performance",
+  "uid": "agentepro-agents",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "1m",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Tokens Consumidos por Persona",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(agent_tokens_consumed_total[5m])",
+          "legendFormat": "{{persona}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Custo Estimado (USD/h)",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 8, "w": 8, "h": 4 },
+      "targets": [
+        { "expr": "sum(rate(agent_tokens_consumed_total[1h])) * 0.000015" }
+      ]
+    }
+  ]
+}

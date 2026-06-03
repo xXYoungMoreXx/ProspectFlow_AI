@@ -13,6 +13,8 @@ import { HITLActionType } from "../../domain/hitl/HITLActionType.js";
 import type { ProjectRepository } from "../../domain/project/ProjectRepository.js";
 import type { DeploymentRouter } from "../../infrastructure/deploy/DeploymentRouter.js";
 import { hitlPendingGauge } from "../../infrastructure/metrics/registry.js";
+import type { BullMQAdapter } from "../../infrastructure/queue/BullMQAdapter.js";
+import { SchedulePostDeliveryFollowUpUseCase } from "../project/SchedulePostDeliveryFollowUpUseCase.js";
 
 export class GetPendingApprovalsHandler {
   constructor(private readonly repo: HITLApprovalRepository) {}
@@ -27,6 +29,7 @@ export class ApproveHITLHandler {
     private readonly repo: HITLApprovalRepository,
     private readonly projectRepo?: ProjectRepository,
     private readonly deploymentRouter?: DeploymentRouter,
+    private readonly queue?: BullMQAdapter,
   ) {}
 
   async execute(
@@ -163,6 +166,16 @@ export class ApproveHITLHandler {
         console.info(
           `[ApproveHITLHandler] Deployed project ${projectId} → ${url}`,
         );
+        // Schedule 7d and 30d NPS follow-ups after delivery
+        if (this.queue) {
+          const followUp = new SchedulePostDeliveryFollowUpUseCase(this.queue);
+          await followUp.execute({
+            projectId,
+            operatorId,
+            correlationId: approval.id,
+            deliveredAt: new Date(),
+          });
+        }
       } else {
         console.error(
           `[ApproveHITLHandler] Deploy failed for project ${projectId}`,

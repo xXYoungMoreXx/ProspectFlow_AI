@@ -98,7 +98,12 @@ export async function telegramWebhookRoutes(
 
     // ── 4. Execute approve or reject ─────────────────────────────────────────
     if (action === "hitl_approve") {
-      const handler = new ApproveHITLHandler(app.container.hitlRepo);
+      const handler = new ApproveHITLHandler(
+        app.container.hitlRepo,
+        undefined,
+        undefined,
+        app.container.queue,
+      );
       const result = await handler.execute(
         approvalId,
         hitlRow.operatorId,

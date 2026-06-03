@@ -54,6 +54,27 @@ export class BullMQAdapter {
     return job.id ?? "";
   }
 
+  async enqueueAgentTaskDelayed(
+    taskType: string,
+    payload: Record<string, unknown>,
+    correlationId: string,
+    delayMs: number,
+  ): Promise<string> {
+    const queue = this.getQueue("agent-tasks");
+    const job = await queue.add(
+      taskType,
+      { taskType, payload, correlationId },
+      {
+        delay: delayMs,
+        removeOnComplete: 100,
+        removeOnFail: 500,
+        attempts: 2,
+        backoff: { type: "fixed", delay: 5000 },
+      },
+    );
+    return job.id ?? "";
+  }
+
   async enqueueHITLExpiration(
     approvalId: string,
     delayMs: number,

@@ -1,0 +1,56 @@
+{
+  "title": "AgentePro — Pipeline Overview",
+  "uid": "agentepro-pipeline",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Leads Qualificados (24h)",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "increase(leads_qualified_total[24h])",
+          "legendFormat": "Leads"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Sites Entregues (24h)",
+      "type": "stat",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "increase(projects_delivered_total[24h])",
+          "legendFormat": "Sites"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "HITL Aprovações Pendentes",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [{ "expr": "hitl_pending_total", "legendFormat": "Pendentes" }]
+    },
+    {
+      "id": 4,
+      "title": "Taxa Conversão Lead→Site (%)",
+      "type": "gauge",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "rate(projects_delivered_total[7d]) / rate(leads_qualified_total[7d]) * 100"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "minVizValue": 0,
+        "maxVizValue": 100
+      }
+    }
+  ]
+}
