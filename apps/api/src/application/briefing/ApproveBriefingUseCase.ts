@@ -34,12 +34,14 @@ export class ApproveBriefingUseCase {
       await this.queue.publishEvent(event);
     }
 
+    // Phase 1 of 2-stage build: COPYWRITER+DESIGNER+IMAGER → HITL APPROVE_MOCKUP
+    // On operator approval: builder.build (phase 2) → CODER → SEO+DEPLOY → HITL APPROVE_STAGING
     await this.queue.enqueueAgentTask(
-      "builder.generate",
+      "builder.design",
       {
         briefingId: briefing.id,
         dealId: briefing.dealId,
-        briefingData: briefing.briefingData,
+        briefing: briefing.briefingData,
       },
       cmd.correlationId,
     );
