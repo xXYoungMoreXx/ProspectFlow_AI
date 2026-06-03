@@ -45,6 +45,7 @@ export async function hitlRoutes(app: FastifyInstance): Promise<void> {
         app.container.hitlRepo,
         app.container.projectRepo,
         app.container.deploymentRouter,
+        app.container.queue,
       );
       const result = await approve.execute(
         request.params.id,

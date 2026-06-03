@@ -13,6 +13,8 @@ import { HITLActionType } from "../../domain/hitl/HITLActionType.js";
 import type { ProjectRepository } from "../../domain/project/ProjectRepository.js";
 import type { DeploymentRouter } from "../../infrastructure/deploy/DeploymentRouter.js";
 import { hitlPendingGauge } from "../../infrastructure/metrics/registry.js";
+import type { BullMQAdapter } from "../../infrastructure/queue/BullMQAdapter.js";
+import { SchedulePostDeliveryFollowUpUseCase } from "../project/SchedulePostDeliveryFollowUpUseCase.js";
 
 export class GetPendingApprovalsHandler {
   constructor(private readonly repo: HITLApprovalRepository) {}
@@ -27,6 +29,7 @@ export class ApproveHITLHandler {
     private readonly repo: HITLApprovalRepository,
     private readonly projectRepo?: ProjectRepository,
     private readonly deploymentRouter?: DeploymentRouter,
+    private readonly queue?: BullMQAdapter,
   ) {}
 
   async execute(
@@ -65,6 +68,35 @@ export class ApproveHITLHandler {
         approvalId,
         error,
       });
+    }
+
+    // APPROVE_MOCKUP: dispatch builder.build phase after mockup approved by operator
+    if (approval.actionType === HITLActionType.APPROVE_MOCKUP) {
+      const projectId = (approval.payloadPreview as Record<string, unknown>)?.[
+        "projectId"
+      ] as string | undefined;
+      try {
+        const runtimeUrl =
+          process.env["AGENT_RUNTIME_URL"] || "http://localhost:8001";
+        await fetch(`${runtimeUrl}/tasks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task_type: "builder.build",
+            agent_id: approval.agentId,
+            project_id: projectId,
+            operator_id: operatorId,
+            correlation_id: approval.id,
+            payload: { approved: true },
+          }),
+          signal: AbortSignal.timeout(10_000),
+        });
+      } catch (error) {
+        console.error("[ApproveHITLHandler] Failed to dispatch builder.build", {
+          approvalId,
+          error,
+        });
+      }
     }
 
     // APPROVE_STAGING: trigger deployment after HITL approved
@@ -134,6 +166,16 @@ export class ApproveHITLHandler {
         console.info(
           `[ApproveHITLHandler] Deployed project ${projectId} → ${url}`,
         );
+        // Schedule 7d and 30d NPS follow-ups after delivery
+        if (this.queue) {
+          const followUp = new SchedulePostDeliveryFollowUpUseCase(this.queue);
+          await followUp.execute({
+            projectId,
+            operatorId,
+            correlationId: approval.id,
+            deliveredAt: new Date(),
+          });
+        }
       } else {
         console.error(
           `[ApproveHITLHandler] Deploy failed for project ${projectId}`,
