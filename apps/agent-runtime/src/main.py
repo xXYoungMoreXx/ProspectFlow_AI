@@ -166,26 +166,48 @@ async def execute_task(request: TaskRequest):
             from src.agents.builder.agent import BuilderAgent
             from src.agents.builder.tasks import create_build_site_task
 
-            builder = BuilderAgent(request.agent_id, request.correlation_id, request.payload)
-            agent_instance = builder.build()
+            if action == "design":
+                builder = BuilderAgent(request.agent_id, request.correlation_id, request.payload)
+                result_data = builder.run_design_phase()
+                agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+                agent_sessions_total.labels(persona=persona, status="completed").inc()
+                return TaskResponse(
+                    status="completed",
+                    result=result_data,
+                    correlation_id=request.correlation_id,
+                )
+            elif action == "build":
+                builder = BuilderAgent(request.agent_id, request.correlation_id, request.payload)
+                result_data = builder.run_build_phase()
+                agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+                agent_sessions_total.labels(persona=persona, status="completed").inc()
+                return TaskResponse(
+                    status="completed",
+                    result=result_data,
+                    correlation_id=request.correlation_id,
+                )
+            else:
+                # Legacy: builder.generate
+                builder = BuilderAgent(request.agent_id, request.correlation_id, request.payload)
+                agent_instance = builder.build()
 
-            lead_data = request.payload.get("lead_data", {})
-            design_system = request.payload.get("design_system", {})
+                lead_data = request.payload.get("lead_data", {})
+                design_system = request.payload.get("design_system", {})
 
-            build_task = create_build_site_task(agent_instance, lead_data, design_system)
+                build_task = create_build_site_task(agent_instance, lead_data, design_system)
 
-            crew = Crew(agents=[agent_instance], tasks=[build_task], verbose=True)
+                crew = Crew(agents=[agent_instance], tasks=[build_task], verbose=True)
 
-            output = crew.kickoff()
-            raw_html = str(output)
+                output = crew.kickoff()
+                raw_html = str(output)
 
-            agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
-            agent_sessions_total.labels(persona=persona, status="completed").inc()
-            return TaskResponse(
-                status="completed",
-                result={"html": raw_html},
-                correlation_id=request.correlation_id,
-            )
+                agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+                agent_sessions_total.labels(persona=persona, status="completed").inc()
+                return TaskResponse(
+                    status="completed",
+                    result={"html": raw_html},
+                    correlation_id=request.correlation_id,
+                )
         elif domain == "qa":
             from crewai import Crew
 
@@ -209,6 +231,20 @@ async def execute_task(request: TaskRequest):
             return TaskResponse(
                 status="completed",
                 result={"audit_report": raw_result},
+                correlation_id=request.correlation_id,
+            )
+        elif domain == "orchestrator":
+            from src.agents.orchestrator.agent import OrchestratorAgent, PipelineState
+
+            orch = OrchestratorAgent(request.agent_id, request.correlation_id, request.payload)
+            current = PipelineState(request.payload["current_state"])
+            event = request.payload["event"]
+            next_state, next_agent = orch.transition(current, event)
+            agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+            agent_sessions_total.labels(persona=persona, status="completed").inc()
+            return TaskResponse(
+                status="completed",
+                result={"next_state": next_state, "next_agent": next_agent},
                 correlation_id=request.correlation_id,
             )
         else:
