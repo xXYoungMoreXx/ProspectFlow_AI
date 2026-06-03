@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { randomUUID } from "node:crypto";
-import { DrizzleHITLRepository } from "../../infrastructure/db/repositories/DrizzleHITLRepository.js";
-import { HITLApproval } from "../../domain/hitl/HITLApproval.js";
-import { HITLLevel } from "../../domain/hitl/HITLLevel.js";
-import * as schema from "../../infrastructure/db/schema.js";
+import { DrizzleHITLRepository } from "../../src/infrastructure/db/repositories/DrizzleHITLRepository.js";
+import { HITLApproval } from "../../src/domain/hitl/HITLApproval.js";
+import { HITLLevel } from "../../src/domain/hitl/HITLLevel.js";
+import * as schema from "../../src/infrastructure/db/schema.js";
 import { getIntegrationContext } from "./global.setup.js";
 
 /**

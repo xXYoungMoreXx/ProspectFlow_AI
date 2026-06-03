@@ -5,7 +5,7 @@
  * and exposes a shared `db` instance to all integration tests via globalThis.
  *
  * Usage in vitest config:
- *   setupFiles: ["src/test/integration/global.setup.ts"]
+ *   setupFiles: ["tests/integration/global.setup.ts"]
  */
 import {
   PostgreSqlContainer,
@@ -15,7 +15,7 @@ import { GenericContainer, type StartedTestContainer } from "testcontainers";
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
-import * as schema from "../../infrastructure/db/schema.js";
+import * as schema from "../../src/infrastructure/db/schema.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -52,7 +52,7 @@ beforeAll(async () => {
   // Run migrations — path must match drizzle.config.ts `out` field
   const migrationsFolder = path.resolve(
     __dirname,
-    "../../infrastructure/db/migrations",
+    "../../src/infrastructure/db/migrations",
   );
   await migrate(db, { migrationsFolder });
 

@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { randomUUID } from "node:crypto";
-import { DrizzleLeadRepository } from "../../infrastructure/db/repositories/DrizzleLeadRepository.js";
-import { Lead } from "../../domain/lead/Lead.js";
-import * as schema from "../../infrastructure/db/schema.js";
+import { DrizzleLeadRepository } from "../../src/infrastructure/db/repositories/DrizzleLeadRepository.js";
+import { Lead } from "../../src/domain/lead/Lead.js";
+import * as schema from "../../src/infrastructure/db/schema.js";
 import { getIntegrationContext } from "./global.setup.js";
 
 /**
