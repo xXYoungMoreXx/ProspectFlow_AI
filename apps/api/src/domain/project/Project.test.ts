@@ -101,4 +101,30 @@ describe("Project", () => {
       expect(project.requestRevision("rev").isErr()).toBe(true);
     });
   });
+
+  describe("storeMockup()", () => {
+    it("persists mockupHtml and mockupUrl", () => {
+      const project = makeProject().unwrap();
+      project.storeMockup(
+        "<html>mockup</html>",
+        "https://example.com/mockup.html",
+      );
+      expect(project.mockupHtml).toBe("<html>mockup</html>");
+      expect(project.mockupUrl).toBe("https://example.com/mockup.html");
+    });
+
+    it("overwrites previous mockup values on second call", () => {
+      const project = makeProject().unwrap();
+      project.storeMockup("<html>v1</html>", "https://example.com/v1.html");
+      project.storeMockup("<html>v2</html>", "https://example.com/v2.html");
+      expect(project.mockupHtml).toBe("<html>v2</html>");
+      expect(project.mockupUrl).toBe("https://example.com/v2.html");
+    });
+
+    it("returns undefined for mockupHtml and mockupUrl on a new project", () => {
+      const project = makeProject().unwrap();
+      expect(project.mockupHtml).toBeUndefined();
+      expect(project.mockupUrl).toBeUndefined();
+    });
+  });
 });

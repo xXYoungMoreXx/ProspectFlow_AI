@@ -19,6 +19,8 @@ export interface ProjectProps {
   templateId?: string;
   briefing: Record<string, unknown>;
   deliverableUrl?: string;
+  mockupHtml?: string | undefined;
+  mockupUrl?: string | undefined;
   deliverableMeta: Record<string, unknown>;
   lighthouse: LighthouseScores;
   revisionCount: number;
@@ -87,6 +89,12 @@ export class Project extends AggregateRoot {
   get deliverableUrl(): string | undefined {
     return this.props.deliverableUrl;
   }
+  get mockupHtml(): string | undefined {
+    return this.props.mockupHtml;
+  }
+  get mockupUrl(): string | undefined {
+    return this.props.mockupUrl;
+  }
   get lighthouse(): LighthouseScores {
     return this.props.lighthouse;
   }
@@ -98,6 +106,12 @@ export class Project extends AggregateRoot {
   }
   get updatedAt(): Date {
     return this.props.updatedAt;
+  }
+
+  storeMockup(html: string, url: string): void {
+    this.props.mockupHtml = html;
+    this.props.mockupUrl = url;
+    this.props.updatedAt = new Date();
   }
 
   markReadyForReview(previewUrl: string): void {
