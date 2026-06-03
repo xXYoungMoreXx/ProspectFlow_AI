@@ -68,21 +68,32 @@ export class ApproveHITLHandler {
     }
 
     // APPROVE_MOCKUP: dispatch builder.build phase after mockup approved by operator
-    if (
-      approval.actionType === HITLActionType.APPROVE_MOCKUP &&
-      this.agentRuntimeClient
-    ) {
+    if (approval.actionType === HITLActionType.APPROVE_MOCKUP) {
       const projectId = (approval.payloadPreview as Record<string, unknown>)?.[
         "projectId"
       ] as string | undefined;
-      await this.agentRuntimeClient.dispatch({
-        task_type: "builder.build",
-        agent_id: approval.agentId.value,
-        project_id: projectId,
-        operator_id: operatorId,
-        correlation_id: approval.id.value,
-        payload: { approved: true },
-      });
+      try {
+        const runtimeUrl =
+          process.env["AGENT_RUNTIME_URL"] || "http://localhost:8001";
+        await fetch(`${runtimeUrl}/tasks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task_type: "builder.build",
+            agent_id: approval.agentId,
+            project_id: projectId,
+            operator_id: operatorId,
+            correlation_id: approval.id,
+            payload: { approved: true },
+          }),
+          signal: AbortSignal.timeout(10_000),
+        });
+      } catch (error) {
+        console.error("[ApproveHITLHandler] Failed to dispatch builder.build", {
+          approvalId,
+          error,
+        });
+      }
     }
 
     // APPROVE_STAGING: trigger deployment after HITL approved

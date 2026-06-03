@@ -177,9 +177,9 @@ export class AgentExecutionService {
         this.projectRepo
       ) {
         const r = result.result as Record<string, unknown> | null;
-        const mockupHtml = r?.mockup_html as string | undefined;
-        const mockupUrl = (r?.mockup_url as string | undefined) ?? "";
-        const projectId = payload.projectId as string | undefined;
+        const mockupHtml = r?.["mockup_html"] as string | undefined;
+        const mockupUrl = (r?.["mockup_url"] as string | undefined) ?? "";
+        const projectId = payload.metadata?.["projectId"] as string | undefined;
         if (mockupHtml && projectId) {
           const project = await this.projectRepo.findById(
             projectId,
