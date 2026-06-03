@@ -4,6 +4,7 @@ import type { AgentRepository } from "../../domain/agent/AgentRepository.js";
 import type { BullMQAdapter } from "../../infrastructure/queue/BullMQAdapter.js";
 import type { LeadRepository } from "../../domain/lead/LeadRepository.js";
 import type { HITLApprovalRepository } from "../../domain/hitl/HITLApprovalRepository.js";
+import type { ProjectRepository } from "../../domain/project/ProjectRepository.js";
 import { Lead } from "../../domain/lead/Lead.js";
 import { HITLApproval } from "../../domain/hitl/HITLApproval.js";
 import { HITLLevel } from "../../domain/hitl/HITLLevel.js";
@@ -60,6 +61,7 @@ export class AgentExecutionService {
     private readonly queue: BullMQAdapter,
     private readonly leadRepo?: LeadRepository,
     private readonly hitlRepo?: HITLApprovalRepository,
+    private readonly projectRepo?: ProjectRepository,
   ) {}
 
   /**
@@ -166,6 +168,28 @@ export class AgentExecutionService {
           payload.correlationId,
           result.result.raw_output as string,
         );
+      }
+
+      // 6b. Post-process: save mockup from builder.design completion
+      if (payload.taskType === "builder.design" && this.projectRepo) {
+        const mockupHtml = result.result?.mockup_html as string | undefined;
+        const mockupUrl =
+          (result.result?.mockup_url as string | undefined) ?? "";
+        const projectId = result.result?.project_id as string | undefined;
+
+        if (mockupHtml && projectId) {
+          const project = await this.projectRepo.findById(
+            projectId,
+            payload.operatorId,
+          );
+          if (project) {
+            project.storeMockup(mockupHtml, mockupUrl);
+            await this.projectRepo.save(project);
+            console.info(
+              `[AgentExecutionService] builder.design mockup saved — projectId=${projectId} correlationId=${payload.correlationId}`,
+            );
+          }
+        }
       }
 
       // 7. Update job progress for observability
