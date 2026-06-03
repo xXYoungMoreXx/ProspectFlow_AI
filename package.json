@@ -7,7 +7,11 @@
     "packages/*"
   ],
   "scripts": {
-    "init": "node scripts/init.js",
+    "init": "node scripts/init.js start",
+    "stop": "node scripts/init.js stop",
+    "restart": "node scripts/init.js restart",
+    "check": "node scripts/init.js check",
+    "status": "node scripts/init.js status",
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",

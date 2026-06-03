@@ -1,170 +1,405 @@
-# AgentePro (ex-ProspectFlow AI) 🚀
+# AgentePro 🤖
 
-> **Status:** 4 sprints concluídas (S0–S3). MVP funcional em localhost. CD desativado — deploy via `docker compose` por enquanto.
-> **Branch de integração:** `develop` → `main` via PR com CI obrigatório.
+> **Status:** Sprints S5-07 a S5-10 entregues — MVP v1 funcional em localhost.
+> Branch de integração: `develop` → `main` via PR com CI obrigatório.
 
-> **"E se o seu melhor vendedor nunca dormisse, falasse todos os idiomas e qualificasse mil leads antes do seu café da manhã?"** ☕🤖
+> _"E se o seu melhor vendedor nunca dormisse, falasse todos os idiomas e qualificasse mil leads antes do seu café da manhã?"_ ☕
 
-O **AgentePro** nasceu de uma dor real: o "grind" insuportável da prospecção manual. Enquanto times comerciais perdiam horas filtrando planilhas, nós decidimos construir um ecossistema onde a Inteligência Artificial não apenas ajuda, mas **lidera** o processo.
-
-Abaixo, você encontrará a jornada de como transformamos esse desafio em uma plataforma _Event-Driven_ de ultra-alta performance.
+O **AgentePro** automatiza o ciclo completo de uma agência digital: da prospecção de leads ao site entregue ao cliente, com custo operacional de ~$1.59 USD por site e margem superior a 99%.
 
 ---
 
-## 🏛️ Manifesto: Por que o AgentePro?
+## Pipeline End-to-End
 
-Vender é humano, mas prospectar é, muitas vezes, mecânico. O AgentePro é o nosso compromisso com a eficiência radical:
-
-- **Zero Ruído**: Agentes que qualificam leads com base em dados reais, não apenas palavras-chave.
-- **Negociação com Alma**: IA que entende contexto, gerencia objeções e avança o funil.
-- **Escala Infinita**: De 10 a 10.000 leads sem aumentar o seu overhead.
-
----
-
-## 🎯 O Que É e Como Funciona
-
-O fluxo do AgentePro é construído para eliminar o trabalho manual de uma agência ou time comercial na busca por novos clientes:
-
-1. **Hunter (Busca e Qualificação)**: O agente busca estabelecimentos na web (ex: "clínicas odontológicas em São Paulo") através da API do Google Places. Ele aplica regras de pontuação (score) baseadas em metadados reais (número de avaliações, existência de um site próprio, nota geral) para qualificar o prospect.
-2. **Closer (Contato e Negociação)**: Um agente treinado em negociação de 6 etapas interage com o prospect pelo WhatsApp. Todo o funil de vendas é gerido automaticamente.
-3. **Builder (Entrega de Valor)**: Quando o prospect avança no funil de negociação, o agente gera dinamicamente um site utilizando os templates curados e realiza um deploy automatizado.
-4. **QA (Qualidade e Segurança)**: Agente auditor que garante o cumprimento de OWASP Top 10, Core Web Vitals (Lighthouse ≥ 85) e WCAG 2.1 antes de liberar o deploy.
-5. **Supervisão Humana (HITL)**: A plataforma conta com um CRM Next.js. O operador humano pode intervir nas conversas ou aprovar/rejeitar ações críticas dos agentes (Human-In-The-Loop) via aprovação baseada em tiers.
-
----
-
-## 🏗 Arquitetura e Escalabilidade
-
-O sistema abandonou o monólito legado em favor de uma **Arquitetura Hexagonal (Ports and Adapters)** implementada como um **Turborepo** (Monorepo), permitindo forte tipagem fim-a-fim, reuso de código e altíssima escalabilidade.
-
-### Estrutura do Monorepo
-
-- **`apps/api` (Backend Node.js/Fastify)**: API de ultra-alta performance. Cuida de toda a persistência de dados utilizando o **Drizzle ORM** (PostgreSQL) e o sistema de filas robusto **BullMQ** (via Redis) para processar webhooks e envios de background (mensagens, e-mails, execuções de agentes).
-- **`apps/web` (Frontend Next.js)**: Painel CRM interativo, implementado utilizando **TailwindCSS** e **shadcn/ui**, permitindo acompanhamento do Pipeline (Kanban) e gestão de aprovações em tempo real.
-- **`apps/agent-runtime` (Serviço Python/CrewAI)**: Um microserviço dedicado que orquestra os cérebros de IA. Utiliza **CrewAI**, LiteLLM, ChromaDB (para RAG contextual) e integra-se com APIs externas de múltiplos provedores (Anthropic, OpenAI, Google, Ollama local) de forma totalmente tipada através do `pydantic`. A porta `LLMRouter` permite desacoplamento total por agente.
-- **`packages/*`**: Repositórios compartilhados de tipos TS (`shared-types`), schemas (`database`) e configurações de linting/build, garantindo consistência em toda a base de código.
-
-A infraestrutura foi pensada para rodar de forma descentralizada. Os _Workers_ do BullMQ garantem que milhares de requisições de mensagens ou acionamentos de agentes escalem de modo seguro na nuvem, sem bloquear o _Event Loop_ principal da API.
-
----
-
-## 🛡️ Segurança: Abordagem "Zero Trust"
-
-A segurança é nativa por design (Security-First) e passou por extensivos testes de invasão e auditoria de ameaças (Threat Modeling STRIDE):
-
-- **Prevenção contra SSRF (Server-Side Request Forgery)**: O sistema proíbe ativamente tentativas de agentes consultarem IPs internos (`127.0.0.1`, `10.x.x.x`, infraestruturas AWS/GCP internal metadata) através das ferramentas de web search.
-- **Proteção de Uploads (Magic Bytes)**: Não acreditamos em extensões de arquivo. Todos os uploads validados na API (ex: documentos de referência) passam por checagem profunda de "Magic Bytes" de cabeçalho. Arquivos `.exe` escondidos sob o disfarce de `.jpg` recebem hard-block (`400 Bad Request`). Há também limitação estrita de 10MB por arquivo para mitigar vetores DoS.
-- **Autenticação Inquebrável (JWT & Argon2id)**: Senhas com Hash de última geração (Argon2id) resistentes a ASICs. Todo token JWT possui verificação rigorosa de assinatura, expiração temporal curta, rotação de `Refresh Token` e validação severa de propriedades (`aud`, `iss`), negando explicitamente ataques do tipo _algorithm: "none"_.
-- **Anti-Injection e RBAC/IDOR**: Prevenção total nativa via parâmetros parametrizados do Drizzle contra SQL Injection. As rotas são validadas individualmente para evitar IDOR (Acesso Direto a Objeto Inseguro), bloqueando que Operador A veja dados do Operador B.
-
----
-
-## 📊 Observabilidade Completa
-
-Todo o ciclo de vida do Agente e da API possui rastreio (Tracing) transparente e profundo, facilitando o diagnóstico em produção:
-
-- **Logging Estruturado (Pino)**: Logs de alto desempenho em formato JSON compatível com agregadores modernos (ELK/Datadog).
-- **Métricas Node.js & Prometheus**: Todas as instâncias Fastify expõem uma rota `/api/v1/metrics` coletando dados vitais como uso do Event Loop, Active Handles, Memory Heap e RPS.
-- **OpenTelemetry (OTel)**: Geração de Distributed Traces detalhados permitindo visualizar (via **Jaeger** ou **Grafana**) precisamente onde uma requisição de disparo no WhatsApp gargalou – se foi no acesso ao DB, na Fila Redis ou no LLM.
-- **Grafana Loki v3 (Logs Centralizados)**: Agregação unificada de logs de todos os containers estruturados via Promtail, usando schema `tsdb` para buscas eficientes, indexados e consultáveis diretamente no Grafana.
-
----
-
-## 📝 Prompt-as-Code (Docs/Agents)
-
-Nossos agentes evoluem através de código. Todos os comportamentos, regras de HITL, checklists de segurança (ex: OWASP, WCAG) e tons de voz estão versionados no diretório `docs/agents/prompts/`. Cada atualização (como a versão robusta do `qa-v1.md`) é documentada em um CHANGELOG estrito. Nunca alteramos comportamento de IA sem revisão de código e merge request.
-
-## ⚙️ Guia Rápido: Do Zero ao Funcionamento (DX Otimizado)
-
-A arquitetura do AgentePro evoluiu para proporcionar a melhor Experiência do Desenvolvedor (DX). Criamos um inicializador inteligente multiplataforma que faz todo o trabalho pesado por você. Além disso, o sistema utiliza o **Settings Hub**: um painel centralizado no frontend (protegido por banco de dados criptografado) para você gerenciar todas as suas chaves de API (OpenAI, Anthropic, WhatsApp, etc). Diga adeus aos gigantescos arquivos `.env` manuais para chaves de negócio!
-
-### Requisitos Mínimos Obrigatórios
-
-Para executar o ecossistema AgentePro localmente, certifique-se de que sua máquina atenda aos seguintes requisitos:
-
-- **Node.js**: Versão 22 ou superior (incluindo `npm`).
-- **Docker**: Engine e Docker Compose instalados e rodando (Obrigatório para o PostgreSQL, Redis, ChromaDB e Ollama).
-- **Sistema Operacional**: Suporte nativo multiplataforma (Windows via CMD/PowerShell, WSL2, Linux ou macOS).
-
-### 1. Preparação (Opcional - Chave de Criptografia)
-
-O sistema de inicialização criará o `.env` automaticamente para você, mas é **altamente recomendado** que você gere uma chave AES-256 para o `SETTINGS_ENCRYPTION_KEY` e adicione ao seu arquivo `.env` gerado. Esta chave blinda as credenciais no banco de dados.
-
-```bash
-# Gere uma chave segura no seu terminal e copie a saída
-node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+Google Maps / MCP Brasil
+        │
+    [Hunter] ─── qualifica leads → HITL aprovação (Telegram)
+        │
+    [Closer] ─── WhatsApp / Telegram / Email → deal fechado
+        │
+    [Briefing] ── entrevista conversacional WhatsApp → JSON estruturado
+                  → HITL aprovação do briefing
+        │
+    [Builder]
+    │  Fase 1 — paralelo:
+    │    COPYWRITER (textos) + DESIGNER (mockup visual) + IMAGER (prompts de imagem)
+    │    → HITL APPROVE_MOCKUP — operador vê preview antes de uma linha de HTML
+    │
+    │  Fase 2 — sequencial (após aprovação do mockup):
+    │    CODER (HTML/CSS final) → SEO_OPTIMIZER + DEPLOYER (staging)
+    │    → HITL APPROVE_STAGING
+        │
+      [QA] ──── SEC_AUDITOR + PERF_AUDITOR + CONTENT_CHECK (em paralelo)
+        │
+  [Delivery] ── TUTORIAL_GENERATOR (HeyGen) + DOC_GENERATOR (PDF) em paralelo
+              → NOTIFIER (WhatsApp + Email + Telegram ao cliente)
+              → follow-up automático: 7 dias + NPS 30 dias
 ```
 
-### 2. O Inicializador Inteligente (One-Click Start)
+O operador controla tudo via **HITL inline no Telegram** — aprovações e rejeições com botões, sem abrir o painel web.
 
-Chega de rodar `docker-compose` manualmente, descobrir portas presas ou esquecer de aplicar as migrations. Na raiz do projeto, instale as dependências e rode o inicializador:
+---
+
+## Arquitetura
+
+### Runtimes
+
+```
+monorepo (npm workspaces + Turborepo)
+├── apps/api            Node.js 22 + Fastify 5 + Drizzle ORM + BullMQ
+├── apps/web            Next.js 16 + React 19 + Tailwind 4 + shadcn/ui
+├── apps/agent-runtime  Python 3.12 + CrewAI + LiteLLM + FastAPI
+└── packages/shared-types  Tipos/enums TS compartilhados
+```
+
+### Camadas da API (Hexagonal)
+
+```
+http → application → domain ← infrastructure
+```
+
+### Infra local (Docker)
+
+PostgreSQL 16 · Redis 7 · ChromaDB · Ollama · n8n · Prometheus · Grafana · Jaeger · Loki · Promtail
+
+### LLM por sub-agente (PRD v2 §9)
+
+| Tier | Custo/1k tokens | Modelo                          | Sub-agentes                                     |
+| ---- | --------------- | ------------------------------- | ----------------------------------------------- |
+| 0    | $0.00           | Ollama Llama 3.2 3B             | Orchestrator, DATA_ENRICHER, DEAL_TRACKER       |
+| 1–2  | ~$0.003         | Gemini Flash / Claude Haiku 4.5 | PROSPECTOR, SEO_OPTIMIZER, DEPLOYER, QA         |
+| 3    | ~$0.015         | Claude Sonnet 4.6               | OUTREACH, CONV_HANDLER, COPYWRITER, INTERVIEWER |
+| 4a   | ~$0.025         | Claude Opus 4.8                 | CODER, SEC_AUDITOR                              |
+| 4b   | ~$0.025         | Claude Opus 4.7 Design          | DESIGNER (mockup visual)                        |
+
+---
+
+## Segurança
+
+- **JWT RS256 + Argon2id** — tokens de curta duração, rotação de refresh token
+- **Magic bytes** validados em uploads E em todos os retornos de mídia gerada por IA
+- **SSRF prevention** em toda URL de configuração externa
+- **RBAC/IDOR** — operador A nunca vê dados do operador B
+- **Rate limiting** em endpoints públicos
+- **HITL obrigatório** antes de qualquer envio externo ou deploy em produção
+
+---
+
+## Observabilidade
+
+| Ferramenta | URL local              | Para que serve                                                       |
+| ---------- | ---------------------- | -------------------------------------------------------------------- |
+| Grafana    | http://localhost:3333  | 6 dashboards: pipeline, agentes, HITL, qualidade, mensageria, custos |
+| Jaeger     | http://localhost:16686 | Distributed tracing (OpenTelemetry)                                  |
+| Prometheus | http://localhost:9090  | Métricas da API e do agent runtime                                   |
+| Loki       | http://localhost:3100  | Logs centralizados via Promtail                                      |
+
+---
+
+## Guia de Instalação
+
+### Requisitos obrigatórios
+
+| Ferramenta     | Versão                 | Link               |
+| -------------- | ---------------------- | ------------------ |
+| Node.js        | ≥ 22 LTS               | https://nodejs.org |
+| Docker Desktop | ≥ 4.x (com Compose v2) | https://docker.com |
+| Python         | ≥ 3.12                 | https://python.org |
+
+### Passo 1 — Clonar e instalar dependências
 
 ```bash
-# 1. Instale as dependências do Turborepo e dos Workspaces
+git clone <url-do-repositorio>
+cd ProspectFlow_AI
 npm install
+```
 
-# 2. Rode o inicializador Mágico
+### Passo 2 — Configurar o `.env`
+
+```bash
+cp .env.example .env
+```
+
+Edite `.env` com seus valores reais. Veja as seções abaixo.
+
+#### Variáveis obrigatórias
+
+| Variável            | Como obter                                      |
+| ------------------- | ----------------------------------------------- |
+| `JWT_PRIVATE_KEY`   | Ver seção [Configuração JWT](#configuração-jwt) |
+| `JWT_PUBLIC_KEY`    | Ver seção [Configuração JWT](#configuração-jwt) |
+| `DATABASE_URL`      | Já preenchido para Docker local                 |
+| `REDIS_URL`         | Já preenchido para Docker local                 |
+| `AGENT_RUNTIME_URL` | Já preenchido (`http://localhost:8001`)         |
+
+#### Pelo menos 1 provedor LLM (obrigatório)
+
+| Variável            | Provedor                      |
+| ------------------- | ----------------------------- |
+| `ANTHROPIC_API_KEY` | https://console.anthropic.com |
+| `OPENAI_API_KEY`    | https://platform.openai.com   |
+| `GEMINI_API_KEY`    | https://aistudio.google.com   |
+
+#### Integrações opcionais
+
+| Variável                                  | Funcionalidade                                   |
+| ----------------------------------------- | ------------------------------------------------ |
+| `TELEGRAM_BOT_TOKEN`                      | HITL inline com botões no Telegram               |
+| `EVOLUTION_API_URL` + `EVOLUTION_API_KEY` | Canal WhatsApp via Evolution API                 |
+| `GOOGLE_MAPS_API_KEY`                     | Prospecção por categoria e região                |
+| `CALCOM_API_KEY`                          | Agendamento de reuniões (Cal.com)                |
+| `HEYGEN_API_KEY`                          | Tutoriais em vídeo personalizados para clientes  |
+| `SETTINGS_ENCRYPTION_KEY`                 | Criptografia de credenciais armazenadas no banco |
+
+### Passo 3 — Verificar pré-requisitos
+
+```bash
+npm run check
+```
+
+Valida: Node.js ≥ 22, Docker em execução, Python 3.12+, `.env` preenchido corretamente, chaves JWT válidas, e pelo menos 1 LLM configurado.
+
+### Passo 4 — Iniciar o sistema
+
+```bash
 npm run init
 ```
 
-**O que o Inicializador (`scripts/init.js`) faz por baixo dos panos?**
+O inicializador executa automaticamente:
 
-1. **Pre-flight Checks**: Valida se o Docker está em execução e cria seu arquivo `.env` padrão caso não exista.
-2. **Infra Bootstrap**: Sobe todos os contêineres vitais (`docker compose up -d`) em background.
-3. **Health Checks**: Realiza _polling_ nativo e seguro para garantir que o banco de dados PostgreSQL esteja aceitando conexões antes de prosseguir.
-4. **Data Sync**: Dispara silenciosamente o `npm run db:push` no contexto da API para sincronizar as migrations.
-5. **Diagnóstico Proativo**: Intercepta erros comuns. Por exemplo, se o WSL não tiver suporte a NVIDIA GPUs e o _Ollama_ falhar, ou se a porta `5432` já estiver em uso, o script abortará informando exatamente como consertar em português claro.
-6. **Live Attach**: Finalizado o setup, ele automaticamente levanta todo o projeto (`npm run dev`) e acopla a saída no mesmo terminal.
+1. Valida Docker e `.env` (aborta com diagnóstico se algo estiver errado)
+2. Sobe todos os containers Docker em background
+3. Aguarda PostgreSQL ficar pronto (healthcheck com polling de 2s × 30)
+4. Aplica migrations de banco de dados
+5. Inicia todos os dev servers via Turbo
+6. Exibe as URLs de acesso
 
-### 3. Configurando suas Integrações via Settings Hub
+### Passo 5 — Acessar o sistema
 
-Com o projeto rodando (`npm run dev` ativado pelo inicializador), acesse seus painéis locais:
-
-- 💻 **Dashboard CRM (Next.js)**: `http://localhost:3000`
-- ⚙️ **API Gateway (Fastify)**: `http://localhost:3001`
-- 🤖 **Agent Runtime (FastAPI)**: `http://localhost:8001`
-
-**Como plugar a Inteligência Artificial?**
-
-1. Acesse o painel web em `http://localhost:3000/settings`.
-2. Utilize a aba **AI Providers** para ativar e colar chaves de APIs.
-3. Na seção **Ollama**, puxe modelos locais (ex: `llama3`) com 1-clique na interface.
-4. Configure canais de mensageria (WhatsApp) e integrações MCP.
+| Serviço          | URL                        |
+| ---------------- | -------------------------- |
+| 💻 Dashboard CRM | http://localhost:3000      |
+| ⚙️ API Fastify   | http://localhost:3001      |
+| 🤖 Agent Runtime | http://localhost:8001/docs |
+| 📊 Grafana       | http://localhost:3333      |
+| 🔍 Jaeger UI     | http://localhost:16686     |
 
 ---
 
-## 🧪 CI/CD e Testes Automatizados
+## Comandos do Inicializador
 
-O repositório é guardado por testes que garantem a **Imutabilidade e Segurança** dos deploys futuros.
-O repositório CI valida qualquer PR com ≥50% de cobertura Python, testes unitários de domínio Node.js, testes E2E Playwright e escaneamento SAST (CodeQL + Semgrep + Trivy). **O pipeline de CD está desativado** — deploy local via `docker compose -f infra/docker-compose.yml up -d` (ver `docs/runbooks/01_iniciar_sistema.md`).
-
-Para testar localmente na sua máquina:
+Todos os comandos rodam na raiz do projeto:
 
 ```bash
-# Executa apenas testes unitários de domínio (Rápido, sem dependência de Docker)
-npm run test:unit -w apps/api
+npm run init       # Inicia todo o sistema (Docker + migrations + dev servers)
+npm run stop       # Para containers Docker com segurança (dados preservados nos volumes)
+npm run restart    # Para e reinicia tudo
+npm run check      # Valida pré-requisitos sem iniciar nada (ideal para diagnóstico)
+npm run status     # Mostra containers e portas em tempo real
+npm run dev        # Apenas dev servers, sem subir infra (use quando Docker já está rodando)
+```
 
-# Executa testes de integração (Exige DB, Redis e infra rodando via Docker)
-npm run test:integration -w apps/api
+### Exemplo: `npm run check`
 
-# Executa cirurgicamente os testes de cibersegurança e Bypass Validation
-npm run test:security -w apps/api
+```
+──────────────────────────────────────────────────────────────────────
+  AgentePro — Verificação de Pré-Requisitos
+──────────────────────────────────────────────────────────────────────
 
-# Executa testes unitários nas habilidades da Inteligência Artificial
-cd apps/agent-runtime
-python -m pytest tests/
+[1/7] Node.js
+[✔]    Node.js v22.14.0
+
+[2/7] Docker
+[✔]    Docker version 27.x.x, build xxxxxxx
+[✔]    Docker Compose version v2.x.x
+
+[3/7] Python
+[✔]    Python 3.12.7
+
+[4/7] Arquivo .env
+[✔]    .env encontrado e carregado.
+
+[5/7] Variáveis obrigatórias
+[✔]    DATABASE_URL = postgresql://agentepro:...
+[✔]    JWT_PRIVATE_KEY = -----BEGIN PRIVATE KE...
+
+[6/7] Provedores LLM
+[✔]    LLMs ativos: Anthropic, Google
+
+[7/7] Integrações opcionais
+[✔]    TELEGRAM_BOT_TOKEN — HITL Telegram
+[AVISO] CALCOM_API_KEY — Agendamento Cal.com (não configurado)
+
+[✔]    Todos os pré-requisitos críticos satisfeitos. Pronto para: npm run init
+```
+
+### Exemplo: `npm run stop`
+
+```bash
+npm run stop
+# [✔]    Containers parados. Dados preservados nos volumes Docker.
+
+# Para destruir os dados completamente (reset total):
+docker compose -f infra/docker-compose.yml down -v
+```
+
+### Exemplo: `npm run status`
+
+```
+  ●  Web (Next.js)          http://localhost:3000
+  ●  API (Fastify)          http://localhost:3001
+  ●  Agent Runtime          http://localhost:8001
+  ●  PostgreSQL             http://localhost:5432
+  ●  Redis                  http://localhost:6379
+  ○  ChromaDB               (offline)
 ```
 
 ---
 
-## ⚖️ Licença
+## Configuração JWT
 
-Copyright (c) 2026 AgentePro / ProspectFlow AI
+Gere o par de chaves RSA e adicione ao `.env`:
 
-Este projeto é disponibilizado sob uma **Licença Proprietária de Uso Restrito**.
+```bash
+# Gerar chave privada RSA 2048 bits
+openssl genpkey -algorithm RSA -out jwt.key -pkeyopt rsa_keygen_bits:2048
 
-**O QUE VOCÊ PODE FAZER:**
-Você está livre para usar o sistema para automatizar suas próprias vendas, prospectar clientes para o seu negócio e, dessa forma, gerar lucro. Integrações e extensões próprias são permitidas e incentivadas.
+# Extrair chave pública
+openssl rsa -in jwt.key -pubout -out jwt.pub
 
-**O QUE É ESTRITAMENTE PROIBIDO:**
-A **comercialização do sistema em si** é estritamente proibida. Você **não pode** vender o código, alugá-lo, distribuí-lo como produto pago, ou empacotar e oferecer o sistema como um serviço hospedado para terceiros (SaaS - Software as a Service) sem permissão explícita e prévia.
+# Ver para copiar (cole no .env com \n escapados)
+cat jwt.key
+cat jwt.pub
+```
+
+No `.env`:
+
+```dotenv
+JWT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvgIBADA...\n-----END PRIVATE KEY-----"
+JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBg...\n-----END PUBLIC KEY-----"
+```
+
+---
+
+## Testes
+
+```bash
+# Unitários de domínio — rápido, sem Docker
+npm run test:unit -w @agentepro/api
+
+# Integração com Testcontainers — requer Docker
+npm run test:integration -w @agentepro/api
+
+# Segurança (bypass, injection, autenticação)
+npm run test:security -w @agentepro/api
+
+# Python — orchestrator, builder, agentes, LLM routing
+cd apps/agent-runtime && python -m pytest tests/ -v
+
+# E2E Playwright — requer sistema rodando (npm run init)
+cd apps/web && npx playwright test
+```
+
+**CI (GitHub Actions):** Lint ✅ · Typecheck ✅ · Unit Tests (102) ✅ · Build ✅ · Agent Runtime ✅
+E2E: `continue-on-error` — ver [roadmap](#limitações-e-roadmap).
+
+---
+
+## Limitações e Roadmap
+
+### 1. Orchestrator sem persistência de estado entre restarts
+
+**Situação atual:** O `OrchestratorAgent` (Python) armazena `retry_counts` em memória. Um restart do processo limpa o histórico de tentativas dos estados `BUILDING`, `DESIGNING` e `QA`.
+
+**Impacto:** Após restart, o Orchestrator pode tentar mais vezes do que o limite definido (3x para BUILDING, 2x para DESIGNING). Aceitável no MVP onde restarts são raros.
+
+**Solução planejada (sem nova infra):** Persistir o estado em Redis (já presente na stack) com TTL de 24h:
+
+```python
+# apps/agent-runtime/src/agents/orchestrator/agent.py
+async def record_retry(self, state_name: str) -> None:
+    key = f"orchestrator:{self.payload.get('project_id', self.agent_id)}"
+    async with aioredis.from_url(self.redis_url) as r:
+        await r.hincrby(key, state_name, 1)
+        await r.expire(key, 86400)  # auto-limpa após 24h
+
+async def can_retry(self, state_name: str) -> bool:
+    key = f"orchestrator:{self.payload.get('project_id', self.agent_id)}"
+    async with aioredis.from_url(self.redis_url) as r:
+        count = int(await r.hget(key, state_name) or 0)
+    return count < _RETRY_LIMITS.get(state_name, 999)
+```
+
+### 2. E2E tests não bloqueiam CI
+
+**Situação atual:** O job `test-e2e` usa `continue-on-error: true` porque a stack completa (API + DB + Redis + Web) não sobe nos runners do GitHub Actions.
+
+**Solução planejada:** Usar `services:` nativos do GitHub Actions:
+
+```yaml
+# .github/workflows/ci.yml
+test-e2e:
+  services:
+    postgres:
+      image: postgres:16-alpine
+      env:
+        {
+          POSTGRES_USER: test,
+          POSTGRES_PASSWORD: test,
+          POSTGRES_DB: agentepro_test,
+        }
+      options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    redis:
+      image: redis:7-alpine
+      options: --health-cmd "redis-cli ping" --health-interval 5s
+  steps:
+    - run: npm run db:migrate
+    - run: npm run dev &
+    - run: npx wait-on http://localhost:3001/api/v1/health
+    - run: npx playwright test
+```
+
+Resultado: remove `continue-on-error`, E2E bloqueia merge em falha. Custo: ~3 minutos a mais por run.
+
+---
+
+## Estrutura de Diretórios
+
+```
+apps/
+  api/src/
+    domain/         Entidades, Value Objects, Events, Ports (interfaces)
+    application/    Use Cases, Commands, Queries, Handlers
+    infrastructure/ DB (Drizzle), Queue (BullMQ), LLM router, Deploy, Metrics
+    http/           Routes, Middleware, Schemas (Fastify)
+  agent-runtime/src/
+    agents/         orchestrator/ hunter/ closer/ briefing/ builder/ qa/ delivery/
+    config/         llm_routing.py — mapa de 24 sub-agentes para modelos LLM
+    skills/         google_maps, cnpj_lookup, email_sender, whatsapp_sender...
+    rag/            ChromaDB + Ollama nomic-embed-text
+  web/src/
+    app/            Next.js App Router — (dashboard)/ e (auth)/
+    components/     shadcn/ui + PaginationControls + componentes customizados
+    hooks/          usePagination, useAuthStore
+    lib/            api client, stores (Zustand)
+infra/
+  docker-compose.yml      Stack local completa
+  grafana/dashboards/     6 dashboards JSON provisionados
+scripts/
+  init.js                 Inicializador (start | stop | restart | check | status)
+docs/
+  PRD_AgentePro_v2.md     Product Requirements Document (fonte da verdade)
+  adr/                    Architecture Decision Records
+  specs/                  Especificações por módulo (00–11)
+```
+
+---
+
+## Licença
+
+Copyright (c) 2026 AgentePro / ProspectFlow AI — Licença Proprietária de Uso Restrito.
+
+**Permitido:** Usar o sistema para automatizar as suas próprias vendas e prospecção de clientes.
+
+**Proibido:** Vender, alugar, distribuir o código ou oferecê-lo como SaaS para terceiros sem autorização explícita e prévia.
