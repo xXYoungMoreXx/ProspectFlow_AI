@@ -33,13 +33,15 @@ def test_qa_failed_retries_building():
 
 def test_retry_limit_building():
     orch = OrchestratorAgent("a1", "op1", {})
-    orch._retry_counts["BUILDING"] = 3
+    for _ in range(3):
+        orch.record_retry("BUILDING")
     assert orch.can_retry("BUILDING") is False
 
 
 def test_retry_limit_designing():
     orch = OrchestratorAgent("a1", "op1", {})
-    orch._retry_counts["DESIGNING"] = 2
+    for _ in range(2):
+        orch.record_retry("DESIGNING")
     assert orch.can_retry("DESIGNING") is False
 
 
@@ -53,5 +55,5 @@ def test_record_retry_increments():
     orch = OrchestratorAgent("a1", "op1", {})
     orch.record_retry("BUILDING")
     orch.record_retry("BUILDING")
-    assert orch._retry_counts["BUILDING"] == 2
+    assert orch._get_count("BUILDING") == 2
     assert orch.can_retry("BUILDING") is True
