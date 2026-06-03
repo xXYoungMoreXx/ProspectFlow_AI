@@ -23,7 +23,11 @@ describe("DrizzleLeadRepository (integration)", () => {
 
   /** Helper: create and save a minimal lead, returning the domain object. */
   async function createLead(
-    overrides: Partial<{ name: string; email: string; source: "MANUAL" | "SCRAPED" | "REFERRAL" }> = {},
+    overrides: Partial<{
+      name: string;
+      email: string;
+      source: "MANUAL" | "SCRAPED" | "REFERRAL";
+    }> = {},
   ): Promise<Lead> {
     const result = Lead.create({
       id: randomUUID(),
@@ -56,7 +60,10 @@ describe("DrizzleLeadRepository (integration)", () => {
   // ── findById ───────────────────────────────────────────────────────────────
 
   it("saves and retrieves a lead by id", async () => {
-    const lead = await createLead({ name: "Widgets Inc", email: "hello@widgets.com" });
+    const lead = await createLead({
+      name: "Widgets Inc",
+      email: "hello@widgets.com",
+    });
 
     const found = await leadRepo.findById(lead.id, operatorId);
 
@@ -161,7 +168,10 @@ describe("DrizzleLeadRepository (integration)", () => {
     await createLead({ name: "Still New" });
 
     const newLeads = await leadRepo.findMany({ operatorId, status: "NEW" });
-    const qualifiedLeads = await leadRepo.findMany({ operatorId, status: "QUALIFIED" });
+    const qualifiedLeads = await leadRepo.findMany({
+      operatorId,
+      status: "QUALIFIED",
+    });
 
     expect(newLeads.leads.every((l) => l.status === "NEW")).toBe(true);
     expect(qualifiedLeads.leads.some((l) => l.id === lead.id)).toBe(true);
@@ -175,7 +185,9 @@ describe("DrizzleLeadRepository (integration)", () => {
     const results = await leadRepo.findMany({ operatorId, search: "acme" });
 
     expect(results.leads).toHaveLength(2);
-    expect(results.leads.every((l) => l.contact.name.toLowerCase().includes("acme"))).toBe(true);
+    expect(
+      results.leads.every((l) => l.contact.name.toLowerCase().includes("acme")),
+    ).toBe(true);
   });
 
   // ── Domain transitions ────────────────────────────────────────────────────

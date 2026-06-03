@@ -22,7 +22,9 @@ describe("DrizzleDealRepository (integration)", () => {
   let leadId: string;
 
   /** Helper: create and save a minimal deal, returning the domain object. */
-  async function createDeal(overrides: Partial<{ basePriceCents: number }> = {}): Promise<Deal> {
+  async function createDeal(
+    overrides: Partial<{ basePriceCents: number }> = {},
+  ): Promise<Deal> {
     const result = Deal.create({
       id: randomUUID(),
       leadId,
@@ -166,8 +168,14 @@ describe("DrizzleDealRepository (integration)", () => {
     deal.cancel("Teste de filtro");
     await dealRepo.save(deal);
 
-    const proposed = await dealRepo.findMany({ operatorId, status: "PROPOSED" });
-    const cancelled = await dealRepo.findMany({ operatorId, status: "CANCELLED" });
+    const proposed = await dealRepo.findMany({
+      operatorId,
+      status: "PROPOSED",
+    });
+    const cancelled = await dealRepo.findMany({
+      operatorId,
+      status: "CANCELLED",
+    });
 
     expect(proposed.deals.every((d) => d.status === "PROPOSED")).toBe(true);
     expect(cancelled.deals.some((d) => d.id === deal.id)).toBe(true);

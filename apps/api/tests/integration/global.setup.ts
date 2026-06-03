@@ -7,7 +7,10 @@
  * Usage in vitest config:
  *   setupFiles: ["src/test/integration/global.setup.ts"]
  */
-import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
+import {
+  PostgreSqlContainer,
+  type StartedPostgreSqlContainer,
+} from "@testcontainers/postgresql";
 import { GenericContainer, type StartedTestContainer } from "testcontainers";
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
@@ -47,7 +50,10 @@ beforeAll(async () => {
   const db = drizzle(client, { schema });
 
   // Run migrations — path must match drizzle.config.ts `out` field
-  const migrationsFolder = path.resolve(__dirname, "../../infrastructure/db/migrations");
+  const migrationsFolder = path.resolve(
+    __dirname,
+    "../../infrastructure/db/migrations",
+  );
   await migrate(db, { migrationsFolder });
 
   // ── Redis ──────────────────────────────────────────────────────────────────
@@ -85,7 +91,12 @@ afterAll(async () => {
 
 /** Retrieves the shared integration test context. */
 export function getIntegrationContext(): IntegrationTestContext {
-  const ctx = (globalThis as any).__INTEGRATION_CTX__ as IntegrationTestContext | undefined;
-  if (!ctx) throw new Error("Integration context not initialized. Is setupFiles configured?");
+  const ctx = (globalThis as any).__INTEGRATION_CTX__ as
+    | IntegrationTestContext
+    | undefined;
+  if (!ctx)
+    throw new Error(
+      "Integration context not initialized. Is setupFiles configured?",
+    );
   return ctx;
 }
