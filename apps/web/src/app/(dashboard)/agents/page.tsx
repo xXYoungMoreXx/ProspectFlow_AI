@@ -136,43 +136,42 @@ export default function AgentsPage() {
             const StatusIcon = status.icon;
 
             return (
-              <Card
-                key={agent.id}
-                className="group hover:shadow-lg hover:border-primary/30 transition-all duration-300 cursor-pointer"
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base font-semibold group-hover:text-primary transition-colors">
-                        {agent.name}
-                      </CardTitle>
-                      <CardDescription className="text-xs">
-                        {agent.llmConfig?.model || "No model configured"}
-                      </CardDescription>
+              <Link key={agent.id} href={"/agents/" + agent.id}>
+                <Card className="group hover:shadow-lg hover:border-primary/30 transition-all duration-300 cursor-pointer">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <CardTitle className="text-base font-semibold group-hover:text-primary transition-colors">
+                          {agent.name}
+                        </CardTitle>
+                        <CardDescription className="text-xs">
+                          {agent.llmConfig?.model || "No model configured"}
+                        </CardDescription>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] ${persona.color}`}
+                      >
+                        {persona.label}
+                      </Badge>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={`text-[10px] ${persona.color}`}
-                    >
-                      {persona.label}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <Badge
-                      variant="outline"
-                      className={`gap-1 ${status.color}`}
-                    >
-                      <StatusIcon className="w-3 h-3" />
-                      {agent.status}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {agent.skills?.length || 0} skills
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <Badge
+                        variant="outline"
+                        className={`gap-1 ${status.color}`}
+                      >
+                        <StatusIcon className="w-3 h-3" />
+                        {agent.status}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {agent.skills?.length || 0} skills
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             );
           })}
         </div>

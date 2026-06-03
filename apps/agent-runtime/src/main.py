@@ -211,6 +211,67 @@ async def execute_task(request: TaskRequest):
                 result={"audit_report": raw_result},
                 correlation_id=request.correlation_id,
             )
+        elif domain == "briefing":
+            from crewai import Crew
+
+            business_name = request.payload.get("businessName", "o negócio")
+            niche = request.payload.get("niche", "generic")
+            contact_name = request.payload.get("contactName", "cliente")
+
+            if action == "interview":
+                from src.agents.briefing.agent import BriefingInterviewerAgent
+                from src.agents.briefing.tasks import create_interview_task
+
+                interviewer = BriefingInterviewerAgent(request.agent_id, request.correlation_id, request.payload)
+                agent_instance = interviewer.build()
+                task = create_interview_task(agent_instance, business_name, niche, contact_name)
+
+            elif action == "extract":
+                from src.agents.briefing.agent import BriefingExtractorAgent
+                from src.agents.briefing.tasks import create_extract_task
+
+                transcript = request.payload.get("transcript", "")
+                extractor = BriefingExtractorAgent(request.agent_id, request.correlation_id, request.payload)
+                agent_instance = extractor.build()
+                task = create_extract_task(agent_instance, business_name, niche, transcript)
+
+            else:
+                raise HTTPException(status_code=400, detail=f"Unknown briefing action: {action}")
+
+            crew = Crew(agents=[agent_instance], tasks=[task], verbose=True)
+            output = crew.kickoff()
+            raw_result = str(output)
+
+            agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+            agent_sessions_total.labels(persona=persona, status="completed").inc()
+            return TaskResponse(
+                status="completed",
+                result={"raw_output": raw_result},
+                correlation_id=request.correlation_id,
+            )
+
+        elif domain == "delivery":
+            from src.agents.delivery.agent import DeliveryAgent
+
+            delivery = DeliveryAgent(request.agent_id, request.correlation_id, request.payload)
+            result_data = await delivery.deliver()
+
+            if result_data.get("status") == "failed":
+                agent_sessions_total.labels(persona=persona, status="failed").inc()
+                return TaskResponse(
+                    status="failed",
+                    error=result_data.get("error", "delivery failed"),
+                    correlation_id=request.correlation_id,
+                )
+
+            agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+            agent_sessions_total.labels(persona=persona, status="completed").inc()
+            return TaskResponse(
+                status="completed",
+                result=result_data,
+                correlation_id=request.correlation_id,
+            )
+
         else:
             raise HTTPException(status_code=400, detail=f"Unknown agent domain: {domain}")
 

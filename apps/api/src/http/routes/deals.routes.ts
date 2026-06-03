@@ -9,6 +9,7 @@ import {
 import { GenerateQuoteHandler } from "../../application/deal/GenerateQuoteHandler.js";
 import type { DealStatus } from "@agentepro/shared-types";
 import { CalComAdapter } from "../../infrastructure/integrations/CalComAdapter.js";
+import type { DomainError } from "../../domain/shared/Result.js";
 
 export async function dealRoutes(app: FastifyInstance): Promise<void> {
   app.addHook("preHandler", authMiddleware);
@@ -236,4 +237,52 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
       }
     },
   );
+
+  // POST /api/v1/deals/:id/close — operator marks deal as closed, triggers briefing
+  app.post<{ Params: { id: string } }>("/:id/close", async (request, reply) => {
+    const deal = await app.container.dealRepo.findById(
+      request.params.id,
+      request.operatorId,
+    );
+    if (!deal) {
+      return reply.status(404).send({
+        errors: [
+          {
+            code: "NOT_FOUND",
+            message: "Deal not found",
+            requestId: request.requestId,
+          },
+        ],
+      });
+    }
+
+    const result = deal.close();
+    if (result.isErr()) {
+      const e = result.error as DomainError;
+      return reply.status(409).send({
+        errors: [
+          {
+            code: e.code ?? "INVALID_STATE",
+            message: e.message,
+            requestId: request.requestId,
+          },
+        ],
+      });
+    }
+
+    await app.container.dealRepo.save(deal);
+
+    const events = deal.clearDomainEvents();
+    for (const event of events) {
+      await app.container.queue.publishEvent(event);
+    }
+
+    return reply.status(200).send({
+      data: deal.toJSON(),
+      meta: {
+        requestId: request.requestId,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  });
 }

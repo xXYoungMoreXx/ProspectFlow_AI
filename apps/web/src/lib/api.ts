@@ -107,6 +107,12 @@ export const api = {
         body: JSON.stringify(data),
         token,
       }),
+    update: (id: string, data: any, token: string) =>
+      request<{ data: any; meta: any }>(`/agents/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+        token,
+      }),
   },
 
   leads: {
@@ -142,6 +148,53 @@ export const api = {
       request<{ data: any[]; meta: any }>("/projects", { token }),
     getById: (id: string, token: string) =>
       request<{ data: any; meta: any }>(`/projects/${id}`, { token }),
+  },
+
+  briefings: {
+    list: (token: string) =>
+      request<{ data: any[]; meta: any }>("/briefings", { token }),
+    getById: (id: string, token: string) =>
+      request<{ data: any; meta: any }>(`/briefings/${id}`, { token }),
+    extract: (id: string, token: string) =>
+      request<{ data: { briefingId: string; status: string } }>(
+        `/briefings/${id}/extract`,
+        { method: "POST", body: JSON.stringify({}), token },
+      ),
+    approve: (id: string, token: string) =>
+      request<{ data: any }>(`/briefings/${id}/approve`, {
+        method: "PATCH",
+        body: JSON.stringify({}),
+        token,
+      }),
+  },
+
+  prospecting: {
+    searchMaps: (
+      data: {
+        categories: string[];
+        region: { city: string; state: string; radiusKm: number };
+        minScore?: number;
+        limit?: number;
+      },
+      token: string,
+    ) =>
+      request<{ data: any; meta: any }>("/prospecting/search-maps", {
+        method: "POST",
+        body: JSON.stringify(data),
+        token,
+      }),
+    queue: (token: string) =>
+      request<{ data: { leads: any[] }; meta: any }>("/prospecting/queue", {
+        token,
+      }),
+    getConfig: (token: string) =>
+      request<{ data: any }>("/prospecting/config", { token }),
+    updateConfig: (data: any, token: string) =>
+      request<{ data: any }>("/prospecting/config", {
+        method: "PATCH",
+        body: JSON.stringify(data),
+        token,
+      }),
   },
 
   hitl: {

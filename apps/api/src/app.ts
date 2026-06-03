@@ -19,9 +19,11 @@ import { uploadRoutes } from "./http/routes/upload.routes.js";
 import { settingsRoutes } from "./http/routes/settings.routes.js";
 import { prospectingRoutes } from "./http/routes/prospecting.routes.js";
 import { briefingRoutes } from "./http/routes/briefings.routes.js";
+import { mediaRoutes } from "./http/routes/media.routes.js";
 import { whatsappWebhookRoutes } from "./http/routes/whatsapp.webhook.routes.js";
 import { telegramSalesRoutes } from "./http/routes/telegram.sales.routes.js";
 import { costsRoutes } from "./http/routes/costs.routes.js";
+import { internalHeyGenRoutes } from "./http/routes/internal/heygen.routes.js";
 import { errorHandler } from "./http/middleware/errorHandler.js";
 import { requestIdHook } from "./http/middleware/requestId.middleware.js";
 import { ssrfMiddleware } from "./http/middleware/ssrf.middleware.js";
@@ -98,6 +100,7 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
   container.emailWorker.start();
   container.followUpWorker.start();
   container.agentExecutionService.start();
+  container.domainEventRouter.start();
 
   app.addHook("onClose", async () => {
     await container.queue.close();
@@ -115,10 +118,12 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
   await app.register(settingsRoutes, { prefix: "/api/v1/settings" });
   await app.register(prospectingRoutes, { prefix: "/api/v1/prospecting" });
   await app.register(briefingRoutes, { prefix: "/api/v1/briefings" });
+  await app.register(mediaRoutes, { prefix: "/api/v1/media" });
   await app.register(whatsappWebhookRoutes, { prefix: "/webhooks" });
   await app.register(telegramSalesRoutes, { prefix: "/webhooks" });
   await app.register(costsRoutes, { prefix: "/api/v1/costs" });
   await app.register(telegramWebhookRoutes, { prefix: "/api/v1/telegram" });
+  await app.register(internalHeyGenRoutes, { prefix: "/api/v1/internal" });
 
   return app;
 }

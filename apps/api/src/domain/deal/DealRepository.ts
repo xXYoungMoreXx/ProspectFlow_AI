@@ -17,6 +17,8 @@ export interface DealListResult {
 
 export interface DealRepository {
   findById(id: string, operatorId: string): Promise<Deal | null>;
+  /** Internal use only — skips tenant check. Use for event handlers / workers. */
+  findByIdInternal(id: string): Promise<Deal | null>;
   findMany(filters: DealFilters): Promise<DealListResult>;
   save(deal: Deal): Promise<void>;
 }

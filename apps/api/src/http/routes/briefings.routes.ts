@@ -3,6 +3,7 @@ import { authMiddleware } from "../middleware/auth.middleware.js";
 import { ListBriefingsQuery } from "../../application/briefing/ListBriefingsQuery.js";
 import { GetBriefingQuery } from "../../application/briefing/GetBriefingQuery.js";
 import { ApproveBriefingUseCase } from "../../application/briefing/ApproveBriefingUseCase.js";
+import { ExtractBriefingUseCase } from "../../application/briefing/ExtractBriefingUseCase.js";
 import * as schema from "../../infrastructure/db/schema.js";
 import type { DomainError } from "../../domain/shared/Result.js";
 
@@ -206,6 +207,62 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
 
       return reply.status(201).send({
         data: row,
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    },
+  );
+
+  // POST /api/v1/briefings/:id/extract — manual fallback for operators when WhatsApp fails
+  app.post<{ Params: { id: string } }>(
+    "/:id/extract",
+    async (request, reply) => {
+      const uc = new ExtractBriefingUseCase(
+        app.container.briefingRepo,
+        app.container.redis,
+      );
+      const result = await uc.execute({
+        briefingId: request.params.id,
+        operatorId: request.operatorId,
+        correlationId: request.requestId,
+      });
+
+      if (result.isErr()) {
+        const e = result.error as DomainError;
+        return reply.status(domainErrToHttp(e.code)).send({
+          errors: [
+            { code: e.code, message: e.message, requestId: request.requestId },
+          ],
+        });
+      }
+
+      const { briefingId, transcript } = result.unwrap();
+
+      const runtimeUrl =
+        process.env["PYTHON_RUNTIME_URL"] ?? "http://localhost:8001";
+      try {
+        await fetch(`${runtimeUrl}/tasks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task_type: "briefing.extract",
+            agent_id: "system",
+            correlation_id: request.requestId,
+            payload: { briefingId, transcript },
+          }),
+          signal: AbortSignal.timeout(10_000),
+        });
+      } catch (fetchErr) {
+        request.log.warn(
+          { err: fetchErr, briefingId },
+          "briefing_extract_runtime_dispatch_failed",
+        );
+      }
+
+      return reply.status(200).send({
+        data: { briefingId, status: "queued" },
         meta: {
           requestId: request.requestId,
           timestamp: new Date().toISOString(),
