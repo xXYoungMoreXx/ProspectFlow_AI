@@ -2,6 +2,7 @@
 
 > **Status:** Sprints S5-07 a S5-10 entregues — MVP v1 funcional em localhost.
 > Branch de integração: `develop` → `main` via PR com CI obrigatório.
+> 📖 **Guia detalhado de configuração:** [SETUP.md](SETUP.md)
 
 > _"E se o seu melhor vendedor nunca dormisse, falasse todos os idiomas e qualificasse mil leads antes do seu café da manhã?"_ ☕
 
