@@ -47,6 +47,7 @@ venv/
 *.egg-info/
 .eggs/
 *.egg
+uv.lock
 
 # ─── Docker ───────────────────────────────────
 infra/data/
