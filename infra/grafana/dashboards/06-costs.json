@@ -1,0 +1,40 @@
+{
+  "title": "AgentePro — Cost Dashboard",
+  "uid": "agentepro-costs",
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Custo por Site (USD)",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(agent_tokens_consumed_total) * 0.000015 / projects_delivered_total"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Custo Acumulado Hoje (USD)",
+      "type": "stat",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 4 },
+      "targets": [
+        { "expr": "increase(agent_tokens_consumed_total[24h]) * 0.000015" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Custo/hora por Modelo",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(agent_tokens_consumed_total[1h]) * 0.000015",
+          "legendFormat": "{{provider}}"
+        }
+      ]
+    }
+  ]
+}

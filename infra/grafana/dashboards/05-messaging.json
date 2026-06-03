@@ -1,0 +1,26 @@
+{
+  "title": "AgentePro — Messaging",
+  "uid": "agentepro-messaging",
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Mensagens WhatsApp Enviadas",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "rate(messages_sent_total{channel='whatsapp'}[5m])" }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Mensagens Telegram Enviadas",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "rate(messages_sent_total{channel='telegram'}[5m])" }
+      ]
+    }
+  ]
+}

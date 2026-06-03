@@ -1,0 +1,37 @@
+{
+  "title": "AgentePro — Quality Scores",
+  "uid": "agentepro-quality",
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Lighthouse Performance (média)",
+      "type": "gauge",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 6 },
+      "targets": [
+        { "expr": "avg(project_lighthouse_score{type='performance'})" }
+      ],
+      "options": { "minVizValue": 0, "maxVizValue": 100 }
+    },
+    {
+      "id": 2,
+      "title": "Lighthouse Accessibility (média)",
+      "type": "gauge",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 6 },
+      "targets": [
+        { "expr": "avg(project_lighthouse_score{type='accessibility'})" }
+      ],
+      "options": { "minVizValue": 0, "maxVizValue": 100 }
+    },
+    {
+      "id": 3,
+      "title": "QA Pass Rate (%)",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 6 },
+      "targets": [
+        { "expr": "rate(qa_passed_total[7d]) / rate(qa_total[7d]) * 100" }
+      ]
+    }
+  ]
+}

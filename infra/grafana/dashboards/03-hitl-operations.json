@@ -1,0 +1,24 @@
+{
+  "title": "AgentePro — HITL Operations",
+  "uid": "agentepro-hitl",
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "HITL Pendentes por Tipo",
+      "type": "bargauge",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "hitl_pending_total", "legendFormat": "{{action_type}}" }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Tempo Médio de Aprovação (min)",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [{ "expr": "avg(hitl_approval_duration_seconds) / 60" }]
+    }
+  ]
+}
