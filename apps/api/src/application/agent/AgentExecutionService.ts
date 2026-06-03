@@ -170,26 +170,39 @@ export class AgentExecutionService {
         );
       }
 
-      // 6b. Post-process: save mockup from builder.design completion
-      if (payload.taskType === "builder.design" && this.projectRepo) {
-        const mockupHtml = result.result?.mockup_html as string | undefined;
-        const mockupUrl =
-          (result.result?.mockup_url as string | undefined) ?? "";
-        const projectId = result.result?.project_id as string | undefined;
-
+      // Post-process: builder.design completed → save mockup to project for HITL APPROVE_MOCKUP
+      if (
+        payload.taskType === "builder.design" &&
+        result.status === "completed" &&
+        this.projectRepo
+      ) {
+        const r = result.result as Record<string, unknown> | null;
+        const mockupHtml = r?.mockup_html as string | undefined;
+        const mockupUrl = (r?.mockup_url as string | undefined) ?? "";
+        const projectId = payload.projectId as string | undefined;
         if (mockupHtml && projectId) {
           const project = await this.projectRepo.findById(
             projectId,
-            payload.operatorId,
+            payload.operatorId as string,
           );
           if (project) {
             project.storeMockup(mockupHtml, mockupUrl);
             await this.projectRepo.save(project);
-            console.info(
-              `[AgentExecutionService] builder.design mockup saved — projectId=${projectId} correlationId=${payload.correlationId}`,
-            );
           }
         }
+      }
+
+      // Post-process: builder.generate completed → store artifact + HITL APPROVE_STAGING
+      if (
+        payload.taskType === "builder.generate" &&
+        result.status === "completed" &&
+        this.hitlRepo &&
+        this.projectRepo
+      ) {
+        await this.createBuilderStagingHITL(
+          payload,
+          result.result as { html?: string; previewUrl?: string } | null,
+        );
       }
 
       // 7. Update job progress for observability
@@ -308,5 +321,52 @@ export class AgentExecutionService {
     console.info(
       `[AgentExecutionService] Hunter persisted ${savedLeadIds.length} leads for operator=${operatorId}`,
     );
+  }
+
+  private async createBuilderStagingHITL(
+    payload: AgentTaskPayload,
+    builderResult: { html?: string; previewUrl?: string } | null,
+  ): Promise<void> {
+    const projectId = payload.metadata?.["projectId"] as string | undefined;
+    if (!projectId || !this.projectRepo || !this.hitlRepo) return;
+
+    const project = await this.projectRepo.findById(
+      projectId,
+      payload.operatorId,
+    );
+    if (!project) {
+      console.warn(
+        `[AgentExecutionService] builder.generate: project ${projectId} not found, skipping HITL`,
+      );
+      return;
+    }
+
+    if (builderResult?.html) {
+      project.storeBuildArtifact(builderResult.html);
+      await this.projectRepo.save(project);
+    }
+
+    const hitlResult = HITLApproval.create({
+      id: ulid(),
+      operatorId: payload.operatorId,
+      agentId: payload.agentId,
+      hitlLevel: HITLLevel.HITL_1,
+      actionType: HITLActionType.APPROVE_STAGING,
+      contextType: "PROJECT",
+      contextId: projectId,
+      payloadPreview: {
+        projectId,
+        sitePreviewUrl: builderResult?.previewUrl ?? null,
+        buildCompletedAt: new Date().toISOString(),
+      },
+      timeoutMinutes: HITLTimeouts[HITLActionType.APPROVE_STAGING],
+    });
+
+    if (hitlResult.isOk()) {
+      await this.hitlRepo.save(hitlResult.value);
+      console.info(
+        `[AgentExecutionService] HITL APPROVE_STAGING created for project=${projectId}`,
+      );
+    }
   }
 }

@@ -1,8 +1,11 @@
 import type { FastifyInstance } from "fastify";
 import { authMiddleware } from "../middleware/auth.middleware.js";
-import { eq, desc } from "drizzle-orm";
+import { ListBriefingsQuery } from "../../application/briefing/ListBriefingsQuery.js";
+import { GetBriefingQuery } from "../../application/briefing/GetBriefingQuery.js";
+import { ApproveBriefingUseCase } from "../../application/briefing/ApproveBriefingUseCase.js";
+import { ExtractBriefingUseCase } from "../../application/briefing/ExtractBriefingUseCase.js";
 import * as schema from "../../infrastructure/db/schema.js";
-import { DrizzleBriefingRepository } from "../../infrastructure/db/repositories/DrizzleBriefingRepository.js";
+import type { DomainError } from "../../domain/shared/Result.js";
 
 const MAX_ASSET_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_ASSET_MIME = new Set([
@@ -12,37 +15,37 @@ const ALLOWED_ASSET_MIME = new Set([
   "image/svg+xml",
 ]);
 
-// Magic bytes for image validation
-const MAGIC_BYTES: Array<{ mime: string; bytes: number[]; offset?: number }> = [
+const MAGIC_BYTES: Array<{ mime: string; bytes: number[] }> = [
   { mime: "image/jpeg", bytes: [0xff, 0xd8, 0xff] },
   { mime: "image/png", bytes: [0x89, 0x50, 0x4e, 0x47] },
-  { mime: "image/webp", bytes: [0x52, 0x49, 0x46, 0x46], offset: 0 }, // RIFF header
-  { mime: "image/svg+xml", bytes: [] }, // SVG is text, skip magic check
+  { mime: "image/webp", bytes: [0x52, 0x49, 0x46, 0x46] },
+  { mime: "image/svg+xml", bytes: [] },
 ];
 
 function validateMagicBytes(buffer: Buffer, declaredMime: string): boolean {
-  if (declaredMime === "image/svg+xml") return true; // SVG = XML text, skip
+  if (declaredMime === "image/svg+xml") return true;
   const magic = MAGIC_BYTES.find((m) => m.mime === declaredMime);
   if (!magic || magic.bytes.length === 0) return false;
   return magic.bytes.every((b, i) => buffer[i] === b);
 }
 
+function domainErrToHttp(code: string): number {
+  if (code === "NOT_FOUND") return 404;
+  if (code === "CONFLICT") return 409;
+  if (code === "VALIDATION_ERROR") return 422;
+  if (code === "INVALID_STATE") return 409;
+  return 422;
+}
+
 export async function briefingRoutes(app: FastifyInstance): Promise<void> {
   app.addHook("preHandler", authMiddleware);
 
-  const getBriefingRepo = () => new DrizzleBriefingRepository(app.container.db);
-
   // GET /api/v1/briefings
   app.get("/", async (request, reply) => {
-    const rows = await app.container.db
-      .select()
-      .from(schema.briefings)
-      .where(eq(schema.briefings.operatorId, request.operatorId))
-      .orderBy(desc(schema.briefings.createdAt))
-      .limit(50);
-
+    const query = new ListBriefingsQuery(app.container.briefingRepo);
+    const result = await query.execute({ operatorId: request.operatorId });
     return reply.status(200).send({
-      data: rows,
+      data: result.unwrap(),
       meta: {
         requestId: request.requestId,
         timestamp: new Date().toISOString(),
@@ -52,21 +55,21 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
 
   // GET /api/v1/briefings/:id
   app.get<{ Params: { id: string } }>("/:id", async (request, reply) => {
-    const repo = getBriefingRepo();
-    const briefing = await repo.findById(request.params.id, request.operatorId);
-    if (!briefing) {
-      return reply.status(404).send({
+    const query = new GetBriefingQuery(app.container.briefingRepo);
+    const result = await query.execute({
+      id: request.params.id,
+      operatorId: request.operatorId,
+    });
+    if (result.isErr()) {
+      const e = result.error as DomainError;
+      return reply.status(domainErrToHttp(e.code)).send({
         errors: [
-          {
-            code: "NOT_FOUND",
-            message: "Briefing not found",
-            requestId: request.requestId,
-          },
+          { code: e.code, message: e.message, requestId: request.requestId },
         ],
       });
     }
     return reply.status(200).send({
-      data: briefing.toJSON(),
+      data: result.unwrap(),
       meta: {
         requestId: request.requestId,
         timestamp: new Date().toISOString(),
@@ -74,61 +77,29 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
     });
   });
 
-  // PATCH /api/v1/briefings/:id/approve — emits BriefingApproved and triggers Builder
+  // PATCH /api/v1/briefings/:id/approve
   app.patch<{ Params: { id: string } }>(
     "/:id/approve",
     async (request, reply) => {
-      const repo = getBriefingRepo();
-      const briefing = await repo.findById(
-        request.params.id,
-        request.operatorId,
+      const uc = new ApproveBriefingUseCase(
+        app.container.briefingRepo,
+        app.container.queue,
       );
-      if (!briefing) {
-        return reply.status(404).send({
-          errors: [
-            {
-              code: "NOT_FOUND",
-              message: "Briefing not found",
-              requestId: request.requestId,
-            },
-          ],
-        });
-      }
-
-      const result = briefing.approve();
+      const result = await uc.execute({
+        briefingId: request.params.id,
+        operatorId: request.operatorId,
+        correlationId: request.requestId,
+      });
       if (result.isErr()) {
-        return reply.status(409).send({
+        const e = result.error as DomainError;
+        return reply.status(domainErrToHttp(e.code)).send({
           errors: [
-            {
-              code: "INVALID_STATE",
-              message: result.error.message,
-              requestId: request.requestId,
-            },
+            { code: e.code, message: e.message, requestId: request.requestId },
           ],
         });
       }
-
-      await repo.save(briefing);
-
-      // Publish BriefingApproved event — triggers Builder agent
-      const events = briefing.clearDomainEvents();
-      for (const event of events) {
-        await app.container.queue.publishEvent(event);
-      }
-
-      // Dispatch builder task
-      await app.container.queue.enqueueAgentTask(
-        "builder.generate",
-        {
-          briefingId: briefing.id,
-          dealId: briefing.dealId,
-          briefingData: briefing.briefingData,
-        },
-        request.requestId,
-      );
-
       return reply.status(200).send({
-        data: briefing.toJSON(),
+        data: result.unwrap(),
         meta: {
           requestId: request.requestId,
           timestamp: new Date().toISOString(),
@@ -141,12 +112,12 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
   app.post<{ Params: { id: string } }>(
     "/:id/assets",
     async (request, reply) => {
-      const repo = getBriefingRepo();
-      const briefing = await repo.findById(
-        request.params.id,
-        request.operatorId,
-      );
-      if (!briefing) {
+      const getQuery = new GetBriefingQuery(app.container.briefingRepo);
+      const found = await getQuery.execute({
+        id: request.params.id,
+        operatorId: request.operatorId,
+      });
+      if (found.isErr()) {
         return reply.status(404).send({
           errors: [
             {
@@ -163,8 +134,7 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
         mimeType?: string;
         storageRef?: string;
         sizeBytes?: number;
-        // base64 content for magic bytes check
-        content?: string;
+        content?: string; // base64 for magic bytes check
       };
 
       if (
@@ -183,7 +153,6 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
           ],
         });
       }
-
       if (body.sizeBytes > MAX_ASSET_SIZE) {
         return reply.status(422).send({
           errors: [
@@ -195,7 +164,6 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
           ],
         });
       }
-
       if (!ALLOWED_ASSET_MIME.has(body.mimeType)) {
         return reply.status(422).send({
           errors: [
@@ -208,7 +176,6 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
         });
       }
 
-      // Magic bytes validation when base64 content provided
       let magicBytesValidated = body.mimeType === "image/svg+xml";
       if (body.content && !magicBytesValidated) {
         const buf = Buffer.from(body.content, "base64");
@@ -229,7 +196,7 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
       const [row] = await app.container.db
         .insert(schema.briefingAssets)
         .values({
-          briefingId: briefing.id,
+          briefingId: request.params.id,
           assetType: body.assetType as "logo" | "photo" | "document" | "other",
           mimeType: body.mimeType,
           storageRef: body.storageRef,
@@ -240,6 +207,62 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
 
       return reply.status(201).send({
         data: row,
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    },
+  );
+
+  // POST /api/v1/briefings/:id/extract — manual fallback for operators when WhatsApp fails
+  app.post<{ Params: { id: string } }>(
+    "/:id/extract",
+    async (request, reply) => {
+      const uc = new ExtractBriefingUseCase(
+        app.container.briefingRepo,
+        app.container.redis,
+      );
+      const result = await uc.execute({
+        briefingId: request.params.id,
+        operatorId: request.operatorId,
+        correlationId: request.requestId,
+      });
+
+      if (result.isErr()) {
+        const e = result.error as DomainError;
+        return reply.status(domainErrToHttp(e.code)).send({
+          errors: [
+            { code: e.code, message: e.message, requestId: request.requestId },
+          ],
+        });
+      }
+
+      const { briefingId, transcript } = result.unwrap();
+
+      const runtimeUrl =
+        process.env["PYTHON_RUNTIME_URL"] ?? "http://localhost:8001";
+      try {
+        await fetch(`${runtimeUrl}/tasks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task_type: "briefing.extract",
+            agent_id: "system",
+            correlation_id: request.requestId,
+            payload: { briefingId, transcript },
+          }),
+          signal: AbortSignal.timeout(10_000),
+        });
+      } catch (fetchErr) {
+        request.log.warn(
+          { err: fetchErr, briefingId },
+          "briefing_extract_runtime_dispatch_failed",
+        );
+      }
+
+      return reply.status(200).send({
+        data: { briefingId, status: "queued" },
         meta: {
           requestId: request.requestId,
           timestamp: new Date().toISOString(),

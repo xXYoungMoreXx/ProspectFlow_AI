@@ -15,7 +15,13 @@ export default defineConfig({
     environment: "node",
     // Default: only unit tests (no DB/Redis required)
     include: ["src/**/*.test.ts", "src/**/*.spec.ts"],
-    exclude: ["tests/integration/**", "tests/security/**", "node_modules/**"],
+    exclude: [
+      "tests/integration/**",
+      "tests/security/**",
+      "src/test/integration/**",
+      "src/test/security/**",
+      "node_modules/**",
+    ],
     hookTimeout: 10000,
     testTimeout: 15000,
     env: TEST_JWT_ENV,

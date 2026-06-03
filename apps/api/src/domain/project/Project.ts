@@ -86,14 +86,12 @@ export class Project extends AggregateRoot {
   get status(): ProjectStatus {
     return this.props.status;
   }
+  get deliverableMeta(): Record<string, unknown> {
+    return this.props.deliverableMeta;
+  }
+
   get deliverableUrl(): string | undefined {
     return this.props.deliverableUrl;
-  }
-  get mockupHtml(): string | undefined {
-    return this.props.mockupHtml;
-  }
-  get mockupUrl(): string | undefined {
-    return this.props.mockupUrl;
   }
   get lighthouse(): LighthouseScores {
     return this.props.lighthouse;
@@ -111,6 +109,23 @@ export class Project extends AggregateRoot {
   storeMockup(html: string, url: string): void {
     this.props.mockupHtml = html;
     this.props.mockupUrl = url;
+    this.props.updatedAt = new Date();
+  }
+
+  get mockupHtml(): string | undefined {
+    return this.props.mockupHtml;
+  }
+
+  get mockupUrl(): string | undefined {
+    return this.props.mockupUrl;
+  }
+
+  storeBuildArtifact(html: string): void {
+    this.props.deliverableMeta = {
+      ...this.props.deliverableMeta,
+      html,
+      builtAt: new Date().toISOString(),
+    };
     this.props.updatedAt = new Date();
   }
 

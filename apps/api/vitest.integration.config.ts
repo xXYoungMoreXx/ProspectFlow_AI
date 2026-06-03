@@ -12,13 +12,9 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: [
-      "src/test/integration/**/*.integration.test.ts",
-      "tests/**/*.test.ts",
-      "tests/**/*.spec.ts",
-    ],
+    include: ["tests/**/*.test.ts", "tests/**/*.spec.ts"],
     // Testcontainers lifecycle in same thread as tests
-    setupFiles: ["src/test/integration/global.setup.ts"],
+    setupFiles: ["tests/integration/global.setup.ts"],
     // Containers take 20-40s to start — use generous timeouts
     hookTimeout: 120_000,
     testTimeout: 60_000,

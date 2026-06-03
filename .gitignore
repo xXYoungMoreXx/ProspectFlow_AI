@@ -17,7 +17,7 @@ build/
 .env
 .env.*
 !.env.example
-secrets/
+/secrets/
 *.pem
 *.key
 *.p12
@@ -96,6 +96,8 @@ scratch_*.js
 tasks/
 # Empty placeholder created by tooling — no real content
 ARCHITECTURE.md
+# AI session planning docs — ephemeral, regenerated per session
+docs/superpowers/plans/
 
 # ─── Claude Code / AI tooling ─────────────────────────────────────────────────
 # settings.local.json is personal (local paths, tokens) — never commit

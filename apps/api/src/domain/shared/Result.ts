@@ -66,6 +66,22 @@ export function err<E>(error: E): Err<E> {
   return new Err(error);
 }
 
+export class TracedErr<E> extends Err<E> {
+  constructor(
+    error: E,
+    readonly correlationId: string,
+  ) {
+    super(error);
+  }
+}
+
+export function tracedErr<E>(error: E, correlationId: string): TracedErr<E> {
+  return new TracedErr(error, correlationId);
+}
+
+// Application-layer alias: errors always carry a correlationId for tracing
+export type DomainResult<T, E = DomainError> = Ok<T> | TracedErr<E>;
+
 // Domain-specific error types
 export class DomainError extends Error {
   constructor(
