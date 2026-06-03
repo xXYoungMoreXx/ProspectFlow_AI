@@ -8,6 +8,7 @@ from crewai import Agent, Crew, Process
 
 from src.agents.base import BaseAgentePro
 from src.agents.builder.tasks import create_build_phase_tasks, create_design_phase_tasks
+from src.config.llm_routing import get_model
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class BuilderAgent(BaseAgentePro):
             role="Copywriter Especialista em Negócios Locais",
             goal="Criar textos persuasivos, específicos e sem lorem ipsum.",
             backstory="Especialista em copywriting para PMEs brasileiras com foco em conversão.",
-            llm="claude-sonnet-4-6",
+            llm=get_model("copywriter"),
             verbose=False,
         )
 
@@ -36,7 +37,7 @@ class BuilderAgent(BaseAgentePro):
             role="Web Designer Visual Senior",
             goal="Criar mockup HTML/CSS visualmente impressionante aprovável pelo operador.",
             backstory="Designer com 10 anos em landing pages de alta conversão para pequenos negócios.",
-            llm="claude-opus-4-7",
+            llm=get_model("designer"),
             verbose=False,
         )
 
@@ -45,7 +46,7 @@ class BuilderAgent(BaseAgentePro):
             role="Image Prompt Specialist",
             goal="Criar prompts fotorrealistas para Nano Banana Pro.",
             backstory="Especialista em prompts de imagem para B2B brasileiro.",
-            llm="claude-haiku-4-5-20251001",
+            llm=get_model("content_check"),
             verbose=False,
         )
 
@@ -54,7 +55,7 @@ class BuilderAgent(BaseAgentePro):
             role="Frontend Developer Expert",
             goal="Converter mockup aprovado em HTML5 final, limpo e responsivo.",
             backstory="Desenvolvedor frontend senior especializado em HTML5 semântico e mobile-first.",
-            llm="claude-opus-4-8",
+            llm=get_model("coder"),
             verbose=False,
         )
 
@@ -63,7 +64,7 @@ class BuilderAgent(BaseAgentePro):
             role="SEO Technical Specialist",
             goal="Otimizar meta tags e schema.org para buscas locais.",
             backstory="Especialista em SEO técnico para negócios locais brasileiros.",
-            llm="claude-haiku-4-5-20251001",
+            llm=get_model("seo_optimizer"),
             verbose=False,
         )
 
@@ -72,7 +73,7 @@ class BuilderAgent(BaseAgentePro):
             role="Deploy Engineer",
             goal="Preparar artefatos de deploy para staging.",
             backstory="Engenheiro de deploy especializado em sites estáticos JAMstack.",
-            llm="claude-haiku-4-5-20251001",
+            llm=get_model("deployer"),
             verbose=False,
         )
 

@@ -50,7 +50,7 @@ class BriefingInterviewerAgent(BaseAgentePro):
                 forbidden_phrases=["eu sou uma IA", "como posso ajudar", "certamente"],
             ),
         )
-        return self.create_structured_agent(persona=persona, tools=[], use_small_model=False)
+        return self.create_structured_agent(persona=persona, tools=[], agent_role="interviewer")
 
 
 class BriefingExtractorAgent(BaseAgentePro):
@@ -85,4 +85,4 @@ class BriefingExtractorAgent(BaseAgentePro):
                 forbidden_phrases=["com base na transcrição", "aqui está o JSON"],
             ),
         )
-        return self.create_structured_agent(persona=persona, tools=[], use_small_model=True)
+        return self.create_structured_agent(persona=persona, tools=[], agent_role="brief_extractor")

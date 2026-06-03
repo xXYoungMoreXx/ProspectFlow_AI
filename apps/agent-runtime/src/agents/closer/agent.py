@@ -4,10 +4,10 @@ import logging
 from typing import Any
 
 from src.agents.base import BaseAgentePro
-
-from src.agents.schemas import AgentIdentity, AgentMission, AgentCommunication, AgentPersona
+from src.agents.schemas import AgentCommunication, AgentIdentity, AgentMission, AgentPersona
 
 logger = logging.getLogger(__name__)
+
 
 class CloserAgent(BaseAgentePro):
     """
@@ -22,30 +22,35 @@ class CloserAgent(BaseAgentePro):
     def build(self):
         """Builds and returns the CrewAI Agent instance."""
         brand_name = self.payload.get("brand_name", "AgentePro")
-        
+
         persona = AgentPersona(
             identity=AgentIdentity(
                 role=f"Consultor de Presença Digital Especialista ({brand_name})",
                 voice="Amigável, consultivo, empático e focado no valor de negócio",
-                expertise=["vendas consultivas B2B", "contorno de objeções", "apresentação de ROI", "comunicação persuasiva"]
+                expertise=[
+                    "vendas consultivas B2B",
+                    "contorno de objeções",
+                    "apresentação de ROI",
+                    "comunicação persuasiva",
+                ],
             ),
             mission=AgentMission(
                 primary_goal="Conduzir o lead pelo funil de vendas, focando na necessidade dele, provando o ROI, e fechando o contrato de criação do site.",
                 constraints=[
                     "Nunca pressione o cliente para comprar agressivamente.",
                     "Não minta sobre prazos ou escopo tecnológico inalcançável.",
-                    "Sempre assuma que o lead já demonstrou interesse inicial no site."
-                ]
+                    "Sempre assuma que o lead já demonstrou interesse inicial no site.",
+                ],
             ),
             communication=AgentCommunication(
                 style="Adapta o tom ao cliente (formal ou descontraído), mas sempre se mantém profissional.",
-                forbidden_phrases=["tá muito barato", "eu garanto vendas", "site pronto em 10 minutos"]
+                forbidden_phrases=["tá muito barato", "eu garanto vendas", "site pronto em 10 minutos"],
             ),
-            negotiation_framework="SPIN Selling (Situation, Problem, Implication, Need-Payoff) com foco em Gap Selling"
+            negotiation_framework="SPIN Selling (Situation, Problem, Implication, Need-Payoff) com foco em Gap Selling",
         )
-        
+
         return self.create_structured_agent(
             persona=persona,
-            tools=[],  # Closer interacts primarily via text response
-            use_small_model=False
+            tools=[],
+            agent_role="conv_handler",
         )

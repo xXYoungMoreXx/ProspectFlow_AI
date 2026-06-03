@@ -17,7 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Save, Loader2, Zap, Pause } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Loader2,
+  Zap,
+  Pause,
+  Bot,
+  ChevronRight,
+} from "lucide-react";
 
 const personaColors: Record<string, string> = {
   HUNTER: "bg-chart-1/10 text-chart-1 border-chart-1/20",
@@ -170,6 +178,18 @@ function AgentEditorForm({ agent, id }: { agent: AgentData; id: string }) {
           </div>
         </CardContent>
       </Card>
+
+      <Link href={`/agents/${id}/sub-agents`}>
+        <Card className="cursor-pointer hover:bg-muted/30 transition-colors">
+          <CardContent className="py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm">Sub-agentes</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </Link>
 
       {agent.skills && agent.skills.length > 0 && (
         <Card>
