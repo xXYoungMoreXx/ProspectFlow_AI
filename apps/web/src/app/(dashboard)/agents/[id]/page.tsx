@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { use, useEffect, useState } from "react";
+import { use, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { api } from "@/lib/api";
@@ -34,80 +34,41 @@ const MODEL_OPTIONS = [
   "gemini-pro",
 ];
 
-export default function AgentDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+type AgentData = NonNullable<
+  Awaited<ReturnType<typeof api.agents.getById>>["data"]
+>;
+
+function AgentEditorForm({ agent, id }: { agent: AgentData; id: string }) {
   const token = useAuthStore((s) => s.token);
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["agents", id],
-    queryFn: () => api.agents.getById(id, token!),
-    enabled: !!token,
-  });
+  const [name, setName] = useState(agent.name ?? "");
+  const [model, setModel] = useState(
+    agent.llmConfig?.model ?? "claude-sonnet-4-6",
+  );
+  const [status, setStatus] = useState(agent.status ?? "ACTIVE");
 
-  const agent = data?.data;
-
-  const [name, setName] = useState("");
-  const [model, setModel] = useState("");
-  const [status, setStatus] = useState("ACTIVE");
-  const [isDirty, setIsDirty] = useState(false);
-
-  useEffect(() => {
-    if (agent) {
-      setName(agent.name ?? "");
-      setModel(agent.llmConfig?.model ?? "claude-sonnet-4-6");
-      setStatus(agent.status ?? "ACTIVE");
-    }
-  }, [agent]);
-
-  useEffect(() => {
-    if (agent) {
-      setIsDirty(
-        name !== (agent.name ?? "") ||
-          model !== (agent.llmConfig?.model ?? "claude-sonnet-4-6") ||
-          status !== (agent.status ?? "ACTIVE"),
-      );
-    }
-  }, [name, model, status, agent]);
+  const isDirty = useMemo(
+    () =>
+      name !== (agent.name ?? "") ||
+      model !== (agent.llmConfig?.model ?? "claude-sonnet-4-6") ||
+      status !== (agent.status ?? "ACTIVE"),
+    [name, model, status, agent],
+  );
 
   const updateMutation = useMutation({
     mutationFn: () =>
       api.agents.update(
         id,
-        { name, status, llmConfig: { ...agent?.llmConfig, model } },
+        { name, status, llmConfig: { ...agent.llmConfig, model } },
         token!,
       ),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["agents"] });
       void queryClient.invalidateQueries({ queryKey: ["agents", id] });
-      setIsDirty(false);
     },
     onError: (err) => console.warn("Update failed:", err),
   });
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6 max-w-2xl mx-auto">
-        <div className="animate-pulse h-10 w-48 bg-muted rounded" />
-        <div className="animate-pulse h-64 bg-muted rounded-xl" />
-      </div>
-    );
-  }
-
-  if (!agent) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <p className="text-muted-foreground">Agent not found</p>
-        <Link href="/agents">
-          <Button variant="outline">Back to Agents</Button>
-        </Link>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto pb-10">
@@ -237,4 +198,43 @@ export default function AgentDetailPage({
       </p>
     </div>
   );
+}
+
+export default function AgentDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const token = useAuthStore((s) => s.token);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["agents", id],
+    queryFn: () => api.agents.getById(id, token!),
+    enabled: !!token,
+  });
+
+  const agent = data?.data;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto">
+        <div className="animate-pulse h-10 w-48 bg-muted rounded" />
+        <div className="animate-pulse h-64 bg-muted rounded-xl" />
+      </div>
+    );
+  }
+
+  if (!agent) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <p className="text-muted-foreground">Agent not found</p>
+        <Link href="/agents">
+          <Button variant="outline">Back to Agents</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return <AgentEditorForm agent={agent} id={id} />;
 }
