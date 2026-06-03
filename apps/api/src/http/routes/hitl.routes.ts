@@ -19,15 +19,13 @@ export async function hitlRoutes(app: FastifyInstance): Promise<void> {
   app.get("/pending", async (request, reply) => {
     const getPending = new GetPendingApprovalsHandler(app.container.hitlRepo);
     const approvals = await getPending.execute(request.operatorId);
-    return reply
-      .status(200)
-      .send({
-        data: approvals.map((a) => a.toJSON()),
-        meta: {
-          requestId: request.requestId,
-          timestamp: new Date().toISOString(),
-        },
-      });
+    return reply.status(200).send({
+      data: approvals.map((a) => a.toJSON()),
+      meta: {
+        requestId: request.requestId,
+        timestamp: new Date().toISOString(),
+      },
+    });
   });
 
   app.post<{ Params: { id: string } }>(
@@ -36,16 +34,18 @@ export async function hitlRoutes(app: FastifyInstance): Promise<void> {
     async (request, reply) => {
       const parsed = ApproveSchema.safeParse(request.body);
       if (!parsed.success)
-        return reply
-          .status(400)
-          .send({
-            errors: parsed.error.issues.map((i) => ({
-              code: "VALIDATION_ERROR",
-              message: i.message,
-              requestId: request.requestId,
-            })),
-          });
-      const approve = new ApproveHITLHandler(app.container.hitlRepo);
+        return reply.status(400).send({
+          errors: parsed.error.issues.map((i) => ({
+            code: "VALIDATION_ERROR",
+            message: i.message,
+            requestId: request.requestId,
+          })),
+        });
+      const approve = new ApproveHITLHandler(
+        app.container.hitlRepo,
+        app.container.projectRepo,
+        app.container.deploymentRouter,
+      );
       const result = await approve.execute(
         request.params.id,
         request.operatorId,
@@ -63,15 +63,13 @@ export async function hitlRoutes(app: FastifyInstance): Promise<void> {
               },
             ],
           });
-      return reply
-        .status(200)
-        .send({
-          data: result.value.toJSON(),
-          meta: {
-            requestId: request.requestId,
-            timestamp: new Date().toISOString(),
-          },
-        });
+      return reply.status(200).send({
+        data: result.value.toJSON(),
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
+      });
     },
   );
 
@@ -80,15 +78,13 @@ export async function hitlRoutes(app: FastifyInstance): Promise<void> {
     async (request, reply) => {
       const parsed = RejectSchema.safeParse(request.body);
       if (!parsed.success)
-        return reply
-          .status(400)
-          .send({
-            errors: parsed.error.issues.map((i) => ({
-              code: "VALIDATION_ERROR",
-              message: i.message,
-              requestId: request.requestId,
-            })),
-          });
+        return reply.status(400).send({
+          errors: parsed.error.issues.map((i) => ({
+            code: "VALIDATION_ERROR",
+            message: i.message,
+            requestId: request.requestId,
+          })),
+        });
       const reject = new RejectHITLHandler(app.container.hitlRepo);
       const result = await reject.execute(
         request.params.id,
@@ -107,15 +103,13 @@ export async function hitlRoutes(app: FastifyInstance): Promise<void> {
               },
             ],
           });
-      return reply
-        .status(200)
-        .send({
-          data: result.value.toJSON(),
-          meta: {
-            requestId: request.requestId,
-            timestamp: new Date().toISOString(),
-          },
-        });
+      return reply.status(200).send({
+        data: result.value.toJSON(),
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
+      });
     },
   );
 
@@ -124,15 +118,13 @@ export async function hitlRoutes(app: FastifyInstance): Promise<void> {
     async (request, reply) => {
       const parsed = EditApproveSchema.safeParse(request.body);
       if (!parsed.success)
-        return reply
-          .status(400)
-          .send({
-            errors: parsed.error.issues.map((i) => ({
-              code: "VALIDATION_ERROR",
-              message: i.message,
-              requestId: request.requestId,
-            })),
-          });
+        return reply.status(400).send({
+          errors: parsed.error.issues.map((i) => ({
+            code: "VALIDATION_ERROR",
+            message: i.message,
+            requestId: request.requestId,
+          })),
+        });
       const editApprove = new EditAndApproveHITLHandler(app.container.hitlRepo);
       const result = await editApprove.execute(
         request.params.id,
@@ -152,15 +144,13 @@ export async function hitlRoutes(app: FastifyInstance): Promise<void> {
               },
             ],
           });
-      return reply
-        .status(200)
-        .send({
-          data: result.value.toJSON(),
-          meta: {
-            requestId: request.requestId,
-            timestamp: new Date().toISOString(),
-          },
-        });
+      return reply.status(200).send({
+        data: result.value.toJSON(),
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
+      });
     },
   );
 }

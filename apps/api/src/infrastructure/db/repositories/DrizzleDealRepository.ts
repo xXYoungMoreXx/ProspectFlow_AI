@@ -25,13 +25,24 @@ export class DrizzleDealRepository implements DealRepository {
     return this.toDomain(row);
   }
 
+  async findByIdInternal(id: string): Promise<Deal | null> {
+    const [row] = await this.db
+      .select()
+      .from(schema.deals)
+      .where(eq(schema.deals.id, id))
+      .limit(1);
+    if (!row) return null;
+    return this.toDomain(row);
+  }
+
   async findMany(filters: DealFilters): Promise<DealListResult> {
     const conditions = [eq(schema.deals.operatorId, filters.operatorId)];
     if (filters.status)
       conditions.push(eq(schema.deals.status, filters.status));
     if (filters.leadId)
       conditions.push(eq(schema.deals.leadId, filters.leadId));
-    if (filters.cursor) conditions.push(lt(schema.deals.createdAt, new Date(filters.cursor)));
+    if (filters.cursor)
+      conditions.push(lt(schema.deals.createdAt, new Date(filters.cursor)));
 
     const limit = filters.limit ?? 20;
 
@@ -53,7 +64,9 @@ export class DrizzleDealRepository implements DealRepository {
     return {
       deals: items.map((r) => this.toDomain(r)),
       total: countResult?.count ?? 0,
-      nextCursor: hasMore ? items[items.length - 1]!.createdAt.toISOString() : null,
+      nextCursor: hasMore
+        ? items[items.length - 1]!.createdAt.toISOString()
+        : null,
     };
   }
 

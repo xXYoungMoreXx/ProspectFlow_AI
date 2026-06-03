@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { api } from "@/lib/api";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FolderKanban, ExternalLink } from "lucide-react";
@@ -58,54 +59,55 @@ export default function ProjectsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {projects.map((project: any) => (
-            <Card
-              key={project.id}
-              className="group hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer"
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-sm font-semibold group-hover:text-primary transition-colors">
-                    {project.clientName || `Project #${project.id?.slice(-6)}`}
-                  </CardTitle>
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] ${statusColors[project.status] || ""}`}
-                  >
-                    {project.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between mt-2">
-                  {project.lighthouseScores && (
-                    <div className="flex gap-2">
-                      <span className="text-xs text-muted-foreground">
-                        Perf:{" "}
-                        <strong className="text-foreground">
-                          {project.lighthouseScores.performance}
-                        </strong>
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        A11y:{" "}
-                        <strong className="text-foreground">
-                          {project.lighthouseScores.accessibility}
-                        </strong>
-                      </span>
-                    </div>
-                  )}
-                  {project.previewUrl && (
-                    <a
-                      href={project.previewUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:text-primary/80"
+            <Link key={project.id} href={`/projects/${project.id}`}>
+              <Card className="group hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer">
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-sm font-semibold group-hover:text-primary transition-colors">
+                      {project.clientName ||
+                        `Project #${project.id?.slice(-6)}`}
+                    </CardTitle>
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] ${statusColors[project.status] || ""}`}
                     >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                      {project.status}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between mt-2">
+                    {project.lighthouseScores && (
+                      <div className="flex gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          Perf:{" "}
+                          <strong className="text-foreground">
+                            {project.lighthouseScores.performance}
+                          </strong>
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          A11y:{" "}
+                          <strong className="text-foreground">
+                            {project.lighthouseScores.accessibility}
+                          </strong>
+                        </span>
+                      </div>
+                    )}
+                    {project.previewUrl && (
+                      <a
+                        href={project.previewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

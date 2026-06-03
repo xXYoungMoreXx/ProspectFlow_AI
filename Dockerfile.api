@@ -1,51 +1,45 @@
-# Base node image
 FROM node:22-alpine AS base
-# Enable npm to run cleanly
 ENV npm_config_loglevel=warn
 
-# 1. Prune the workspace for the API app
-FROM base AS builder
+# 1. Install dependencies using the full monorepo structure
+FROM base AS deps
 WORKDIR /app
-RUN npm install -g turbo
-COPY . .
-RUN turbo prune --scope=@agentepro/api --docker
+COPY package.json package-lock.json ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/shared-types/package.json ./packages/shared-types/
+# Minimal workspace-aware npm ci (only API + shared-types)
+RUN npm ci --workspace=@agentepro/api --workspace=@agentepro/shared-types --include-workspace-root
 
-# 2. Install dependencies
-FROM base AS installer
+# 2. Build shared-types + API
+FROM deps AS builder
 WORKDIR /app
-
-# Install dependencies (only what's needed for api and its shared libs)
-COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/package-lock.json ./package-lock.json
-RUN npm ci
-
-# Build the project and its dependencies
-COPY --from=builder /app/out/full/ .
-# tsconfig.base.json lives at repo root — turbo prune omits it from out/full/
-COPY --from=builder /app/tsconfig.base.json ./tsconfig.base.json
+COPY tsconfig.base.json ./
+COPY packages/shared-types ./packages/shared-types
+COPY apps/api ./apps/api
+COPY turbo.json ./
 RUN npx turbo run build --filter=@agentepro/api...
 
-# 3. Production runner
+# 3. Production runner — minimal image
 FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Don't run production as root
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 fastify
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 fastify
 
-# Copy production dependencies
-COPY --from=installer --chown=fastify:nodejs /app/node_modules ./node_modules
-COPY --from=installer --chown=fastify:nodejs /app/apps/api/node_modules ./apps/api/node_modules
+# Production node_modules (shared-types is workspace dep)
+COPY --from=builder --chown=fastify:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=fastify:nodejs /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=builder --chown=fastify:nodejs /app/packages/shared-types/dist ./packages/shared-types/dist
+COPY --from=builder --chown=fastify:nodejs /app/packages/shared-types/package.json ./packages/shared-types/package.json
 
-# Copy built application
-COPY --from=installer --chown=fastify:nodejs /app/apps/api/dist ./apps/api/dist
-COPY --from=installer --chown=fastify:nodejs /app/apps/api/package.json ./apps/api/package.json
+# Built API
+COPY --from=builder --chown=fastify:nodejs /app/apps/api/dist ./apps/api/dist
+COPY --from=builder --chown=fastify:nodejs /app/apps/api/package.json ./apps/api/package.json
 
 USER fastify
 
-# Cloud Run enforces the PORT environment variable
 ENV PORT=3001
 EXPOSE 3001
 

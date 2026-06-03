@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -135,6 +135,12 @@ jobs:
         run: npm run build -w @agentepro/web
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3333/api/v1
+
+      - name: Prepare Next.js standalone assets
+        run: |
+          mkdir -p apps/web/.next/standalone/.next
+          cp -r apps/web/.next/static apps/web/.next/standalone/.next/static
+          cp -r apps/web/public apps/web/.next/standalone/public
 
       - name: Install Playwright Browsers
         working-directory: apps/web

@@ -15,6 +15,7 @@ import { DrizzleAuditLogRepository } from "./infrastructure/db/repositories/Driz
 import { DrizzleContractAcceptanceRepository } from "./infrastructure/db/repositories/DrizzleContractAcceptanceRepository.js";
 import { DrizzleOptOutRepository } from "./infrastructure/db/repositories/DrizzleOptOutRepository.js";
 import { DrizzleSettingsRepository } from "./infrastructure/db/repositories/DrizzleSettingsRepository.js";
+import { DrizzleBriefingRepository } from "./infrastructure/db/repositories/DrizzleBriefingRepository.js";
 
 // Infrastructure Adapters
 import { SettingsCrypto } from "./infrastructure/secrets/SettingsCrypto.js";
@@ -29,6 +30,13 @@ import { HITLExpirationWorker } from "./infrastructure/queue/HITLExpirationWorke
 import { EmailWorker } from "./infrastructure/queue/EmailWorker.js";
 import { FollowUpWorker } from "./infrastructure/queue/FollowUpWorker.js";
 import { AgentExecutionService } from "./application/agent/AgentExecutionService.js";
+import { DomainEventRouter } from "./infrastructure/queue/DomainEventRouter.js";
+import { MediaGenerationRouter } from "./infrastructure/media/MediaGenerationRouter.js";
+import { DeploymentRouter } from "./infrastructure/deploy/DeploymentRouter.js";
+import { VercelAdapter } from "./infrastructure/deploy/VercelAdapter.js";
+import { NetlifyAdapter } from "./infrastructure/deploy/NetlifyAdapter.js";
+import { CloudflarePagesAdapter } from "./infrastructure/deploy/CloudflarePagesAdapter.js";
+import { RenderAdapter } from "./infrastructure/deploy/RenderAdapter.js";
 import { AuthEmailService } from "./application/auth/auth-email.service.js";
 
 // Application Services
@@ -92,6 +100,7 @@ export interface Container {
   dealRepo: DrizzleDealRepository;
   projectRepo: DrizzleProjectRepository;
   hitlRepo: DrizzleHITLRepository;
+  briefingRepo: DrizzleBriefingRepository;
   auditRepo: DrizzleAuditLogRepository;
   contractAcceptanceRepo: DrizzleContractAcceptanceRepository;
   optOutRepo: DrizzleOptOutRepository;
@@ -112,6 +121,9 @@ export interface Container {
   emailWorker: EmailWorker;
   followUpWorker: FollowUpWorker;
   agentExecutionService: AgentExecutionService;
+  domainEventRouter: DomainEventRouter;
+  mediaRouter: MediaGenerationRouter;
+  deploymentRouter: DeploymentRouter;
 
   // Application Services
   authEmailService: AuthEmailService;
@@ -149,16 +161,45 @@ export function createContainer(): Container {
     queue,
     leadRepo,
     hitlRepo,
+    new DrizzleProjectRepository(db),
   );
+
+  const dealRepo = new DrizzleDealRepository(db);
+  const briefingRepo = new DrizzleBriefingRepository(db);
+  const domainEventRouter = new DomainEventRouter(
+    dealRepo,
+    briefingRepo,
+    queue,
+    leadRepo,
+    redis,
+  );
+
+  const mediaRouter = new MediaGenerationRouter({
+    getNanaBananaKey: () =>
+      secrets.getSecretGlobal("NANABANANA_API_KEY").then((v) => v ?? null),
+    getDalleKey: () =>
+      secrets.getSecretGlobal("OPENAI_API_KEY").then((v) => v ?? null),
+  });
+
+  const deploymentRouter = new DeploymentRouter([
+    new VercelAdapter(process.env["VERCEL_TOKEN"] ?? ""),
+    new CloudflarePagesAdapter(
+      process.env["CF_ACCOUNT_ID"] ?? "",
+      process.env["CF_API_TOKEN"] ?? "",
+    ),
+    new RenderAdapter(process.env["RENDER_API_KEY"] ?? ""),
+    new NetlifyAdapter(process.env["NETLIFY_TOKEN"] ?? ""),
+  ]);
 
   return {
     db,
     redis,
     agentRepo,
     leadRepo,
-    dealRepo: new DrizzleDealRepository(db),
+    dealRepo,
     projectRepo: new DrizzleProjectRepository(db),
     hitlRepo,
+    briefingRepo,
     auditRepo: new DrizzleAuditLogRepository(db),
     contractAcceptanceRepo: new DrizzleContractAcceptanceRepository(db),
     optOutRepo: new DrizzleOptOutRepository(db),
@@ -175,6 +216,9 @@ export function createContainer(): Container {
     emailWorker,
     followUpWorker,
     agentExecutionService,
+    domainEventRouter,
+    mediaRouter,
+    deploymentRouter,
     authEmailService: new AuthEmailService(queue),
     settingsService,
     ollamaProxy,

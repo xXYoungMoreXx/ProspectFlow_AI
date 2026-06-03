@@ -1,0 +1,49 @@
+import type { BriefingRepository } from "../../domain/briefing/BriefingRepository.js";
+import type { BriefingProps } from "../../domain/briefing/Briefing.js";
+import { NotFoundError } from "../../domain/shared/Result.js";
+import { type Result, ok, err } from "../../domain/shared/Result.js";
+import type { BullMQAdapter } from "../../infrastructure/queue/BullMQAdapter.js";
+
+export interface ApproveBriefingCommand {
+  briefingId: string;
+  operatorId: string;
+  correlationId: string;
+}
+
+export class ApproveBriefingUseCase {
+  constructor(
+    private readonly repo: BriefingRepository,
+    private readonly queue: BullMQAdapter,
+  ) {}
+
+  async execute(
+    cmd: ApproveBriefingCommand,
+  ): Promise<Result<BriefingProps, Error>> {
+    const briefing = await this.repo.findById(cmd.briefingId, cmd.operatorId);
+    if (!briefing) {
+      return err(new NotFoundError("Briefing", cmd.briefingId));
+    }
+
+    const result = briefing.approve();
+    if (result.isErr()) return err(result.error);
+
+    await this.repo.save(briefing);
+
+    const events = briefing.clearDomainEvents();
+    for (const event of events) {
+      await this.queue.publishEvent(event);
+    }
+
+    await this.queue.enqueueAgentTask(
+      "builder.generate",
+      {
+        briefingId: briefing.id,
+        dealId: briefing.dealId,
+        briefingData: briefing.briefingData,
+      },
+      cmd.correlationId,
+    );
+
+    return ok(briefing.toJSON());
+  }
+}

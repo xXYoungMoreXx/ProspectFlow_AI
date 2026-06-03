@@ -107,6 +107,12 @@ export const api = {
         body: JSON.stringify(data),
         token,
       }),
+    update: (id: string, data: any, token: string) =>
+      request<{ data: any; meta: any }>(`/agents/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+        token,
+      }),
   },
 
   leads: {
@@ -144,6 +150,53 @@ export const api = {
       request<{ data: any; meta: any }>(`/projects/${id}`, { token }),
   },
 
+  briefings: {
+    list: (token: string) =>
+      request<{ data: any[]; meta: any }>("/briefings", { token }),
+    getById: (id: string, token: string) =>
+      request<{ data: any; meta: any }>(`/briefings/${id}`, { token }),
+    extract: (id: string, token: string) =>
+      request<{ data: { briefingId: string; status: string } }>(
+        `/briefings/${id}/extract`,
+        { method: "POST", body: JSON.stringify({}), token },
+      ),
+    approve: (id: string, token: string) =>
+      request<{ data: any }>(`/briefings/${id}/approve`, {
+        method: "PATCH",
+        body: JSON.stringify({}),
+        token,
+      }),
+  },
+
+  prospecting: {
+    searchMaps: (
+      data: {
+        categories: string[];
+        region: { city: string; state: string; radiusKm: number };
+        minScore?: number;
+        limit?: number;
+      },
+      token: string,
+    ) =>
+      request<{ data: any; meta: any }>("/prospecting/search-maps", {
+        method: "POST",
+        body: JSON.stringify(data),
+        token,
+      }),
+    queue: (token: string) =>
+      request<{ data: { leads: any[] }; meta: any }>("/prospecting/queue", {
+        token,
+      }),
+    getConfig: (token: string) =>
+      request<{ data: any }>("/prospecting/config", { token }),
+    updateConfig: (data: any, token: string) =>
+      request<{ data: any }>("/prospecting/config", {
+        method: "PATCH",
+        body: JSON.stringify(data),
+        token,
+      }),
+  },
+
   hitl: {
     pending: (token: string) =>
       request<{ data: any[]; meta: any }>("/hitl/pending", { token }),
@@ -162,8 +215,7 @@ export const api = {
   },
 
   settings: {
-    list: (token: string) =>
-      request<{ data: any[] }>("/settings", { token }),
+    list: (token: string) => request<{ data: any[] }>("/settings", { token }),
     listByCategory: (category: string, token: string) =>
       request<{ data: any[] }>(`/settings/${category}`, { token }),
     upsert: (settings: any[], token: string) =>
@@ -188,16 +240,38 @@ export const api = {
       ),
   },
 
+  costs: {
+    dashboard: (period: "day" | "week" | "month", token: string) =>
+      request<{
+        data: {
+          period: string;
+          since: string;
+          totalCostUsd: number;
+          totalTokens: number;
+          byAgent: Array<{
+            agentId: string;
+            provider: string;
+            totalTokens: number;
+            costUsd: number;
+            requests: number;
+          }>;
+        };
+      }>(`/costs/dashboard?period=${period}`, { token }),
+  },
+
   ollama: {
     status: (token: string) =>
       request<{ data: any }>("/settings/ollama/status", { token }),
     models: (token: string) =>
       request<{ data: any[] }>("/settings/ollama/models", { token }),
     delete: (name: string, token: string) =>
-      request<{ data: any }>(`/settings/ollama/models/${encodeURIComponent(name)}`, {
-        method: "DELETE",
-        token,
-      }),
+      request<{ data: any }>(
+        `/settings/ollama/models/${encodeURIComponent(name)}`,
+        {
+          method: "DELETE",
+          token,
+        },
+      ),
   },
 };
 

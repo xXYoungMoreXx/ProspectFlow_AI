@@ -32,6 +32,9 @@ import {
   Sun,
   Moon,
   ChevronRight,
+  DollarSign,
+  FileText,
+  Search,
 } from "lucide-react";
 
 const navItems = [
@@ -39,7 +42,10 @@ const navItems = [
   { href: "/leads", label: "Leads", icon: Users, badge: null },
   { href: "/deals", label: "Deals", icon: Handshake, badge: null },
   { href: "/projects", label: "Projects", icon: FolderKanban, badge: null },
+  { href: "/briefings", label: "Briefings", icon: FileText, badge: null },
+  { href: "/prospecting", label: "Prospecting", icon: Search, badge: null },
   { href: "/hitl", label: "Approvals", icon: ShieldCheck, badge: "3" },
+  { href: "/costs", label: "Costs", icon: DollarSign, badge: null },
 ];
 
 function SidebarContent({ pathname }: { pathname: string }) {

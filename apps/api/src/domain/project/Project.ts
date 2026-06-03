@@ -84,6 +84,10 @@ export class Project extends AggregateRoot {
   get status(): ProjectStatus {
     return this.props.status;
   }
+  get deliverableMeta(): Record<string, unknown> {
+    return this.props.deliverableMeta;
+  }
+
   get deliverableUrl(): string | undefined {
     return this.props.deliverableUrl;
   }
@@ -98,6 +102,15 @@ export class Project extends AggregateRoot {
   }
   get updatedAt(): Date {
     return this.props.updatedAt;
+  }
+
+  storeBuildArtifact(html: string): void {
+    this.props.deliverableMeta = {
+      ...this.props.deliverableMeta,
+      html,
+      builtAt: new Date().toISOString(),
+    };
+    this.props.updatedAt = new Date();
   }
 
   markReadyForReview(previewUrl: string): void {

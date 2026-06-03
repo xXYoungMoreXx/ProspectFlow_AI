@@ -2,6 +2,9 @@ import type { FastifyInstance } from "fastify";
 import { eq } from "drizzle-orm";
 import { config } from "../../config.js";
 import * as schema from "../../infrastructure/db/schema.js";
+
+const escapeHtml = (text: string): string =>
+  text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 import {
   ApproveHITLHandler,
   RejectHITLHandler,
@@ -123,7 +126,7 @@ export async function telegramWebhookRoutes(
             app,
             callbackQuery.message.chat.id,
             callbackQuery.message.message_id,
-            `${callbackQuery.message.text || "Alerta de HITL"}\n\n✅ <b>Aprovado por Telegram</b>`,
+            `${escapeHtml(callbackQuery.message.text || "Alerta de HITL")}\n\n✅ <b>Aprovado por Telegram</b>`,
           );
         }
       }
@@ -156,7 +159,7 @@ export async function telegramWebhookRoutes(
             app,
             callbackQuery.message.chat.id,
             callbackQuery.message.message_id,
-            `${callbackQuery.message.text || "Alerta de HITL"}\n\n❌ <b>Rejeitado por Telegram</b>`,
+            `${escapeHtml(callbackQuery.message.text || "Alerta de HITL")}\n\n❌ <b>Rejeitado por Telegram</b>`,
           );
         }
       }
