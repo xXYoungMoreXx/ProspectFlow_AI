@@ -6,6 +6,7 @@ import {
   type Result,
 } from "../../domain/shared/Result.js";
 import type { HITLApproval } from "../../domain/hitl/HITLApproval.js";
+import { HITLActionType } from "../../domain/hitl/HITLActionType.js";
 import { hitlPendingGauge } from "../../infrastructure/metrics/registry.js";
 
 export class GetPendingApprovalsHandler {
@@ -58,6 +59,38 @@ export class ApproveHITLHandler {
       // Non-fatal for the Node API, but the agent won't unblock until retried
     }
 
+    // Dispatch task-specific follow-up to Python Runtime
+    if (approval.actionType === HITLActionType.APPROVE_MOCKUP) {
+      try {
+        const runtimeUrl =
+          process.env["AGENT_RUNTIME_URL"] || "http://localhost:8001";
+        await fetch(`${runtimeUrl}/tasks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task_type: "builder.build",
+            agent_id: approval.agentId,
+            project_id: approval.contextId,
+            operator_id: operatorId,
+            correlation_id: approvalId,
+            payload: {
+              approved: true,
+              feedback: note ?? null,
+            },
+          }),
+        });
+        console.info(
+          "[ApproveHITLHandler] mockup approved — builder.build dispatched",
+          { approvalId },
+        );
+      } catch (error) {
+        console.error("[ApproveHITLHandler] Failed to dispatch builder.build", {
+          approvalId,
+          error,
+        });
+      }
+    }
+
     return ok(approval);
   }
 }
@@ -78,6 +111,40 @@ export class RejectHITLHandler {
 
     await this.repo.save(approval);
     hitlPendingGauge.dec({ operator_id: operatorId });
+
+    // Dispatch task-specific retry on rejection
+    if (approval.actionType === HITLActionType.APPROVE_MOCKUP) {
+      try {
+        const runtimeUrl =
+          process.env["AGENT_RUNTIME_URL"] || "http://localhost:8001";
+        await fetch(`${runtimeUrl}/tasks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task_type: "builder.design",
+            agent_id: approval.agentId,
+            project_id: approval.contextId,
+            operator_id: operatorId,
+            correlation_id: approvalId,
+            payload: {
+              feedback:
+                note ?? "Refaça o mockup com base no feedback do operador.",
+              retry: true,
+            },
+          }),
+        });
+        console.info(
+          "[RejectHITLHandler] mockup rejected — builder.design retry dispatched",
+          { approvalId },
+        );
+      } catch (error) {
+        console.error(
+          "[RejectHITLHandler] Failed to dispatch builder.design retry",
+          { approvalId, error },
+        );
+      }
+    }
+
     return ok(approval);
   }
 }
