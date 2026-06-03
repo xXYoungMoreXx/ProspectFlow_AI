@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, Loader2 } from "lucide-react";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 const statusColors: Record<string, string> = {
   IN_PROGRESS: "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -42,6 +44,10 @@ export default function BriefingsPage() {
   });
 
   const briefings: any[] = data?.data ?? [];
+  const { page, totalPages, paginatedItems, goToPage } = usePagination(
+    briefings,
+    10,
+  );
 
   return (
     <div className="space-y-6">
@@ -68,76 +74,88 @@ export default function BriefingsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="rounded-lg border border-border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted/50 border-b border-border">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                  ID
-                </th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                  Deal
-                </th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                  Status
-                </th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                  Started
-                </th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {briefings.map((b: any) => (
-                <tr key={b.id} className="hover:bg-muted/20 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                    #{b.id?.slice(-8)}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                    {b.dealId?.slice(-8) ?? "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge
-                      variant="outline"
-                      className={`text-[10px] ${statusColors[b.status] ?? ""}`}
-                    >
-                      {statusLabels[b.status] ?? b.status}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {b.createdAt ? new Date(b.createdAt).toLocaleString() : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {b.status === "IN_PROGRESS" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-2 h-7 text-xs"
-                        disabled={
-                          extractMutation.isPending &&
-                          extractMutation.variables === b.id
-                        }
-                        onClick={() => extractMutation.mutate(b.id)}
-                      >
-                        {extractMutation.isPending &&
-                        extractMutation.variables === b.id ? (
-                          <>
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                            Extracting...
-                          </>
-                        ) : (
-                          "Force Extract"
-                        )}
-                      </Button>
-                    )}
-                  </td>
+        <>
+          <div className="rounded-lg border border-border overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/50 border-b border-border">
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                    ID
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                    Deal
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                    Status
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                    Started
+                  </th>
+                  <th className="text-right px-4 py-3 font-medium text-muted-foreground">
+                    Action
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {paginatedItems.map((b: any) => (
+                  <tr
+                    key={b.id}
+                    className="hover:bg-muted/20 transition-colors"
+                  >
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                      #{b.id?.slice(-8)}
+                    </td>
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                      {b.dealId?.slice(-8) ?? "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] ${statusColors[b.status] ?? ""}`}
+                      >
+                        {statusLabels[b.status] ?? b.status}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">
+                      {b.createdAt
+                        ? new Date(b.createdAt).toLocaleString()
+                        : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {b.status === "IN_PROGRESS" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-2 h-7 text-xs"
+                          disabled={
+                            extractMutation.isPending &&
+                            extractMutation.variables === b.id
+                          }
+                          onClick={() => extractMutation.mutate(b.id)}
+                        >
+                          {extractMutation.isPending &&
+                          extractMutation.variables === b.id ? (
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              Extracting...
+                            </>
+                          ) : (
+                            "Force Extract"
+                          )}
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <PaginationControls
+            page={page}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+          />
+        </>
       )}
     </div>
   );
