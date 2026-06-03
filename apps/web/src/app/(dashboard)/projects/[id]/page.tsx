@@ -1,7 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { use } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { use, useMemo } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { api } from "@/lib/api";
@@ -15,6 +15,10 @@ import {
   CheckCircle2,
   Circle,
   Clock,
+  Palette,
+  Check,
+  X,
+  Loader2,
 } from "lucide-react";
 
 const statusColors: Record<string, string> = {
@@ -47,9 +51,17 @@ export default function ProjectDetailPage({
   const { id } = use(params);
   const token = useAuthStore((s) => s.token);
 
+  const queryClient = useQueryClient();
+
   const { data, isLoading } = useQuery({
     queryKey: ["projects", id],
     queryFn: () => api.projects.getById(id, token!),
+    enabled: !!token,
+  });
+
+  const { data: hitlData } = useQuery({
+    queryKey: ["hitl", "pending"],
+    queryFn: () => api.hitl.pending(token!),
     enabled: !!token,
   });
 
@@ -59,6 +71,28 @@ export default function ProjectDetailPage({
   const videoUrl = (deliverableMeta as Record<string, unknown>).videoUrl as
     | string
     | undefined;
+
+  const pendingHitl = useMemo(() => {
+    const list: Array<{ id: string; projectId: string; actionType: string }> =
+      hitlData?.data ?? [];
+    return list.find(
+      (h) => h.projectId === id && h.actionType === "APPROVE_MOCKUP",
+    );
+  }, [hitlData, id]);
+
+  const mockupMutation = useMutation({
+    mutationFn: (decision: "APPROVED" | "REJECTED") => {
+      if (!pendingHitl) return Promise.reject(new Error("No pending HITL"));
+      if (decision === "APPROVED") {
+        return api.hitl.approve(pendingHitl.id, "", token!);
+      }
+      return api.hitl.reject(pendingHitl.id, "", token!);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["hitl", "pending"] });
+      void queryClient.invalidateQueries({ queryKey: ["projects", id] });
+    },
+  });
 
   const currentStageIndex = project
     ? project.status === "DELIVERED"
@@ -279,6 +313,56 @@ export default function ProjectDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {project.mockupHtml && pendingHitl?.actionType === "APPROVE_MOCKUP" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Palette className="w-4 h-4 text-violet-400" />
+              Mockup Visual — Aguardando Aprovação
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-xs text-muted-foreground">
+              Aprove para o CODER iniciar o HTML final, ou rejeite para o
+              DESIGNER refazer.
+            </p>
+            <div
+              className="rounded-lg border overflow-hidden bg-white"
+              style={{ height: 520 }}
+            >
+              <iframe
+                srcDoc={project.mockupHtml as string}
+                className="w-full h-full"
+                sandbox="allow-same-origin"
+                title="Mockup visual preview"
+              />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                className="gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10"
+                onClick={() => mockupMutation.mutate("REJECTED")}
+                disabled={mockupMutation.isPending}
+              >
+                <X className="w-4 h-4" /> Rejeitar
+              </Button>
+              <Button
+                className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={() => mockupMutation.mutate("APPROVED")}
+                disabled={mockupMutation.isPending}
+              >
+                {mockupMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Check className="w-4 h-4" />
+                )}
+                Aprovar Mockup
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <p className="text-xs text-muted-foreground">
         Created {new Date(project.createdAt).toLocaleString()} · Updated{" "}

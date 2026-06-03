@@ -570,6 +570,8 @@ export const projects = pgTable(
     templateId: text("template_id"),
     briefing: jsonb("briefing").notNull().default({}),
     deliverableUrl: text("deliverable_url"),
+    mockupHtml: text("mockup_html"),
+    mockupUrl: text("mockup_url"),
     deliverableMeta: jsonb("deliverable_meta").default({}),
     lighthousePerf: integer("lighthouse_perf"),
     lighthouseA11y: integer("lighthouse_a11y"),

@@ -67,6 +67,24 @@ export class ApproveHITLHandler {
       });
     }
 
+    // APPROVE_MOCKUP: dispatch builder.build phase after mockup approved by operator
+    if (
+      approval.actionType === HITLActionType.APPROVE_MOCKUP &&
+      this.agentRuntimeClient
+    ) {
+      const projectId = (approval.payloadPreview as Record<string, unknown>)?.[
+        "projectId"
+      ] as string | undefined;
+      await this.agentRuntimeClient.dispatch({
+        task_type: "builder.build",
+        agent_id: approval.agentId.value,
+        project_id: projectId,
+        operator_id: operatorId,
+        correlation_id: approval.id.value,
+        payload: { approved: true },
+      });
+    }
+
     // APPROVE_STAGING: trigger deployment after HITL approved
     if (
       approval.actionType === HITLActionType.APPROVE_STAGING &&

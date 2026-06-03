@@ -170,6 +170,28 @@ export class AgentExecutionService {
         );
       }
 
+      // Post-process: builder.design completed → save mockup to project for HITL APPROVE_MOCKUP
+      if (
+        payload.taskType === "builder.design" &&
+        result.status === "completed" &&
+        this.projectRepo
+      ) {
+        const r = result.result as Record<string, unknown> | null;
+        const mockupHtml = r?.mockup_html as string | undefined;
+        const mockupUrl = (r?.mockup_url as string | undefined) ?? "";
+        const projectId = payload.projectId as string | undefined;
+        if (mockupHtml && projectId) {
+          const project = await this.projectRepo.findById(
+            projectId,
+            payload.operatorId as string,
+          );
+          if (project) {
+            project.storeMockup(mockupHtml, mockupUrl);
+            await this.projectRepo.save(project);
+          }
+        }
+      }
+
       // Post-process: builder.generate completed → store artifact + HITL APPROVE_STAGING
       if (
         payload.taskType === "builder.generate" &&

@@ -166,26 +166,48 @@ async def execute_task(request: TaskRequest):
             from src.agents.builder.agent import BuilderAgent
             from src.agents.builder.tasks import create_build_site_task
 
-            builder = BuilderAgent(request.agent_id, request.correlation_id, request.payload)
-            agent_instance = builder.build()
+            if action == "design":
+                builder = BuilderAgent(request.agent_id, request.correlation_id, request.payload)
+                result_data = builder.run_design_phase()
+                agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+                agent_sessions_total.labels(persona=persona, status="completed").inc()
+                return TaskResponse(
+                    status="completed",
+                    result=result_data,
+                    correlation_id=request.correlation_id,
+                )
+            elif action == "build":
+                builder = BuilderAgent(request.agent_id, request.correlation_id, request.payload)
+                result_data = builder.run_build_phase()
+                agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+                agent_sessions_total.labels(persona=persona, status="completed").inc()
+                return TaskResponse(
+                    status="completed",
+                    result=result_data,
+                    correlation_id=request.correlation_id,
+                )
+            else:
+                # Legacy: builder.generate
+                builder = BuilderAgent(request.agent_id, request.correlation_id, request.payload)
+                agent_instance = builder.build()
 
-            lead_data = request.payload.get("lead_data", {})
-            design_system = request.payload.get("design_system", {})
+                lead_data = request.payload.get("lead_data", {})
+                design_system = request.payload.get("design_system", {})
 
-            build_task = create_build_site_task(agent_instance, lead_data, design_system)
+                build_task = create_build_site_task(agent_instance, lead_data, design_system)
 
-            crew = Crew(agents=[agent_instance], tasks=[build_task], verbose=True)
+                crew = Crew(agents=[agent_instance], tasks=[build_task], verbose=True)
 
-            output = crew.kickoff()
-            raw_html = str(output)
+                output = crew.kickoff()
+                raw_html = str(output)
 
-            agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
-            agent_sessions_total.labels(persona=persona, status="completed").inc()
-            return TaskResponse(
-                status="completed",
-                result={"html": raw_html},
-                correlation_id=request.correlation_id,
-            )
+                agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
+                agent_sessions_total.labels(persona=persona, status="completed").inc()
+                return TaskResponse(
+                    status="completed",
+                    result={"html": raw_html},
+                    correlation_id=request.correlation_id,
+                )
         elif domain == "qa":
             from crewai import Crew
 
@@ -211,67 +233,20 @@ async def execute_task(request: TaskRequest):
                 result={"audit_report": raw_result},
                 correlation_id=request.correlation_id,
             )
-        elif domain == "briefing":
-            from crewai import Crew
+        elif domain == "orchestrator":
+            from src.agents.orchestrator.agent import OrchestratorAgent, PipelineState
 
-            business_name = request.payload.get("businessName", "o negócio")
-            niche = request.payload.get("niche", "generic")
-            contact_name = request.payload.get("contactName", "cliente")
-
-            if action == "interview":
-                from src.agents.briefing.agent import BriefingInterviewerAgent
-                from src.agents.briefing.tasks import create_interview_task
-
-                interviewer = BriefingInterviewerAgent(request.agent_id, request.correlation_id, request.payload)
-                agent_instance = interviewer.build()
-                task = create_interview_task(agent_instance, business_name, niche, contact_name)
-
-            elif action == "extract":
-                from src.agents.briefing.agent import BriefingExtractorAgent
-                from src.agents.briefing.tasks import create_extract_task
-
-                transcript = request.payload.get("transcript", "")
-                extractor = BriefingExtractorAgent(request.agent_id, request.correlation_id, request.payload)
-                agent_instance = extractor.build()
-                task = create_extract_task(agent_instance, business_name, niche, transcript)
-
-            else:
-                raise HTTPException(status_code=400, detail=f"Unknown briefing action: {action}")
-
-            crew = Crew(agents=[agent_instance], tasks=[task], verbose=True)
-            output = crew.kickoff()
-            raw_result = str(output)
-
+            orch = OrchestratorAgent(request.agent_id, request.correlation_id, request.payload)
+            current = PipelineState(request.payload["current_state"])
+            event = request.payload["event"]
+            next_state, next_agent = orch.transition(current, event)
             agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
             agent_sessions_total.labels(persona=persona, status="completed").inc()
             return TaskResponse(
                 status="completed",
-                result={"raw_output": raw_result},
+                result={"next_state": next_state, "next_agent": next_agent},
                 correlation_id=request.correlation_id,
             )
-
-        elif domain == "delivery":
-            from src.agents.delivery.agent import DeliveryAgent
-
-            delivery = DeliveryAgent(request.agent_id, request.correlation_id, request.payload)
-            result_data = await delivery.deliver()
-
-            if result_data.get("status") == "failed":
-                agent_sessions_total.labels(persona=persona, status="failed").inc()
-                return TaskResponse(
-                    status="failed",
-                    error=result_data.get("error", "delivery failed"),
-                    correlation_id=request.correlation_id,
-                )
-
-            agent_session_duration_seconds.labels(persona=persona).observe(time.time() - start_time)
-            agent_sessions_total.labels(persona=persona, status="completed").inc()
-            return TaskResponse(
-                status="completed",
-                result=result_data,
-                correlation_id=request.correlation_id,
-            )
-
         else:
             raise HTTPException(status_code=400, detail=f"Unknown agent domain: {domain}")
 
