@@ -173,7 +173,7 @@ jobs:
         run: npm run dev -w @agentepro/api &
 
       - name: Wait for API to be ready
-        run: npx wait-on http://localhost:3001/api/v1/health --timeout 30000
+        run: npx wait-on http://localhost:3001/api/v1/health --timeout 60000 --interval 2000
 
       - name: Build Next.js for Playwright
         run: npm run build -w @agentepro/web

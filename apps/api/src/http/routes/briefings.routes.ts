@@ -41,45 +41,54 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
   app.addHook("preHandler", authMiddleware);
 
   // GET /api/v1/briefings
-  app.get("/", async (request, reply) => {
-    const query = new ListBriefingsQuery(app.container.briefingRepo);
-    const result = await query.execute({ operatorId: request.operatorId });
-    return reply.status(200).send({
-      data: result.unwrap(),
-      meta: {
-        requestId: request.requestId,
-        timestamp: new Date().toISOString(),
-      },
-    });
-  });
+  app.get(
+    "/",
+    { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
+    async (request, reply) => {
+      const query = new ListBriefingsQuery(app.container.briefingRepo);
+      const result = await query.execute({ operatorId: request.operatorId });
+      return reply.status(200).send({
+        data: result.unwrap(),
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    },
+  );
 
   // GET /api/v1/briefings/:id
-  app.get<{ Params: { id: string } }>("/:id", async (request, reply) => {
-    const query = new GetBriefingQuery(app.container.briefingRepo);
-    const result = await query.execute({
-      id: request.params.id,
-      operatorId: request.operatorId,
-    });
-    if (result.isErr()) {
-      const e = result.error as DomainError;
-      return reply.status(domainErrToHttp(e.code)).send({
-        errors: [
-          { code: e.code, message: e.message, requestId: request.requestId },
-        ],
+  app.get<{ Params: { id: string } }>(
+    "/:id",
+    { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
+    async (request, reply) => {
+      const query = new GetBriefingQuery(app.container.briefingRepo);
+      const result = await query.execute({
+        id: request.params.id,
+        operatorId: request.operatorId,
       });
-    }
-    return reply.status(200).send({
-      data: result.unwrap(),
-      meta: {
-        requestId: request.requestId,
-        timestamp: new Date().toISOString(),
-      },
-    });
-  });
+      if (result.isErr()) {
+        const e = result.error as DomainError;
+        return reply.status(domainErrToHttp(e.code)).send({
+          errors: [
+            { code: e.code, message: e.message, requestId: request.requestId },
+          ],
+        });
+      }
+      return reply.status(200).send({
+        data: result.unwrap(),
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    },
+  );
 
   // PATCH /api/v1/briefings/:id/approve
   app.patch<{ Params: { id: string } }>(
     "/:id/approve",
+    { config: { rateLimit: { max: 5, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const uc = new ApproveBriefingUseCase(
         app.container.briefingRepo,
@@ -111,6 +120,7 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
   // POST /api/v1/briefings/:id/assets — upload logo/photo/document
   app.post<{ Params: { id: string } }>(
     "/:id/assets",
+    { config: { rateLimit: { max: 20, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const getQuery = new GetBriefingQuery(app.container.briefingRepo);
       const found = await getQuery.execute({
@@ -218,6 +228,7 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
   // POST /api/v1/briefings/:id/extract — manual fallback for operators when WhatsApp fails
   app.post<{ Params: { id: string } }>(
     "/:id/extract",
+    { config: { rateLimit: { max: 5, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const uc = new ExtractBriefingUseCase(
         app.container.briefingRepo,
