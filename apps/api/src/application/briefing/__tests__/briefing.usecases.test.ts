@@ -117,7 +117,7 @@ describe("ApproveBriefingUseCase", () => {
     expect(repo.save).toHaveBeenCalledOnce();
     expect(queue.publishEvent).toHaveBeenCalledOnce();
     expect(queue.enqueueAgentTask).toHaveBeenCalledWith(
-      "builder.generate",
+      "builder.design",
       expect.objectContaining({ briefingId: briefing.id }),
       expect.any(String),
     );
