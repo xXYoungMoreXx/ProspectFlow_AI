@@ -13,7 +13,12 @@ import {
 } from "../../domain/shared/Result.js";
 import { authFailuresTotal } from "../../infrastructure/metrics/registry.js";
 import { AuthEmailService } from "./auth-email.service.js";
-import { randomBytes, createHash, timingSafeEqual } from "node:crypto";
+import {
+  randomBytes,
+  randomUUID,
+  createHash,
+  timingSafeEqual,
+} from "node:crypto";
 
 // Argon2id config per PRD §11.1 (mCost 64MB)
 const ARGON2_OPTIONS: Options = {
@@ -348,7 +353,7 @@ export class LoginHandler {
       .setJti(jti)
       .sign(key);
 
-    const tokenId = ulid();
+    const tokenId = randomUUID();
     const rawRefreshToken = `${tokenId}.${ulid()}`;
     const refreshHash = await hash(rawRefreshToken, ARGON2_OPTIONS);
 
@@ -435,7 +440,7 @@ export class RefreshTokenHandler {
       .setJti(jti)
       .sign(key);
 
-    const newTokenId = ulid();
+    const newTokenId = randomUUID();
     const newRawRefresh = `${newTokenId}.${ulid()}`;
     const newRefreshHash = await hash(newRawRefresh, ARGON2_OPTIONS);
     const refreshExpiryMs = parseDuration(config.JWT_REFRESH_EXPIRY);
