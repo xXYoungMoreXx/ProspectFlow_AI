@@ -111,7 +111,9 @@ test.describe("E2E Journey: Login → Leads → HITL", () => {
 
     // B. Leads kanban shows new statuses
     await page.goto("/leads");
-    await expect(page.getByText("Prospectado")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Prospectado" }),
+    ).toBeVisible();
     await expect(page.getByText("Negociando")).toBeVisible();
     await expect(page.getByText("João Silva")).toBeVisible();
     await expect(page.getByText("Carlos Oliveira")).toBeVisible();
@@ -144,7 +146,9 @@ test.describe("E2E Journey: Prospecting", () => {
 
     // Queue page shows prospected leads (via GET /prospecting/queue)
     await page.goto("/leads");
-    await expect(page.getByText("Prospectado")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Prospectado" }),
+    ).toBeVisible();
   });
 });
 
