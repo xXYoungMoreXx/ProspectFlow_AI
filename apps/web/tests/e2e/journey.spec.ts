@@ -114,7 +114,9 @@ test.describe("E2E Journey: Login → Leads → HITL", () => {
     await expect(
       page.getByRole("heading", { name: "Prospectado" }),
     ).toBeVisible();
-    await expect(page.getByText("Negociando")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Negociando" }),
+    ).toBeVisible();
     await expect(page.getByText("João Silva")).toBeVisible();
     await expect(page.getByText("Carlos Oliveira")).toBeVisible();
 

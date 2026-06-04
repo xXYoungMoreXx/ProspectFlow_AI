@@ -25,9 +25,9 @@ test.describe("HITL Approvals Flow", () => {
 
     await page.goto("/hitl");
 
-    await expect(page.getByText("All clear!")).toBeVisible();
+    await expect(page.getByText("Tudo limpo!")).toBeVisible();
     await expect(
-      page.getByText("No pending approvals at this time"),
+      page.getByText("Nenhuma aprovação pendente no momento"),
     ).toBeVisible();
   });
 
@@ -44,10 +44,7 @@ test.describe("HITL Approvals Flow", () => {
               agentId: "agent-456",
               actionType: "SEND_PROPOSAL",
               status: "PENDING",
-              payload: {
-                client: "Acme Corp",
-                price: 5000,
-              },
+              payloadPreview: { client: "Acme Corp", price: 5000 },
               createdAt: new Date().toISOString(),
             },
           ],
@@ -57,9 +54,9 @@ test.describe("HITL Approvals Flow", () => {
 
     await page.goto("/hitl");
 
-    // Check if the item is displayed
-    await expect(page.getByText("SEND_PROPOSAL")).toBeVisible();
-    await expect(page.getByText("Acme Corp")).toBeVisible();
+    // ACTION_LABELS maps SEND_PROPOSAL → "Enviar Proposta"
+    await expect(page.getByText("Enviar Proposta")).toBeVisible();
+    await expect(page.getByTestId("hitl-card")).toBeVisible();
 
     // Setup mock for the approve action
     await page.route("**/api/v1/hitl/hitl-123/approve", async (route) => {
@@ -71,11 +68,11 @@ test.describe("HITL Approvals Flow", () => {
       await route.fulfill({ json: { data: { success: true } } });
     });
 
-    // Click Approve
-    await page.getByRole("button", { name: /approve/i }).click();
+    // Click Approve — Portuguese label "Aprovar"
+    await page.getByRole("button", { name: /aprovar/i }).click();
 
-    // Should transition to empty state because we mocked the refetch to return []
-    await expect(page.getByText("All clear!")).toBeVisible();
+    // Should transition to empty state
+    await expect(page.getByText("Tudo limpo!")).toBeVisible();
   });
 
   test("should handle rejection flow with note", async ({ page }) => {
@@ -112,23 +109,27 @@ test.describe("HITL Approvals Flow", () => {
       await route.fulfill({ json: { data: { success: true } } });
     });
 
-    // Click Reject to open Dialog
-    await page.getByRole("button", { name: /reject/i }).click();
+    // Click Reject button (data-testid="btn-reject", Portuguese text "Rejeitar")
+    await page.getByTestId("btn-reject").click();
 
     // Expect Dialog to be open
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: /reject action/i }),
+      page.getByRole("heading", { name: /rejeitar ação/i }),
     ).toBeVisible();
 
-    // Fill the reason
-    await page.getByLabel(/reason/i).fill("Price is too low");
+    // Fill the reason (label "Motivo")
+    await page.getByLabel(/motivo/i).fill("Price is too low");
 
-    // Confirm rejection
-    await page.getByRole("button", { name: /confirm reject/i }).click();
+    // Confirm rejection — destructive button inside dialog
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: /rejeitar/i })
+      .last()
+      .click();
 
     // Should transition to empty state
-    await expect(page.getByText("All clear!")).toBeVisible();
+    await expect(page.getByText("Tudo limpo!")).toBeVisible();
 
     // Verify the note was sent to the API
     expect(capturedNote).toBe("Price is too low");
