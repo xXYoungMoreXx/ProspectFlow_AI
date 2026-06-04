@@ -61,6 +61,14 @@ export const api = {
           body: JSON.stringify({ email, password }),
         },
       ),
+    devLogin: (email: string, password: string) =>
+      request<{ data: { accessToken: string; refreshToken: string } }>(
+        "/auth/dev-login",
+        {
+          method: "POST",
+          body: JSON.stringify({ email, password }),
+        },
+      ),
     refresh: (refreshToken: string) =>
       request<{ data: { accessToken: string; refreshToken: string } }>(
         "/auth/refresh",
