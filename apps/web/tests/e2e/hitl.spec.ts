@@ -121,11 +121,10 @@ test.describe("HITL Approvals Flow", () => {
     // Fill the reason (label "Motivo")
     await page.getByLabel(/motivo/i).fill("Price is too low");
 
-    // Confirm rejection — destructive button inside dialog
+    // Confirm rejection — button text is "Confirmar Rejeição"
     await page
       .getByRole("dialog")
-      .getByRole("button", { name: /rejeitar/i })
-      .last()
+      .getByRole("button", { name: /confirmar/i })
       .click();
 
     // Should transition to empty state
