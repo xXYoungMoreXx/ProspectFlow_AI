@@ -8,6 +8,7 @@ import {
   ForgotPasswordHandler,
   ResetPasswordHandler,
   ResendVerificationHandler,
+  DevLoginHandler,
 } from "../../application/auth/auth.handlers.js";
 import {
   LoginSchema,
@@ -341,4 +342,39 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       return reply.status(204).send();
     },
   );
+
+  // Dev-only endpoint — creates or re-authenticates a dev user without SMTP
+  // Disabled in production (handler enforces NODE_ENV check)
+  if (process.env.NODE_ENV !== "production") {
+    app.post("/dev-login", async (request, reply) => {
+      const body = request.body as { email?: string; password?: string };
+      const email =
+        body?.email ?? process.env.DEV_ADMIN_EMAIL ?? "admin@agentepro.dev";
+      const password =
+        body?.password ?? process.env.DEV_ADMIN_PASSWORD ?? "admin123";
+
+      const handler = new DevLoginHandler(app.container.db);
+      const result = await handler.execute(email, password);
+
+      if (result.isErr()) {
+        return reply.status(401).send({
+          errors: [
+            {
+              code: "AUTH_ERROR",
+              message: result.error.message,
+              requestId: request.requestId,
+            },
+          ],
+        });
+      }
+
+      return reply.status(200).send({
+        data: result.value,
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    });
+  }
 }

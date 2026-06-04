@@ -6,6 +6,7 @@ import { useAuthStore } from "@/lib/stores/auth-store";
 import { useHitlStore } from "@/lib/stores/hitl-store";
 import { useLeadsStore } from "@/lib/stores/leads-store";
 import { useAgentsStore } from "@/lib/stores/agents-store";
+import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -122,7 +123,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, operatorEmail, logout } = useAuthStore();
+  const { isAuthenticated, operatorEmail, logout, setAuth } = useAuthStore();
   const [darkMode, setDarkMode] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -139,10 +140,28 @@ export default function DashboardLayout({
   }, []);
 
   useEffect(() => {
-    if (mounted && !isAuthenticated) {
+    if (!mounted) return;
+    if (isAuthenticated) return;
+
+    // In dev mode: auto-login via the /api/v1/auth/dev-login endpoint so
+    // users who git-clone and run locally never see the login screen.
+    if (process.env.NEXT_PUBLIC_DEV_AUTO_LOGIN === "true") {
+      api.auth
+        .devLogin(
+          process.env.NEXT_PUBLIC_DEV_AUTO_EMAIL ?? "admin@agentepro.dev",
+          process.env.NEXT_PUBLIC_DEV_AUTO_PASSWORD ?? "admin123",
+        )
+        .then((res) => {
+          setAuth(
+            res.data.accessToken,
+            process.env.NEXT_PUBLIC_DEV_AUTO_EMAIL ?? "admin@agentepro.dev",
+          );
+        })
+        .catch(() => router.push("/login"));
+    } else {
       router.push("/login");
     }
-  }, [mounted, isAuthenticated, router]);
+  }, [mounted, isAuthenticated, router, setAuth]);
 
   useEffect(() => {
     if (isAuthenticated) {

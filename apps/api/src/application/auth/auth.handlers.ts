@@ -385,17 +385,22 @@ export class RefreshTokenHandler {
       .where(
         and(
           eq(schema.refreshTokens.id, tokenId),
-          eq(schema.refreshTokens.revokedAt, null as unknown as Date)
-        )
+          eq(schema.refreshTokens.revokedAt, null as unknown as Date),
+        ),
       )
       .limit(1);
 
     if (!token || new Date() > token.expiresAt) {
-      await verify("$argon2id$v=19$m=65536,t=3,p=4$dummysalt$dummyhash", "dummy").catch(() => {});
+      await verify(
+        "$argon2id$v=19$m=65536,t=3,p=4$dummysalt$dummyhash",
+        "dummy",
+      ).catch(() => {});
       return err(new AuthenticationError());
     }
 
-    const isMatch = await verify(token.tokenHash, rawRefreshToken).catch(() => false);
+    const isMatch = await verify(token.tokenHash, rawRefreshToken).catch(
+      () => false,
+    );
     if (!isMatch) {
       return err(new AuthenticationError());
     }
@@ -447,6 +452,48 @@ export class RefreshTokenHandler {
       refreshToken: newRawRefresh,
       expiresIn: 3600,
     });
+  }
+}
+
+// ── Dev-only: auto-create + login for localhost dev mode ─────────────────────
+// Only active when NODE_ENV !== 'production'. Never ships to prod.
+export class DevLoginHandler {
+  constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
+
+  async execute(
+    email: string,
+    password: string,
+  ): Promise<Result<AuthTokens, AuthenticationError>> {
+    if (process.env.NODE_ENV === "production") {
+      return err(new AuthenticationError("Não disponível em produção"));
+    }
+
+    const emailLower = email.toLowerCase().trim();
+
+    // Upsert dev user with emailVerified=true — bypasses SMTP requirement
+    const passwordHash = await hash(password, ARGON2_OPTIONS);
+    await this.db
+      .insert(schema.operators)
+      .values({
+        name: "Dev Admin",
+        email: emailLower,
+        passwordHash,
+        isActive: true,
+        emailVerified: true,
+      })
+      .onConflictDoNothing();
+
+    const loginHandler = new LoginHandler(this.db);
+    const firstTry = await loginHandler.execute(email, password);
+    if (firstTry.isOk()) return firstTry;
+
+    // Hash mismatch (user existed with different password) — update hash
+    await this.db
+      .update(schema.operators)
+      .set({ passwordHash, emailVerified: true, isActive: true })
+      .where(eq(schema.operators.email, emailLower));
+
+    return loginHandler.execute(email, password);
   }
 }
 
