@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,11 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Loader2, X, Plus } from "lucide-react";
 import { usePagination } from "@/hooks/usePagination";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export default function ProspectingPage() {
+  const t = useTranslations("prospecting");
   const token = useAuthStore((s) => s.token);
   const queryClient = useQueryClient();
 
@@ -74,17 +77,15 @@ export default function ProspectingPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Prospecting</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Dispatch Hunter agent and manage prospected leads
-        </p>
+        <h2 className="text-2xl font-bold tracking-tight">{t("title")}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
       </div>
 
       <Tabs defaultValue="search">
         <TabsList className="grid w-full grid-cols-3 max-w-md">
-          <TabsTrigger value="search">New Search</TabsTrigger>
+          <TabsTrigger value="search">{t("newSearch")}</TabsTrigger>
           <TabsTrigger value="queue">
-            Queue
+            {t("tabs.queue")}
             {leads.length > 0 && (
               <Badge
                 variant="default"
@@ -94,22 +95,22 @@ export default function ProspectingPage() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="config">Config</TabsTrigger>
+          <TabsTrigger value="config">{t("tabs.config")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="search" className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-semibold">
-                Search Parameters
+                {t("search.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Categories</Label>
+                <Label>{t("search.categories")}</Label>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="e.g. restaurantes"
+                    placeholder={t("search.categoriesPlaceholder")}
                     value={categoryInput}
                     onChange={(e) => setCategoryInput(e.target.value)}
                     onKeyDown={(e) =>
@@ -140,17 +141,17 @@ export default function ProspectingPage() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2 space-y-1">
-                  <Label>City</Label>
+                  <Label>{t("search.city")}</Label>
                   <Input
-                    placeholder="São Paulo"
+                    placeholder={t("search.cityPlaceholder")}
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label>State (2 chars)</Label>
+                  <Label>{t("search.state")}</Label>
                   <Input
-                    placeholder="SP"
+                    placeholder={t("search.statePlaceholder")}
                     maxLength={2}
                     value={state}
                     onChange={(e) => setState(e.target.value.toUpperCase())}
@@ -160,7 +161,9 @@ export default function ProspectingPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label>Radius (km): {radiusKm}</Label>
+                  <Label>
+                    {t("search.radius")} {radiusKm}
+                  </Label>
                   <Input
                     type="range"
                     min={5}
@@ -172,7 +175,9 @@ export default function ProspectingPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label>Min Score: {minScore}</Label>
+                  <Label>
+                    {t("search.minScore")} {minScore}
+                  </Label>
                   <Input
                     type="range"
                     min={0}
@@ -193,12 +198,12 @@ export default function ProspectingPage() {
                 {searchMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Dispatching...
+                    {t("search.submitting")}
                   </>
                 ) : (
                   <>
                     <Search className="w-4 h-4" />
-                    Start Search
+                    {t("search.submit")}
                   </>
                 )}
               </Button>
@@ -210,9 +215,12 @@ export default function ProspectingPage() {
           {queueQuery.isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="h-12" />
-                </Card>
+                <div
+                  key={i}
+                  className="rounded-xl border border-border p-4 h-12"
+                >
+                  <Skeleton className="h-4 w-48" />
+                </div>
               ))}
             </div>
           ) : leads.length === 0 ? (
@@ -220,7 +228,7 @@ export default function ProspectingPage() {
               <CardContent className="flex flex-col items-center justify-center py-16 space-y-3">
                 <Search className="w-10 h-10 text-muted-foreground/50" />
                 <p className="text-sm text-muted-foreground">
-                  No leads in queue
+                  {t("queue.empty")}
                 </p>
               </CardContent>
             </Card>
@@ -231,19 +239,19 @@ export default function ProspectingPage() {
                   <thead>
                     <tr className="bg-muted/50 border-b border-border">
                       <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                        Business
+                        {t("queue.columns.business")}
                       </th>
                       <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                        Score
+                        {t("queue.columns.score")}
                       </th>
                       <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                        Source
+                        {t("queue.columns.source")}
                       </th>
                       <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                        Date
+                        {t("queue.columns.date")}
                       </th>
                       <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                        HITL
+                        {t("queue.columns.hitl")}
                       </th>
                     </tr>
                   </thead>
@@ -305,14 +313,14 @@ export default function ProspectingPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-semibold">
-                Prospecting Configuration
+                {t("config.title")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {configQuery.isLoading ? (
-                <div className="animate-pulse space-y-3">
+                <div className="space-y-3">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-8 bg-muted rounded" />
+                    <Skeleton key={i} className="h-8 w-full" />
                   ))}
                 </div>
               ) : (

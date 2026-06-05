@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { MessageCircle, Mail, Send } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -12,10 +13,17 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { SecretInput } from "@/components/ui/secret-input";
-import { TestButton, ConnectionBadge } from "@/components/settings/ConnectionStatus";
-import { useSettingsStore, type PendingUpdate } from "@/lib/stores/settings-store";
+import {
+  TestButton,
+  ConnectionBadge,
+} from "@/components/settings/ConnectionStatus";
+import {
+  useSettingsStore,
+  type PendingUpdate,
+} from "@/lib/stores/settings-store";
 
 export function MessagingTab() {
+  const t = useTranslations("settings");
   const { settings, pending, setPending, getValue, fetchSettings } =
     useSettingsStore();
 
@@ -45,9 +53,11 @@ export function MessagingTab() {
               <MessageCircle className="h-4 w-4 text-emerald-400" />
             </div>
             <div>
-              <CardTitle className="text-sm">WhatsApp</CardTitle>
+              <CardTitle className="text-sm">
+                {t("messaging.whatsapp.name")}
+              </CardTitle>
               <CardDescription className="text-xs mt-0.5">
-                Evolution API integration for WhatsApp Business
+                {t("messaging.whatsapp.description")}
               </CardDescription>
             </div>
           </div>
@@ -55,19 +65,21 @@ export function MessagingTab() {
         <CardContent className="space-y-3 pt-0">
           <div className="space-y-1.5">
             <Label htmlFor="wpp-url" className="text-xs text-muted-foreground">
-              Evolution API URL
+              {t("messaging.whatsapp.apiUrl")}
             </Label>
             <Input
               id="wpp-url"
               value={get("messaging.whatsapp.evolution_url")}
-              onChange={(e) => set("messaging.whatsapp.evolution_url", e.target.value)}
+              onChange={(e) =>
+                set("messaging.whatsapp.evolution_url", e.target.value)
+              }
               placeholder="http://localhost:8080"
               className="text-sm font-mono"
             />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="wpp-key" className="text-xs text-muted-foreground">
-              API Key
+              {t("messaging.whatsapp.apiKey")}
             </Label>
             <SecretInput
               id="wpp-key"
@@ -77,13 +89,18 @@ export function MessagingTab() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="wpp-instance" className="text-xs text-muted-foreground">
-              Instance Name
+            <Label
+              htmlFor="wpp-instance"
+              className="text-xs text-muted-foreground"
+            >
+              {t("messaging.whatsapp.instanceName")}
             </Label>
             <Input
               id="wpp-instance"
               value={get("messaging.whatsapp.instance")}
-              onChange={(e) => set("messaging.whatsapp.instance", e.target.value)}
+              onChange={(e) =>
+                set("messaging.whatsapp.instance", e.target.value)
+              }
               placeholder="agentepro"
               className="text-sm"
             />
@@ -103,17 +120,22 @@ export function MessagingTab() {
               <Mail className="h-4 w-4 text-blue-400" />
             </div>
             <div>
-              <CardTitle className="text-sm">Email</CardTitle>
+              <CardTitle className="text-sm">
+                {t("messaging.email.name")}
+              </CardTitle>
               <CardDescription className="text-xs mt-0.5">
-                Brevo (formerly Sendinblue) transactional email
+                {t("messaging.email.description")}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-3 pt-0">
           <div className="space-y-1.5">
-            <Label htmlFor="email-key" className="text-xs text-muted-foreground">
-              Brevo API Key
+            <Label
+              htmlFor="email-key"
+              className="text-xs text-muted-foreground"
+            >
+              {t("messaging.email.apiKey")}
             </Label>
             <SecretInput
               id="email-key"
@@ -124,26 +146,36 @@ export function MessagingTab() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="email-from-name" className="text-xs text-muted-foreground">
-                Sender Name
+              <Label
+                htmlFor="email-from-name"
+                className="text-xs text-muted-foreground"
+              >
+                {t("messaging.email.senderName")}
               </Label>
               <Input
                 id="email-from-name"
                 value={get("messaging.email.from_name")}
-                onChange={(e) => set("messaging.email.from_name", e.target.value)}
+                onChange={(e) =>
+                  set("messaging.email.from_name", e.target.value)
+                }
                 placeholder="AgentePro"
                 className="text-sm"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="email-from-address" className="text-xs text-muted-foreground">
-                Sender Address
+              <Label
+                htmlFor="email-from-address"
+                className="text-xs text-muted-foreground"
+              >
+                {t("messaging.email.senderAddress")}
               </Label>
               <Input
                 id="email-from-address"
                 type="email"
                 value={get("messaging.email.from_address")}
-                onChange={(e) => set("messaging.email.from_address", e.target.value)}
+                onChange={(e) =>
+                  set("messaging.email.from_address", e.target.value)
+                }
                 placeholder="noreply@example.com"
                 className="text-sm"
               />
@@ -164,9 +196,11 @@ export function MessagingTab() {
               <Send className="h-4 w-4 text-sky-400" />
             </div>
             <div>
-              <CardTitle className="text-sm">Telegram</CardTitle>
+              <CardTitle className="text-sm">
+                {t("messaging.telegram.name")}
+              </CardTitle>
               <CardDescription className="text-xs mt-0.5">
-                Bot for operator alerts and HITL approval workflows
+                {t("messaging.telegram.description")}
               </CardDescription>
             </div>
           </div>
@@ -174,7 +208,7 @@ export function MessagingTab() {
         <CardContent className="space-y-3 pt-0">
           <div className="space-y-1.5">
             <Label htmlFor="tg-token" className="text-xs text-muted-foreground">
-              Bot Token
+              {t("messaging.telegram.botToken")}
             </Label>
             <SecretInput
               id="tg-token"
@@ -184,13 +218,18 @@ export function MessagingTab() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="tg-chat-id" className="text-xs text-muted-foreground">
-              Operator Chat ID
+            <Label
+              htmlFor="tg-chat-id"
+              className="text-xs text-muted-foreground"
+            >
+              {t("messaging.telegram.chatId")}
             </Label>
             <Input
               id="tg-chat-id"
               value={get("messaging.telegram.chat_id")}
-              onChange={(e) => set("messaging.telegram.chat_id", e.target.value)}
+              onChange={(e) =>
+                set("messaging.telegram.chat_id", e.target.value)
+              }
               placeholder="-1001234567890"
               className="text-sm font-mono"
             />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useLeadsStore, Lead } from "@/lib/stores/leads-store";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,17 +40,6 @@ const COLUMNS = [
 ] as const;
 type ColumnType = (typeof COLUMNS)[number];
 
-const COLUMN_LABELS: Record<ColumnType, string> = {
-  PROSPECTED: "Prospectado",
-  APPROVED: "Aprovado",
-  NEW: "Novo",
-  CONTACTED: "Contactado",
-  QUALIFIED: "Qualificado",
-  NEGOTIATING: "Negociando",
-  CONVERTED: "Convertido",
-  LOST: "Perdido",
-};
-
 const statusColors: Record<string, string> = {
   PROSPECTED: "bg-violet-500/10 text-violet-400 border-violet-500/20",
   APPROVED: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
@@ -62,7 +52,13 @@ const statusColors: Record<string, string> = {
 };
 
 // Sortable Item Component
-function SortableLeadCard({ lead }: { lead: Lead }) {
+function SortableLeadCard({
+  lead,
+  columnLabel,
+}: {
+  lead: Lead;
+  columnLabel: string;
+}) {
   const {
     attributes,
     listeners,
@@ -108,7 +104,7 @@ function SortableLeadCard({ lead }: { lead: Lead }) {
                 variant="outline"
                 className={`text-[9px] px-1.5 py-0 ${statusColors[lead.status] || ""}`}
               >
-                {COLUMN_LABELS[lead.status as ColumnType] ?? lead.status}
+                {columnLabel}
               </Badge>
             </div>
           </div>
@@ -119,6 +115,7 @@ function SortableLeadCard({ lead }: { lead: Lead }) {
 }
 
 export default function LeadsPage() {
+  const t = useTranslations("leads");
   const token = useAuthStore((s) => s.token);
   const { leads, isLoading, fetchLeads, updateLeadStatus } = useLeadsStore();
   const [activeLead, setActiveLead] = useState<Lead | null>(null);
@@ -169,7 +166,7 @@ export default function LeadsPage() {
     }
 
     if (activeLeadData && activeLeadData.status !== targetStatus) {
-      // Optimitistic update + API call
+      // Optimistic update + API call
       updateLeadStatus(activeId, targetStatus);
     }
   };
@@ -192,14 +189,12 @@ export default function LeadsPage() {
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       <div className="flex flex-shrink-0 items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Leads Pipeline</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Drag and drop leads to update their status
-          </p>
+          <h2 className="text-2xl font-bold tracking-tight">{t("title")}</h2>
+          <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <Button className="gap-2">
           <Plus className="w-4 h-4" />
-          New Lead
+          {t("newLead")}
         </Button>
       </div>
 
@@ -212,6 +207,7 @@ export default function LeadsPage() {
         <div className="flex-1 flex gap-4 overflow-x-auto pb-4">
           {COLUMNS.map((col) => {
             const columnLeads = leads.filter((l) => l.status === col);
+            const columnLabel = t(`columns.${col}`);
 
             return (
               <div
@@ -224,7 +220,7 @@ export default function LeadsPage() {
                       className={`w-2 h-2 rounded-full ${statusColors[col]?.split(" ")[0] || "bg-muted"}`}
                     />
                     <h3 className="font-semibold text-sm tracking-tight">
-                      {COLUMN_LABELS[col] ?? col}
+                      {columnLabel}
                     </h3>
                   </div>
                   <Badge variant="secondary" className="bg-background">
@@ -241,12 +237,16 @@ export default function LeadsPage() {
                   >
                     <div className="min-h-[200px]">
                       {columnLeads.map((lead) => (
-                        <SortableLeadCard key={lead.id} lead={lead as Lead} />
+                        <SortableLeadCard
+                          key={lead.id}
+                          lead={lead as Lead}
+                          columnLabel={columnLabel}
+                        />
                       ))}
                       {columnLeads.length === 0 && (
                         <div className="h-full min-h-[100px] flex items-center justify-center border-2 border-dashed border-border/50 rounded-lg">
                           <p className="text-xs text-muted-foreground text-center px-4">
-                            Drop leads here
+                            {t("dropHere")}
                           </p>
                         </div>
                       )}

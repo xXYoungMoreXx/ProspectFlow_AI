@@ -8,10 +8,12 @@ import { useLeadsStore } from "@/lib/stores/leads-store";
 import { useAgentsStore } from "@/lib/stores/agents-store";
 import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
+import { useTranslations, useLocale } from "next-intl";
+import { setLocale } from "@/i18n/actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -32,27 +34,40 @@ import {
   Menu,
   Sun,
   Moon,
-  ChevronRight,
+  Monitor,
   DollarSign,
   FileText,
   Search,
+  Globe,
+  Check,
 } from "lucide-react";
 
-const navItems = [
-  { href: "/agents", label: "Agents", icon: Bot, badge: null },
-  { href: "/leads", label: "Leads", icon: Users, badge: null },
-  { href: "/deals", label: "Deals", icon: Handshake, badge: null },
-  { href: "/projects", label: "Projects", icon: FolderKanban, badge: null },
-  { href: "/briefings", label: "Briefings", icon: FileText, badge: null },
-  { href: "/prospecting", label: "Prospecting", icon: Search, badge: null },
-  { href: "/hitl", label: "Approvals", icon: ShieldCheck, badge: "3" },
-  { href: "/costs", label: "Costs", icon: DollarSign, badge: null },
-];
+const NAV_ITEMS = [
+  { href: "/agents", labelKey: "nav.agents", icon: Bot },
+  { href: "/leads", labelKey: "nav.leads", icon: Users },
+  { href: "/deals", labelKey: "nav.deals", icon: Handshake },
+  { href: "/projects", labelKey: "nav.projects", icon: FolderKanban },
+  { href: "/briefings", labelKey: "nav.briefings", icon: FileText },
+  { href: "/prospecting", labelKey: "nav.prospecting", icon: Search },
+  { href: "/hitl", labelKey: "nav.hitl", icon: ShieldCheck },
+  { href: "/costs", labelKey: "nav.costs", icon: DollarSign },
+] as const;
 
-function SidebarContent({ pathname }: { pathname: string }) {
+const LOCALE_CODE: Record<string, string> = {
+  "pt-BR": "PT",
+  es: "ES",
+  en: "EN",
+};
+
+function SidebarContent({
+  pathname,
+  labels,
+}: {
+  pathname: string;
+  labels: Record<string, string>;
+}) {
   return (
     <div className="flex flex-col h-full">
-      {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-5">
         <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/20 border border-primary/30">
           <Bot className="w-5 h-5 text-primary" />
@@ -61,55 +76,43 @@ function SidebarContent({ pathname }: { pathname: string }) {
           AgentePro
         </span>
       </div>
-
       <Separator className="bg-sidebar-border" />
-
-      {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-1">
-          {navItems.map((item) => {
+        <nav className="space-y-0.5">
+          {NAV_ITEMS.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-[120ms] ${
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                    ? "bg-primary/10 text-primary"
                     : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
                 }`}
               >
-                <item.icon
-                  className={`w-4.5 h-4.5 shrink-0 transition-colors ${isActive ? "text-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80"}`}
-                />
-                <span className="flex-1">{item.label}</span>
-                {item.badge && (
-                  <Badge
-                    variant="default"
-                    className="h-5 min-w-5 text-[10px] font-semibold bg-primary/80 hover:bg-primary/80"
-                  >
-                    {item.badge}
-                  </Badge>
-                )}
                 {isActive && (
-                  <ChevronRight className="w-3.5 h-3.5 text-primary/60" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full bg-primary" />
                 )}
+                <item.icon
+                  className={`w-4 h-4 shrink-0 ${isActive ? "text-primary" : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80"}`}
+                />
+                <span className="flex-1">
+                  {labels[item.labelKey] ?? item.labelKey}
+                </span>
               </Link>
             );
           })}
         </nav>
       </ScrollArea>
-
       <Separator className="bg-sidebar-border" />
-
-      {/* Footer */}
       <div className="px-3 py-3">
         <Link
           href="/settings"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
         >
-          <Settings className="w-4.5 h-4.5" />
-          Settings
+          <Settings className="w-4 h-4" />
+          {labels["nav.settings"]}
         </Link>
       </div>
     </div>
@@ -124,18 +127,16 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, operatorEmail, logout, setAuth } = useAuthStore();
-  const [darkMode, setDarkMode] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
-
   const [mounted, setMounted] = useState(false);
-
+  const { theme, setTheme } = useTheme();
+  const t = useTranslations();
+  const currentLocale = useLocale();
   const { fetchPending } = useHitlStore();
   const { fetchLeads } = useLeadsStore();
   const { fetchAgents } = useAgentsStore();
 
   useEffect(() => {
-    // Use requestAnimationFrame to avoid "setState in effect" lint error
-    // while still ensuring we only render on the client
     requestAnimationFrame(() => setMounted(true));
   }, []);
 
@@ -165,30 +166,37 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (isAuthenticated) {
-      const eventSource = new EventSource("/api/events");
-
-      eventSource.addEventListener("heartbeat", () => {
+      const ev = new EventSource("/api/events");
+      ev.addEventListener("heartbeat", () => {
         fetchPending();
         fetchLeads();
         fetchAgents();
       });
-
-      return () => {
-        eventSource.close();
-      };
+      return () => ev.close();
     }
   }, [isAuthenticated, fetchPending, fetchLeads, fetchAgents]);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle("dark");
+  const handleLocaleChange = async (locale: string) => {
+    await setLocale(locale);
+    router.refresh();
+  };
+
+  const navLabels = {
+    "nav.agents": t("nav.agents"),
+    "nav.leads": t("nav.leads"),
+    "nav.deals": t("nav.deals"),
+    "nav.projects": t("nav.projects"),
+    "nav.briefings": t("nav.briefings"),
+    "nav.prospecting": t("nav.prospecting"),
+    "nav.hitl": t("nav.hitl"),
+    "nav.costs": t("nav.costs"),
+    "nav.settings": t("nav.settings"),
   };
 
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
-
   const initials =
     mounted && operatorEmail
       ? operatorEmail.substring(0, 2).toUpperCase()
@@ -196,26 +204,24 @@ export default function DashboardLayout({
 
   if (!mounted || !isAuthenticated) return null;
 
+  const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
+
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col bg-sidebar border-r border-sidebar-border">
-        <SidebarContent pathname={pathname} />
+      <aside className="hidden lg:flex lg:w-56 lg:flex-col bg-sidebar shadow-sm">
+        <SidebarContent pathname={pathname} labels={navLabels} />
       </aside>
 
-      {/* Mobile sidebar */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent
           side="left"
-          className="w-64 p-0 bg-sidebar border-sidebar-border"
+          className="w-56 p-0 bg-sidebar border-sidebar-border"
         >
-          <SidebarContent pathname={pathname} />
+          <SidebarContent pathname={pathname} labels={navLabels} />
         </SheetContent>
       </Sheet>
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top bar */}
         <header className="flex items-center justify-between h-14 px-4 lg:px-6 border-b border-border bg-background/80 backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <Sheet>
@@ -237,20 +243,77 @@ export default function DashboardLayout({
             </h1>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleDarkMode}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              {darkMode ? (
-                <Sun className="w-4 h-4" />
-              ) : (
-                <Moon className="w-4 h-4" />
-              )}
-            </Button>
+          <div className="flex items-center gap-1">
+            {/* Language selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1.5 text-muted-foreground hover:text-foreground h-8 px-2"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span className="text-xs font-medium">
+                      {LOCALE_CODE[currentLocale] ?? "PT"}
+                    </span>
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="end" className="w-40">
+                {(["pt-BR", "es", "en"] as const).map((loc) => (
+                  <DropdownMenuItem
+                    key={loc}
+                    onClick={() => void handleLocaleChange(loc)}
+                  >
+                    <span className="flex-1">{t(`language.${loc}`)}</span>
+                    {currentLocale === loc && (
+                      <Check className="w-3.5 h-3.5 ml-2 text-primary" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
+            {/* Theme toggle */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <ThemeIcon className="w-4 h-4" />
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="end" className="w-36">
+                <DropdownMenuItem onClick={() => setTheme("light")}>
+                  <Sun className="w-4 h-4 mr-2" />
+                  {t("theme.light")}
+                  {theme === "light" && (
+                    <Check className="w-3.5 h-3.5 ml-auto text-primary" />
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                  <Moon className="w-4 h-4 mr-2" />
+                  {t("theme.dark")}
+                  {theme === "dark" && (
+                    <Check className="w-3.5 h-3.5 ml-auto text-primary" />
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")}>
+                  <Monitor className="w-4 h-4 mr-2" />
+                  {t("theme.system")}
+                  {theme === "system" && (
+                    <Check className="w-3.5 h-3.5 ml-auto text-primary" />
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* User menu */}
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
@@ -278,14 +341,13 @@ export default function DashboardLayout({
                   className="text-destructive focus:text-destructive"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  Log out
+                  {t("common.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </header>
 
-        {/* Page content */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
     </div>

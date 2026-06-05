@@ -1,0 +1,469 @@
+{
+  "nav": {
+    "agents": "Agentes",
+    "leads": "Leads",
+    "deals": "Deals",
+    "projects": "Projetos",
+    "briefings": "Briefings",
+    "prospecting": "Prospecção",
+    "hitl": "Aprovações",
+    "costs": "Custos",
+    "settings": "Configurações"
+  },
+  "auth": {
+    "brand": "AgentePro",
+    "login": {
+      "subtitle": "Faça login para gerenciar seus agentes de IA",
+      "email": "E-mail",
+      "emailPlaceholder": "operador@exemplo.com",
+      "password": "Senha",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Esqueceu a senha?",
+      "submit": "Entrar",
+      "submitting": "Entrando...",
+      "noAccount": "Não tem uma conta?",
+      "registerLink": "Cadastre-se",
+      "errors": {
+        "invalid": "Credenciais inválidas",
+        "network": "Não foi possível conectar ao servidor"
+      }
+    },
+    "register": {
+      "title": "Criar Conta",
+      "subtitle": "Cadastre-se para gerenciar seus agentes de IA",
+      "fullName": "Nome completo",
+      "namePlaceholder": "Seu nome",
+      "email": "E-mail",
+      "emailPlaceholder": "operador@exemplo.com",
+      "password": "Senha",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "Mínimo de 8 caracteres, com letra maiúscula, minúscula, número e símbolo.",
+      "confirmPassword": "Confirmar Senha",
+      "submit": "Cadastrar",
+      "submitting": "Cadastrando...",
+      "hasAccount": "Já tem uma conta?",
+      "loginLink": "Faça login",
+      "success": {
+        "title": "Cadastro realizado com sucesso!",
+        "emailSentTo": "Enviamos um e-mail de verificação para",
+        "instructions": "Por favor, verifique sua caixa de entrada para ativar sua conta.",
+        "goToLogin": "Ir para o Login"
+      },
+      "errors": {
+        "passwordMismatch": "As senhas não coincidem",
+        "generic": "Erro ao realizar cadastro",
+        "network": "Não foi possível conectar ao servidor"
+      }
+    },
+    "forgotPassword": {
+      "title": "Recuperar Senha",
+      "subtitle": "Digite seu e-mail para receber um link de redefinição",
+      "email": "E-mail",
+      "emailPlaceholder": "operador@exemplo.com",
+      "submit": "Enviar link de redefinição",
+      "submitting": "Enviando...",
+      "backToLogin": "Voltar para o login",
+      "success": {
+        "title": "Solicitação enviada",
+        "messagePre": "Se o e-mail",
+        "messagePost": "estiver cadastrado em nossa base, você receberá um link para redefinir sua senha.",
+        "backToLogin": "Voltar para o Login"
+      },
+      "errors": {
+        "generic": "Erro ao solicitar redefinição",
+        "network": "Não foi possível conectar ao servidor"
+      }
+    },
+    "resetPassword": {
+      "title": "Nova Senha",
+      "subtitle": "Digite sua nova senha abaixo",
+      "newPassword": "Nova Senha",
+      "passwordPlaceholder": "••••••••",
+      "confirmPassword": "Confirmar Nova Senha",
+      "submit": "Redefinir Senha",
+      "submitting": "Salvando...",
+      "success": {
+        "title": "Senha redefinida!",
+        "message": "Sua senha foi alterada com sucesso. Você já pode fazer login.",
+        "goToLogin": "Ir para o Login"
+      },
+      "errors": {
+        "passwordMismatch": "As senhas não coincidem",
+        "generic": "Erro ao redefinir senha",
+        "network": "Não foi possível conectar ao servidor",
+        "invalidToken": {
+          "title": "Token inválido",
+          "message": "O link de redefinição de senha está incompleto ou inválido.",
+          "requestNew": "Solicitar novo link"
+        }
+      }
+    },
+    "verifyEmail": {
+      "loading": "Verificando e-mail...",
+      "loadingMessage": "Aguarde um momento.",
+      "success": {
+        "title": "E-mail verificado!",
+        "message": "Sua conta foi ativada com sucesso. Você já pode fazer login.",
+        "goToLogin": "Ir para o Login"
+      },
+      "errors": {
+        "noToken": "Token de verificação ausente.",
+        "failed": "Falha ao verificar e-mail. O link pode ter expirado.",
+        "title": "Erro na verificação",
+        "backToLogin": "Voltar para o Login"
+      }
+    }
+  },
+  "agents": {
+    "title": "Agentes de IA",
+    "subtitle": "Gerencie e configure seus agentes autônomos",
+    "newAgent": "Novo Agente",
+    "noModel": "Nenhum modelo configurado",
+    "skillsCount": "{count} habilidades",
+    "empty": {
+      "title": "Nenhum agente ainda",
+      "description": "Crie seu primeiro agente de IA para começar",
+      "cta": "Criar Agente"
+    },
+    "error": "Falha ao carregar agentes. Verifique sua conexão.",
+    "personas": {
+      "HUNTER": "Hunter",
+      "CLOSER": "Closer",
+      "BUILDER": "Builder",
+      "QA": "QA"
+    },
+    "status": { "ACTIVE": "Ativo", "PAUSED": "Pausado", "INACTIVE": "Inativo" },
+    "new": {
+      "title": "Criar Agente",
+      "subtitle": "Configure uma nova persona de agente autônomo de IA",
+      "identity": "Identidade do Agente",
+      "agentName": "Nome do Agente",
+      "agentNamePlaceholder": "ex. Prospector Alpha",
+      "persona": "Tipo de Persona",
+      "personaPlaceholder": "Selecione a persona",
+      "personas": {
+        "HUNTER": "Hunter (Geração de Leads)",
+        "CLOSER": "Closer (Negociação)",
+        "BUILDER": "Builder (Desenvolvimento/Execução)",
+        "QA": "QA (Garantia de Qualidade)"
+      },
+      "systemPrompt": "System Prompt",
+      "systemPromptPlaceholder": "Você é um especialista em geração de leads...",
+      "tokens": "tokens",
+      "systemPromptHint": "Defina o comportamento, restrições e diretrizes operacionais do agente.",
+      "llmConfig": "Configuração de LLM",
+      "provider": "Provider",
+      "providerPlaceholder": "Selecione o provider",
+      "model": "Modelo",
+      "modelPlaceholder": "Selecione o modelo",
+      "temperature": "Temperatura",
+      "tempMin": "Determinístico (0.0)",
+      "tempMax": "Criativo (2.0)",
+      "knowledgeBase": "Base de Conhecimento e Regras",
+      "knowledgeHint": "Faça upload de materiais de referência (.pdf, .txt, .csv) para o contexto do agente.",
+      "uploadCta": "Clique ou arraste arquivos aqui",
+      "uploadHint": "Os arquivos serão convertidos em embeddings vetoriais automaticamente",
+      "uploading": "Validando e enviando...",
+      "uploadedFiles": "Arquivos Enviados",
+      "agentSkills": "Habilidades do Agente",
+      "skillsHint": "Selecione as capacidades para este agente",
+      "skillLabels": {
+        "web_search": "Busca Web",
+        "web_searchDesc": "Permite ao agente pesquisar na internet.",
+        "read_files": "Ler Arquivos",
+        "read_filesDesc": "Permite ao agente ler arquivos locais.",
+        "write_files": "Escrever Arquivos",
+        "write_filesDesc": "Permite ao agente modificar arquivos.",
+        "security_guard": "Guarda de Segurança",
+        "security_guardDesc": "Executa análise de payload para prevenir injeção."
+      },
+      "securityNote": "Todos os agentes são submetidos ao middleware de segurança global. Payloads de saída são inspecionados automaticamente.",
+      "deploy": "Implantar Agente"
+    },
+    "detail": {
+      "configuration": "Configuração",
+      "name": "Nome",
+      "namePlaceholder": "Nome do agente",
+      "model": "Modelo LLM",
+      "modelPlaceholder": "Selecione o modelo",
+      "statusLabel": "Status",
+      "saving": "Salvando...",
+      "save": "Salvar Alterações",
+      "subAgents": "Sub-agentes",
+      "skills": "Habilidades",
+      "created": "Criado",
+      "lastUpdated": "Última atualização",
+      "notFound": "Agente não encontrado",
+      "backToAgents": "Voltar para Agentes"
+    }
+  },
+  "leads": {
+    "title": "Pipeline de Leads",
+    "subtitle": "Arraste e solte leads para atualizar seu status",
+    "newLead": "Novo Lead",
+    "dropHere": "Solte leads aqui",
+    "columns": {
+      "PROSPECTED": "Prospectado",
+      "APPROVED": "Aprovado",
+      "NEW": "Novo",
+      "CONTACTED": "Contactado",
+      "QUALIFIED": "Qualificado",
+      "NEGOTIATING": "Negociando",
+      "CONVERTED": "Convertido",
+      "LOST": "Perdido"
+    }
+  },
+  "deals": {
+    "title": "Deals",
+    "subtitle": "Acompanhe negociações e contratos fechados",
+    "empty": "Nenhum deal ainda",
+    "status": {
+      "PROPOSED": "Proposto",
+      "NEGOTIATING": "Negociando",
+      "CLOSED": "Fechado",
+      "CANCELLED": "Cancelado"
+    }
+  },
+  "projects": {
+    "title": "Projetos",
+    "subtitle": "Acompanhe entregas de sites e pontuações Lighthouse",
+    "empty": "Nenhum projeto ainda",
+    "perf": "Perf:",
+    "a11y": "A11y:"
+  },
+  "briefings": {
+    "title": "Briefings",
+    "subtitle": "Gerencie briefings de clientes e dispare extrações",
+    "empty": "Nenhum briefing ainda",
+    "columns": {
+      "id": "ID",
+      "deal": "Deal",
+      "status": "Status",
+      "started": "Iniciado",
+      "action": "Ação"
+    },
+    "status": {
+      "COLLECTING": "Coletando",
+      "COMPLETED": "Concluído",
+      "APPROVED": "Aprovado"
+    },
+    "forceExtract": "Forçar Extração",
+    "extracting": "Extraindo..."
+  },
+  "prospecting": {
+    "title": "Prospecção",
+    "subtitle": "Dispare o agente Hunter e gerencie leads prospectados",
+    "newSearch": "Nova Busca",
+    "tabs": { "queue": "Fila", "config": "Configuração" },
+    "search": {
+      "title": "Parâmetros de Busca",
+      "categories": "Categorias",
+      "categoriesPlaceholder": "ex. restaurantes",
+      "city": "Cidade",
+      "cityPlaceholder": "São Paulo",
+      "state": "Estado (2 chars)",
+      "statePlaceholder": "SP",
+      "radius": "Raio (km):",
+      "minScore": "Score Mínimo:",
+      "submit": "Iniciar Busca",
+      "submitting": "Disparando..."
+    },
+    "queue": {
+      "empty": "Nenhum lead na fila",
+      "columns": {
+        "business": "Empresa",
+        "score": "Score",
+        "source": "Origem",
+        "date": "Data",
+        "hitl": "HITL"
+      }
+    },
+    "config": { "title": "Configuração de Prospecção" }
+  },
+  "hitl": {
+    "title": "Aprovações HITL",
+    "subtitle": "Revise e aprove ações dos agentes antes da execução",
+    "pending": "pendentes",
+    "empty": {
+      "title": "Tudo limpo!",
+      "description": "Nenhuma aprovação pendente no momento"
+    },
+    "columns": {
+      "action": "Ação do Agente",
+      "agent": "Agente:",
+      "expired": "Expirado",
+      "status": "PENDENTE"
+    },
+    "actionLabels": {
+      "APPROVE_LEAD_LIST": "Aprovar Lista de Leads",
+      "SEND_EXTERNAL_MESSAGE": "Enviar Mensagem Externa",
+      "SEND_PROPOSAL": "Enviar Proposta",
+      "APPROVE_MOCKUP": "Aprovar Mockup",
+      "APPROVE_STAGING": "Aprovar Staging",
+      "DEPLOY_PRODUCTION": "Deploy em Produção",
+      "APPROVE_BRIEFING": "Aprovar Briefing",
+      "SEND_CLIENT_DELIVERY": "Enviar Entrega ao Cliente"
+    },
+    "approve": "Aprovar",
+    "reject": "Rejeitar",
+    "rejectDialog": {
+      "title": "Rejeitar Ação",
+      "description": "Informe o motivo da rejeição para o agente.",
+      "reasonLabel": "Motivo",
+      "reasonPlaceholder": "Por que está rejeitando esta ação?",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar Rejeição"
+    }
+  },
+  "costs": {
+    "title": "Custos de LLM",
+    "subtitle": "Consumo de tokens e custo por agente",
+    "periods": { "today": "Hoje", "7days": "7 dias", "30days": "30 dias" },
+    "totalCost": "Custo Total",
+    "totalTokens": "Total de Tokens",
+    "requests": "Requisições",
+    "breakdown": "Detalhamento por Agente",
+    "loading": "Carregando...",
+    "empty": "Nenhum uso registrado no período selecionado.",
+    "columns": {
+      "agent": "Agente",
+      "provider": "Provider",
+      "tokens": "Tokens",
+      "requests": "Requisições",
+      "cost": "Custo"
+    }
+  },
+  "settings": {
+    "title": "Configurações",
+    "subtitle": "Configure provedores de IA, canais de mensagens e integrações",
+    "unsaved": "não salvo",
+    "discard": "Descartar",
+    "save": "Salvar",
+    "tabs": {
+      "aiProviders": "Provedores de IA",
+      "messaging": "Mensagens",
+      "integrations": "Integrações",
+      "system": "Sistema"
+    },
+    "aiProviders": {
+      "openai": {
+        "name": "OpenAI",
+        "description": "Modelos GPT-4o, GPT-4o-mini e série o",
+        "apiKey": "API Key",
+        "defaultModel": "Modelo Padrão"
+      },
+      "anthropic": {
+        "name": "Anthropic",
+        "description": "Claude 3.5 Sonnet, Haiku e Opus",
+        "apiKey": "API Key",
+        "defaultModel": "Modelo Padrão"
+      },
+      "google": {
+        "name": "Google Gemini",
+        "description": "Gemini 2.0 Flash e Pro",
+        "apiKey": "API Key",
+        "defaultModel": "Modelo Padrão"
+      },
+      "groq": {
+        "name": "Groq",
+        "description": "Inferência ultra-rápida com Llama e Mixtral",
+        "apiKey": "API Key",
+        "defaultModel": "Modelo Padrão",
+        "fastBadge": "Rápido"
+      },
+      "ollama": {
+        "name": "Ollama (Local)",
+        "description": "Execute modelos open-source localmente — sem necessidade de API key"
+      }
+    },
+    "messaging": {
+      "whatsapp": {
+        "name": "WhatsApp",
+        "description": "Integração Evolution API para WhatsApp Business",
+        "apiUrl": "URL da Evolution API",
+        "apiKey": "API Key",
+        "instanceName": "Nome da Instância"
+      },
+      "email": {
+        "name": "E-mail",
+        "description": "E-mail transacional Brevo (antigo Sendinblue)",
+        "apiKey": "Brevo API Key",
+        "senderName": "Nome do Remetente",
+        "senderAddress": "Endereço do Remetente"
+      },
+      "telegram": {
+        "name": "Telegram",
+        "description": "Bot para alertas de operador e fluxos de aprovação HITL",
+        "botToken": "Token do Bot",
+        "chatId": "Chat ID do Operador"
+      }
+    },
+    "integrations": {
+      "mcpBrasil": {
+        "name": "MCP Brasil",
+        "description": "APIs do governo brasileiro — Transparência, DataJud, TSE",
+        "transparenciaKey": "API Key Transparência Federal",
+        "datajudKey": "API Key DataJud",
+        "metaToken": "Meta Access Token"
+      },
+      "chromadb": {
+        "name": "ChromaDB",
+        "description": "Banco de dados vetorial para RAG e memória de agentes",
+        "url": "URL do ChromaDB"
+      },
+      "webhooks": {
+        "name": "Webhooks",
+        "description": "Webhook de saída para eventos do sistema e integrações",
+        "url": "URL do Webhook",
+        "secret": "Signing Secret"
+      }
+    },
+    "system": {
+      "hitlTimeouts": {
+        "title": "Timeouts de HITL",
+        "description": "Configuração da janela de aprovação human-in-the-loop",
+        "defaultTimeout": "Timeout Padrão (minutos)",
+        "financialInterval": "Intervalo de Alerta Financeiro (min)"
+      },
+      "security": {
+        "title": "Limites de Segurança",
+        "description": "Validação de entrada e limites de rate-limiting",
+        "maxBodySize": "Tamanho Máximo do Body (bytes)",
+        "hint": "Padrão: 1 MB (1048576). Aumente apenas se uploads de arquivos grandes forem necessários."
+      },
+      "backup": {
+        "title": "Backup e Restauração",
+        "description": "Exporte ou importe configurações não-secretas como JSON",
+        "export": "Exportar JSON",
+        "import": "Importar JSON",
+        "note": "Segredos (API Keys, tokens) nunca são exportados. Devem ser reinseridos manualmente após importação."
+      }
+    },
+    "ollama": {
+      "pullModel": "Baixar Modelo",
+      "pullPlaceholder": "llama3.2:3b",
+      "pull": "Baixar",
+      "online": "Ollama Online",
+      "unreachable": "Ollama Inacessível",
+      "cpuOnly": "Somente CPU",
+      "installed": "Modelos Instalados",
+      "noModels": "Nenhum modelo instalado"
+    }
+  },
+  "common": {
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "back": "Voltar",
+    "search": "Buscar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "logout": "Sair"
+  },
+  "theme": { "light": "Claro", "dark": "Escuro", "system": "Sistema" },
+  "language": { "pt-BR": "Português", "es": "Español", "en": "English" }
+}

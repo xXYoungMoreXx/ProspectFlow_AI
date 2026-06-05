@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { use, useMemo, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,6 +48,7 @@ type AgentData = NonNullable<
 >;
 
 function AgentEditorForm({ agent, id }: { agent: AgentData; id: string }) {
+  const t = useTranslations("agents");
   const token = useAuthStore((s) => s.token);
   const queryClient = useQueryClient();
 
@@ -99,27 +101,29 @@ function AgentEditorForm({ agent, id }: { agent: AgentData; id: string }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-semibold">Configuration</CardTitle>
+          <CardTitle className="text-sm font-semibold">
+            {t("detail.configuration")}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="agent-name">Name</Label>
+            <Label htmlFor="agent-name">{t("detail.name")}</Label>
             <Input
               id="agent-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Agent name"
+              placeholder={t("detail.namePlaceholder")}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="agent-model">LLM Model</Label>
+            <Label htmlFor="agent-model">{t("detail.model")}</Label>
             <Select
               value={model}
               onValueChange={(v) => v != null && setModel(v)}
             >
               <SelectTrigger id="agent-model">
-                <SelectValue placeholder="Select model" />
+                <SelectValue placeholder={t("detail.modelPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {MODEL_OPTIONS.map((m) => (
@@ -132,7 +136,7 @@ function AgentEditorForm({ agent, id }: { agent: AgentData; id: string }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="agent-status">Status</Label>
+            <Label htmlFor="agent-status">{t("detail.statusLabel")}</Label>
             <Select
               value={status}
               onValueChange={(v) => v != null && setStatus(v)}
@@ -166,12 +170,12 @@ function AgentEditorForm({ agent, id }: { agent: AgentData; id: string }) {
               {updateMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Saving...
+                  {t("detail.saving")}
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  Save Changes
+                  {t("detail.save")}
                 </>
               )}
             </Button>
@@ -194,7 +198,9 @@ function AgentEditorForm({ agent, id }: { agent: AgentData; id: string }) {
       {agent.skills && agent.skills.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-semibold">Skills</CardTitle>
+            <CardTitle className="text-sm font-semibold">
+              {t("detail.skills")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
@@ -213,8 +219,8 @@ function AgentEditorForm({ agent, id }: { agent: AgentData; id: string }) {
       )}
 
       <p className="text-xs text-muted-foreground">
-        Created {new Date(agent.createdAt).toLocaleString()} · Last updated{" "}
-        {new Date(agent.updatedAt).toLocaleString()}
+        {t("detail.created")} {new Date(agent.createdAt).toLocaleString()} ·{" "}
+        {t("detail.lastUpdated")} {new Date(agent.updatedAt).toLocaleString()}
       </p>
     </div>
   );
@@ -225,6 +231,7 @@ export default function AgentDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = useTranslations("agents");
   const { id } = use(params);
   const token = useAuthStore((s) => s.token);
 
@@ -248,9 +255,9 @@ export default function AgentDetailPage({
   if (!agent) {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <p className="text-muted-foreground">Agent not found</p>
+        <p className="text-muted-foreground">{t("detail.notFound")}</p>
         <Link href="/agents">
-          <Button variant="outline">Back to Agents</Button>
+          <Button variant="outline">{t("detail.backToAgents")}</Button>
         </Link>
       </div>
     );

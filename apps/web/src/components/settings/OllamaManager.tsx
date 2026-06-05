@@ -11,6 +11,7 @@ import {
   Zap,
   ZapOff,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ function ProgressBar({ percent }: { percent: number }) {
 }
 
 export function OllamaManager() {
+  const t = useTranslations("settings");
   const {
     status,
     models,
@@ -91,7 +93,7 @@ export function OllamaManager() {
             }`}
           />
           <span className="text-sm font-medium">
-            {status?.reachable ? "Ollama Online" : "Ollama Unreachable"}
+            {status?.reachable ? t("ollama.online") : t("ollama.unreachable")}
           </span>
           {status?.version && (
             <Badge variant="secondary" className="text-xs font-mono">
@@ -114,7 +116,7 @@ export function OllamaManager() {
           ) : (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <ZapOff className="h-3.5 w-3.5" />
-              <span>CPU only</span>
+              <span>{t("ollama.cpuOnly")}</span>
             </div>
           )}
 
@@ -140,7 +142,7 @@ export function OllamaManager() {
       {/* Pull model */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">
-          Pull Model
+          {t("ollama.pullModel")}
         </label>
         <p className="text-xs text-muted-foreground">
           Enter a model name from{" "}
@@ -157,7 +159,7 @@ export function OllamaManager() {
         </p>
         <div className="flex gap-2">
           <Input
-            placeholder="llama3.2:3b"
+            placeholder={t("ollama.pullPlaceholder")}
             value={modelInput}
             onChange={(e) => setModelInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handlePull()}
@@ -174,7 +176,7 @@ export function OllamaManager() {
             ) : (
               <Download className="h-4 w-4" />
             )}
-            Pull
+            {t("ollama.pull")}
           </Button>
         </div>
 
@@ -197,10 +199,7 @@ export function OllamaManager() {
                   </Badge>
                 )}
                 {isPulling && (
-                  <Badge
-                    variant="secondary"
-                    className="text-xs capitalize"
-                  >
+                  <Badge variant="secondary" className="text-xs capitalize">
                     {pullProgress.status}
                   </Badge>
                 )}
@@ -236,7 +235,7 @@ export function OllamaManager() {
       {/* Installed models */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">
-          Installed Models
+          {t("ollama.installed")}
         </label>
 
         {isLoadingModels ? (
@@ -246,7 +245,9 @@ export function OllamaManager() {
         ) : models.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border/50 bg-card/30 flex flex-col items-center justify-center py-8 gap-2">
             <Cpu className="h-8 w-8 text-muted-foreground/40" />
-            <p className="text-sm text-muted-foreground">No models installed</p>
+            <p className="text-sm text-muted-foreground">
+              {t("ollama.noModels")}
+            </p>
           </div>
         ) : (
           <div className="divide-y divide-border/40 rounded-xl border border-border/60 bg-card overflow-hidden">
@@ -268,10 +269,7 @@ export function OllamaManager() {
                         </span>
                       )}
                       {model.details?.quantizationLevel && (
-                        <Badge
-                          variant="secondary"
-                          className="text-xs h-4 px-1"
-                        >
+                        <Badge variant="secondary" className="text-xs h-4 px-1">
                           {model.details.quantizationLevel}
                         </Badge>
                       )}

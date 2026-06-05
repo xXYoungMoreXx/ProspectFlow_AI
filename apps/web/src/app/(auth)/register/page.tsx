@@ -14,8 +14,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Bot, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function RegisterPage() {
+  const t = useTranslations("auth");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +31,7 @@ export default function RegisterPage() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("As senhas não coincidem");
+      setError(t("register.errors.passwordMismatch"));
       return;
     }
 
@@ -40,9 +42,9 @@ export default function RegisterPage() {
       setSuccess(true);
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.errors[0]?.message || "Erro ao realizar cadastro");
+        setError(err.errors[0]?.message || t("register.errors.generic"));
       } else {
-        setError("Não foi possível conectar ao servidor");
+        setError(t("register.errors.generic"));
       }
     } finally {
       setLoading(false);
@@ -58,10 +60,10 @@ export default function RegisterPage() {
             <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 text-green-500">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <CardTitle>Cadastro realizado com sucesso!</CardTitle>
+            <CardTitle>{t("register.success.title")}</CardTitle>
             <CardDescription>
-              Enviamos um e-mail de verificação para <strong>{email}</strong>.
-              Por favor, verifique sua caixa de entrada para ativar sua conta.
+              {t("register.success.emailSentTo")} <strong>{email}</strong>.{" "}
+              {t("register.success.instructions")}
             </CardDescription>
             <div className="pt-4 flex">
               <Link
@@ -71,7 +73,7 @@ export default function RegisterPage() {
                   className: "w-full",
                 })}
               >
-                Ir para o Login
+                {t("register.success.goToLogin")}
               </Link>
             </div>
           </CardContent>
@@ -91,10 +93,10 @@ export default function RegisterPage() {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold tracking-tight">
-              Criar Conta
+              {t("register.title")}
             </CardTitle>
             <CardDescription className="text-muted-foreground mt-1">
-              Cadastre-se para gerenciar seus agentes de IA
+              {t("register.subtitle")}
             </CardDescription>
           </div>
         </CardHeader>
@@ -109,11 +111,11 @@ export default function RegisterPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="name">Nome completo</Label>
+              <Label htmlFor="name">{t("register.fullName")}</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Seu nome"
+                placeholder={t("register.namePlaceholder")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -122,11 +124,11 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
+              <Label htmlFor="email">{t("register.email")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="operador@exemplo.com"
+                placeholder={t("register.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -135,28 +137,29 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password">{t("register.password")}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t("register.passwordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="h-11"
               />
               <p className="text-xs text-muted-foreground">
-                Mínimo de 8 caracteres, com letra maiúscula, minúscula, número e
-                símbolo.
+                {t("register.passwordHint")}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+              <Label htmlFor="confirmPassword">
+                {t("register.confirmPassword")}
+              </Label>
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t("register.passwordPlaceholder")}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -172,20 +175,20 @@ export default function RegisterPage() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Cadastrando...
+                  {t("register.submitting")}
                 </>
               ) : (
-                "Cadastrar"
+                t("register.submit")
               )}
             </Button>
 
             <div className="text-center text-sm text-muted-foreground mt-4">
-              Já tem uma conta?{" "}
+              {t("register.hasAccount")}{" "}
               <Link
                 href="/login"
                 className="font-medium text-primary hover:underline"
               >
-                Faça login
+                {t("register.loginLink")}
               </Link>
             </div>
           </form>

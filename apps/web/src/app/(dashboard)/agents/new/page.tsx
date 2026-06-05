@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import {
   Card,
@@ -37,29 +38,14 @@ import {
 import Link from "next/link";
 
 const AVAILABLE_SKILLS = [
-  {
-    id: "web_search",
-    name: "Web Search",
-    description: "Allows the agent to search the internet.",
-  },
-  {
-    id: "read_file",
-    name: "Read Files",
-    description: "Allows the agent to read local files.",
-  },
-  {
-    id: "write_file",
-    name: "Write Files",
-    description: "Allows the agent to modify files.",
-  },
-  {
-    id: "security_guard",
-    name: "Security Guard",
-    description: "Runs payload analysis to prevent injection.",
-  },
-];
+  "web_search",
+  "read_files",
+  "write_files",
+  "security_guard",
+] as const;
 
 export default function NewAgentPage() {
+  const t = useTranslations("agents");
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -105,18 +91,6 @@ export default function NewAgentPage() {
 
   const handleSave = async () => {
     // In a real app, we'd make an API call to create the agent
-    console.log({
-      name,
-      persona,
-      systemPrompt,
-      llmConfig: {
-        provider,
-        model,
-        temperature: temperature[0],
-      },
-      skills: selectedSkills,
-    });
-
     // Simulate API delay
     await new Promise((r) => setTimeout(r, 1000));
     router.push("/agents");
@@ -131,9 +105,11 @@ export default function NewAgentPage() {
           </Button>
         </Link>
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Create Agent</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            {t("new.title")}
+          </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Configure a new autonomous AI agent persona and capabilities
+            {t("new.subtitle")}
           </p>
         </div>
       </div>
@@ -145,54 +121,56 @@ export default function NewAgentPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Bot className="w-5 h-5 text-primary" />
-                Agent Identity
+                {t("new.identity")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Agent Name</Label>
+                <Label htmlFor="name">{t("new.agentName")}</Label>
                 <Input
                   id="name"
-                  placeholder="e.g. Prospector Alpha"
+                  placeholder={t("new.agentNamePlaceholder")}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Persona Type</Label>
+                <Label>{t("new.persona")}</Label>
                 <Select
                   value={persona}
                   onValueChange={(v) => v && setPersona(v)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select persona" />
+                    <SelectValue placeholder={t("new.personaPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="HUNTER">
-                      Hunter (Lead Generation)
+                      {t("new.personas.HUNTER")}
                     </SelectItem>
-                    <SelectItem value="CLOSER">Closer (Negotiation)</SelectItem>
+                    <SelectItem value="CLOSER">
+                      {t("new.personas.CLOSER")}
+                    </SelectItem>
                     <SelectItem value="BUILDER">
-                      Builder (Development/Execution)
+                      {t("new.personas.BUILDER")}
                     </SelectItem>
-                    <SelectItem value="QA">QA (Quality Assurance)</SelectItem>
+                    <SelectItem value="QA">{t("new.personas.QA")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2 pt-2">
                 <div className="flex justify-between items-end">
-                  <Label htmlFor="prompt">System Prompt</Label>
+                  <Label htmlFor="prompt">{t("new.systemPrompt")}</Label>
                   <span
                     className={`text-xs ${tokenCount > 6000 ? "text-destructive font-semibold" : "text-muted-foreground"}`}
                   >
-                    ~{tokenCount} tokens
+                    ~{tokenCount} {t("new.tokens")}
                   </span>
                 </div>
                 <Textarea
                   id="prompt"
-                  placeholder="You are an expert lead generator..."
+                  placeholder={t("new.systemPromptPlaceholder")}
                   className="min-h-[200px] font-mono text-sm"
                   value={systemPrompt}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
@@ -200,8 +178,7 @@ export default function NewAgentPage() {
                   }
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  Define the agent&apos;s behavior, constraints, and operational
-                  guidelines.
+                  {t("new.systemPromptHint")}
                 </p>
               </div>
             </CardContent>
@@ -212,19 +189,19 @@ export default function NewAgentPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Cpu className="w-5 h-5 text-primary" />
-                LLM Configuration
+                {t("new.llmConfig")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Provider</Label>
+                  <Label>{t("new.provider")}</Label>
                   <Select
                     value={provider}
                     onValueChange={(v) => v && setProvider(v)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select provider" />
+                      <SelectValue placeholder={t("new.providerPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="openai">OpenAI</SelectItem>
@@ -234,10 +211,10 @@ export default function NewAgentPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Model</Label>
+                  <Label>{t("new.model")}</Label>
                   <Select value={model} onValueChange={(v) => v && setModel(v)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select model" />
+                      <SelectValue placeholder={t("new.modelPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
                       {provider === "openai" && (
@@ -284,7 +261,7 @@ export default function NewAgentPage() {
 
               <div className="space-y-4">
                 <div className="flex justify-between">
-                  <Label>Temperature</Label>
+                  <Label>{t("new.temperature")}</Label>
                   <span className="text-sm text-muted-foreground font-mono">
                     {temperature[0]}
                   </span>
@@ -299,8 +276,8 @@ export default function NewAgentPage() {
                   className="py-2"
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Deterministic (0.0)</span>
-                  <span>Creative (2.0)</span>
+                  <span>{t("new.tempMin")}</span>
+                  <span>{t("new.tempMax")}</span>
                 </div>
               </div>
             </CardContent>
@@ -311,12 +288,9 @@ export default function NewAgentPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary" />
-                Knowledge Base & Rules
+                {t("new.knowledgeBase")}
               </CardTitle>
-              <CardDescription>
-                Upload reference materials (.pdf, .txt, .csv) for the
-                agent&apos;s context.
-              </CardDescription>
+              <CardDescription>{t("new.knowledgeHint")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center space-y-3 hover:bg-muted/50 transition-colors relative">
@@ -333,12 +307,10 @@ export default function NewAgentPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">
-                    {isUploading
-                      ? "Validating and uploading..."
-                      : "Click or drag files here"}
+                    {isUploading ? t("new.uploading") : t("new.uploadCta")}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Files will be parsed into vector embeddings automatically
+                    {t("new.uploadHint")}
                   </p>
                 </div>
               </div>
@@ -346,7 +318,7 @@ export default function NewAgentPage() {
               {files.length > 0 && (
                 <div className="space-y-2 mt-4">
                   <h4 className="text-sm font-medium">
-                    Uploaded Files ({files.length})
+                    {t("new.uploadedFiles")} ({files.length})
                   </h4>
                   <div className="space-y-2">
                     {files.map((file, i) => (
@@ -384,32 +356,30 @@ export default function NewAgentPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-amber-500" />
-                Agent Skills
+                {t("new.agentSkills")}
               </CardTitle>
-              <CardDescription>
-                Select capabilities for this agent
-              </CardDescription>
+              <CardDescription>{t("new.skillsHint")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {AVAILABLE_SKILLS.map((skill) => (
                 <div
-                  key={skill.id}
+                  key={skill}
                   className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                 >
                   <Switch
-                    id={`skill-${skill.id}`}
-                    checked={selectedSkills.includes(skill.id)}
-                    onCheckedChange={() => toggleSkill(skill.id)}
+                    id={`skill-${skill}`}
+                    checked={selectedSkills.includes(skill)}
+                    onCheckedChange={() => toggleSkill(skill)}
                   />
                   <div className="space-y-1 mt-[-2px]">
                     <Label
-                      htmlFor={`skill-${skill.id}`}
+                      htmlFor={`skill-${skill}`}
                       className="font-semibold cursor-pointer"
                     >
-                      {skill.name}
+                      {t(`new.skillLabels.${skill}`)}
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      {skill.description}
+                      {t(`new.skillLabels.${skill}Desc`)}
                     </p>
                   </div>
                 </div>
@@ -424,8 +394,7 @@ export default function NewAgentPage() {
                 Security Guard
               </div>
               <p className="text-xs text-muted-foreground">
-                All agents are subjected to the global security middleware.
-                Outbound payloads are inspected automatically.
+                {t("new.securityNote")}
               </p>
               <Button
                 onClick={handleSave}
@@ -433,7 +402,7 @@ export default function NewAgentPage() {
                 disabled={!name}
               >
                 <Save className="w-4 h-4" />
-                Deploy Agent
+                {t("new.deploy")}
               </Button>
             </CardContent>
           </Card>
