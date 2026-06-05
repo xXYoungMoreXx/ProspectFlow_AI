@@ -82,6 +82,20 @@ async function setupAllMocks(page: Page) {
             isSecret: false,
             isActive: true,
           },
+          {
+            key: "media.heygen.api_key",
+            category: "media",
+            value: "••••••••",
+            isSecret: true,
+            isActive: true,
+          },
+          {
+            key: "media.seedance.default_model",
+            category: "media",
+            value: "seedance-1.0-pro",
+            isSecret: false,
+            isActive: true,
+          },
         ],
       },
     });
@@ -123,12 +137,18 @@ test.describe("Settings Hub", () => {
     await page.goto("/settings");
 
     // h2 heading (not the sidebar nav link which is an <a>)
-    await expect(page.locator("h2").filter({ hasText: /^Settings$/ })).toBeVisible();
+    await expect(
+      page.locator("h2").filter({ hasText: /^Settings$/ }),
+    ).toBeVisible();
 
     // Tab triggers rendered by Shadcn Tabs
-    await expect(page.getByRole("tab", { name: /ai providers/i })).toBeVisible();
+    await expect(
+      page.getByRole("tab", { name: /ai providers/i }),
+    ).toBeVisible();
     await expect(page.getByRole("tab", { name: /messaging/i })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /integrations/i })).toBeVisible();
+    await expect(
+      page.getByRole("tab", { name: /integrations/i }),
+    ).toBeVisible();
     await expect(page.getByRole("tab", { name: /system/i })).toBeVisible();
   });
 
@@ -146,6 +166,45 @@ test.describe("Settings Hub", () => {
     await expect(title("Google Gemini")).toBeVisible();
     await expect(title("Groq")).toBeVisible();
     await expect(title("Ollama (Local)")).toBeVisible();
+  });
+
+  test("should display video generation provider cards on the AI tab", async ({
+    page,
+  }) => {
+    await page.goto("/settings");
+
+    const title = (name: string) =>
+      page.locator('[data-slot="card-title"]', { hasText: name }).first();
+
+    await expect(title("HeyGen")).toBeVisible();
+    await expect(title("Higgsfield AI")).toBeVisible();
+    await expect(title("Seedance (ByteDance)")).toBeVisible();
+    await expect(title("Remotion")).toBeVisible();
+  });
+
+  test("should save media category key via video provider input", async ({
+    page,
+  }) => {
+    let savedCategory: string | undefined;
+
+    page.on("request", (req) => {
+      if (req.url().includes("/api/v1/settings") && req.method() === "PUT") {
+        const body = req.postDataJSON() as {
+          settings: Array<{ category: string }>;
+        } | null;
+        savedCategory = body?.settings?.[0]?.category;
+      }
+    });
+
+    await page.goto("/settings");
+
+    await page.locator('[id="heygen-key"]').fill("hg-new-test-key");
+    await page.getByRole("button", { name: /^save$/i }).click();
+
+    await expect(page.getByText(/unsaved/i)).not.toBeVisible({
+      timeout: 8000,
+    });
+    expect(savedCategory).toBe("media");
   });
 
   test("should show save bar when an API key is edited", async ({ page }) => {
