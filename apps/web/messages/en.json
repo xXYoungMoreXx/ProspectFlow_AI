@@ -1,0 +1,473 @@
+{
+  "nav": {
+    "agents": "Agents",
+    "leads": "Leads",
+    "deals": "Deals",
+    "projects": "Projects",
+    "briefings": "Briefings",
+    "prospecting": "Prospecting",
+    "hitl": "Approvals",
+    "costs": "Costs",
+    "settings": "Settings"
+  },
+  "auth": {
+    "brand": "AgentePro",
+    "login": {
+      "subtitle": "Sign in to manage your AI agents",
+      "email": "Email",
+      "emailPlaceholder": "operator@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Sign up",
+      "errors": {
+        "invalid": "Invalid credentials",
+        "network": "Could not connect to server"
+      }
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Sign up to manage your AI agents",
+      "fullName": "Full name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "operator@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "At least 8 characters with uppercase, lowercase, number, and symbol.",
+      "confirmPassword": "Confirm Password",
+      "submit": "Sign up",
+      "submitting": "Signing up...",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Sign in",
+      "success": {
+        "title": "Account created!",
+        "emailSentTo": "We sent a verification email to",
+        "instructions": "Please check your inbox to activate your account.",
+        "goToLogin": "Go to sign in"
+      },
+      "errors": {
+        "passwordMismatch": "Passwords do not match",
+        "generic": "Error creating account",
+        "network": "Could not connect to server"
+      }
+    },
+    "forgotPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email to receive a reset link",
+      "email": "Email",
+      "emailPlaceholder": "operator@example.com",
+      "submit": "Send reset link",
+      "submitting": "Sending...",
+      "backToLogin": "Back to sign in",
+      "success": {
+        "title": "Request sent",
+        "messagePre": "If the email",
+        "messagePost": "is registered, you'll receive a link to reset your password.",
+        "backToLogin": "Back to sign in"
+      },
+      "errors": {
+        "generic": "Error requesting reset",
+        "network": "Could not connect to server"
+      }
+    },
+    "resetPassword": {
+      "title": "New Password",
+      "subtitle": "Enter your new password below",
+      "newPassword": "New Password",
+      "passwordPlaceholder": "••••••••",
+      "confirmPassword": "Confirm New Password",
+      "submit": "Reset Password",
+      "submitting": "Saving...",
+      "success": {
+        "title": "Password reset!",
+        "message": "Your password was changed successfully. You can now sign in.",
+        "goToLogin": "Go to sign in"
+      },
+      "errors": {
+        "passwordMismatch": "Passwords do not match",
+        "generic": "Error resetting password",
+        "network": "Could not connect to server",
+        "invalidToken": {
+          "title": "Invalid token",
+          "message": "The reset link is incomplete or invalid.",
+          "requestNew": "Request new link"
+        }
+      }
+    },
+    "verifyEmail": {
+      "loading": "Verifying email...",
+      "loadingMessage": "Please wait.",
+      "success": {
+        "title": "Email verified!",
+        "message": "Your account was activated. You can now sign in.",
+        "goToLogin": "Go to sign in"
+      },
+      "errors": {
+        "noToken": "Verification token missing.",
+        "failed": "Failed to verify email. The link may have expired.",
+        "title": "Verification error",
+        "backToLogin": "Back to sign in"
+      }
+    }
+  },
+  "agents": {
+    "title": "AI Agents",
+    "subtitle": "Manage and configure your autonomous agents",
+    "newAgent": "New Agent",
+    "noModel": "No model configured",
+    "skillsCount": "{count} skills",
+    "empty": {
+      "title": "No agents yet",
+      "description": "Create your first AI agent to get started",
+      "cta": "Create Agent"
+    },
+    "error": "Failed to load agents. Check your connection.",
+    "personas": {
+      "HUNTER": "Hunter",
+      "CLOSER": "Closer",
+      "BUILDER": "Builder",
+      "QA": "QA"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "PAUSED": "Paused",
+      "INACTIVE": "Inactive"
+    },
+    "new": {
+      "title": "Create Agent",
+      "subtitle": "Configure a new autonomous AI agent persona",
+      "identity": "Agent Identity",
+      "agentName": "Agent Name",
+      "agentNamePlaceholder": "e.g. Prospector Alpha",
+      "persona": "Persona Type",
+      "personaPlaceholder": "Select persona",
+      "personas": {
+        "HUNTER": "Hunter (Lead Generation)",
+        "CLOSER": "Closer (Negotiation)",
+        "BUILDER": "Builder (Development/Execution)",
+        "QA": "QA (Quality Assurance)"
+      },
+      "systemPrompt": "System Prompt",
+      "systemPromptPlaceholder": "You are an expert lead generator...",
+      "tokens": "tokens",
+      "systemPromptHint": "Define the agent's behavior, constraints, and operational guidelines.",
+      "llmConfig": "LLM Configuration",
+      "provider": "Provider",
+      "providerPlaceholder": "Select provider",
+      "model": "Model",
+      "modelPlaceholder": "Select model",
+      "temperature": "Temperature",
+      "tempMin": "Deterministic (0.0)",
+      "tempMax": "Creative (2.0)",
+      "knowledgeBase": "Knowledge Base & Rules",
+      "knowledgeHint": "Upload reference materials (.pdf, .txt, .csv) for the agent's context.",
+      "uploadCta": "Click or drag files here",
+      "uploadHint": "Files will be parsed into vector embeddings automatically",
+      "uploading": "Validating and uploading...",
+      "uploadedFiles": "Uploaded Files",
+      "agentSkills": "Agent Skills",
+      "skillsHint": "Select capabilities for this agent",
+      "skillLabels": {
+        "web_search": "Web Search",
+        "web_searchDesc": "Allows the agent to search the internet.",
+        "read_files": "Read Files",
+        "read_filesDesc": "Allows the agent to read local files.",
+        "write_files": "Write Files",
+        "write_filesDesc": "Allows the agent to modify files.",
+        "security_guard": "Security Guard",
+        "security_guardDesc": "Runs payload analysis to prevent injection."
+      },
+      "securityNote": "All agents are subjected to the global security middleware. Outbound payloads are inspected automatically.",
+      "deploy": "Deploy Agent"
+    },
+    "detail": {
+      "configuration": "Configuration",
+      "name": "Name",
+      "namePlaceholder": "Agent name",
+      "model": "LLM Model",
+      "modelPlaceholder": "Select model",
+      "statusLabel": "Status",
+      "saving": "Saving...",
+      "save": "Save Changes",
+      "subAgents": "Sub-agents",
+      "skills": "Skills",
+      "created": "Created",
+      "lastUpdated": "Last updated",
+      "notFound": "Agent not found",
+      "backToAgents": "Back to Agents"
+    }
+  },
+  "leads": {
+    "title": "Leads Pipeline",
+    "subtitle": "Drag and drop leads to update their status",
+    "newLead": "New Lead",
+    "dropHere": "Drop leads here",
+    "columns": {
+      "PROSPECTED": "Prospected",
+      "APPROVED": "Approved",
+      "NEW": "New",
+      "CONTACTED": "Contacted",
+      "QUALIFIED": "Qualified",
+      "NEGOTIATING": "Negotiating",
+      "CONVERTED": "Converted",
+      "LOST": "Lost"
+    }
+  },
+  "deals": {
+    "title": "Deals",
+    "subtitle": "Track negotiations and closed contracts",
+    "empty": "No deals yet",
+    "status": {
+      "PROPOSED": "Proposed",
+      "NEGOTIATING": "Negotiating",
+      "CLOSED": "Closed",
+      "CANCELLED": "Cancelled"
+    }
+  },
+  "projects": {
+    "title": "Projects",
+    "subtitle": "Track site deliveries and Lighthouse scores",
+    "empty": "No projects yet",
+    "perf": "Perf:",
+    "a11y": "A11y:"
+  },
+  "briefings": {
+    "title": "Briefings",
+    "subtitle": "Manage client briefings and trigger extractions",
+    "empty": "No briefings yet",
+    "columns": {
+      "id": "ID",
+      "deal": "Deal",
+      "status": "Status",
+      "started": "Started",
+      "action": "Action"
+    },
+    "status": {
+      "COLLECTING": "Collecting",
+      "COMPLETED": "Completed",
+      "APPROVED": "Approved"
+    },
+    "forceExtract": "Force Extract",
+    "extracting": "Extracting..."
+  },
+  "prospecting": {
+    "title": "Prospecting",
+    "subtitle": "Dispatch Hunter agent and manage prospected leads",
+    "newSearch": "New Search",
+    "tabs": { "queue": "Queue", "config": "Config" },
+    "search": {
+      "title": "Search Parameters",
+      "categories": "Categories",
+      "categoriesPlaceholder": "e.g. restaurants",
+      "city": "City",
+      "cityPlaceholder": "New York",
+      "state": "State (2 chars)",
+      "statePlaceholder": "NY",
+      "radius": "Radius (km):",
+      "minScore": "Min Score:",
+      "submit": "Start Search",
+      "submitting": "Dispatching..."
+    },
+    "queue": {
+      "empty": "No leads in queue",
+      "columns": {
+        "business": "Business",
+        "score": "Score",
+        "source": "Source",
+        "date": "Date",
+        "hitl": "HITL"
+      }
+    },
+    "config": { "title": "Prospecting Configuration" }
+  },
+  "hitl": {
+    "title": "HITL Approvals",
+    "subtitle": "Review and approve agent actions before execution",
+    "pending": "pending",
+    "empty": {
+      "title": "All clear!",
+      "description": "No pending approvals at the moment"
+    },
+    "columns": {
+      "action": "Agent Action",
+      "agent": "Agent:",
+      "expired": "Expired",
+      "status": "PENDING"
+    },
+    "actionLabels": {
+      "APPROVE_LEAD_LIST": "Approve Lead List",
+      "SEND_EXTERNAL_MESSAGE": "Send External Message",
+      "SEND_PROPOSAL": "Send Proposal",
+      "APPROVE_MOCKUP": "Approve Mockup",
+      "APPROVE_STAGING": "Approve Staging",
+      "DEPLOY_PRODUCTION": "Deploy to Production",
+      "APPROVE_BRIEFING": "Approve Briefing",
+      "SEND_CLIENT_DELIVERY": "Send Client Delivery"
+    },
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectDialog": {
+      "title": "Reject Action",
+      "description": "Provide the rejection reason to the agent.",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "Why are you rejecting this action?",
+      "cancel": "Cancel",
+      "confirm": "Confirm Rejection"
+    }
+  },
+  "costs": {
+    "title": "LLM Costs",
+    "subtitle": "Token consumption and cost per agent",
+    "periods": { "today": "Today", "7days": "7 days", "30days": "30 days" },
+    "totalCost": "Total Cost",
+    "totalTokens": "Total Tokens",
+    "requests": "Requests",
+    "breakdown": "Breakdown by Agent",
+    "loading": "Loading...",
+    "empty": "No usage recorded in the selected period.",
+    "columns": {
+      "agent": "Agent",
+      "provider": "Provider",
+      "tokens": "Tokens",
+      "requests": "Requests",
+      "cost": "Cost"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Configure AI providers, messaging channels, and integrations",
+    "unsaved": "unsaved",
+    "discard": "Discard",
+    "save": "Save",
+    "tabs": {
+      "aiProviders": "AI Providers",
+      "messaging": "Messaging",
+      "integrations": "Integrations",
+      "system": "System"
+    },
+    "aiProviders": {
+      "openai": {
+        "name": "OpenAI",
+        "description": "GPT-4o, GPT-4o-mini and o-series models",
+        "apiKey": "API Key",
+        "defaultModel": "Default Model"
+      },
+      "anthropic": {
+        "name": "Anthropic",
+        "description": "Claude 3.5 Sonnet, Haiku and Opus",
+        "apiKey": "API Key",
+        "defaultModel": "Default Model"
+      },
+      "google": {
+        "name": "Google Gemini",
+        "description": "Gemini 2.0 Flash and Pro",
+        "apiKey": "API Key",
+        "defaultModel": "Default Model"
+      },
+      "groq": {
+        "name": "Groq",
+        "description": "Ultra-fast inference with Llama and Mixtral",
+        "apiKey": "API Key",
+        "defaultModel": "Default Model",
+        "fastBadge": "Fast"
+      },
+      "ollama": {
+        "name": "Ollama (Local)",
+        "description": "Run open-source models locally — no API key required"
+      }
+    },
+    "messaging": {
+      "whatsapp": {
+        "name": "WhatsApp",
+        "description": "Evolution API integration for WhatsApp Business",
+        "apiUrl": "Evolution API URL",
+        "apiKey": "API Key",
+        "instanceName": "Instance Name"
+      },
+      "email": {
+        "name": "Email",
+        "description": "Brevo (formerly Sendinblue) transactional email",
+        "apiKey": "Brevo API Key",
+        "senderName": "Sender Name",
+        "senderAddress": "Sender Address"
+      },
+      "telegram": {
+        "name": "Telegram",
+        "description": "Bot for operator alerts and HITL approval workflows",
+        "botToken": "Bot Token",
+        "chatId": "Operator Chat ID"
+      }
+    },
+    "integrations": {
+      "mcpBrasil": {
+        "name": "MCP Brasil",
+        "description": "Brazilian government APIs — Transparência, DataJud, TSE",
+        "transparenciaKey": "Transparência Federal API Key",
+        "datajudKey": "DataJud API Key",
+        "metaToken": "Meta Access Token"
+      },
+      "chromadb": {
+        "name": "ChromaDB",
+        "description": "Vector database for RAG and agent memory",
+        "url": "ChromaDB URL"
+      },
+      "webhooks": {
+        "name": "Webhooks",
+        "description": "Outbound webhook for system events and integrations",
+        "url": "Webhook URL",
+        "secret": "Signing Secret"
+      }
+    },
+    "system": {
+      "hitlTimeouts": {
+        "title": "HITL Timeouts",
+        "description": "Human-in-the-loop approval window configuration",
+        "defaultTimeout": "Default Timeout (minutes)",
+        "financialInterval": "Financial Alert Interval (min)"
+      },
+      "security": {
+        "title": "Security Limits",
+        "description": "Input validation and rate-limiting thresholds",
+        "maxBodySize": "Max Request Body Size (bytes)",
+        "hint": "Default: 1 MB (1048576). Increase only if large file uploads are needed."
+      },
+      "backup": {
+        "title": "Backup & Restore",
+        "description": "Export or import non-secret settings as JSON",
+        "export": "Export JSON",
+        "import": "Import JSON",
+        "note": "Secrets (API Keys, tokens) are never exported. They must be re-entered manually after import."
+      }
+    },
+    "ollama": {
+      "pullModel": "Pull Model",
+      "pullPlaceholder": "llama3.2:3b",
+      "pull": "Pull",
+      "online": "Ollama Online",
+      "unreachable": "Ollama Unreachable",
+      "cpuOnly": "CPU only",
+      "installed": "Installed Models",
+      "noModels": "No models installed"
+    }
+  },
+  "common": {
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "logout": "Sign out"
+  },
+  "theme": { "light": "Light", "dark": "Dark", "system": "System" },
+  "language": { "pt-BR": "Português", "es": "Español", "en": "English" }
+}
