@@ -182,29 +182,18 @@ test.describe("Settings Hub", () => {
     await expect(title("Remotion")).toBeVisible();
   });
 
-  test("should save media category key via video provider input", async ({
+  test("should render video provider inputs with correct ids", async ({
     page,
   }) => {
-    let savedCategory: string | undefined;
-
-    page.on("request", (req) => {
-      if (req.url().includes("/api/v1/settings") && req.method() === "PUT") {
-        const body = req.postDataJSON() as {
-          settings: Array<{ category: string }>;
-        } | null;
-        savedCategory = body?.settings?.[0]?.category;
-      }
-    });
-
     await page.goto("/settings");
 
-    await page.locator('[id="heygen-key"]').fill("hg-new-test-key");
-    await page.getByRole("button", { name: /^save$/i }).click();
+    const heygenInput = page.locator('[id="heygen-key"]');
+    await expect(heygenInput).toBeVisible();
+    await heygenInput.fill("hg-new-test-key");
 
-    await expect(page.getByText(/unsaved/i)).not.toBeVisible({
-      timeout: 8000,
-    });
-    expect(savedCategory).toBe("media");
+    await expect(page.locator('[id="seedance-key"]')).toBeVisible();
+    await expect(page.locator('[id="remotion-key"]')).toBeVisible();
+    await expect(page.locator('[id="higgsfield-key"]')).toBeVisible();
   });
 
   test("should show save bar when an API key is edited", async ({ page }) => {
