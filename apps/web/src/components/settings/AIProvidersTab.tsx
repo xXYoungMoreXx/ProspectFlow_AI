@@ -63,6 +63,7 @@ const PROVIDERS: ProviderConfig[] = [
       "gpt-4o",
       "gpt-4o-mini",
       "o4-mini",
+      "o3",
       "o3-mini",
       "o1",
       "o1-mini",
@@ -89,10 +90,11 @@ const PROVIDERS: ProviderConfig[] = [
     keyField: "llm.gemini.api_key",
     keyPlaceholder: "AIza••••••••••••••",
     modelField: "llm.gemini.default_model",
-    defaultModel: "gemini-2.0-flash",
+    defaultModel: "gemini-2.5-flash",
     models: [
       "gemini-2.5-pro",
       "gemini-2.5-flash",
+      "gemini-2.5-flash-lite",
       "gemini-2.0-flash",
       "gemini-2.0-flash-lite",
       "gemini-1.5-pro",
@@ -107,11 +109,14 @@ const PROVIDERS: ProviderConfig[] = [
     modelField: "llm.groq.default_model",
     defaultModel: "llama-3.3-70b-versatile",
     models: [
+      "meta-llama/llama-4-maverick-17b-128e-instruct",
+      "meta-llama/llama-4-scout-17b-16e-instruct",
       "llama-3.3-70b-versatile",
+      "llama-3.3-8b-versatile",
       "llama-3.1-8b-instant",
-      "llama-3.1-70b-versatile",
       "gemma2-9b-it",
-      "mixtral-8x7b-32768",
+      "compound-beta",
+      "compound-beta-mini",
     ],
     hasBadge: true,
   },
@@ -122,7 +127,12 @@ const PROVIDERS: ProviderConfig[] = [
     keyPlaceholder: "sk-••••••••••••••••",
     modelField: "llm.deepseek.default_model",
     defaultModel: "deepseek-chat",
-    models: ["deepseek-chat", "deepseek-reasoner", "deepseek-coder"],
+    models: [
+      "deepseek-chat",
+      "deepseek-reasoner",
+      "deepseek-v3",
+      "deepseek-r1",
+    ],
   },
   {
     id: "openrouter",
@@ -130,14 +140,20 @@ const PROVIDERS: ProviderConfig[] = [
     keyField: "llm.openrouter.api_key",
     keyPlaceholder: "sk-or-••••••••••••••",
     modelField: "llm.openrouter.default_model",
-    defaultModel: "openai/gpt-4o",
+    defaultModel: "openai/gpt-4.1",
     models: [
+      "openai/gpt-4.1",
       "openai/gpt-4o",
-      "anthropic/claude-opus-4-5",
+      "anthropic/claude-opus-4-8",
+      "anthropic/claude-sonnet-4-6",
       "google/gemini-2.5-pro",
-      "meta-llama/llama-3.3-70b-instruct",
-      "deepseek/deepseek-chat",
-      "mistralai/mistral-large",
+      "google/gemini-2.5-flash",
+      "meta-llama/llama-4-maverick",
+      "meta-llama/llama-4-scout",
+      "deepseek/deepseek-r1",
+      "deepseek/deepseek-v3",
+      "mistralai/mistral-large-2411",
+      "qwen/qwen-2.5-72b-instruct",
     ],
   },
 ];
@@ -145,8 +161,10 @@ const PROVIDERS: ProviderConfig[] = [
 function FieldTooltip({ content }: { content: string }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <HelpCircle className="h-3 w-3 text-muted-foreground/60 cursor-help shrink-0" />
+      <TooltipTrigger
+        render={<span className="inline-flex items-center cursor-help" />}
+      >
+        <HelpCircle className="h-3 w-3 text-muted-foreground/60 shrink-0" />
       </TooltipTrigger>
       <TooltipContent
         side="right"
@@ -229,7 +247,7 @@ export function AIProvidersTab() {
                   </div>
                 </div>
                 <Tooltip>
-                  <TooltipTrigger asChild>
+                  <TooltipTrigger render={<span className="inline-flex" />}>
                     <Switch
                       checked={isEnabled(provider.id)}
                       onCheckedChange={(v) => toggleEnabled(provider.id, v)}
@@ -302,22 +320,10 @@ export function AIProvidersTab() {
               </div>
 
               <div className="flex items-center gap-3 pt-1">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>
-                      <TestButton
-                        category={`llm_${provider.id}`}
-                        disabled={!isEnabled(provider.id)}
-                      />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="bottom"
-                    className="max-w-[220px] text-xs leading-relaxed"
-                  >
-                    {t("tooltips.testConnection")}
-                  </TooltipContent>
-                </Tooltip>
+                <TestButton
+                  category={`llm_${provider.id}`}
+                  disabled={!isEnabled(provider.id)}
+                />
                 <ConnectionBadge category={`llm_${provider.id}`} />
               </div>
             </CardContent>
