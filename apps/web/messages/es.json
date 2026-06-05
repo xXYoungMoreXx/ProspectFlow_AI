@@ -375,6 +375,18 @@
         "defaultModel": "Modelo Predeterminado",
         "fastBadge": "Rápido"
       },
+      "deepseek": {
+        "name": "DeepSeek",
+        "description": "Modelos de razonamiento y código de DeepSeek AI",
+        "apiKey": "API Key",
+        "defaultModel": "Modelo Predeterminado"
+      },
+      "openrouter": {
+        "name": "OpenRouter",
+        "description": "Puerta de acceso unificada a cientos de modelos de IA",
+        "apiKey": "API Key",
+        "defaultModel": "Modelo Predeterminado"
+      },
       "ollama": {
         "name": "Ollama (Local)",
         "description": "Ejecuta modelos open-source localmente — sin necesidad de API key"
@@ -420,6 +432,28 @@
         "description": "Webhook de salida para eventos del sistema e integraciones",
         "url": "URL del Webhook",
         "secret": "Signing Secret"
+      },
+      "mcpManager": {
+        "name": "MCPs de Agentes",
+        "description": "Conecta servidores Model Context Protocol para ampliar las capacidades de los agentes",
+        "addTitle": "Agregar MCP",
+        "nameLabel": "Nombre del MCP",
+        "namePlaceholder": "ej: brave-search",
+        "typeLabel": "Tipo de Conexión",
+        "typeCommand": "Comando (stdio)",
+        "typeUrl": "URL (HTTP/SSE)",
+        "valueLabelCommand": "Comando",
+        "valueLabelUrl": "URL",
+        "valuePlaceholderCommand": "npx @modelcontextprotocol/server-brave-search",
+        "valuePlaceholderUrl": "http://localhost:3001/sse",
+        "addButton": "Agregar MCP",
+        "installedTitle": "MCPs Configurados",
+        "noMcps": "Sin MCPs configurados",
+        "noMcpsHint": "Agrega un MCP arriba para ampliar las capacidades de los agentes con herramientas externas.",
+        "remove": "Eliminar",
+        "test": "Probar",
+        "typeCommandBadge": "stdio",
+        "typeUrlBadge": "HTTP"
       }
     },
     "system": {
@@ -443,6 +477,35 @@
         "note": "Los secretos (API Keys, tokens) nunca se exportan. Deben reingresarse manualmente después de importar."
       }
     },
+    "tooltips": {
+      "enableProvider": "Activa o desactiva este proveedor. Cuando está desactivado, los agentes no usarán este proveedor para inferencia.",
+      "apiKey": "Clave secreta para autenticarse con la API del proveedor. Obtenla en el panel del proveedor.",
+      "defaultModel": "El modelo de IA usado por defecto para este proveedor cuando el agente no selecciona uno específico.",
+      "testConnection": "Verifica si la API Key es válida y el proveedor es accesible.",
+      "ollamaStatus": "Estado de conexión con Ollama local (puerto 11434). Ollama debe estar instalado y en ejecución.",
+      "mcpName": "Nombre identificador para este MCP. Usa solo letras minúsculas, números y guiones.",
+      "mcpType": "Stdio: ejecuta un proceso local por línea de comandos. HTTP/SSE: conecta a un servidor remoto por URL.",
+      "mcpValue": "Para stdio: comando completo con argumentos (ej: npx @mcp/server-name). Para HTTP: URL base del servidor MCP.",
+      "whatsappUrl": "URL de la instancia de Evolution API. Normalmente http://localhost:8080 para instalaciones locales.",
+      "whatsappKey": "API Key de Evolution API. Generada en el panel de administración de Evolution API.",
+      "whatsappInstance": "Nombre de la instancia de WhatsApp creada en Evolution API.",
+      "brevoKey": "API Key de Brevo (ex-Sendinblue). Obtenla en app.brevo.com > SMTP & API.",
+      "senderName": "Nombre que aparecerá en el campo 'De' de los correos enviados.",
+      "senderAddress": "Dirección de correo remitente. Debe estar verificada en Brevo.",
+      "telegramToken": "Token del bot de Telegram. Obtenlo creando un bot con @BotFather en Telegram.",
+      "telegramChatId": "ID del chat del operador. Envía /getid a @userinfobot en Telegram para encontrar tu ID.",
+      "hitlTimeout": "Tiempo máximo (en minutos) que el sistema espera una aprobación HITL antes de marcarla como expirada.",
+      "financialInterval": "Intervalo (en minutos) para reenviar alertas sobre aprobaciones financieras pendientes.",
+      "maxBodySize": "Tamaño máximo aceptado en bytes por solicitud. 1048576 = 1 MB. Aumenta para subidas más grandes.",
+      "backupExport": "Genera un archivo JSON con todas las configuraciones (excepto secretos). Útil para migrar a otro servidor.",
+      "backupImport": "Restaura configuraciones desde un JSON exportado. Los secretos nunca se importan automáticamente.",
+      "transparenciaKey": "API Key del Portal da Transparência Federal. Solicítala en portaldatransparencia.gov.br/api-de-dados.",
+      "datajudKey": "API Key de DataJud (TJDFT/CNJ). Necesaria para consultar datos de procesos judiciales.",
+      "metaToken": "Access Token de Meta Business. Necesario para integración con la API oficial de WhatsApp Business.",
+      "chromaUrl": "URL del servidor ChromaDB. Usado como base de datos vectorial para memoria y RAG de agentes.",
+      "webhookUrl": "URL donde el sistema enviará notificaciones de eventos (leads calificados, deals cerrados, etc).",
+      "webhookSecret": "Clave usada para firmar los payloads del webhook (HMAC-SHA256). Valida en tu servidor receptor."
+    },
     "ollama": {
       "pullModel": "Descargar Modelo",
       "pullPlaceholder": "llama3.2:3b",
@@ -451,7 +514,25 @@
       "unreachable": "Ollama Inaccesible",
       "cpuOnly": "Solo CPU",
       "installed": "Modelos Instalados",
-      "noModels": "Sin modelos instalados"
+      "noModels": "Sin modelos instalados",
+      "activeModel": "Modelo Activo",
+      "setActive": "Usar",
+      "active": "Activo",
+      "inferenceParams": "Parámetros de Inferencia",
+      "contextWindow": "Ventana de Contexto (tokens)",
+      "maxTokens": "Tokens máximos",
+      "topP": "Top-p",
+      "temperature": "Temperatura",
+      "unreachableTitle": "Ollama Inaccesible",
+      "unreachableSubtitle": "No se pudo conectar a Ollama en el puerto 11434",
+      "cause1": "Ollama no está instalado",
+      "cause1Fix": "Descarga e instala desde ollama.com/download",
+      "cause2": "El servicio Ollama no está en ejecución",
+      "cause2Fix": "Ejecuta en la terminal: ollama serve",
+      "cause3": "El puerto 11434 está bloqueado (firewall u otro proceso)",
+      "cause3Fix": "Verifica si otro proceso usa el puerto 11434 con: netstat -ano | findstr 11434",
+      "downloadLink": "Descargar Ollama",
+      "retryButton": "Reintentar"
     }
   },
   "common": {
