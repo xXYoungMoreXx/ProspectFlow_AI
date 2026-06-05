@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
-import { Loader2, Save, RotateCcw, Bot, MessageCircle, Puzzle, Settings2 } from "lucide-react";
+import {
+  Loader2,
+  Save,
+  RotateCcw,
+  Bot,
+  MessageCircle,
+  Puzzle,
+  Settings2,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +21,15 @@ import { SystemTab } from "@/components/settings/SystemTab";
 import { useSettingsStore } from "@/lib/stores/settings-store";
 
 export default function SettingsPage() {
-  const { pending, isSaving, error, saveSettings, clearPending, fetchSettings } =
-    useSettingsStore();
+  const t = useTranslations("settings");
+  const {
+    pending,
+    isSaving,
+    error,
+    saveSettings,
+    clearPending,
+    fetchSettings,
+  } = useSettingsStore();
 
   const pendingCount = pending.size;
   const hasPending = pendingCount > 0;
@@ -27,12 +43,8 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Configure AI providers, messaging channels, and integrations — no{" "}
-            <code className="text-xs font-mono bg-muted px-1 py-0.5 rounded">.env</code>{" "}
-            editing required
-          </p>
+          <h2 className="text-2xl font-bold tracking-tight">{t("title")}</h2>
+          <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
 
         {/* Save bar */}
@@ -42,7 +54,7 @@ export default function SettingsPage() {
               variant="secondary"
               className="bg-primary/10 text-primary border-primary/20 text-xs tabular-nums"
             >
-              {pendingCount} unsaved
+              {pendingCount} {t("unsaved")}
             </Badge>
             <Button
               variant="ghost"
@@ -52,7 +64,7 @@ export default function SettingsPage() {
               disabled={isSaving}
             >
               <RotateCcw className="h-3.5 w-3.5" />
-              Discard
+              {t("discard")}
             </Button>
             <Button
               size="sm"
@@ -65,7 +77,7 @@ export default function SettingsPage() {
               ) : (
                 <Save className="h-3.5 w-3.5" />
               )}
-              Save
+              {t("save")}
             </Button>
           </div>
         )}
@@ -86,28 +98,28 @@ export default function SettingsPage() {
             className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             <Bot className="h-3.5 w-3.5" />
-            AI Providers
+            {t("tabs.aiProviders")}
           </TabsTrigger>
           <TabsTrigger
             value="messaging"
             className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             <MessageCircle className="h-3.5 w-3.5" />
-            Messaging
+            {t("tabs.messaging")}
           </TabsTrigger>
           <TabsTrigger
             value="integrations"
             className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             <Puzzle className="h-3.5 w-3.5" />
-            Integrations
+            {t("tabs.integrations")}
           </TabsTrigger>
           <TabsTrigger
             value="system"
             className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             <Settings2 className="h-3.5 w-3.5" />
-            System
+            {t("tabs.system")}
           </TabsTrigger>
         </TabsList>
 

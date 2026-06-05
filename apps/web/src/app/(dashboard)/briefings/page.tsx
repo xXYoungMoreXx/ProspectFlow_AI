@@ -1,11 +1,13 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { api } from "@/lib/api";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { FileText, Loader2 } from "lucide-react";
 
 const statusColors: Record<string, string> = {
@@ -14,13 +16,8 @@ const statusColors: Record<string, string> = {
   APPROVED: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
 };
 
-const statusLabels: Record<string, string> = {
-  IN_PROGRESS: "Collecting",
-  COMPLETED: "Completed",
-  APPROVED: "Approved",
-};
-
 export default function BriefingsPage() {
+  const t = useTranslations("briefings");
   const token = useAuthStore((s) => s.token);
   const queryClient = useQueryClient();
 
@@ -46,46 +43,39 @@ export default function BriefingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Briefings</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage client briefings and trigger extractions
-        </p>
+        <h2 className="text-2xl font-bold tracking-tight">{t("title")}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
       </div>
 
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="h-14" />
-            </Card>
+            <div key={i} className="rounded-xl border border-border p-4 h-14">
+              <Skeleton className="h-4 w-48" />
+            </div>
           ))}
         </div>
       ) : briefings.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16 space-y-3">
-            <FileText className="w-10 h-10 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">No briefings yet</p>
-          </CardContent>
-        </Card>
+        <EmptyState icon={FileText} title={t("empty")} />
       ) : (
         <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-muted/50 border-b border-border">
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                  ID
+                  {t("columns.id")}
                 </th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                  Deal
+                  {t("columns.deal")}
                 </th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                  Status
+                  {t("columns.status")}
                 </th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                  Started
+                  {t("columns.started")}
                 </th>
                 <th className="text-right px-4 py-3 font-medium text-muted-foreground">
-                  Action
+                  {t("columns.action")}
                 </th>
               </tr>
             </thead>
@@ -103,7 +93,7 @@ export default function BriefingsPage() {
                       variant="outline"
                       className={`text-[10px] ${statusColors[b.status] ?? ""}`}
                     >
-                      {statusLabels[b.status] ?? b.status}
+                      {t(`status.${b.status}`)}
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
@@ -125,10 +115,10 @@ export default function BriefingsPage() {
                         extractMutation.variables === b.id ? (
                           <>
                             <Loader2 className="w-3 h-3 animate-spin" />
-                            Extracting...
+                            {t("extracting")}
                           </>
                         ) : (
-                          "Force Extract"
+                          t("forceExtract")
                         )}
                       </Button>
                     )}

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Globe, Webhook, Database } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -12,10 +13,17 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { SecretInput } from "@/components/ui/secret-input";
-import { TestButton, ConnectionBadge } from "@/components/settings/ConnectionStatus";
-import { useSettingsStore, type PendingUpdate } from "@/lib/stores/settings-store";
+import {
+  TestButton,
+  ConnectionBadge,
+} from "@/components/settings/ConnectionStatus";
+import {
+  useSettingsStore,
+  type PendingUpdate,
+} from "@/lib/stores/settings-store";
 
 export function IntegrationsTab() {
+  const t = useTranslations("settings");
   const { settings, pending, setPending, getValue, fetchSettings } =
     useSettingsStore();
 
@@ -45,9 +53,11 @@ export function IntegrationsTab() {
               <Globe className="h-4 w-4 text-green-400" />
             </div>
             <div>
-              <CardTitle className="text-sm">MCP Brasil</CardTitle>
+              <CardTitle className="text-sm">
+                {t("integrations.mcpBrasil.name")}
+              </CardTitle>
               <CardDescription className="text-xs mt-0.5">
-                Brazilian government APIs — Transparência, DataJud, TSE
+                {t("integrations.mcpBrasil.description")}
               </CardDescription>
             </div>
           </div>
@@ -58,7 +68,7 @@ export function IntegrationsTab() {
               htmlFor="brasil-transparencia"
               className="text-xs text-muted-foreground"
             >
-              Transparência Federal API Key
+              {t("integrations.mcpBrasil.transparenciaKey")}
             </Label>
             <SecretInput
               id="brasil-transparencia"
@@ -74,7 +84,7 @@ export function IntegrationsTab() {
               htmlFor="brasil-datajud"
               className="text-xs text-muted-foreground"
             >
-              DataJud API Key
+              {t("integrations.mcpBrasil.datajudKey")}
             </Label>
             <SecretInput
               id="brasil-datajud"
@@ -90,7 +100,7 @@ export function IntegrationsTab() {
               htmlFor="brasil-meta"
               className="text-xs text-muted-foreground"
             >
-              Meta Access Token
+              {t("integrations.mcpBrasil.metaToken")}
             </Label>
             <SecretInput
               id="brasil-meta"
@@ -116,9 +126,11 @@ export function IntegrationsTab() {
               <Database className="h-4 w-4 text-orange-400" />
             </div>
             <div>
-              <CardTitle className="text-sm">ChromaDB</CardTitle>
+              <CardTitle className="text-sm">
+                {t("integrations.chromadb.name")}
+              </CardTitle>
               <CardDescription className="text-xs mt-0.5">
-                Vector database for RAG and agent memory
+                {t("integrations.chromadb.description")}
               </CardDescription>
             </div>
           </div>
@@ -129,7 +141,7 @@ export function IntegrationsTab() {
               htmlFor="chroma-url"
               className="text-xs text-muted-foreground"
             >
-              ChromaDB URL
+              {t("integrations.chromadb.url")}
             </Label>
             <Input
               id="chroma-url"
@@ -154,9 +166,11 @@ export function IntegrationsTab() {
               <Webhook className="h-4 w-4 text-muted-foreground" />
             </div>
             <div>
-              <CardTitle className="text-sm">Webhooks</CardTitle>
+              <CardTitle className="text-sm">
+                {t("integrations.webhooks.name")}
+              </CardTitle>
               <CardDescription className="text-xs mt-0.5">
-                Outbound webhook for system events and integrations
+                {t("integrations.webhooks.description")}
               </CardDescription>
             </div>
           </div>
@@ -167,7 +181,7 @@ export function IntegrationsTab() {
               htmlFor="webhook-url"
               className="text-xs text-muted-foreground"
             >
-              Webhook URL
+              {t("integrations.webhooks.url")}
             </Label>
             <Input
               id="webhook-url"
@@ -183,7 +197,7 @@ export function IntegrationsTab() {
               htmlFor="webhook-secret"
               className="text-xs text-muted-foreground"
             >
-              Signing Secret
+              {t("integrations.webhooks.secret")}
             </Label>
             <SecretInput
               id="webhook-secret"

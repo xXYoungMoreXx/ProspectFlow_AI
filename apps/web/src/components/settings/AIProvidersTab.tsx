@@ -1,37 +1,43 @@
 "use client";
 
 import { useEffect } from "react";
+import { Bot, Cpu } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
-  Bot,
-  Cpu,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { SecretInput } from "@/components/ui/secret-input";
 import { OllamaManager } from "@/components/settings/OllamaManager";
-import { TestButton, ConnectionBadge } from "@/components/settings/ConnectionStatus";
-import { useSettingsStore, type PendingUpdate } from "@/lib/stores/settings-store";
+import {
+  TestButton,
+  ConnectionBadge,
+} from "@/components/settings/ConnectionStatus";
+import {
+  useSettingsStore,
+  type PendingUpdate,
+} from "@/lib/stores/settings-store";
 
 interface ProviderConfig {
   id: string;
-  label: string;
-  description: string;
   category: "llm";
   keyField: string;
   keyPlaceholder: string;
   modelField: string;
   defaultModel: string;
   models: string[];
-  badge?: string;
+  hasBadge?: boolean;
 }
 
 const PROVIDERS: ProviderConfig[] = [
   {
     id: "openai",
-    label: "OpenAI",
-    description: "GPT-4o, GPT-4o-mini and o-series models",
     category: "llm",
     keyField: "llm.openai.api_key",
     keyPlaceholder: "sk-••••••••••••••••",
@@ -41,8 +47,6 @@ const PROVIDERS: ProviderConfig[] = [
   },
   {
     id: "anthropic",
-    label: "Anthropic",
-    description: "Claude 3.5 Sonnet, Haiku and Opus",
     category: "llm",
     keyField: "llm.anthropic.api_key",
     keyPlaceholder: "sk-ant-••••••••••••",
@@ -57,8 +61,6 @@ const PROVIDERS: ProviderConfig[] = [
   },
   {
     id: "google",
-    label: "Google Gemini",
-    description: "Gemini 2.0 Flash and Pro",
     category: "llm",
     keyField: "llm.gemini.api_key",
     keyPlaceholder: "AIza••••••••••••••",
@@ -73,8 +75,6 @@ const PROVIDERS: ProviderConfig[] = [
   },
   {
     id: "groq",
-    label: "Groq",
-    description: "Ultra-fast inference with Llama and Mixtral",
     category: "llm",
     keyField: "llm.groq.api_key",
     keyPlaceholder: "gsk_••••••••••••••••",
@@ -85,11 +85,12 @@ const PROVIDERS: ProviderConfig[] = [
       "llama-3.3-70b-versatile",
       "mixtral-8x7b-32768",
     ],
-    badge: "Fast",
+    hasBadge: true,
   },
 ];
 
 export function AIProvidersTab() {
+  const t = useTranslations("settings");
   const { settings, pending, setPending, getValue, fetchSettings } =
     useSettingsStore();
 
@@ -102,11 +103,7 @@ export function AIProvidersTab() {
     return pendingVal !== undefined ? pendingVal : (getValue(key) ?? "");
   };
 
-  const set = (
-    key: string,
-    value: string,
-    isSecret = false,
-  ) => {
+  const set = (key: string, value: string, isSecret = false) => {
     const update: PendingUpdate = {
       key,
       category: "llm",
@@ -141,33 +138,38 @@ export function AIProvidersTab() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <CardTitle className="text-sm">{provider.label}</CardTitle>
-                    {provider.badge && (
+                    <CardTitle className="text-sm">
+                      {t(`aiProviders.${provider.id}.name`)}
+                    </CardTitle>
+                    {provider.hasBadge && (
                       <Badge
                         variant="secondary"
                         className="text-xs h-4 px-1.5 bg-amber-500/10 text-amber-400 border-amber-500/20"
                       >
-                        {provider.badge}
+                        {t(`aiProviders.${provider.id}.fastBadge`)}
                       </Badge>
                     )}
                   </div>
                   <CardDescription className="text-xs mt-0.5">
-                    {provider.description}
+                    {t(`aiProviders.${provider.id}.description`)}
                   </CardDescription>
                 </div>
               </div>
               <Switch
                 checked={isEnabled(provider.id)}
                 onCheckedChange={(v) => toggleEnabled(provider.id, v)}
-                aria-label={`Enable ${provider.label}`}
+                aria-label={t(`aiProviders.${provider.id}.name`)}
               />
             </div>
           </CardHeader>
 
           <CardContent className="space-y-3 pt-0">
             <div className="space-y-1.5">
-              <Label htmlFor={`${provider.id}-key`} className="text-xs text-muted-foreground">
-                API Key
+              <Label
+                htmlFor={`${provider.id}-key`}
+                className="text-xs text-muted-foreground"
+              >
+                {t(`aiProviders.${provider.id}.apiKey`)}
               </Label>
               <SecretInput
                 id={`${provider.id}-key`}
@@ -179,8 +181,11 @@ export function AIProvidersTab() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor={`${provider.id}-model`} className="text-xs text-muted-foreground">
-                Default Model
+              <Label
+                htmlFor={`${provider.id}-model`}
+                className="text-xs text-muted-foreground"
+              >
+                {t(`aiProviders.${provider.id}.defaultModel`)}
               </Label>
               <select
                 id={`${provider.id}-model`}
@@ -198,7 +203,10 @@ export function AIProvidersTab() {
             </div>
 
             <div className="flex items-center gap-3 pt-1">
-              <TestButton category={`llm_${provider.id}`} disabled={!isEnabled(provider.id)} />
+              <TestButton
+                category={`llm_${provider.id}`}
+                disabled={!isEnabled(provider.id)}
+              />
               <ConnectionBadge category={`llm_${provider.id}`} />
             </div>
           </CardContent>
@@ -213,9 +221,11 @@ export function AIProvidersTab() {
               <Cpu className="h-4 w-4 text-muted-foreground" />
             </div>
             <div>
-              <CardTitle className="text-sm">Ollama (Local)</CardTitle>
+              <CardTitle className="text-sm">
+                {t("aiProviders.ollama.name")}
+              </CardTitle>
               <CardDescription className="text-xs mt-0.5">
-                Run open-source models locally — no API key required
+                {t("aiProviders.ollama.description")}
               </CardDescription>
             </div>
           </div>

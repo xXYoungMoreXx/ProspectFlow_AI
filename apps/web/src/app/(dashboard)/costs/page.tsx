@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,12 +27,6 @@ type DashboardData = {
   byAgent: AgentRow[];
 };
 
-const PERIOD_LABELS: Record<Period, string> = {
-  day: "Hoje",
-  week: "7 dias",
-  month: "30 dias",
-};
-
 const PROVIDER_COLORS: Record<string, string> = {
   anthropic: "bg-orange-500/10 text-orange-400 border-orange-500/20",
   openai: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
@@ -51,6 +46,7 @@ function formatTokens(n: number): string {
 }
 
 export default function CostsDashboardPage() {
+  const t = useTranslations("costs");
   const { token } = useAuthStore();
   const [period, setPeriod] = useState<Period>("month");
   const [refreshCount, setRefreshCount] = useState(0);
@@ -97,15 +93,19 @@ export default function CostsDashboardPage() {
     setRefreshCount((c) => c + 1);
   }
 
+  const periodKeys: Record<Period, string> = {
+    day: t("periods.today"),
+    week: t("periods.7days"),
+    month: t("periods.30days"),
+  };
+
   return (
     <div className="flex flex-col gap-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Custos de LLM</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Consumo de tokens e custo por agente
-          </p>
+          <h1 className="text-2xl font-semibold">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           {(["day", "week", "month"] as Period[]).map((p) => (
@@ -115,7 +115,7 @@ export default function CostsDashboardPage() {
               size="sm"
               onClick={() => handlePeriodChange(p)}
             >
-              {PERIOD_LABELS[p]}
+              {periodKeys[p]}
             </Button>
           ))}
           <Button
@@ -140,7 +140,7 @@ export default function CostsDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Custo Total
+              {t("totalCost")}
             </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -149,7 +149,7 @@ export default function CostsDashboardPage() {
               {data ? formatCost(data.totalCostUsd) : "—"}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {PERIOD_LABELS[period]}
+              {periodKeys[period]}
             </p>
           </CardContent>
         </Card>
@@ -157,7 +157,7 @@ export default function CostsDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total de Tokens
+              {t("totalTokens")}
             </CardTitle>
             <Cpu className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -166,7 +166,7 @@ export default function CostsDashboardPage() {
               {data ? formatTokens(data.totalTokens) : "—"}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {PERIOD_LABELS[period]}
+              {periodKeys[period]}
             </p>
           </CardContent>
         </Card>
@@ -174,7 +174,7 @@ export default function CostsDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Requisições
+              {t("requests")}
             </CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -183,7 +183,7 @@ export default function CostsDashboardPage() {
               {data ? data.byAgent.reduce((s, r) => s + r.requests, 0) : "—"}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {PERIOD_LABELS[period]}
+              {periodKeys[period]}
             </p>
           </CardContent>
         </Card>
@@ -192,27 +192,37 @@ export default function CostsDashboardPage() {
       {/* By-agent breakdown */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Detalhamento por Agente</CardTitle>
+          <CardTitle className="text-base">{t("breakdown")}</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-              Carregando...
+              {t("loading")}
             </div>
           ) : !data || data.byAgent.length === 0 ? (
             <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-              Nenhum uso registrado no período selecionado.
+              {t("empty")}
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-muted-foreground">
-                    <th className="pb-3 text-left font-medium">Agente</th>
-                    <th className="pb-3 text-left font-medium">Provider</th>
-                    <th className="pb-3 text-right font-medium">Tokens</th>
-                    <th className="pb-3 text-right font-medium">Requisições</th>
-                    <th className="pb-3 text-right font-medium">Custo</th>
+                    <th className="pb-3 text-left font-medium">
+                      {t("columns.agent")}
+                    </th>
+                    <th className="pb-3 text-left font-medium">
+                      {t("columns.provider")}
+                    </th>
+                    <th className="pb-3 text-right font-medium">
+                      {t("columns.tokens")}
+                    </th>
+                    <th className="pb-3 text-right font-medium">
+                      {t("columns.requests")}
+                    </th>
+                    <th className="pb-3 text-right font-medium">
+                      {t("columns.cost")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
