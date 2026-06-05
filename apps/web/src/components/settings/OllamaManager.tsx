@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  AlertTriangle,
   Cpu,
   HardDrive,
   Loader2,
@@ -161,6 +162,81 @@ export function OllamaManager() {
           </Button>
         </div>
       </div>
+
+      {/* Diagnostic panel — only when Ollama is unreachable */}
+      {status !== null && !status.reachable && (
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-amber-400">
+                {t("ollama.unreachableTitle")}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t("ollama.unreachableSubtitle")}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {/* Causa 1 */}
+            <div className="rounded-lg border border-border/40 bg-card/60 p-3 space-y-1">
+              <div className="flex items-center gap-1.5">
+                <span className="h-4 w-4 rounded-full bg-amber-500/20 text-amber-400 text-xs flex items-center justify-center font-bold shrink-0">
+                  1
+                </span>
+                <p className="text-xs font-medium text-foreground">
+                  {t("ollama.cause1")}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground pl-5">
+                {t("ollama.cause1Fix")}
+              </p>
+              <a
+                href="https://ollama.com/download"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 pl-5 text-xs text-primary underline underline-offset-2"
+              >
+                {t("ollama.downloadLink")}
+              </a>
+            </div>
+
+            {/* Causa 2 */}
+            <div className="rounded-lg border border-border/40 bg-card/60 p-3 space-y-1">
+              <div className="flex items-center gap-1.5">
+                <span className="h-4 w-4 rounded-full bg-amber-500/20 text-amber-400 text-xs flex items-center justify-center font-bold shrink-0">
+                  2
+                </span>
+                <p className="text-xs font-medium text-foreground">
+                  {t("ollama.cause2")}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground pl-5">
+                {t("ollama.cause2Fix")}
+              </p>
+              <code className="ml-5 text-xs font-mono bg-muted/60 px-2 py-0.5 rounded border border-border/40 inline-block">
+                ollama serve
+              </code>
+            </div>
+
+            {/* Causa 3 */}
+            <div className="rounded-lg border border-border/40 bg-card/60 p-3 space-y-1">
+              <div className="flex items-center gap-1.5">
+                <span className="h-4 w-4 rounded-full bg-amber-500/20 text-amber-400 text-xs flex items-center justify-center font-bold shrink-0">
+                  3
+                </span>
+                <p className="text-xs font-medium text-foreground">
+                  {t("ollama.cause3")}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground pl-5">
+                {t("ollama.cause3Fix")}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Pull model */}
       <div className="space-y-2">
