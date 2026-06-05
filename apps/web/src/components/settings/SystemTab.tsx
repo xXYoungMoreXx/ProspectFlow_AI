@@ -260,7 +260,7 @@ export function SystemTab() {
           <CardContent className="space-y-3 pt-0">
             <div className="flex items-center gap-3">
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger render={<span className="inline-flex" />}>
                   <Button
                     variant="outline"
                     size="sm"
@@ -276,7 +276,7 @@ export function SystemTab() {
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger render={<span className="inline-flex" />}>
                   <Button
                     variant="outline"
                     size="sm"

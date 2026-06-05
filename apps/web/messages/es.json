@@ -490,6 +490,7 @@
       "whatsappKey": "API Key de Evolution API. Generada en el panel de administración de Evolution API.",
       "whatsappInstance": "Nombre de la instancia de WhatsApp creada en Evolution API.",
       "brevoKey": "API Key de Brevo (ex-Sendinblue). Obtenla en app.brevo.com > SMTP & API.",
+      "resendKey": "API Key de Resend (re_xxxxxxxxx). Obtenla en resend.com/api-keys.",
       "senderName": "Nombre que aparecerá en el campo 'De' de los correos enviados.",
       "senderAddress": "Dirección de correo remitente. Debe estar verificada en Brevo.",
       "telegramToken": "Token del bot de Telegram. Obtenlo creando un bot con @BotFather en Telegram.",

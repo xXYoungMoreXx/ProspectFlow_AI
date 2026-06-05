@@ -31,8 +31,10 @@ import {
 function FieldTooltip({ content }: Readonly<{ content: string }>) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <HelpCircle className="h-3 w-3 text-muted-foreground/60 cursor-help shrink-0" />
+      <TooltipTrigger
+        render={<span className="inline-flex items-center cursor-help" />}
+      >
+        <HelpCircle className="h-3 w-3 text-muted-foreground/60 shrink-0" />
       </TooltipTrigger>
       <TooltipContent
         side="right"
@@ -64,6 +66,8 @@ export function MessagingTab() {
     isSecret = false,
     category: PendingUpdate["category"] = "messaging",
   ) => setPending({ key, category, value, isSecret });
+
+  const emailProvider = get("messaging.email.provider") || "brevo";
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -150,7 +154,7 @@ export function MessagingTab() {
           </CardContent>
         </Card>
 
-        {/* Email — Brevo */}
+        {/* Email — Brevo / Resend */}
         <Card className="border-border/60">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2.5">
@@ -168,6 +172,23 @@ export function MessagingTab() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3 pt-0">
+            {/* Provider toggle */}
+            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-muted/50 w-fit">
+              {(["brevo", "resend"] as const).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => set("messaging.email.provider", p)}
+                  className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                    emailProvider === p
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {p === "brevo" ? "Brevo" : "Resend"}
+                </button>
+              ))}
+            </div>
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
                 <Label
@@ -176,13 +197,35 @@ export function MessagingTab() {
                 >
                   {t("messaging.email.apiKey")}
                 </Label>
-                <FieldTooltip content={t("tooltips.brevoKey")} />
+                <FieldTooltip
+                  content={
+                    emailProvider === "resend"
+                      ? t("tooltips.resendKey")
+                      : t("tooltips.brevoKey")
+                  }
+                />
               </div>
               <SecretInput
                 id="email-key"
-                value={get("messaging.email.brevo_api_key")}
-                onChange={(v) => set("messaging.email.brevo_api_key", v, true)}
-                placeholder="xkeysib-••••••••••••"
+                value={
+                  emailProvider === "resend"
+                    ? get("messaging.email.resend_api_key")
+                    : get("messaging.email.brevo_api_key")
+                }
+                onChange={(v) =>
+                  set(
+                    emailProvider === "resend"
+                      ? "messaging.email.resend_api_key"
+                      : "messaging.email.brevo_api_key",
+                    v,
+                    true,
+                  )
+                }
+                placeholder={
+                  emailProvider === "resend"
+                    ? "re_••••••••••••••••"
+                    : "xkeysib-••••••••••••"
+                }
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
