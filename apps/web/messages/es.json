@@ -390,6 +390,29 @@
       "ollama": {
         "name": "Ollama (Local)",
         "description": "Ejecuta modelos open-source localmente — sin necesidad de API key"
+      },
+      "videoSection": "Generación de Video",
+      "heygen": {
+        "name": "HeyGen",
+        "description": "Síntesis de video con avatares de IA para videos conversacionales y marketing",
+        "apiKey": "API Key de HeyGen"
+      },
+      "higgsfield": {
+        "name": "Higgsfield AI",
+        "description": "Generación cinematográfica de video con movimientos de cámara personalizados",
+        "apiKey": "API Key de Higgsfield"
+      },
+      "seedance": {
+        "name": "Seedance (ByteDance)",
+        "description": "Generación de video de alta calidad via Ark API — modelos Pro y Lite",
+        "apiKey": "API Key ByteDance Ark",
+        "defaultModel": "Modelo Predeterminado"
+      },
+      "remotion": {
+        "name": "Remotion",
+        "description": "Renderización programática de video con React — requiere licencia Cloud (Lambda)",
+        "serveUrl": "Serve URL (Lambda)",
+        "apiKey": "API Key Remotion Cloud"
       }
     },
     "messaging": {
