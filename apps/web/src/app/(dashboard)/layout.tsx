@@ -9,6 +9,8 @@ import { useAgentsStore } from "@/lib/stores/agents-store";
 import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { useTranslations, useLocale } from "next-intl";
+import { setLocale } from "@/i18n/actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -55,24 +57,6 @@ const LOCALE_CODE: Record<string, string> = {
   "pt-BR": "PT",
   es: "ES",
   en: "EN",
-};
-const LOCALE_NAME: Record<string, string> = {
-  "pt-BR": "Português",
-  es: "Español",
-  en: "English",
-};
-
-// Static nav labels — replaced by t() in Task 10 after next-intl wiring
-const STATIC_LABELS: Record<string, string> = {
-  "nav.agents": "Agentes",
-  "nav.leads": "Leads",
-  "nav.deals": "Deals",
-  "nav.projects": "Projetos",
-  "nav.briefings": "Briefings",
-  "nav.prospecting": "Prospecção",
-  "nav.hitl": "Aprovações",
-  "nav.costs": "Custos",
-  "nav.settings": "Configurações",
 };
 
 function SidebarContent({
@@ -145,19 +129,15 @@ export default function DashboardLayout({
   const { isAuthenticated, operatorEmail, logout, setAuth } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [currentLocale, setCurrentLocale] = useState("pt-BR");
   const { theme, setTheme } = useTheme();
+  const t = useTranslations();
+  const currentLocale = useLocale();
   const { fetchPending } = useHitlStore();
   const { fetchLeads } = useLeadsStore();
   const { fetchAgents } = useAgentsStore();
 
   useEffect(() => {
     requestAnimationFrame(() => setMounted(true));
-    const saved = document.cookie
-      .split("; ")
-      .find((r) => r.startsWith("NEXT_LOCALE="))
-      ?.split("=")[1];
-    if (saved) setCurrentLocale(saved);
   }, []);
 
   useEffect(() => {
@@ -193,10 +173,21 @@ export default function DashboardLayout({
     }
   }, [isAuthenticated, fetchPending, fetchLeads, fetchAgents]);
 
-  const handleLocaleChange = (locale: string) => {
-    document.cookie = `NEXT_LOCALE=${locale}; path=/; max-age=${365 * 24 * 60 * 60}; samesite=lax`;
-    setCurrentLocale(locale);
+  const handleLocaleChange = async (locale: string) => {
+    await setLocale(locale);
     router.refresh();
+  };
+
+  const navLabels = {
+    "nav.agents": t("nav.agents"),
+    "nav.leads": t("nav.leads"),
+    "nav.deals": t("nav.deals"),
+    "nav.projects": t("nav.projects"),
+    "nav.briefings": t("nav.briefings"),
+    "nav.prospecting": t("nav.prospecting"),
+    "nav.hitl": t("nav.hitl"),
+    "nav.costs": t("nav.costs"),
+    "nav.settings": t("nav.settings"),
   };
 
   const handleLogout = () => {
@@ -215,7 +206,7 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen overflow-hidden">
       <aside className="hidden lg:flex lg:w-56 lg:flex-col bg-sidebar shadow-sm">
-        <SidebarContent pathname={pathname} labels={STATIC_LABELS} />
+        <SidebarContent pathname={pathname} labels={navLabels} />
       </aside>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -223,7 +214,7 @@ export default function DashboardLayout({
           side="left"
           className="w-56 p-0 bg-sidebar border-sidebar-border"
         >
-          <SidebarContent pathname={pathname} labels={STATIC_LABELS} />
+          <SidebarContent pathname={pathname} labels={navLabels} />
         </SheetContent>
       </Sheet>
 
@@ -270,9 +261,9 @@ export default function DashboardLayout({
                 {(["pt-BR", "es", "en"] as const).map((loc) => (
                   <DropdownMenuItem
                     key={loc}
-                    onClick={() => handleLocaleChange(loc)}
+                    onClick={() => void handleLocaleChange(loc)}
                   >
-                    <span className="flex-1">{LOCALE_NAME[loc]}</span>
+                    <span className="flex-1">{t(`language.${loc}`)}</span>
                     {currentLocale === loc && (
                       <Check className="w-3.5 h-3.5 ml-2 text-primary" />
                     )}
@@ -297,21 +288,21 @@ export default function DashboardLayout({
               <DropdownMenuContent align="end" className="w-36">
                 <DropdownMenuItem onClick={() => setTheme("light")}>
                   <Sun className="w-4 h-4 mr-2" />
-                  Claro
+                  {t("theme.light")}
                   {theme === "light" && (
                     <Check className="w-3.5 h-3.5 ml-auto text-primary" />
                   )}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("dark")}>
                   <Moon className="w-4 h-4 mr-2" />
-                  Escuro
+                  {t("theme.dark")}
                   {theme === "dark" && (
                     <Check className="w-3.5 h-3.5 ml-auto text-primary" />
                   )}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("system")}>
                   <Monitor className="w-4 h-4 mr-2" />
-                  Sistema
+                  {t("theme.system")}
                   {theme === "system" && (
                     <Check className="w-3.5 h-3.5 ml-auto text-primary" />
                   )}
@@ -347,7 +338,7 @@ export default function DashboardLayout({
                   className="text-destructive focus:text-destructive"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  Sair
+                  {t("common.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
