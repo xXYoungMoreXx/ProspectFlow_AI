@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Bot, Cpu, HelpCircle } from "lucide-react";
+import { Bot, Cpu, HelpCircle, Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   Card,
@@ -11,6 +11,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { SecretInput } from "@/components/ui/secret-input";
@@ -138,6 +139,43 @@ const PROVIDERS: ProviderConfig[] = [
   },
 ];
 
+interface VideoProviderConfig {
+  id: string;
+  keyField: string;
+  keyPlaceholder: string;
+  urlField?: string;
+  modelField?: string;
+  defaultModel?: string;
+  models?: string[];
+}
+
+const VIDEO_PROVIDERS: VideoProviderConfig[] = [
+  {
+    id: "heygen",
+    keyField: "media.heygen.api_key",
+    keyPlaceholder: "••••••••••••••••••••••••••••••••",
+  },
+  {
+    id: "higgsfield",
+    keyField: "media.higgsfield.api_key",
+    keyPlaceholder: "hf-••••••••••••••••",
+  },
+  {
+    id: "seedance",
+    keyField: "media.seedance.api_key",
+    keyPlaceholder: "sk-••••••••••••••••",
+    modelField: "media.seedance.default_model",
+    defaultModel: "seedance-1.0-pro",
+    models: ["seedance-1.0-pro", "seedance-1.0-lite"],
+  },
+  {
+    id: "remotion",
+    keyField: "media.remotion.api_key",
+    keyPlaceholder: "rmtn-••••••••••••••••",
+    urlField: "media.remotion.serve_url",
+  },
+];
+
 function FieldTooltip({ content }: { content: string }) {
   return (
     <Tooltip>
@@ -186,6 +224,9 @@ export function AIProvidersTab() {
   const toggleEnabled = (providerId: string, enabled: boolean) => {
     set(`llm.${providerId}.enabled`, String(enabled));
   };
+
+  const setMedia = (key: string, value: string, isSecret = false) =>
+    setPending({ key, category: "media", value, isSecret });
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -309,6 +350,119 @@ export function AIProvidersTab() {
             </CardContent>
           </Card>
         ))}
+
+        {/* Video Generation section */}
+        <div className="flex items-center gap-3 pt-2">
+          <div className="h-px flex-1 bg-border/40" />
+          <span className="text-xs font-medium text-muted-foreground px-1">
+            {t("aiProviders.videoSection")}
+          </span>
+          <div className="h-px flex-1 bg-border/40" />
+        </div>
+
+        {VIDEO_PROVIDERS.map((vp) => {
+          const urlField = vp.urlField;
+          const modelField = vp.modelField;
+          const models = vp.models;
+          return (
+            <Card key={vp.id} className="border-border/60">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                    <Video className="h-4 w-4 text-violet-400" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-sm">
+                        {t(`aiProviders.${vp.id}.name`)}
+                      </CardTitle>
+                      <FieldTooltip
+                        content={t(`aiProviders.${vp.id}.description`)}
+                      />
+                    </div>
+                    <CardDescription className="text-xs mt-0.5">
+                      {t(`aiProviders.${vp.id}.description`)}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-3 pt-0">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Label
+                      htmlFor={`${vp.id}-key`}
+                      className="text-xs text-muted-foreground"
+                    >
+                      {t(`aiProviders.${vp.id}.apiKey`)}
+                    </Label>
+                    <FieldTooltip content={t("tooltips.apiKey")} />
+                  </div>
+                  <SecretInput
+                    id={`${vp.id}-key`}
+                    value={get(vp.keyField)}
+                    onChange={(v) => setMedia(vp.keyField, v, true)}
+                    placeholder={vp.keyPlaceholder}
+                  />
+                </div>
+
+                {urlField !== undefined && (
+                  <div className="space-y-1.5">
+                    <Label
+                      htmlFor={`${vp.id}-url`}
+                      className="text-xs text-muted-foreground"
+                    >
+                      {t(`aiProviders.${vp.id}.serveUrl`)}
+                    </Label>
+                    <Input
+                      id={`${vp.id}-url`}
+                      value={get(urlField)}
+                      onChange={(e) => setMedia(urlField, e.target.value)}
+                      placeholder="https://..."
+                      className="text-sm font-mono"
+                    />
+                  </div>
+                )}
+
+                {modelField !== undefined && models !== undefined && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <Label
+                        htmlFor={`${vp.id}-model`}
+                        className="text-xs text-muted-foreground"
+                      >
+                        {t(`aiProviders.${vp.id}.defaultModel`)}
+                      </Label>
+                      <FieldTooltip content={t("tooltips.defaultModel")} />
+                    </div>
+                    <Select
+                      value={get(modelField) || vp.defaultModel}
+                      onValueChange={(v) => setMedia(modelField, v)}
+                    >
+                      <SelectTrigger
+                        id={`${vp.id}-model`}
+                        className="w-full h-9 text-sm font-mono"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {models.map((m) => (
+                          <SelectItem
+                            key={m}
+                            value={m}
+                            className="font-mono text-sm"
+                          >
+                            {m}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
 
         {/* Ollama local */}
         <Card className="border-border/60">

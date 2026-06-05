@@ -9,7 +9,8 @@ export type SettingCategory =
   | "messaging"
   | "integrations"
   | "system"
-  | "ollama";
+  | "ollama"
+  | "media";
 
 export interface SettingEntry {
   key: string;

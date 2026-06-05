@@ -5,6 +5,7 @@ const settingCategorySchema = z.enum([
   "messaging",
   "integrations",
   "system",
+  "media",
 ]);
 
 export const upsertSettingSchema = z.object({
