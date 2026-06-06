@@ -100,6 +100,11 @@ ARCHITECTURE.md
 # AI session planning docs — ephemeral, regenerated per session
 docs/superpowers/plans/
 
+# ─── Git worktrees ────────────────────────────────────────────────────────────
+.worktrees/
+.clone/
+graphify-out/
+
 # ─── Claude Code / AI tooling ─────────────────────────────────────────────────
 # settings.local.json is personal (local paths, tokens) — never commit
 .claude/settings.local.json
