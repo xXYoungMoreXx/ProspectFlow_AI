@@ -44,7 +44,7 @@ test.describe("Authentication", () => {
     // Should redirect to agents dashboard
     await expect(page).toHaveURL(/.*\/agents/);
     await expect(
-      page.getByRole("heading", { name: /ai agents/i }),
+      page.getByRole("heading", { name: /agentes de ia/i }),
     ).toBeVisible();
 
     // Check if the operator email is shown in the UI

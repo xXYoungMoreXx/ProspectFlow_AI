@@ -699,6 +699,35 @@ export const tokenUsage = pgTable(
 );
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// QA RESULTS — QA agent validation output per project
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const qaResults = pgTable(
+  "qa_results",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    agentId: uuid("agent_id")
+      .notNull()
+      .references(() => agents.id),
+    checkType: text("check_type").notNull(), // 'LIGHTHOUSE' | 'CONTENT' | 'LINKS' | 'MOBILE'
+    status: text("status").notNull(), // 'PASS' | 'FAIL' | 'WARNING'
+    score: integer("score"),
+    details: jsonb("details"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_qa_results_project").on(table.projectId),
+    index("idx_qa_results_org").on(table.organizationId),
+  ],
+);
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // AUDIT LOG (APPEND-ONLY)
 // ═══════════════════════════════════════════════════════════════════════════════
 

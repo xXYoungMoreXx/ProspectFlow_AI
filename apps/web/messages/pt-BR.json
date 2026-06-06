@@ -253,6 +253,37 @@
       "submitting": "Criando...",
       "submitError": "Falha ao criar lead. Tente novamente.",
       "backToLeads": "Voltar para Leads"
+    },
+    "detail": {
+      "notFound": "Lead não encontrado",
+      "backToLeads": "Voltar para Leads",
+      "unknownContact": "Contato desconhecido",
+      "createdOn": "Criado em",
+      "contactInfo": "Informações de contato",
+      "noEmail": "Sem email",
+      "noPhone": "Sem telefone",
+      "noCompany": "Sem empresa",
+      "contextNotes": "Contexto / Observações",
+      "tabHistory": "Histórico",
+      "tabQuote": "Proposta",
+      "messagePlaceholder": "Digite uma mensagem ou nota interna...",
+      "quoteTitle": "Geração de Proposta com IA",
+      "quoteDesc": "Analise o pedido do cliente e calcule automaticamente custos de plataforma, infraestrutura e desenvolvimento.",
+      "noQuote": "Nenhuma proposta gerada ainda",
+      "quotePricing": "Deixe nosso Agente de Preços analisar o histórico e sugerir um orçamento.",
+      "createManually": "Criar Manualmente",
+      "generateWithAI": "Gerar com IA",
+      "agentAnalyzing": "Agente analisando requisitos...",
+      "agentChecking": "Verificando custos, infraestrutura e estimativa de esforço.",
+      "aiGeneratedQuote": "Proposta Gerada por IA",
+      "updatedNow": "Atualizado agora",
+      "colDescription": "Descrição",
+      "colCategory": "Categoria",
+      "colCost": "Custo (USD)",
+      "estimatedTotal": "Total Estimado",
+      "agentRationale": "Justificativa do Agente",
+      "addItem": "Adicionar Item",
+      "sendProposal": "Enviar Proposta ao Cliente"
     }
   },
   "deals": {
@@ -278,6 +309,37 @@
       "REVIEW": "Em revisão",
       "DELIVERED": "Entregue",
       "REVISION": "Em revisão"
+    },
+    "detail": {
+      "notFound": "Projeto não encontrado",
+      "backToProjects": "Voltar para Projetos",
+      "siteDelivered": "Site Entregue",
+      "tutorial": "Tutorial",
+      "openSite": "Abrir Site",
+      "notDelivered": "Site ainda não entregue — pipeline em andamento.",
+      "pipelineStatus": "Status do Pipeline",
+      "currentStage": "Etapa atual",
+      "lighthouseTitle": "Pontuações Lighthouse",
+      "scoresNotAvailable": "Pontuações ainda não disponíveis",
+      "stages": {
+        "created": "Projeto Criado",
+        "briefing_approved": "Briefing Aprovado",
+        "builder_started": "Builder Iniciado",
+        "staging_approved": "Staging Aprovado",
+        "delivered": "Entregue"
+      },
+      "lighthouse": {
+        "performance": "Desempenho",
+        "accessibility": "Acessibilidade",
+        "seo": "SEO",
+        "bestPractices": "Boas Práticas"
+      },
+      "mockupTitle": "Mockup Visual — Aguardando Aprovação",
+      "mockupDesc": "Aprove para o CODER iniciar o HTML final, ou rejeite para o DESIGNER refazer.",
+      "reject": "Rejeitar",
+      "approveMockup": "Aprovar Mockup",
+      "createdAt": "Criado",
+      "updatedAt": "Atualizado"
     }
   },
   "briefings": {
