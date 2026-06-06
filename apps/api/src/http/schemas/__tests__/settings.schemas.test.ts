@@ -3,7 +3,7 @@ import {
   upsertSettingSchema,
   updateSettingsBodySchema,
   categoryParamsSchema,
-} from "../settings.schemas";
+} from "../settings.schemas.js";
 
 describe("settingCategorySchema (via exported schemas)", () => {
   describe("upsertSettingSchema — category field", () => {

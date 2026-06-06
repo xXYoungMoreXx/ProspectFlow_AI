@@ -345,13 +345,13 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
 
   // Dev-only endpoint — creates or re-authenticates a dev user without SMTP
   // Disabled in production (handler enforces NODE_ENV check)
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env["NODE_ENV"] !== "production") {
     app.post("/dev-login", async (request, reply) => {
       const body = request.body as { email?: string; password?: string };
       const email =
-        body?.email ?? process.env.DEV_ADMIN_EMAIL ?? "admin@agentepro.dev";
+        body?.email ?? process.env["DEV_ADMIN_EMAIL"] ?? "admin@agentepro.dev";
       const password =
-        body?.password ?? process.env.DEV_ADMIN_PASSWORD ?? "admin123";
+        body?.password ?? process.env["DEV_ADMIN_PASSWORD"] ?? "admin123";
 
       const handler = new DevLoginHandler(app.container.db);
       const result = await handler.execute(email, password);

@@ -469,7 +469,7 @@ export class DevLoginHandler {
     email: string,
     password: string,
   ): Promise<Result<AuthTokens, AuthenticationError>> {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env["NODE_ENV"] === "production") {
       return err(new AuthenticationError("Não disponível em produção"));
     }
 
