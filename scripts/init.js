@@ -13,6 +13,7 @@
  */
 
 const { spawnSync, spawn } = require("node:child_process");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const net = require("node:net");
@@ -76,6 +77,7 @@ function loadEnv() {
   const p = path.join(ROOT, ".env");
   if (!fs.existsSync(p)) return;
   fs.readFileSync(p, "utf-8")
+    .replace(/\r\n/g, "\n")
     .split("\n")
     .forEach((line) => {
       const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
@@ -321,6 +323,32 @@ function cmdStop() {
   log.ok("Sistema encerrado com segurança.");
 }
 
+// ── Geração automática de chaves JWT ─────────────────────────────────────────
+function generateAndSaveJwtKeys(envPath) {
+  log.info("Gerando par de chaves JWT RSA-2048 automaticamente...");
+  const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: "spki", format: "pem" },
+    privateKeyEncoding: { type: "pkcs8", format: "pem" },
+  });
+
+  // dotenv lê \n literal como quebra de linha — padrão para chaves PEM em .env
+  const toEnvLine = (pem) => pem.replace(/\n/g, "\\n");
+  const setVar = (src, key, val) =>
+    new RegExp(`^${key}=.*$`, "m").test(src)
+      ? src.replace(new RegExp(`^${key}=.*$`, "m"), `${key}="${val}"`)
+      : `${src}\n${key}="${val}"`;
+
+  let content = fs.readFileSync(envPath, "utf-8");
+  content = setVar(content, "JWT_PRIVATE_KEY", toEnvLine(privateKey));
+  content = setVar(content, "JWT_PUBLIC_KEY", toEnvLine(publicKey));
+  fs.writeFileSync(envPath, content, "utf-8");
+
+  process.env.JWT_PRIVATE_KEY = privateKey;
+  process.env.JWT_PUBLIC_KEY = publicKey;
+  log.ok("Chaves JWT geradas e salvas no .env.");
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CMD: start — fluxo completo de inicialização
 // ─────────────────────────────────────────────────────────────────────────────
@@ -360,11 +388,10 @@ async function cmdStart() {
   loadEnv();
 
   if (!isPemKey(process.env.JWT_PRIVATE_KEY)) {
-    log.fail("JWT_PRIVATE_KEY inválida ou não configurada no .env");
-    log.info(
-      "Gere com:\n  openssl genpkey -algorithm RSA -out jwt.key -pkeyopt rsa_keygen_bits:2048\n  openssl rsa -in jwt.key -pubout -out jwt.pub",
+    log.warn(
+      "JWT_PRIVATE_KEY ausente ou inválida — gerando automaticamente...",
     );
-    process.exit(1);
+    generateAndSaveJwtKeys(envPath);
   }
   log.ok(".env carregado. JWT verificado.");
 
