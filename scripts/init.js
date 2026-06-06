@@ -396,7 +396,7 @@ async function cmdStart() {
   log.ok(".env carregado. JWT verificado.");
 
   // 3. Dependências npm
-  log.step("3/7", "Instalando dependências npm...");
+  log.step("3/8", "Instalando dependências npm...");
   try {
     run("npm", ["install"], { cwd: ROOT });
     log.ok("Dependências instaladas.");
@@ -405,8 +405,20 @@ async function cmdStart() {
     process.exit(1);
   }
 
-  // 4. Docker Compose
-  log.step("4/7", "Subindo infraestrutura (Docker Compose)...");
+  // 4. Build pacotes compartilhados
+  log.step("4/8", "Compilando pacotes compartilhados...");
+  try {
+    run("npm", ["run", "build", "--workspace=@agentepro/shared-types"], {
+      cwd: ROOT,
+    });
+    log.ok("Pacotes compartilhados compilados.");
+  } catch (err) {
+    log.fail(`Falha no build de shared-types: ${err.message}`);
+    process.exit(1);
+  }
+
+  // 5. Docker Compose
+  log.step("5/8", "Subindo infraestrutura (Docker Compose)...");
   const up = silent("docker", [
     "compose",
     "-f",
@@ -442,7 +454,7 @@ async function cmdStart() {
   }
 
   // 5. Aguardar PostgreSQL
-  log.step("5/7", "Aguardando PostgreSQL...");
+  log.step("6/8", "Aguardando PostgreSQL...");
   let dbReady = false;
   process.stdout.write("  ");
   for (let i = 0; i < 30; i++) {
@@ -471,7 +483,7 @@ async function cmdStart() {
   log.ok("PostgreSQL operacional.");
 
   // 6. Migrations
-  log.step("6/7", "Aplicando migrations...");
+  log.step("7/8", "Aplicando migrations...");
   try {
     run("npm", ["run", "db:migrate"], { cwd: path.join(ROOT, "apps", "api") });
     log.ok("Migrations aplicadas.");
@@ -484,7 +496,7 @@ async function cmdStart() {
   }
 
   // 7. Dev servers
-  log.step("7/7", "Iniciando serviços...");
+  log.step("8/8", "Iniciando serviços...");
   console.log("");
   console.log("  \x1b[36m💻  Web Dashboard  →  http://localhost:3000\x1b[0m");
   console.log("  \x1b[36m⚙️   API Fastify    →  http://localhost:3001\x1b[0m");
