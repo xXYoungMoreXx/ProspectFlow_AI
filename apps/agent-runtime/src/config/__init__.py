@@ -45,5 +45,8 @@ class RuntimeConfig(BaseSettings):
     # ── MCP Brasil ───────────────────────────────────────────────────────
     transparencia_api_key: SecretStr | None = None
 
+    # ── SearXNG ──────────────────────────────────────────────────────────────
+    searxng_url: str | None = None
+
 
 config = RuntimeConfig()
