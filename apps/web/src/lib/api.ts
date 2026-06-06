@@ -1,3 +1,5 @@
+import { useAuthStore } from "./stores/auth-store";
+
 const API_BASE = "/api/v1";
 
 interface RequestOptions extends RequestInit {
@@ -19,7 +21,8 @@ class ApiError extends Error {
   }
 }
 
-async function request<T>(
+// Single fetch without retry — used internally for auth endpoints to avoid loops.
+async function rawRequest<T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
@@ -30,9 +33,7 @@ async function request<T>(
     ...(fetchOptions.headers as Record<string, string>),
   };
 
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
+  if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const response = await fetch(`${API_BASE}${path}`, {
     ...fetchOptions,
@@ -49,6 +50,40 @@ async function request<T>(
   }
 
   return body;
+}
+
+// On 401: try one silent token refresh then retry; on failure, logout.
+async function request<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  try {
+    return await rawRequest<T>(path, options);
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) {
+      const { refreshToken, updateToken, logout } = useAuthStore.getState();
+      if (refreshToken) {
+        try {
+          const refreshed = await rawRequest<{
+            data: { accessToken: string; refreshToken: string };
+          }>("/auth/refresh", {
+            method: "POST",
+            body: JSON.stringify({ refreshToken }),
+          });
+          updateToken(refreshed.data.accessToken, refreshed.data.refreshToken);
+          return await rawRequest<T>(path, {
+            ...options,
+            token: refreshed.data.accessToken,
+          });
+        } catch {
+          logout();
+        }
+      } else {
+        logout();
+      }
+    }
+    throw err;
+  }
 }
 
 export const api = {
@@ -191,6 +226,38 @@ export const api = {
         body: JSON.stringify(data),
         token,
       }),
+    previewMaps: (
+      params: {
+        categories: string[];
+        city: string;
+        state: string;
+        radiusKm: number;
+      },
+      token: string,
+    ) => {
+      const qs = new URLSearchParams({
+        categories: params.categories.join(","),
+        city: params.city,
+        state: params.state,
+        radiusKm: String(params.radiusKm),
+      });
+      return request<{
+        data: {
+          places: Array<{
+            placeId: string;
+            name: string;
+            address: string;
+            phone: string | null;
+            website: string | null;
+            rating: number | null;
+            reviewsCount: number | null;
+            types: string[];
+            mapsUrl: string;
+          }>;
+        };
+        meta: { total: number; city: string; state: string; radiusKm: number };
+      }>(`/prospecting/search-maps-preview?${qs.toString()}`, { token });
+    },
     queue: (token: string) =>
       request<{ data: { leads: any[] }; meta: any }>("/prospecting/queue", {
         token,

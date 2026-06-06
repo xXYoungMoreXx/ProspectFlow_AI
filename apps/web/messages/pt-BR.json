@@ -265,9 +265,14 @@
       "statePlaceholder": "SP",
       "radius": "Raio (km):",
       "minScore": "Score Mínimo:",
-      "submit": "Iniciar Busca",
+      "submit": "Pré-visualizar resultados",
       "submitting": "Disparando...",
-      "mapPreview": "Pré-visualização da área"
+      "searching": "Buscando no Google Maps...",
+      "mapPreview": "Pré-visualização da área",
+      "results": "{count} resultado(s) — {city}/{state}",
+      "noResults": "Nenhum resultado encontrado para esses filtros.",
+      "website": "Site",
+      "startProspecting": "Iniciar Prospecção ({count} leads)"
     },
     "queue": {
       "empty": "Nenhum lead na fila",
@@ -462,8 +467,20 @@
         "name": "MCP Brasil",
         "description": "APIs do governo brasileiro — Transparência, DataJud, TSE",
         "transparenciaKey": "API Key Transparência Federal",
-        "datajudKey": "API Key DataJud",
-        "metaToken": "Meta Access Token"
+        "datajudKey": "API Key DataJud"
+      },
+      "mcpMeta": {
+        "name": "MCP Meta",
+        "description": "Meta Business Platform — WhatsApp Business, Instagram e Facebook Graph API",
+        "appId": "App ID",
+        "appSecret": "App Secret",
+        "accessToken": "Access Token",
+        "phoneNumberId": "Phone Number ID"
+      },
+      "googleMaps": {
+        "name": "Google Maps",
+        "description": "Google Places API (New) para prospecção de leads por localização",
+        "apiKey": "Maps API Key"
       },
       "chromadb": {
         "name": "ChromaDB",
@@ -546,6 +563,11 @@
       "transparenciaKey": "API Key do Portal da Transparência do Governo Federal. Solicite em portaldatransparencia.gov.br/api-de-dados.",
       "datajudKey": "API Key do DataJud (TJDFT/CNJ). Necessária para consultar dados de processos judiciais.",
       "metaToken": "Access Token do Meta Business. Necessário para integração com WhatsApp Business API oficial.",
+      "metaAppId": "ID do aplicativo Meta (Facebook for Developers). Encontre em developers.facebook.com.",
+      "metaAppSecret": "Segredo do aplicativo Meta. Gerado junto ao App ID em developers.facebook.com.",
+      "metaAccessToken": "Access Token do Meta Business (EAA...). Gerado no Meta Business Suite ou via Graph API.",
+      "metaPhoneNumberId": "ID do número de telefone do WhatsApp Business. Encontre em Meta Business Manager > Contas do WhatsApp.",
+      "googleMapsKey": "API Key do Google Maps/Places. Crie em console.cloud.google.com com a API Places (New) habilitada.",
       "chromaUrl": "URL do servidor ChromaDB. Usado como banco vetorial para memória e RAG dos agentes.",
       "webhookUrl": "URL para onde o sistema enviará notificações de eventos (leads qualificados, deals fechados, etc).",
       "webhookSecret": "Chave usada para assinar os payloads do webhook (HMAC-SHA256). Valide no seu servidor receptor."

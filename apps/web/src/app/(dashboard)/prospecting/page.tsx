@@ -13,7 +13,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Loader2, X, Plus } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  X,
+  Plus,
+  Star,
+  Phone,
+  Globe,
+  MapPin,
+  ExternalLink,
+  PlayCircle,
+} from "lucide-react";
 import { usePagination } from "@/hooks/usePagination";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ProspectingConfigTab } from "@/components/prospecting/ProspectingConfigTab";
@@ -42,6 +53,18 @@ interface QueueLead {
   source: string;
   pendingHitl: boolean;
   createdAt: string;
+}
+
+interface Place {
+  placeId: string;
+  name: string;
+  address: string;
+  phone: string | null;
+  website: string | null;
+  rating: number | null;
+  reviewsCount: number | null;
+  types: string[];
+  mapsUrl: string;
 }
 
 export default function ProspectingPage() {
@@ -86,6 +109,26 @@ export default function ProspectingPage() {
 
   const canSearch =
     categories.length > 0 && city.trim().length >= 2 && state.length === 2;
+
+  const [previewResults, setPreviewResults] = useState<Place[] | null>(null);
+  const [previewMeta, setPreviewMeta] = useState<{
+    total: number;
+    city: string;
+    state: string;
+    radiusKm: number;
+  } | null>(null);
+
+  const previewMutation = useMutation({
+    mutationFn: () =>
+      api.prospecting.previewMaps(
+        { categories, city, state, radiusKm },
+        token!,
+      ),
+    onSuccess: (res) => {
+      setPreviewResults(res.data.places);
+      setPreviewMeta(res.meta);
+    },
+  });
 
   const leads: QueueLead[] = queueQuery.data?.data?.leads ?? [];
   const {
@@ -222,13 +265,16 @@ export default function ProspectingPage() {
 
               <Button
                 className="w-full gap-2"
-                disabled={!canSearch || searchMutation.isPending}
-                onClick={() => searchMutation.mutate()}
+                disabled={!canSearch || previewMutation.isPending}
+                onClick={() => {
+                  setPreviewResults(null);
+                  previewMutation.mutate();
+                }}
               >
-                {searchMutation.isPending ? (
+                {previewMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    {t("search.submitting")}
+                    {t("search.searching")}
                   </>
                 ) : (
                   <>
@@ -237,6 +283,108 @@ export default function ProspectingPage() {
                   </>
                 )}
               </Button>
+
+              {previewResults !== null && (
+                <div className="space-y-3 pt-1">
+                  {previewMeta && (
+                    <p className="text-xs text-muted-foreground">
+                      {t("search.results", {
+                        count: previewMeta.total,
+                        city: previewMeta.city,
+                        state: previewMeta.state,
+                      })}
+                    </p>
+                  )}
+
+                  {previewResults.length === 0 ? (
+                    <p className="text-sm text-center text-muted-foreground py-4">
+                      {t("search.noResults")}
+                    </p>
+                  ) : (
+                    <>
+                      <div className="grid gap-2 max-h-[400px] overflow-y-auto pr-1">
+                        {previewResults.map((place) => (
+                          <div
+                            key={place.placeId}
+                            className="rounded-lg border border-border p-3 space-y-1.5 bg-card"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-sm font-semibold leading-snug">
+                                {place.name}
+                              </p>
+                              <a
+                                href={place.mapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="shrink-0 text-muted-foreground hover:text-primary transition-colors"
+                                aria-label="Abrir no Google Maps"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <MapPin className="w-3 h-3 shrink-0" />
+                              <span className="line-clamp-1">
+                                {place.address}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 text-xs">
+                              {place.rating !== null && (
+                                <span className="flex items-center gap-1 text-amber-400">
+                                  <Star className="w-3 h-3 fill-amber-400" />
+                                  {place.rating.toFixed(1)}
+                                  {place.reviewsCount !== null && (
+                                    <span className="text-muted-foreground">
+                                      ({place.reviewsCount})
+                                    </span>
+                                  )}
+                                </span>
+                              )}
+                              {place.phone && (
+                                <span className="flex items-center gap-1 text-muted-foreground">
+                                  <Phone className="w-3 h-3" />
+                                  {place.phone}
+                                </span>
+                              )}
+                              {place.website && (
+                                <a
+                                  href={place.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1 text-primary hover:underline"
+                                >
+                                  <Globe className="w-3 h-3" />
+                                  {t("search.website")}
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <Button
+                        className="w-full gap-2"
+                        disabled={searchMutation.isPending}
+                        onClick={() => searchMutation.mutate()}
+                      >
+                        {searchMutation.isPending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            {t("search.submitting")}
+                          </>
+                        ) : (
+                          <>
+                            <PlayCircle className="w-4 h-4" />
+                            {t("search.startProspecting", {
+                              count: previewResults.length,
+                            })}
+                          </>
+                        )}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

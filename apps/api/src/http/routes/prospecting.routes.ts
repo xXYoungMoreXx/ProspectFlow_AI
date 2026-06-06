@@ -150,6 +150,190 @@ export async function prospectingRoutes(app: FastifyInstance): Promise<void> {
     });
   });
 
+  // GET /api/v1/prospecting/search-maps-preview
+  // Synchronous Google Places search — returns raw place data for preview before queuing
+  app.get("/search-maps-preview", async (request, reply) => {
+    const {
+      categories: categoriesRaw,
+      city,
+      state,
+      radiusKm: radiusKmRaw,
+    } = request.query as Record<string, string>;
+
+    if (!categoriesRaw || !city || !state) {
+      return reply.status(400).send({
+        errors: [
+          {
+            code: "VALIDATION_ERROR",
+            message: "categories, city e state são obrigatórios",
+            requestId: request.requestId,
+          },
+        ],
+      });
+    }
+
+    const categories = categoriesRaw
+      .split(",")
+      .map((c: string) => c.trim())
+      .filter(Boolean);
+    const radiusKm = Math.min(
+      100,
+      Math.max(1, parseInt(radiusKmRaw ?? "20", 10)),
+    );
+
+    const apiKey = await getConfigValue(
+      app.container.db,
+      request.operatorId,
+      "integrations.google.maps_api_key",
+    );
+
+    if (!apiKey) {
+      return reply.status(400).send({
+        errors: [
+          {
+            code: "MISSING_CONFIG",
+            message:
+              "Google Maps API Key não configurada. Configure em Configurações → Integrações → Google Maps.",
+            requestId: request.requestId,
+          },
+        ],
+      });
+    }
+
+    // Geocode city/state to lat/lng
+    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(`${city}, ${state}, Brazil`)}&key=${apiKey}`;
+    const geocodeRes = await fetch(geocodeUrl, {
+      signal: AbortSignal.timeout(8_000),
+    });
+    if (!geocodeRes.ok) {
+      return reply.status(502).send({
+        errors: [
+          {
+            code: "EXTERNAL_SERVICE_ERROR",
+            message: "Falha ao geocodificar a cidade via Google Geocoding API.",
+            requestId: request.requestId,
+          },
+        ],
+      });
+    }
+    const geocodeData = (await geocodeRes.json()) as {
+      status: string;
+      results: Array<{
+        geometry: { location: { lat: number; lng: number } };
+      }>;
+    };
+    if (geocodeData.status !== "OK" || !geocodeData.results[0]) {
+      return reply.status(404).send({
+        errors: [
+          {
+            code: "NOT_FOUND",
+            message: `Cidade "${city}, ${state}" não encontrada no Google Maps.`,
+            requestId: request.requestId,
+          },
+        ],
+      });
+    }
+    const { lat, lng } = geocodeData.results[0].geometry.location;
+
+    const FIELD_MASK = [
+      "places.id",
+      "places.displayName",
+      "places.formattedAddress",
+      "places.nationalPhoneNumber",
+      "places.websiteUri",
+      "places.rating",
+      "places.userRatingCount",
+      "places.types",
+      "places.googleMapsUri",
+    ].join(",");
+
+    const allPlaces: Array<{
+      placeId: string;
+      name: string;
+      address: string;
+      phone: string | null;
+      website: string | null;
+      rating: number | null;
+      reviewsCount: number | null;
+      types: string[];
+      mapsUrl: string;
+    }> = [];
+
+    const seen = new Set<string>();
+
+    for (const category of categories.slice(0, 5)) {
+      const searchRes = await fetch(
+        "https://places.googleapis.com/v1/places:searchNearby",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": apiKey,
+            "X-Goog-FieldMask": FIELD_MASK,
+            "Accept-Language": "pt-BR",
+          },
+          body: JSON.stringify({
+            includedTypes: [category.toLowerCase().replace(/\s+/g, "_")],
+            locationRestriction: {
+              circle: {
+                center: { latitude: lat, longitude: lng },
+                radius: radiusKm * 1000,
+              },
+            },
+            maxResultCount: 20,
+            languageCode: "pt-BR",
+          }),
+          signal: AbortSignal.timeout(10_000),
+        },
+      );
+
+      if (!searchRes.ok) continue;
+
+      const searchData = (await searchRes.json()) as {
+        places?: Array<{
+          id: string;
+          displayName?: { text?: string };
+          formattedAddress?: string;
+          nationalPhoneNumber?: string;
+          websiteUri?: string;
+          rating?: number;
+          userRatingCount?: number;
+          types?: string[];
+          googleMapsUri?: string;
+        }>;
+      };
+
+      for (const p of searchData.places ?? []) {
+        if (!p.id || seen.has(p.id)) continue;
+        seen.add(p.id);
+        allPlaces.push({
+          placeId: p.id,
+          name: p.displayName?.text ?? "",
+          address: p.formattedAddress ?? "",
+          phone: p.nationalPhoneNumber ?? null,
+          website: p.websiteUri ?? null,
+          rating: p.rating ?? null,
+          reviewsCount: p.userRatingCount ?? null,
+          types: p.types ?? [],
+          mapsUrl:
+            p.googleMapsUri ??
+            `https://maps.google.com/?q=${encodeURIComponent(p.displayName?.text ?? "")}`,
+        });
+      }
+    }
+
+    return reply.status(200).send({
+      data: { places: allPlaces },
+      meta: {
+        total: allPlaces.length,
+        city,
+        state,
+        radiusKm,
+        requestId: request.requestId,
+      },
+    });
+  });
+
   // GET /api/v1/prospecting/queue
   // Returns leads with PROSPECTED status, PII masked
   app.get("/queue", async (request, reply) => {

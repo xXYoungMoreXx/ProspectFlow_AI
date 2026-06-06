@@ -155,6 +155,7 @@ export default function DashboardLayout({
         .then((res) => {
           setAuth(
             res.data.accessToken,
+            res.data.refreshToken,
             process.env.NEXT_PUBLIC_DEV_AUTO_EMAIL ?? "admin@agentepro.dev",
           );
         })

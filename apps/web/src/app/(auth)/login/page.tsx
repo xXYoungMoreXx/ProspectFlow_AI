@@ -35,7 +35,7 @@ export default function LoginPage() {
 
     try {
       const result = await api.auth.login(email, password);
-      setAuth(result.data.accessToken, email);
+      setAuth(result.data.accessToken, result.data.refreshToken, email);
       router.push("/agents");
     } catch (err) {
       if (err instanceof ApiError) {
