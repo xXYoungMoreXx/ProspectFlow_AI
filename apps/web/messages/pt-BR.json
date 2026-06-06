@@ -229,7 +229,14 @@
     "subtitle": "Acompanhe entregas de sites e pontuações Lighthouse",
     "empty": "Nenhum projeto ainda",
     "perf": "Perf:",
-    "a11y": "A11y:"
+    "a11y": "A11y:",
+    "status": {
+      "PENDING": "Pendente",
+      "IN_PROGRESS": "Em andamento",
+      "REVIEW": "Em revisão",
+      "DELIVERED": "Entregue",
+      "REVISION": "Em revisão"
+    }
   },
   "briefings": {
     "title": "Briefings",
@@ -272,12 +279,16 @@
       "results": "{count} resultado(s) — {city}/{state}",
       "noResults": "Nenhum resultado encontrado para esses filtros.",
       "website": "Site",
-      "startProspecting": "Iniciar Prospecção ({count} leads)"
+      "startProspecting": "Iniciar Prospecção ({count} leads)",
+      "errorPreview": "Falha ao buscar resultados. Verifique a chave do Google Maps nas Configurações.",
+      "errorSubmit": "Falha ao enfileirar a prospecção. Tente novamente.",
+      "googleAttribution": "Dados fornecidos pelo Google Business · Google Maps"
     },
     "queue": {
       "empty": "Nenhum lead na fila",
       "columns": {
         "business": "Empresa",
+        "contact": "Contato",
         "score": "Score",
         "source": "Origem",
         "date": "Data",
@@ -306,7 +317,9 @@
         "sun": "Dom"
       },
       "save": "Salvar Configuração",
-      "saving": "Salvando..."
+      "saving": "Salvando...",
+      "saveSuccess": "Configuração salva com sucesso.",
+      "saveError": "Erro ao salvar. Tente novamente."
     }
   },
   "hitl": {

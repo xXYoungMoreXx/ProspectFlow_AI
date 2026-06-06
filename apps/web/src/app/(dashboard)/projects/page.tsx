@@ -11,6 +11,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FolderKanban, ExternalLink } from "lucide-react";
 
+interface Project {
+  id: string;
+  clientName?: string;
+  status: "PENDING" | "IN_PROGRESS" | "REVIEW" | "DELIVERED" | "REVISION";
+  lighthouseScores?: { performance?: number; accessibility?: number };
+  previewUrl?: string;
+  createdAt: string;
+}
+
 const statusColors: Record<string, string> = {
   PENDING: "bg-sky-500/10 text-sky-400 border-sky-500/20",
   IN_PROGRESS: "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -54,7 +63,7 @@ export default function ProjectsPage() {
         <EmptyState icon={FolderKanban} title={t("empty")} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {projects.map((project: any) => (
+          {projects.map((project: Project) => (
             <Link key={project.id} href={`/projects/${project.id}`}>
               <Card className="group hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer">
                 <CardHeader className="pb-2">
@@ -67,7 +76,7 @@ export default function ProjectsPage() {
                       variant="outline"
                       className={`text-[10px] ${statusColors[project.status] || ""}`}
                     >
-                      {project.status}
+                      {t(`status.${project.status}`)}
                     </Badge>
                   </div>
                 </CardHeader>

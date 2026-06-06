@@ -10,6 +10,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Handshake, DollarSign, ArrowRight } from "lucide-react";
 
+interface Deal {
+  id: string;
+  status: "PROPOSED" | "NEGOTIATING" | "CLOSED" | "CANCELLED";
+  pricing?: { total?: number };
+  leadId?: string;
+  clientName?: string;
+  createdAt?: string;
+}
+
 const statusColors: Record<string, string> = {
   PROPOSED: "bg-sky-500/10 text-sky-400 border-sky-500/20",
   NEGOTIATING: "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -48,7 +57,7 @@ export default function DealsPage() {
         <EmptyState icon={Handshake} title={t("empty")} />
       ) : (
         <div className="space-y-2">
-          {deals.map((deal: any) => (
+          {deals.map((deal: Deal) => (
             <Card
               key={deal.id}
               className="group hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer"
@@ -61,10 +70,15 @@ export default function DealsPage() {
                     </div>
                     <div>
                       <p className="font-medium text-sm">
-                        Deal #{deal.id?.slice(-6)}
+                        {deal.clientName || `Deal #${deal.id?.slice(-6)}`}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        R$ {deal.pricing?.total?.toLocaleString("pt-BR") || "0"}
+                        R$ {deal.pricing?.total?.toLocaleString("pt-BR") ?? "0"}
+                        {deal.createdAt && (
+                          <span className="ml-2">
+                            · {new Date(deal.createdAt).toLocaleDateString("pt-BR")}
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>

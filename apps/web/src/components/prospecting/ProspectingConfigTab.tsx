@@ -311,6 +311,17 @@ export function ProspectingConfigTab() {
               t("config.save")
             )}
           </Button>
+
+          {saveMutation.isSuccess && (
+            <p className="text-xs text-emerald-400 text-center">
+              {t("config.saveSuccess")}
+            </p>
+          )}
+          {saveMutation.isError && (
+            <p className="text-xs text-destructive text-center">
+              {t("config.saveError")}
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
