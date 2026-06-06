@@ -29,9 +29,10 @@ const ARGON2_OPTIONS: Options = {
 };
 
 export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
+  accessToken:    string;
+  refreshToken:   string;
+  expiresIn:      number;
+  organizationId: string;
 }
 
 let privateKey: Awaited<ReturnType<typeof importPKCS8>> | null = null;
@@ -337,6 +338,19 @@ export class LoginHandler {
       );
     }
 
+    // Look up org membership
+    const membership = await this.db
+      .select({
+        organizationId: schema.members.organizationId,
+        role:           schema.members.role,
+      })
+      .from(schema.members)
+      .where(eq(schema.members.userId, operator.id))
+      .limit(1);
+
+    const organizationId = membership[0]?.organizationId ?? (process.env["BOOTSTRAP_ORG_ID"] ?? "org_mvp");
+    const role           = membership[0]?.role ?? "owner";
+
     const key = await getPrivateKey();
     const jti = ulid();
     const now = Math.floor(Date.now() / 1000);
@@ -344,6 +358,8 @@ export class LoginHandler {
     const accessToken = await new SignJWT({
       sub: operator.id,
       email: operator.email,
+      organizationId,
+      role,
     })
       .setProtectedHeader({ alg: "RS256", typ: "JWT" })
       .setIssuedAt(now)
@@ -370,7 +386,8 @@ export class LoginHandler {
     return ok({
       accessToken,
       refreshToken: rawRefreshToken,
-      expiresIn: 3600,
+      expiresIn: 900,
+      organizationId,
     });
   }
 }
@@ -425,12 +442,27 @@ export class RefreshTokenHandler {
       return err(new AuthenticationError());
     }
 
+    // Look up org membership
+    const membership = await this.db
+      .select({
+        organizationId: schema.members.organizationId,
+        role:           schema.members.role,
+      })
+      .from(schema.members)
+      .where(eq(schema.members.userId, operator.id))
+      .limit(1);
+
+    const organizationId = membership[0]?.organizationId ?? (process.env["BOOTSTRAP_ORG_ID"] ?? "org_mvp");
+    const role           = membership[0]?.role ?? "owner";
+
     const key = await getPrivateKey();
     const jti = ulid();
 
     const accessToken = await new SignJWT({
       sub: operator.id,
       email: operator.email,
+      organizationId,
+      role,
     })
       .setProtectedHeader({ alg: "RS256", typ: "JWT" })
       .setIssuedAt()
@@ -455,7 +487,8 @@ export class RefreshTokenHandler {
     return ok({
       accessToken,
       refreshToken: newRawRefresh,
-      expiresIn: 3600,
+      expiresIn: 900,
+      organizationId,
     });
   }
 }
