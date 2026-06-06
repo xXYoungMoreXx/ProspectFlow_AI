@@ -54,24 +54,23 @@ const AVAILABLE_SKILLS = [
 
 type AgentSkill = (typeof AVAILABLE_SKILLS)[number];
 
-const MODELS_BY_PROVIDER: Record<string, { value: string; label: string }[]> =
-  {
-    anthropic: [
-      { value: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
-      { value: "claude-opus-4-8", label: "Claude Opus 4.8" },
-      { value: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
-    ],
-    openai: [
-      { value: "o3", label: "o3" },
-      { value: "gpt-4.1", label: "GPT-4.1" },
-      { value: "gpt-4o", label: "GPT-4o" },
-      { value: "gpt-4-turbo", label: "GPT-4 Turbo" },
-    ],
-    google: [
-      { value: "gemini-3.5-flash", label: "Gemini 3.5 Flash" },
-      { value: "gemini-3.1-pro", label: "Gemini 3.1 Pro" },
-    ],
-  };
+const MODELS_BY_PROVIDER: Record<string, { value: string; label: string }[]> = {
+  anthropic: [
+    { value: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
+    { value: "claude-opus-4-8", label: "Claude Opus 4.8" },
+    { value: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
+  ],
+  openai: [
+    { value: "o3", label: "o3" },
+    { value: "gpt-4.1", label: "GPT-4.1" },
+    { value: "gpt-4o", label: "GPT-4o" },
+    { value: "gpt-4-turbo", label: "GPT-4 Turbo" },
+  ],
+  google: [
+    { value: "gemini-3.5-flash", label: "Gemini 3.5 Flash" },
+    { value: "gemini-3.1-pro", label: "Gemini 3.1 Pro" },
+  ],
+};
 
 export default function NewAgentPage() {
   const t = useTranslations("agents");
@@ -92,7 +91,8 @@ export default function NewAgentPage() {
     systemPrompt.split(/\s+/).filter(Boolean).length * 1.3,
   );
 
-  const handleProviderChange = (newProvider: string) => {
+  const handleProviderChange = (newProvider: string | null) => {
+    if (!newProvider) return;
     setProvider(newProvider);
     const models = MODELS_BY_PROVIDER[newProvider];
     if (models && models.length > 0) setModel(models[0]!.value);

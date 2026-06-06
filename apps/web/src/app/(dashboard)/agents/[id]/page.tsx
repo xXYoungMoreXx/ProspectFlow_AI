@@ -82,7 +82,9 @@ function AgentEditorForm({ agent, id }: { agent: AgentData; id: string }) {
       void queryClient.invalidateQueries({ queryKey: ["agents"] });
       void queryClient.invalidateQueries({ queryKey: ["agents", id] });
     },
-    onError: () => { /* mutation error surfaced via updateMutation.isError */ },
+    onError: () => {
+      /* mutation error surfaced via updateMutation.isError */
+    },
   });
 
   return (
@@ -209,13 +211,13 @@ function AgentEditorForm({ agent, id }: { agent: AgentData; id: string }) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {agent.skills.map((skill: AgentSkillItem) => (
+              {agent.skills.map((skill: AgentSkillItem, idx: number) => (
                 <Badge
-                  key={skill.id ?? skill}
+                  key={skill.id ?? skill.skillType ?? idx}
                   variant="secondary"
                   className="text-xs"
                 >
-                  {skill.skillType ?? skill}
+                  {skill.skillType ?? ""}
                 </Badge>
               ))}
             </div>
