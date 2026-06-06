@@ -4,6 +4,7 @@ import { type Result, ok } from "../../domain/shared/Result.js";
 
 export interface ListBriefingsInput {
   operatorId: string;
+  organizationId: string;
   limit?: number;
   offset?: number;
 }
@@ -17,6 +18,7 @@ export class ListBriefingsQuery {
     const limit = input.limit ?? 50;
     const briefings = await this.repo.listByOperator(
       input.operatorId,
+      input.organizationId,
       limit,
       input.offset,
     );

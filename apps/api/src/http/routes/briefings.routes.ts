@@ -46,7 +46,7 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
     { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const query = new ListBriefingsQuery(app.container.briefingRepo);
-      const result = await query.execute({ operatorId: request.operatorId });
+      const result = await query.execute({ operatorId: request.operatorId, organizationId: request.organizationId });
       return reply.status(200).send({
         data: result.unwrap(),
         meta: {
@@ -66,6 +66,7 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
       const result = await query.execute({
         id: request.params.id,
         operatorId: request.operatorId,
+        organizationId: request.organizationId,
       });
       if (result.isErr()) {
         const e = result.error as DomainError;
@@ -97,6 +98,7 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
       const result = await uc.execute({
         briefingId: request.params.id,
         operatorId: request.operatorId,
+        organizationId: request.organizationId,
         correlationId: request.requestId,
       });
       if (result.isErr()) {
@@ -126,6 +128,7 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
       const found = await getQuery.execute({
         id: request.params.id,
         operatorId: request.operatorId,
+        organizationId: request.organizationId,
       });
       if (found.isErr()) {
         return reply.status(404).send({
@@ -237,6 +240,7 @@ export async function briefingRoutes(app: FastifyInstance): Promise<void> {
       const result = await uc.execute({
         briefingId: request.params.id,
         operatorId: request.operatorId,
+        organizationId: request.organizationId,
         correlationId: request.requestId,
       });
 

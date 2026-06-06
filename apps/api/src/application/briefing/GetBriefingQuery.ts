@@ -6,6 +6,7 @@ import { type Result, ok, err } from "../../domain/shared/Result.js";
 export interface GetBriefingInput {
   id: string;
   operatorId: string;
+  organizationId: string;
 }
 
 export class GetBriefingQuery {
@@ -14,7 +15,7 @@ export class GetBriefingQuery {
   async execute(
     input: GetBriefingInput,
   ): Promise<Result<BriefingProps, NotFoundError>> {
-    const briefing = await this.repo.findById(input.id, input.operatorId);
+    const briefing = await this.repo.findById(input.id, input.operatorId, input.organizationId);
     if (!briefing) {
       return err(new NotFoundError("Briefing", input.id));
     }

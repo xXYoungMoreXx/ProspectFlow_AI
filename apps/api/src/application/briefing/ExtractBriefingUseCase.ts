@@ -10,6 +10,7 @@ import type { Redis } from "ioredis";
 export interface ExtractBriefingCommand {
   briefingId: string;
   operatorId: string;
+  organizationId: string;
   correlationId: string;
 }
 
@@ -27,7 +28,7 @@ export class ExtractBriefingUseCase {
   async execute(
     cmd: ExtractBriefingCommand,
   ): Promise<Result<ExtractBriefingResult, Error>> {
-    const briefing = await this.repo.findById(cmd.briefingId, cmd.operatorId);
+    const briefing = await this.repo.findById(cmd.briefingId, cmd.operatorId, cmd.organizationId);
     if (!briefing) {
       return err(new NotFoundError("Briefing", cmd.briefingId));
     }

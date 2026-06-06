@@ -25,8 +25,9 @@ export class GetProjectByIdHandler {
   async execute(
     projectId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<Project, NotFoundError>> {
-    const project = await this.repo.findById(projectId, operatorId);
+    const project = await this.repo.findById(projectId, operatorId, organizationId);
     if (!project) return err(new NotFoundError("Project", projectId));
     return ok(project);
   }
@@ -39,8 +40,9 @@ export class RequestRevisionHandler {
     projectId: string,
     operatorId: string,
     notes: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<Project, Error>> {
-    const project = await this.repo.findById(projectId, operatorId);
+    const project = await this.repo.findById(projectId, operatorId, organizationId);
     if (!project) return err(new NotFoundError("Project", projectId));
 
     const result = project.requestRevision(notes);

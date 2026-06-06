@@ -7,6 +7,7 @@ import type { BullMQAdapter } from "../../infrastructure/queue/BullMQAdapter.js"
 export interface ApproveBriefingCommand {
   briefingId: string;
   operatorId: string;
+  organizationId: string;
   correlationId: string;
 }
 
@@ -19,7 +20,7 @@ export class ApproveBriefingUseCase {
   async execute(
     cmd: ApproveBriefingCommand,
   ): Promise<Result<BriefingProps, Error>> {
-    const briefing = await this.repo.findById(cmd.briefingId, cmd.operatorId);
+    const briefing = await this.repo.findById(cmd.briefingId, cmd.operatorId, cmd.organizationId);
     if (!briefing) {
       return err(new NotFoundError("Briefing", cmd.briefingId));
     }

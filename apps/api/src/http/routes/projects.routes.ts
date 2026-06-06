@@ -15,7 +15,7 @@ export async function projectRoutes(app: FastifyInstance): Promise<void> {
 
   app.get("/", async (request, reply) => {
     const getList = new GetProjectsHandler(app.container.projectRepo);
-    const result = await getList.execute({ operatorId: request.operatorId });
+    const result = await getList.execute({ operatorId: request.operatorId, organizationId: request.organizationId });
     return reply
       .status(200)
       .send({
@@ -30,7 +30,7 @@ export async function projectRoutes(app: FastifyInstance): Promise<void> {
 
   app.get<{ Params: { id: string } }>("/:id", async (request, reply) => {
     const getById = new GetProjectByIdHandler(app.container.projectRepo);
-    const result = await getById.execute(request.params.id, request.operatorId);
+    const result = await getById.execute(request.params.id, request.operatorId, request.organizationId);
     if (result.isErr())
       return reply
         .status(404)
@@ -75,6 +75,7 @@ export async function projectRoutes(app: FastifyInstance): Promise<void> {
         request.params.id,
         request.operatorId,
         parsed.data.notes,
+        request.organizationId,
       );
       if (result.isErr())
         return reply

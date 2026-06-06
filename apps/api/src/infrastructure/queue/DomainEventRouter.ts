@@ -88,7 +88,7 @@ export class DomainEventRouter {
     // Store WhatsApp session in Redis so webhook can auto-extract on finalization
     if (this.leadRepo && this.redis && deal.leadId) {
       try {
-        const lead = await this.leadRepo.findById(deal.leadId, deal.operatorId);
+        const lead = await this.leadRepo.findById(deal.leadId, deal.operatorId, "org_mvp");
         if (lead?.contact.phone) {
           await this.redis.set(
             `whatsapp:${lead.contact.phone}`,

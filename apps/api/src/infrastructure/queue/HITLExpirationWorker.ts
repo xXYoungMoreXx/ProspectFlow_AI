@@ -48,6 +48,7 @@ export class HITLExpirationWorker {
         const approval = await this.hitlRepository.findById(
           approvalId,
           row.operatorId,
+          "org_mvp",
         );
 
         if (!approval) return;

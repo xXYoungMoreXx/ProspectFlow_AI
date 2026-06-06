@@ -17,6 +17,7 @@ import { ulid } from "ulid";
 export interface GenerateQuoteInput {
   leadId: string;
   operatorId: string;
+  organizationId: string;
   agentId?: string;
 }
 
@@ -29,7 +30,7 @@ export class GenerateQuoteHandler {
 
   async execute(input: GenerateQuoteInput): Promise<Result<Deal, Error>> {
     // 1. Fetch Lead
-    const lead = await this.leadRepo.findById(input.leadId, input.operatorId);
+    const lead = await this.leadRepo.findById(input.leadId, input.operatorId, input.organizationId);
     if (!lead) {
       return err(new NotFoundError("Lead", input.leadId));
     }

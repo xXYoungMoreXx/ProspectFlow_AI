@@ -30,6 +30,7 @@ import { agentTokensConsumedTotal } from "../../infrastructure/metrics/registry.
 export interface AgentTaskPayload {
   agentId: string;
   operatorId: string;
+  organizationId?: string;
   taskType: string;
   userPrompt: string;
   correlationId: string;
@@ -83,6 +84,7 @@ export class AgentExecutionService {
     const agent = await this.agentRepo.findById(
       payload.agentId,
       payload.operatorId,
+      (payload.organizationId as string | undefined) ?? "org_mvp",
     );
     if (!agent) {
       throw new Error(
@@ -184,6 +186,7 @@ export class AgentExecutionService {
           const project = await this.projectRepo.findById(
             projectId,
             payload.operatorId as string,
+            (payload.organizationId as string | undefined) ?? "org_mvp",
           );
           if (project) {
             project.storeMockup(mockupHtml, mockupUrl);
@@ -333,6 +336,7 @@ export class AgentExecutionService {
     const project = await this.projectRepo.findById(
       projectId,
       payload.operatorId,
+      (payload.organizationId as string | undefined) ?? "org_mvp",
     );
     if (!project) {
       console.warn(

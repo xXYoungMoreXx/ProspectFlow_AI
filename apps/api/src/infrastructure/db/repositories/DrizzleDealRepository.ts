@@ -12,12 +12,16 @@ import type { DealStatus, ServiceType } from "@agentepro/shared-types";
 export class DrizzleDealRepository implements DealRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
-  async findById(id: string, operatorId: string): Promise<Deal | null> {
+  async findById(id: string, operatorId: string, organizationId: string): Promise<Deal | null> {
     const [row] = await this.db
       .select()
       .from(schema.deals)
       .where(
-        and(eq(schema.deals.id, id), eq(schema.deals.operatorId, operatorId)),
+        and(
+          eq(schema.deals.id, id),
+          eq(schema.deals.operatorId, operatorId),
+          eq(schema.deals.organizationId, organizationId),
+        ),
       )
       .limit(1);
 
@@ -36,7 +40,10 @@ export class DrizzleDealRepository implements DealRepository {
   }
 
   async findMany(filters: DealFilters): Promise<DealListResult> {
-    const conditions = [eq(schema.deals.operatorId, filters.operatorId)];
+    const conditions = [
+      eq(schema.deals.operatorId, filters.operatorId),
+      eq(schema.deals.organizationId, filters.organizationId),
+    ];
     if (filters.status)
       conditions.push(eq(schema.deals.status, filters.status));
     if (filters.leadId)

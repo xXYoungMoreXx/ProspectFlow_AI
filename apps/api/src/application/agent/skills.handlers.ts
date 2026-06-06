@@ -27,8 +27,9 @@ export class AddSkillHandler {
       config?: Record<string, unknown>;
       isEnabled?: boolean;
     },
+    organizationId: string = "org_mvp",
   ): Promise<Result<AgentSkill, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const data: CreateSkillData = {
@@ -52,8 +53,9 @@ export class UpdateSkillHandler {
     skillId: string,
     operatorId: string,
     updates: UpdateSkillData,
+    organizationId: string = "org_mvp",
   ): Promise<Result<AgentSkill, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const skill = await this.repo.updateSkill(skillId, agentId, updates);
@@ -69,8 +71,9 @@ export class RemoveSkillHandler {
     agentId: string,
     skillId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<void, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const removed = await this.repo.removeSkill(skillId, agentId);
@@ -85,8 +88,9 @@ export class ListSkillsHandler {
   async execute(
     agentId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<AgentSkill[], Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const skills = await this.repo.listSkills(agentId);

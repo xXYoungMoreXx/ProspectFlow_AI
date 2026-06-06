@@ -25,8 +25,9 @@ export class GetDealByIdHandler {
   async execute(
     dealId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<Deal, NotFoundError>> {
-    const deal = await this.repo.findById(dealId, operatorId);
+    const deal = await this.repo.findById(dealId, operatorId, organizationId);
     if (!deal) return err(new NotFoundError("Deal", dealId));
     return ok(deal);
   }
@@ -39,8 +40,9 @@ export class CancelDealHandler {
     dealId: string,
     operatorId: string,
     reason: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<Deal, Error>> {
-    const deal = await this.repo.findById(dealId, operatorId);
+    const deal = await this.repo.findById(dealId, operatorId, organizationId);
     if (!deal) return err(new NotFoundError("Deal", dealId));
 
     const result = deal.cancel(reason);

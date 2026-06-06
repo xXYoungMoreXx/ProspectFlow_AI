@@ -16,7 +16,7 @@ import type { HITLStatus } from "@agentepro/shared-types";
 export class DrizzleHITLRepository implements HITLApprovalRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
-  async findById(id: string, operatorId: string): Promise<HITLApproval | null> {
+  async findById(id: string, operatorId: string, organizationId: string): Promise<HITLApproval | null> {
     const [row] = await this.db
       .select()
       .from(schema.hitlApprovals)
@@ -24,6 +24,7 @@ export class DrizzleHITLRepository implements HITLApprovalRepository {
         and(
           eq(schema.hitlApprovals.id, id),
           eq(schema.hitlApprovals.operatorId, operatorId),
+          eq(schema.hitlApprovals.organizationId, organizationId),
         ),
       )
       .limit(1);
@@ -32,13 +33,14 @@ export class DrizzleHITLRepository implements HITLApprovalRepository {
     return this.toDomain(row);
   }
 
-  async findPending(operatorId: string): Promise<HITLApproval[]> {
+  async findPending(operatorId: string, organizationId: string): Promise<HITLApproval[]> {
     const rows = await this.db
       .select()
       .from(schema.hitlApprovals)
       .where(
         and(
           eq(schema.hitlApprovals.operatorId, operatorId),
+          eq(schema.hitlApprovals.organizationId, organizationId),
           eq(schema.hitlApprovals.status, "PENDING"),
         ),
       )
@@ -64,6 +66,7 @@ export class DrizzleHITLRepository implements HITLApprovalRepository {
   async findMany(filters: HITLFilters): Promise<HITLListResult> {
     const conditions = [
       eq(schema.hitlApprovals.operatorId, filters.operatorId),
+      eq(schema.hitlApprovals.organizationId, filters.organizationId),
     ];
     if (filters.status)
       conditions.push(eq(schema.hitlApprovals.status, filters.status));

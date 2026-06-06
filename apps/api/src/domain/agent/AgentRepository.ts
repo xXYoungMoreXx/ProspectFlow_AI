@@ -52,6 +52,7 @@ export interface UpdateSubAgentData {
 
 export interface AgentFilters {
   operatorId: string;
+  organizationId: string;
   status?: AgentStatus;
   persona?: AgentPersona;
   cursor?: string;
@@ -101,7 +102,7 @@ export interface UpdateRuleData {
  * Implemented by infrastructure layer (DrizzleAgentRepository).
  */
 export interface AgentRepository {
-  findById(id: string, operatorId: string): Promise<Agent | null>;
+  findById(id: string, operatorId: string, organizationId: string): Promise<Agent | null>;
   findMany(filters: AgentFilters): Promise<AgentListResult>;
   save(agent: Agent): Promise<void>;
   delete(id: string, operatorId: string): Promise<boolean>;

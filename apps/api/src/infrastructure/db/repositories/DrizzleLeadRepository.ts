@@ -16,12 +16,16 @@ import type { LeadStatus, LeadSource } from "@agentepro/shared-types";
 export class DrizzleLeadRepository implements LeadRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
-  async findById(id: string, operatorId: string): Promise<Lead | null> {
+  async findById(id: string, operatorId: string, organizationId: string): Promise<Lead | null> {
     const [row] = await this.db
       .select()
       .from(schema.leads)
       .where(
-        and(eq(schema.leads.id, id), eq(schema.leads.operatorId, operatorId)),
+        and(
+          eq(schema.leads.id, id),
+          eq(schema.leads.operatorId, operatorId),
+          eq(schema.leads.organizationId, organizationId),
+        ),
       )
       .limit(1);
 
@@ -30,7 +34,10 @@ export class DrizzleLeadRepository implements LeadRepository {
   }
 
   async findMany(filters: LeadFilters): Promise<LeadListResult> {
-    const conditions = [eq(schema.leads.operatorId, filters.operatorId)];
+    const conditions = [
+      eq(schema.leads.operatorId, filters.operatorId),
+      eq(schema.leads.organizationId, filters.organizationId),
+    ];
     if (filters.status)
       conditions.push(eq(schema.leads.status, filters.status));
     if (filters.assignedAgentId)

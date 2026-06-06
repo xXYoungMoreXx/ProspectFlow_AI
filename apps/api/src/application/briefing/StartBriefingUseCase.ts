@@ -19,7 +19,7 @@ export class StartBriefingUseCase {
   async execute(
     cmd: StartBriefingCommand,
   ): Promise<Result<BriefingProps, ConflictError | Error>> {
-    const existing = await this.repo.findByDealId(cmd.dealId, cmd.operatorId);
+    const existing = await this.repo.findByDealId(cmd.dealId, cmd.operatorId, "org_mvp");
     if (existing) {
       return err(
         new ConflictError(`Briefing already exists for deal ${cmd.dealId}`),
