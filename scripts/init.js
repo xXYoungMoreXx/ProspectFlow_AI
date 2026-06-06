@@ -398,7 +398,7 @@ async function cmdStart() {
   // 3. Dependências npm
   log.step("3/8", "Instalando dependências npm...");
   try {
-    run("npm", ["install"], { cwd: ROOT });
+    run("npm", ["install", "--loglevel=error"], { cwd: ROOT });
     log.ok("Dependências instaladas.");
   } catch (err) {
     log.fail(`Falha no npm install: ${err.message}`);
