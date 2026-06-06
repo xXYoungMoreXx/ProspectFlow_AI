@@ -34,8 +34,10 @@ import {
 function FieldTooltip({ content }: Readonly<{ content: string }>) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <HelpCircle className="h-3 w-3 text-muted-foreground/60 cursor-help shrink-0" />
+      <TooltipTrigger
+        render={<span className="inline-flex items-center cursor-help" />}
+      >
+        <HelpCircle className="h-3 w-3 text-muted-foreground/60 shrink-0" />
       </TooltipTrigger>
       <TooltipContent
         side="right"
@@ -124,7 +126,7 @@ export function SystemTab() {
   };
 
   return (
-    <TooltipProvider delayDuration={300}>
+    <TooltipProvider>
       <div className="space-y-4">
         {/* HITL Config */}
         <Card className="border-border/60">

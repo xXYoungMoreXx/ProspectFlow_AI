@@ -266,7 +266,8 @@
       "radius": "Raio (km):",
       "minScore": "Score Mínimo:",
       "submit": "Iniciar Busca",
-      "submitting": "Disparando..."
+      "submitting": "Disparando...",
+      "mapPreview": "Pré-visualização da área"
     },
     "queue": {
       "empty": "Nenhum lead na fila",
@@ -278,7 +279,30 @@
         "hitl": "HITL"
       }
     },
-    "config": { "title": "Configuração de Prospecção" }
+    "config": {
+      "title": "Configuração de Prospecção",
+      "statusSection": "Status",
+      "editSection": "Parâmetros Padrão",
+      "lastRun": "Última execução",
+      "nextRun": "Próxima execução",
+      "quotaRemaining": "Quota restante",
+      "quotaLimit": "Limite de quota",
+      "never": "Nunca",
+      "notScheduled": "Não agendado",
+      "scheduleTime": "Horário de execução",
+      "scheduleDays": "Dias da semana",
+      "days": {
+        "mon": "Seg",
+        "tue": "Ter",
+        "wed": "Qua",
+        "thu": "Qui",
+        "fri": "Sex",
+        "sat": "Sáb",
+        "sun": "Dom"
+      },
+      "save": "Salvar Configuração",
+      "saving": "Salvando..."
+    }
   },
   "hitl": {
     "title": "Aprovações HITL",

@@ -70,7 +70,7 @@ export function MessagingTab() {
   const emailProvider = get("messaging.email.provider") || "brevo";
 
   return (
-    <TooltipProvider delayDuration={300}>
+    <TooltipProvider>
       <div className="space-y-4">
         {/* WhatsApp — Evolution API */}
         <Card className="border-border/60">

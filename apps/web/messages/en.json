@@ -270,7 +270,8 @@
       "radius": "Radius (km):",
       "minScore": "Min Score:",
       "submit": "Start Search",
-      "submitting": "Dispatching..."
+      "submitting": "Dispatching...",
+      "mapPreview": "Area preview"
     },
     "queue": {
       "empty": "No leads in queue",
@@ -282,7 +283,30 @@
         "hitl": "HITL"
       }
     },
-    "config": { "title": "Prospecting Configuration" }
+    "config": {
+      "title": "Prospecting Configuration",
+      "statusSection": "Status",
+      "editSection": "Default Parameters",
+      "lastRun": "Last run",
+      "nextRun": "Next run",
+      "quotaRemaining": "Quota remaining",
+      "quotaLimit": "Quota limit",
+      "never": "Never",
+      "notScheduled": "Not scheduled",
+      "scheduleTime": "Schedule time",
+      "scheduleDays": "Schedule days",
+      "days": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
+      },
+      "save": "Save Configuration",
+      "saving": "Saving..."
+    }
   },
   "hitl": {
     "title": "HITL Approvals",
