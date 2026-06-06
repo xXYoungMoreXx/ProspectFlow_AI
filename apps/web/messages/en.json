@@ -173,16 +173,28 @@
       "skillsHint": "Select capabilities for this agent",
       "skillLabels": {
         "web_search": "Web Search",
-        "web_searchDesc": "Allows the agent to search the internet.",
-        "read_files": "Read Files",
-        "read_filesDesc": "Allows the agent to read local files.",
-        "write_files": "Write Files",
-        "write_filesDesc": "Allows the agent to modify files.",
+        "web_searchDesc": "Real-time internet search.",
+        "places_search": "Places Search",
+        "places_searchDesc": "Finds businesses via Google Maps (Places API).",
+        "cnpj_lookup": "CNPJ Lookup",
+        "cnpj_lookupDesc": "Queries Brazilian company data from Receita Federal.",
+        "cnpj_enricher": "CNPJ Enricher",
+        "cnpj_enricherDesc": "Enriches leads with additional CNPJ data.",
+        "email_sender": "Email Sender",
+        "email_senderDesc": "Sends prospecting and follow-up emails.",
+        "whatsapp_sender": "WhatsApp Sender",
+        "whatsapp_senderDesc": "Sends messages via Evolution API (WhatsApp).",
+        "contract_notifier": "Contract Notifier",
+        "contract_notifierDesc": "Sends contract notifications for approval.",
+        "site_generator": "Site Generator",
+        "site_generatorDesc": "Generates client sites via Builder persona.",
         "security_guard": "Security Guard",
         "security_guardDesc": "Runs payload analysis to prevent injection."
       },
       "securityNote": "All agents are subjected to the global security middleware. Outbound payloads are inspected automatically.",
-      "deploy": "Deploy Agent"
+      "deploy": "Deploy Agent",
+      "deploying": "Deploying...",
+      "deployError": "Failed to create agent. Please try again."
     },
     "detail": {
       "configuration": "Configuration",
@@ -215,6 +227,32 @@
       "NEGOTIATING": "Negotiating",
       "CONVERTED": "Converted",
       "LOST": "Lost"
+    },
+    "new": {
+      "title": "New Lead",
+      "subtitle": "Add a lead manually to the pipeline",
+      "contactName": "Contact Name",
+      "contactNamePlaceholder": "e.g. John Doe",
+      "contactCompany": "Company",
+      "contactCompanyPlaceholder": "e.g. John's Bakery",
+      "contactPhone": "Phone",
+      "contactPhonePlaceholder": "+55 (11) 9 9999-9999",
+      "contactEmail": "Email",
+      "contactEmailPlaceholder": "john@company.com",
+      "source": "Source",
+      "sourcePlaceholder": "Select source",
+      "sources": {
+        "MANUAL": "Manual",
+        "GOOGLE_MAPS": "Google Maps",
+        "SCRAPED": "Scraped",
+        "REFERRAL": "Referral",
+        "APOLLO": "Apollo"
+      },
+      "contactRequired": "Provide phone or email",
+      "submit": "Create Lead",
+      "submitting": "Creating...",
+      "submitError": "Failed to create lead. Please try again.",
+      "backToLeads": "Back to Leads"
     }
   },
   "deals": {
@@ -265,7 +303,10 @@
     "title": "Prospecting",
     "subtitle": "Dispatch Hunter agent and manage prospected leads",
     "newSearch": "New Search",
-    "tabs": { "queue": "Queue", "config": "Config" },
+    "tabs": {
+      "queue": "Queue",
+      "config": "Config"
+    },
     "search": {
       "title": "Search Parameters",
       "categories": "Categories",
@@ -364,7 +405,11 @@
   "costs": {
     "title": "LLM Costs",
     "subtitle": "Token consumption and cost per agent",
-    "periods": { "today": "Today", "7days": "7 days", "30days": "30 days" },
+    "periods": {
+      "today": "Today",
+      "7days": "7 days",
+      "30days": "30 days"
+    },
     "totalCost": "Total Cost",
     "totalTokens": "Total Tokens",
     "requests": "Requests",
@@ -632,6 +677,14 @@
     "success": "Success",
     "logout": "Sign out"
   },
-  "theme": { "light": "Light", "dark": "Dark", "system": "System" },
-  "language": { "pt-BR": "Português", "es": "Español", "en": "English" }
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "pt-BR": "Português",
+    "es": "Español",
+    "en": "English"
+  }
 }

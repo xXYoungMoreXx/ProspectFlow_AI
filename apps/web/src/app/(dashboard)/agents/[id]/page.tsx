@@ -35,6 +35,11 @@ const personaColors: Record<string, string> = {
   QA: "bg-chart-4/10 text-chart-4 border-chart-4/20",
 };
 
+interface AgentSkillItem {
+  id?: string;
+  skillType?: string;
+}
+
 const MODEL_OPTIONS = [
   "claude-opus-4-8",
   "claude-sonnet-4-6",
@@ -77,7 +82,7 @@ function AgentEditorForm({ agent, id }: { agent: AgentData; id: string }) {
       void queryClient.invalidateQueries({ queryKey: ["agents"] });
       void queryClient.invalidateQueries({ queryKey: ["agents", id] });
     },
-    onError: (err) => console.warn("Update failed:", err),
+    onError: () => { /* mutation error surfaced via updateMutation.isError */ },
   });
 
   return (
@@ -204,7 +209,7 @@ function AgentEditorForm({ agent, id }: { agent: AgentData; id: string }) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {agent.skills.map((skill: any) => (
+              {agent.skills.map((skill: AgentSkillItem) => (
                 <Badge
                   key={skill.id ?? skill}
                   variant="secondary"

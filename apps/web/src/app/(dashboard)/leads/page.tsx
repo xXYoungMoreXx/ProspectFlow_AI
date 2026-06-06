@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus, Building2, GripVertical } from "lucide-react";
+import Link from "next/link";
 import {
   DndContext,
   DragOverlay,
@@ -61,7 +62,6 @@ function SortableLeadCard({
   columnLabel: string;
 }) {
   const router = useRouter();
-  const didDrag = useRef(false);
   const {
     attributes,
     listeners,
@@ -82,14 +82,15 @@ function SortableLeadCard({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
-      onPointerDown={() => { didDrag.current = false; }}
-      onPointerMove={() => { didDrag.current = true; }}
-      onClick={() => { if (!didDrag.current) router.push(`/leads/${lead.id}`); }}
-      className="mb-3 cursor-grab active:cursor-grabbing"
+      onClick={() => { if (!isDragging) router.push(`/leads/${lead.id}`); }}
+      className="mb-3 cursor-pointer"
     >
       <Card className="group border-border/50 hover:border-primary/30 hover:shadow-sm transition-all bg-card/50 backdrop-blur-sm relative">
-        <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Drag handle isolated so DnD sensors don't intercept card scroll or click */}
+        <div
+          {...listeners}
+          className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none"
+        >
           <GripVertical className="w-4 h-4 text-muted-foreground/40" />
         </div>
         <CardContent className="py-3 px-4 pl-6">
@@ -198,10 +199,12 @@ export default function LeadsPage() {
           <h2 className="text-2xl font-bold tracking-tight">{t("title")}</h2>
           <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          {t("newLead")}
-        </Button>
+        <Link href="/leads/new">
+          <Button className="gap-2">
+            <Plus className="w-4 h-4" />
+            {t("newLead")}
+          </Button>
+        </Link>
       </div>
 
       <DndContext

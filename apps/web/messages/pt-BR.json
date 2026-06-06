@@ -132,7 +132,11 @@
       "BUILDER": "Builder",
       "QA": "QA"
     },
-    "status": { "ACTIVE": "Ativo", "PAUSED": "Pausado", "INACTIVE": "Inativo" },
+    "status": {
+      "ACTIVE": "Ativo",
+      "PAUSED": "Pausado",
+      "INACTIVE": "Inativo"
+    },
     "new": {
       "title": "Criar Agente",
       "subtitle": "Configure uma nova persona de agente autônomo de IA",
@@ -169,16 +173,28 @@
       "skillsHint": "Selecione as capacidades para este agente",
       "skillLabels": {
         "web_search": "Busca Web",
-        "web_searchDesc": "Permite ao agente pesquisar na internet.",
-        "read_files": "Ler Arquivos",
-        "read_filesDesc": "Permite ao agente ler arquivos locais.",
-        "write_files": "Escrever Arquivos",
-        "write_filesDesc": "Permite ao agente modificar arquivos.",
+        "web_searchDesc": "Pesquisa na internet em tempo real.",
+        "places_search": "Busca de Locais",
+        "places_searchDesc": "Encontra estabelecimentos via Google Maps (Places API).",
+        "cnpj_lookup": "Consulta CNPJ",
+        "cnpj_lookupDesc": "Consulta dados empresariais via Receita Federal.",
+        "cnpj_enricher": "Enriquecimento CNPJ",
+        "cnpj_enricherDesc": "Enriquece lead com dados adicionais do CNPJ.",
+        "email_sender": "Envio de E-mail",
+        "email_senderDesc": "Envia e-mails de prospecção e follow-up.",
+        "whatsapp_sender": "Envio WhatsApp",
+        "whatsapp_senderDesc": "Envia mensagens via Evolution API (WhatsApp).",
+        "contract_notifier": "Notificação de Contrato",
+        "contract_notifierDesc": "Envia notificações de contrato para aprovação.",
+        "site_generator": "Gerador de Site",
+        "site_generatorDesc": "Gera site do cliente via Builder persona.",
         "security_guard": "Guarda de Segurança",
         "security_guardDesc": "Executa análise de payload para prevenir injeção."
       },
       "securityNote": "Todos os agentes são submetidos ao middleware de segurança global. Payloads de saída são inspecionados automaticamente.",
-      "deploy": "Implantar Agente"
+      "deploy": "Implantar Agente",
+      "deploying": "Implantando...",
+      "deployError": "Falha ao criar agente. Tente novamente."
     },
     "detail": {
       "configuration": "Configuração",
@@ -211,6 +227,32 @@
       "NEGOTIATING": "Negociando",
       "CONVERTED": "Convertido",
       "LOST": "Perdido"
+    },
+    "new": {
+      "title": "Novo Lead",
+      "subtitle": "Adicione um lead manualmente ao pipeline",
+      "contactName": "Nome do Contato",
+      "contactNamePlaceholder": "ex. João Silva",
+      "contactCompany": "Empresa",
+      "contactCompanyPlaceholder": "ex. Padaria do João",
+      "contactPhone": "Telefone",
+      "contactPhonePlaceholder": "+55 (11) 9 9999-9999",
+      "contactEmail": "E-mail",
+      "contactEmailPlaceholder": "joao@empresa.com",
+      "source": "Origem",
+      "sourcePlaceholder": "Selecione a origem",
+      "sources": {
+        "MANUAL": "Manual",
+        "GOOGLE_MAPS": "Google Maps",
+        "SCRAPED": "Scraping",
+        "REFERRAL": "Indicação",
+        "APOLLO": "Apollo"
+      },
+      "contactRequired": "Informe telefone ou e-mail",
+      "submit": "Criar Lead",
+      "submitting": "Criando...",
+      "submitError": "Falha ao criar lead. Tente novamente.",
+      "backToLeads": "Voltar para Leads"
     }
   },
   "deals": {
@@ -261,7 +303,10 @@
     "title": "Prospecção",
     "subtitle": "Dispare o agente Hunter e gerencie leads prospectados",
     "newSearch": "Nova Busca",
-    "tabs": { "queue": "Fila", "config": "Configuração" },
+    "tabs": {
+      "queue": "Fila",
+      "config": "Configuração"
+    },
     "search": {
       "title": "Parâmetros de Busca",
       "categories": "Categorias",
@@ -360,7 +405,11 @@
   "costs": {
     "title": "Custos de LLM",
     "subtitle": "Consumo de tokens e custo por agente",
-    "periods": { "today": "Hoje", "7days": "7 dias", "30days": "30 dias" },
+    "periods": {
+      "today": "Hoje",
+      "7days": "7 dias",
+      "30days": "30 dias"
+    },
     "totalCost": "Custo Total",
     "totalTokens": "Total de Tokens",
     "requests": "Requisições",
@@ -628,6 +677,14 @@
     "success": "Sucesso",
     "logout": "Sair"
   },
-  "theme": { "light": "Claro", "dark": "Escuro", "system": "Sistema" },
-  "language": { "pt-BR": "Português", "es": "Español", "en": "English" }
+  "theme": {
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema"
+  },
+  "language": {
+    "pt-BR": "Português",
+    "es": "Español",
+    "en": "English"
+  }
 }

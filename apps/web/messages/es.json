@@ -173,16 +173,28 @@
       "skillsHint": "Selecciona las capacidades para este agente",
       "skillLabels": {
         "web_search": "Búsqueda Web",
-        "web_searchDesc": "Permite al agente buscar en internet.",
-        "read_files": "Leer Archivos",
-        "read_filesDesc": "Permite al agente leer archivos locales.",
-        "write_files": "Escribir Archivos",
-        "write_filesDesc": "Permite al agente modificar archivos.",
+        "web_searchDesc": "Búsqueda en internet en tiempo real.",
+        "places_search": "Búsqueda de Lugares",
+        "places_searchDesc": "Encuentra negocios via Google Maps (Places API).",
+        "cnpj_lookup": "Consulta CNPJ",
+        "cnpj_lookupDesc": "Consulta datos empresariales vía Receita Federal.",
+        "cnpj_enricher": "Enriquecedor CNPJ",
+        "cnpj_enricherDesc": "Enriquece leads con datos adicionales del CNPJ.",
+        "email_sender": "Envío de Email",
+        "email_senderDesc": "Envía emails de prospección y seguimiento.",
+        "whatsapp_sender": "Envío WhatsApp",
+        "whatsapp_senderDesc": "Envía mensajes vía Evolution API (WhatsApp).",
+        "contract_notifier": "Notificador de Contrato",
+        "contract_notifierDesc": "Envía notificaciones de contrato para aprobación.",
+        "site_generator": "Generador de Sitio",
+        "site_generatorDesc": "Genera sitios de clientes vía persona Builder.",
         "security_guard": "Guardia de Seguridad",
         "security_guardDesc": "Analiza payloads para prevenir inyección."
       },
       "securityNote": "Todos los agentes están sujetos al middleware de seguridad global. Los payloads de salida se inspeccionan automáticamente.",
-      "deploy": "Desplegar Agente"
+      "deploy": "Desplegar Agente",
+      "deploying": "Implantando...",
+      "deployError": "Error al crear agente. Inténtalo de nuevo."
     },
     "detail": {
       "configuration": "Configuración",
@@ -215,6 +227,32 @@
       "NEGOTIATING": "Negociando",
       "CONVERTED": "Convertido",
       "LOST": "Perdido"
+    },
+    "new": {
+      "title": "Nuevo Lead",
+      "subtitle": "Agrega un lead manualmente al pipeline",
+      "contactName": "Nombre del Contacto",
+      "contactNamePlaceholder": "ej. Juan García",
+      "contactCompany": "Empresa",
+      "contactCompanyPlaceholder": "ej. Panadería de Juan",
+      "contactPhone": "Teléfono",
+      "contactPhonePlaceholder": "+55 (11) 9 9999-9999",
+      "contactEmail": "Email",
+      "contactEmailPlaceholder": "juan@empresa.com",
+      "source": "Origen",
+      "sourcePlaceholder": "Selecciona el origen",
+      "sources": {
+        "MANUAL": "Manual",
+        "GOOGLE_MAPS": "Google Maps",
+        "SCRAPED": "Scraping",
+        "REFERRAL": "Referencia",
+        "APOLLO": "Apollo"
+      },
+      "contactRequired": "Proporciona teléfono o email",
+      "submit": "Crear Lead",
+      "submitting": "Creando...",
+      "submitError": "Error al crear lead. Inténtalo de nuevo.",
+      "backToLeads": "Volver a Leads"
     }
   },
   "deals": {
@@ -265,7 +303,10 @@
     "title": "Prospección",
     "subtitle": "Dispara el agente Hunter y gestiona leads prospectados",
     "newSearch": "Nueva Búsqueda",
-    "tabs": { "queue": "Cola", "config": "Configuración" },
+    "tabs": {
+      "queue": "Cola",
+      "config": "Configuración"
+    },
     "search": {
       "title": "Parámetros de Búsqueda",
       "categories": "Categorías",
@@ -364,7 +405,11 @@
   "costs": {
     "title": "Costos de LLM",
     "subtitle": "Consumo de tokens y costo por agente",
-    "periods": { "today": "Hoy", "7days": "7 días", "30days": "30 días" },
+    "periods": {
+      "today": "Hoy",
+      "7days": "7 días",
+      "30days": "30 días"
+    },
     "totalCost": "Costo Total",
     "totalTokens": "Total de Tokens",
     "requests": "Solicitudes",
@@ -632,6 +677,14 @@
     "success": "Éxito",
     "logout": "Cerrar sesión"
   },
-  "theme": { "light": "Claro", "dark": "Oscuro", "system": "Sistema" },
-  "language": { "pt-BR": "Português", "es": "Español", "en": "English" }
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
+  "language": {
+    "pt-BR": "Português",
+    "es": "Español",
+    "en": "English"
+  }
 }
