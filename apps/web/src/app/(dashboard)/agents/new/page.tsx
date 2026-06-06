@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useAuthStore } from "@/lib/stores/auth-store";
+import { api } from "@/lib/api";
 
 import {
   Card,
@@ -34,36 +37,68 @@ import {
   UploadCloud,
   FileText,
   X,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 
 const AVAILABLE_SKILLS = [
   "web_search",
-  "read_files",
-  "write_files",
-  "security_guard",
+  "places_search",
+  "cnpj_lookup",
+  "cnpj_enricher",
+  "email_sender",
+  "whatsapp_sender",
+  "contract_notifier",
+  "site_generator",
 ] as const;
+
+type AgentSkill = (typeof AVAILABLE_SKILLS)[number];
+
+const MODELS_BY_PROVIDER: Record<string, { value: string; label: string }[]> =
+  {
+    anthropic: [
+      { value: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
+      { value: "claude-opus-4-8", label: "Claude Opus 4.8" },
+      { value: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
+    ],
+    openai: [
+      { value: "o3", label: "o3" },
+      { value: "gpt-4.1", label: "GPT-4.1" },
+      { value: "gpt-4o", label: "GPT-4o" },
+      { value: "gpt-4-turbo", label: "GPT-4 Turbo" },
+    ],
+    google: [
+      { value: "gemini-3.5-flash", label: "Gemini 3.5 Flash" },
+      { value: "gemini-3.1-pro", label: "Gemini 3.1 Pro" },
+    ],
+  };
 
 export default function NewAgentPage() {
   const t = useTranslations("agents");
   const router = useRouter();
+  const token = useAuthStore((s) => s.token);
 
   const [name, setName] = useState("");
   const [persona, setPersona] = useState("HUNTER");
-  const [provider, setProvider] = useState("openai");
-  const [model, setModel] = useState("gpt-4o");
+  const [provider, setProvider] = useState("anthropic");
+  const [model, setModel] = useState("claude-sonnet-4-6");
   const [temperature, setTemperature] = useState([0.7]);
   const [systemPrompt, setSystemPrompt] = useState("");
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<AgentSkill[]>([]);
   const [files, setFiles] = useState<{ name: string; size: number }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Naive token counter approximation (1 word ~ 1.3 tokens)
   const tokenCount = Math.ceil(
     systemPrompt.split(/\s+/).filter(Boolean).length * 1.3,
   );
 
-  const toggleSkill = (skillId: string) => {
+  const handleProviderChange = (newProvider: string) => {
+    setProvider(newProvider);
+    const models = MODELS_BY_PROVIDER[newProvider];
+    if (models && models.length > 0) setModel(models[0]!.value);
+  };
+
+  const toggleSkill = (skillId: AgentSkill) => {
     setSelectedSkills((prev) =>
       prev.includes(skillId)
         ? prev.filter((id) => id !== skillId)
@@ -74,7 +109,6 @@ export default function NewAgentPage() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     setIsUploading(true);
-    // Simulate upload delay
     setTimeout(() => {
       const newFiles = Array.from(e.target.files!).map((f) => ({
         name: f.name,
@@ -89,12 +123,20 @@ export default function NewAgentPage() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSave = async () => {
-    // In a real app, we'd make an API call to create the agent
-    // Simulate API delay
-    await new Promise((r) => setTimeout(r, 1000));
-    router.push("/agents");
-  };
+  const createMutation = useMutation({
+    mutationFn: () =>
+      api.agents.create(
+        {
+          name,
+          persona,
+          llmConfig: { provider, model, temperature: temperature[0] },
+          systemPrompt,
+          skills: selectedSkills,
+        },
+        token!,
+      ),
+    onSuccess: () => router.push("/agents"),
+  });
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-10">
@@ -196,16 +238,13 @@ export default function NewAgentPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>{t("new.provider")}</Label>
-                  <Select
-                    value={provider}
-                    onValueChange={(v) => v && setProvider(v)}
-                  >
+                  <Select value={provider} onValueChange={handleProviderChange}>
                     <SelectTrigger>
                       <SelectValue placeholder={t("new.providerPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="openai">OpenAI</SelectItem>
                       <SelectItem value="anthropic">Anthropic</SelectItem>
+                      <SelectItem value="openai">OpenAI</SelectItem>
                       <SelectItem value="google">Google Gemini</SelectItem>
                     </SelectContent>
                   </Select>
@@ -217,43 +256,11 @@ export default function NewAgentPage() {
                       <SelectValue placeholder={t("new.modelPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {provider === "openai" && (
-                        <>
-                          <SelectItem value="gpt-4o">GPT-4o</SelectItem>
-                          <SelectItem value="gpt-4-turbo">
-                            GPT-4 Turbo
-                          </SelectItem>
-                          <SelectItem value="gpt-3.5-turbo">
-                            GPT-3.5 Turbo
-                          </SelectItem>
-                        </>
-                      )}
-                      {provider === "anthropic" && (
-                        <>
-                          <SelectItem value="claude-4.7-opus">
-                            Claude 4.7 Opus
-                          </SelectItem>
-                          <SelectItem value="claude-4.6-opus">
-                            Claude 4.6 Opus
-                          </SelectItem>
-                          <SelectItem value="claude-4.7-sonnet">
-                            Claude 4.7 Sonnet
-                          </SelectItem>
-                        </>
-                      )}
-                      {provider === "google" && (
-                        <>
-                          <SelectItem value="gemini-3.1-pro">
-                            Gemini 3.1 Pro
-                          </SelectItem>
-                          <SelectItem value="gemini-3.1-flash">
-                            Gemini 3.1 Flash
-                          </SelectItem>
-                          <SelectItem value="gemini-3.0-ultra">
-                            Gemini 3.0 Ultra
-                          </SelectItem>
-                        </>
-                      )}
+                      {(MODELS_BY_PROVIDER[provider] ?? []).map((m) => (
+                        <SelectItem key={m.value} value={m.value}>
+                          {m.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -360,7 +367,7 @@ export default function NewAgentPage() {
               </CardTitle>
               <CardDescription>{t("new.skillsHint")}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               {AVAILABLE_SKILLS.map((skill) => (
                 <div
                   key={skill}
@@ -396,13 +403,27 @@ export default function NewAgentPage() {
               <p className="text-xs text-muted-foreground">
                 {t("new.securityNote")}
               </p>
+              {createMutation.isError && (
+                <p className="text-xs text-destructive">
+                  {t("new.deployError")}
+                </p>
+              )}
               <Button
-                onClick={handleSave}
+                onClick={() => createMutation.mutate()}
                 className="w-full gap-2 mt-4"
-                disabled={!name}
+                disabled={!name || createMutation.isPending}
               >
-                <Save className="w-4 h-4" />
-                {t("new.deploy")}
+                {createMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {t("new.deploying")}
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    {t("new.deploy")}
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>

@@ -12,6 +12,15 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Bot, Plus, Zap, Pause, Settings2 } from "lucide-react";
 import Link from "next/link";
 
+interface AgentListItem {
+  id: string;
+  name: string;
+  persona: "HUNTER" | "CLOSER" | "BUILDER" | "QA";
+  status: "ACTIVE" | "PAUSED" | "INACTIVE";
+  llmConfig?: { model?: string };
+  skills?: { id?: string; skillType?: string }[];
+}
+
 const personaColors: Record<string, string> = {
   HUNTER: "bg-chart-1/10 text-chart-1 border-chart-1/20",
   CLOSER: "bg-chart-2/10 text-chart-2 border-chart-2/20",
@@ -107,7 +116,7 @@ export default function AgentsPage() {
       {/* Agent cards */}
       {agents.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {agents.map((agent: any) => {
+          {agents.map((agent: AgentListItem) => {
             const color = personaColors[agent.persona] ?? personaColors.HUNTER;
             const status = statusConfig[agent.status] ?? statusConfig.INACTIVE;
             const StatusIcon = status.icon;
