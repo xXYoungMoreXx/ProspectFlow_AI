@@ -11,6 +11,8 @@ import {
   TerminalSquare,
   Link,
   HelpCircle,
+  Share2,
+  MapPin,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
@@ -184,28 +186,152 @@ export function IntegrationsTab() {
                 placeholder="••••••••••••••••••••"
               />
             </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5">
-                <Label
-                  htmlFor="brasil-meta"
-                  className="text-xs text-muted-foreground"
-                >
-                  {t("integrations.mcpBrasil.metaToken")}
-                </Label>
-                <FieldTooltip content={t("tooltips.metaToken")} />
-              </div>
-              <SecretInput
-                id="brasil-meta"
-                value={get("integrations.brasil.meta_access_token")}
-                onChange={(v) =>
-                  set("integrations.brasil.meta_access_token", v, true)
-                }
-                placeholder="••••••••••••••••••••"
-              />
-            </div>
             <div className="flex items-center gap-3 pt-1">
               <TestButton category="integrations_brasil" />
               <ConnectionBadge category="integrations_brasil" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* MCP Meta */}
+        <Card className="border-border/60">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <Share2 className="h-4 w-4 text-blue-400" />
+              </div>
+              <div>
+                <CardTitle className="text-sm">
+                  {t("integrations.mcpMeta.name")}
+                </CardTitle>
+                <CardDescription className="text-xs mt-0.5">
+                  {t("integrations.mcpMeta.description")}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3 pt-0">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <Label
+                  htmlFor="meta-app-id"
+                  className="text-xs text-muted-foreground"
+                >
+                  {t("integrations.mcpMeta.appId")}
+                </Label>
+                <FieldTooltip content={t("tooltips.metaAppId")} />
+              </div>
+              <Input
+                id="meta-app-id"
+                value={get("integrations.meta.app_id")}
+                onChange={(e) =>
+                  set("integrations.meta.app_id", e.target.value)
+                }
+                placeholder="1234567890"
+                className="text-sm font-mono"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <Label
+                  htmlFor="meta-app-secret"
+                  className="text-xs text-muted-foreground"
+                >
+                  {t("integrations.mcpMeta.appSecret")}
+                </Label>
+                <FieldTooltip content={t("tooltips.metaAppSecret")} />
+              </div>
+              <SecretInput
+                id="meta-app-secret"
+                value={get("integrations.meta.app_secret")}
+                onChange={(v) => set("integrations.meta.app_secret", v, true)}
+                placeholder="••••••••••••••••••••"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <Label
+                  htmlFor="meta-access-token"
+                  className="text-xs text-muted-foreground"
+                >
+                  {t("integrations.mcpMeta.accessToken")}
+                </Label>
+                <FieldTooltip content={t("tooltips.metaAccessToken")} />
+              </div>
+              <SecretInput
+                id="meta-access-token"
+                value={get("integrations.meta.access_token")}
+                onChange={(v) => set("integrations.meta.access_token", v, true)}
+                placeholder="EAAxxxxxxxxxxxxxxxxxxxxxxxx"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <Label
+                  htmlFor="meta-phone-id"
+                  className="text-xs text-muted-foreground"
+                >
+                  {t("integrations.mcpMeta.phoneNumberId")}
+                </Label>
+                <FieldTooltip content={t("tooltips.metaPhoneNumberId")} />
+              </div>
+              <Input
+                id="meta-phone-id"
+                value={get("integrations.meta.phone_number_id")}
+                onChange={(e) =>
+                  set("integrations.meta.phone_number_id", e.target.value)
+                }
+                placeholder="1234567890"
+                className="text-sm font-mono"
+              />
+            </div>
+            <div className="flex items-center gap-3 pt-1">
+              <TestButton category="integrations_meta" />
+              <ConnectionBadge category="integrations_meta" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Google Maps */}
+        <Card className="border-border/60">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                <MapPin className="h-4 w-4 text-red-400" />
+              </div>
+              <div>
+                <CardTitle className="text-sm">
+                  {t("integrations.googleMaps.name")}
+                </CardTitle>
+                <CardDescription className="text-xs mt-0.5">
+                  {t("integrations.googleMaps.description")}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3 pt-0">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <Label
+                  htmlFor="google-maps-key"
+                  className="text-xs text-muted-foreground"
+                >
+                  {t("integrations.googleMaps.apiKey")}
+                </Label>
+                <FieldTooltip content={t("tooltips.googleMapsKey")} />
+              </div>
+              <SecretInput
+                id="google-maps-key"
+                value={get("integrations.google.maps_api_key")}
+                onChange={(v) =>
+                  set("integrations.google.maps_api_key", v, true)
+                }
+                placeholder="AIzaSy••••••••••••••••••••"
+              />
+            </div>
+            <div className="flex items-center gap-3 pt-1">
+              <TestButton category="integrations_google_maps" />
+              <ConnectionBadge category="integrations_google_maps" />
             </div>
           </CardContent>
         </Card>
