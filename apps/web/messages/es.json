@@ -253,6 +253,37 @@
       "submitting": "Creando...",
       "submitError": "Error al crear lead. Inténtalo de nuevo.",
       "backToLeads": "Volver a Leads"
+    },
+    "detail": {
+      "notFound": "Lead no encontrado",
+      "backToLeads": "Volver a Leads",
+      "unknownContact": "Contacto desconocido",
+      "createdOn": "Creado el",
+      "contactInfo": "Información de contacto",
+      "noEmail": "Sin email",
+      "noPhone": "Sin teléfono",
+      "noCompany": "Sin empresa",
+      "contextNotes": "Contexto / Notas",
+      "tabHistory": "Historial",
+      "tabQuote": "Cotización",
+      "messagePlaceholder": "Escribe un mensaje o nota interna...",
+      "quoteTitle": "Generación de Cotización con IA",
+      "quoteDesc": "Analiza la solicitud del cliente y calcula automáticamente costos de plataforma, infraestructura y desarrollo.",
+      "noQuote": "Ninguna cotización generada aún",
+      "quotePricing": "Deja que nuestro Agente de Precios analice el historial y sugiera un presupuesto.",
+      "createManually": "Crear Manualmente",
+      "generateWithAI": "Generar con IA",
+      "agentAnalyzing": "Agente analizando requisitos...",
+      "agentChecking": "Verificando costos, infraestructura y estimación de esfuerzo.",
+      "aiGeneratedQuote": "Cotización Generada por IA",
+      "updatedNow": "Actualizado ahora",
+      "colDescription": "Descripción",
+      "colCategory": "Categoría",
+      "colCost": "Costo (USD)",
+      "estimatedTotal": "Total Estimado",
+      "agentRationale": "Justificación del Agente",
+      "addItem": "Agregar Item",
+      "sendProposal": "Enviar Propuesta al Cliente"
     }
   },
   "deals": {
@@ -278,6 +309,37 @@
       "REVIEW": "En revisión",
       "DELIVERED": "Entregado",
       "REVISION": "En revisión"
+    },
+    "detail": {
+      "notFound": "Proyecto no encontrado",
+      "backToProjects": "Volver a Proyectos",
+      "siteDelivered": "Sitio Entregado",
+      "tutorial": "Tutorial",
+      "openSite": "Abrir Sitio",
+      "notDelivered": "Sitio aún no entregado — pipeline en progreso.",
+      "pipelineStatus": "Estado del Pipeline",
+      "currentStage": "Etapa actual",
+      "lighthouseTitle": "Puntajes Lighthouse",
+      "scoresNotAvailable": "Puntajes aún no disponibles",
+      "stages": {
+        "created": "Proyecto Creado",
+        "briefing_approved": "Briefing Aprobado",
+        "builder_started": "Builder Iniciado",
+        "staging_approved": "Staging Aprobado",
+        "delivered": "Entregado"
+      },
+      "lighthouse": {
+        "performance": "Rendimiento",
+        "accessibility": "Accesibilidad",
+        "seo": "SEO",
+        "bestPractices": "Buenas Prácticas"
+      },
+      "mockupTitle": "Mockup Visual — Esperando Aprobación",
+      "mockupDesc": "Aprueba para que el CODER inicie el HTML final, o rechaza para que el DESIGNER rehaga.",
+      "reject": "Rechazar",
+      "approveMockup": "Aprobar Mockup",
+      "createdAt": "Creado",
+      "updatedAt": "Actualizado"
     }
   },
   "briefings": {

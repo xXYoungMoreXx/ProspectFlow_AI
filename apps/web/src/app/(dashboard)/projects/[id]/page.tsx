@@ -20,6 +20,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-sky-500/10 text-sky-400 border-sky-500/20",
@@ -36,11 +37,11 @@ function lighthouseColor(score: number): string {
 }
 
 const PIPELINE_STAGES = [
-  { key: "created", label: "Project Created" },
-  { key: "briefing_approved", label: "Briefing Approved" },
-  { key: "builder_started", label: "Builder Started" },
-  { key: "staging_approved", label: "Staging Approved" },
-  { key: "delivered", label: "Delivered" },
+  { key: "created" },
+  { key: "briefing_approved" },
+  { key: "builder_started" },
+  { key: "staging_approved" },
+  { key: "delivered" },
 ];
 
 export default function ProjectDetailPage({
@@ -50,6 +51,7 @@ export default function ProjectDetailPage({
 }) {
   const { id } = use(params);
   const token = useAuthStore((s) => s.token);
+  const t = useTranslations("projects");
 
   const queryClient = useQueryClient();
 
@@ -106,6 +108,41 @@ export default function ProjectDetailPage({
             : 4
     : -1;
 
+  const stageLabels: Record<string, string> = {
+    created: t("detail.stages.created"),
+    briefing_approved: t("detail.stages.briefing_approved"),
+    builder_started: t("detail.stages.builder_started"),
+    staging_approved: t("detail.stages.staging_approved"),
+    delivered: t("detail.stages.delivered"),
+  };
+
+  const lighthouseMetrics: Array<{
+    key: string;
+    label: string;
+    value: number | undefined;
+  }> = [
+    {
+      key: "performance",
+      label: t("detail.lighthouse.performance"),
+      value: (lighthouse as Record<string, number>).performance,
+    },
+    {
+      key: "accessibility",
+      label: t("detail.lighthouse.accessibility"),
+      value: (lighthouse as Record<string, number>).accessibility,
+    },
+    {
+      key: "seo",
+      label: t("detail.lighthouse.seo"),
+      value: (lighthouse as Record<string, number>).seo,
+    },
+    {
+      key: "bestPractices",
+      label: t("detail.lighthouse.bestPractices"),
+      value: (lighthouse as Record<string, number>).bestPractices,
+    },
+  ];
+
   if (isLoading) {
     return (
       <div className="space-y-6 max-w-5xl mx-auto">
@@ -122,9 +159,9 @@ export default function ProjectDetailPage({
   if (!project) {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <p className="text-muted-foreground">Project not found</p>
+        <p className="text-muted-foreground">{t("detail.notFound")}</p>
         <Link href="/projects">
-          <Button variant="outline">Back to Projects</Button>
+          <Button variant="outline">{t("detail.backToProjects")}</Button>
         </Link>
       </div>
     );
@@ -156,7 +193,7 @@ export default function ProjectDetailPage({
           <CardContent className="py-6 flex items-center justify-between gap-4">
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                Site Entregue
+                {t("detail.siteDelivered")}
               </p>
               <p className="text-sm text-emerald-400 font-mono break-all">
                 {project.deliverableUrl}
@@ -167,7 +204,7 @@ export default function ProjectDetailPage({
                 <a href={videoUrl} target="_blank" rel="noopener noreferrer">
                   <Button variant="outline" size="sm" className="gap-2">
                     <Play className="w-4 h-4" />
-                    Tutorial
+                    {t("detail.tutorial")}
                   </Button>
                 </a>
               )}
@@ -178,7 +215,7 @@ export default function ProjectDetailPage({
               >
                 <Button size="sm" className="gap-2">
                   <ExternalLink className="w-4 h-4" />
-                  Open Site
+                  {t("detail.openSite")}
                 </Button>
               </a>
             </div>
@@ -189,7 +226,7 @@ export default function ProjectDetailPage({
           <CardContent className="py-6 flex items-center gap-3">
             <Clock className="w-5 h-5 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              Site not yet delivered — pipeline in progress.
+              {t("detail.notDelivered")}
             </p>
           </CardContent>
         </Card>
@@ -199,7 +236,7 @@ export default function ProjectDetailPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold">
-              Pipeline Status
+              {t("detail.pipelineStatus")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -233,11 +270,11 @@ export default function ProjectDetailPage({
                       <p
                         className={`text-sm font-medium ${isDone ? "text-foreground" : "text-muted-foreground"}`}
                       >
-                        {stage.label}
+                        {stageLabels[stage.key] ?? stage.key}
                       </p>
                       {isActive && (
                         <p className="text-xs text-emerald-400 mt-0.5">
-                          Current stage
+                          {t("detail.currentStage")}
                         </p>
                       )}
                     </div>
@@ -251,7 +288,7 @@ export default function ProjectDetailPage({
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold">
-              Lighthouse Scores
+              {t("detail.lighthouseTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -259,41 +296,12 @@ export default function ProjectDetailPage({
               <div className="flex items-center gap-3 py-8">
                 <Clock className="w-5 h-5 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">
-                  Scores not yet available
+                  {t("detail.scoresNotAvailable")}
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4">
-                {(
-                  [
-                    {
-                      key: "performance",
-                      label: "Performance",
-                      value: (lighthouse as Record<string, number>).performance,
-                    },
-                    {
-                      key: "accessibility",
-                      label: "Accessibility",
-                      value: (lighthouse as Record<string, number>)
-                        .accessibility,
-                    },
-                    {
-                      key: "seo",
-                      label: "SEO",
-                      value: (lighthouse as Record<string, number>).seo,
-                    },
-                    {
-                      key: "bestPractices",
-                      label: "Best Practices",
-                      value: (lighthouse as Record<string, number>)
-                        .bestPractices,
-                    },
-                  ] as Array<{
-                    key: string;
-                    label: string;
-                    value: number | undefined;
-                  }>
-                ).map(({ key, label, value }) => (
+                {lighthouseMetrics.map(({ key, label, value }) => (
                   <div
                     key={key}
                     className="flex flex-col items-center justify-center p-4 rounded-xl border border-border bg-muted/20 gap-1"
@@ -319,13 +327,12 @@ export default function ProjectDetailPage({
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Palette className="w-4 h-4 text-violet-400" />
-              Mockup Visual — Aguardando Aprovação
+              {t("detail.mockupTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-xs text-muted-foreground">
-              Aprove para o CODER iniciar o HTML final, ou rejeite para o
-              DESIGNER refazer.
+              {t("detail.mockupDesc")}
             </p>
             <div
               className="rounded-lg border overflow-hidden bg-white"
@@ -345,7 +352,7 @@ export default function ProjectDetailPage({
                 onClick={() => mockupMutation.mutate("REJECTED")}
                 disabled={mockupMutation.isPending}
               >
-                <X className="w-4 h-4" /> Rejeitar
+                <X className="w-4 h-4" /> {t("detail.reject")}
               </Button>
               <Button
                 className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -357,7 +364,7 @@ export default function ProjectDetailPage({
                 ) : (
                   <Check className="w-4 h-4" />
                 )}
-                Aprovar Mockup
+                {t("detail.approveMockup")}
               </Button>
             </div>
           </CardContent>
@@ -365,7 +372,9 @@ export default function ProjectDetailPage({
       )}
 
       <p className="text-xs text-muted-foreground">
-        Created {new Date(project.createdAt).toLocaleString()} · Updated{" "}
+        {t("detail.createdAt")}{" "}
+        {new Date(project.createdAt).toLocaleString()} ·{" "}
+        {t("detail.updatedAt")}{" "}
         {new Date(project.updatedAt).toLocaleString()}
       </p>
     </div>

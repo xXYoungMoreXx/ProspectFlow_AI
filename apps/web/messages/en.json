@@ -253,6 +253,37 @@
       "submitting": "Creating...",
       "submitError": "Failed to create lead. Please try again.",
       "backToLeads": "Back to Leads"
+    },
+    "detail": {
+      "notFound": "Lead not found",
+      "backToLeads": "Back to Leads",
+      "unknownContact": "Unknown Contact",
+      "createdOn": "Created on",
+      "contactInfo": "Contact Information",
+      "noEmail": "No email provided",
+      "noPhone": "No phone provided",
+      "noCompany": "No company provided",
+      "contextNotes": "Lead Context / Notes",
+      "tabHistory": "Conversation History",
+      "tabQuote": "Smart Quoting",
+      "messagePlaceholder": "Type a message or internal note...",
+      "quoteTitle": "AI Quote Generation",
+      "quoteDesc": "Analyze the client's request and automatically calculate platform, infrastructure, and development costs.",
+      "noQuote": "No quote generated yet",
+      "quotePricing": "Let our specialized Pricing Agent analyze the conversation history and project requirements to suggest a budget.",
+      "createManually": "Create Manually",
+      "generateWithAI": "Generate with AI",
+      "agentAnalyzing": "Agent analyzing requirements...",
+      "agentChecking": "Checking tool costs, infrastructure needs, and effort estimation.",
+      "aiGeneratedQuote": "AI Generated Quote",
+      "updatedNow": "Updated just now",
+      "colDescription": "Description",
+      "colCategory": "Category",
+      "colCost": "Cost (USD)",
+      "estimatedTotal": "Estimated Total",
+      "agentRationale": "Agent Rationale",
+      "addItem": "Add Item",
+      "sendProposal": "Send Proposal to Client"
     }
   },
   "deals": {
@@ -278,6 +309,37 @@
       "REVIEW": "In Review",
       "DELIVERED": "Delivered",
       "REVISION": "In Revision"
+    },
+    "detail": {
+      "notFound": "Project not found",
+      "backToProjects": "Back to Projects",
+      "siteDelivered": "Site Delivered",
+      "tutorial": "Tutorial",
+      "openSite": "Open Site",
+      "notDelivered": "Site not yet delivered — pipeline in progress.",
+      "pipelineStatus": "Pipeline Status",
+      "currentStage": "Current stage",
+      "lighthouseTitle": "Lighthouse Scores",
+      "scoresNotAvailable": "Scores not yet available",
+      "stages": {
+        "created": "Project Created",
+        "briefing_approved": "Briefing Approved",
+        "builder_started": "Builder Started",
+        "staging_approved": "Staging Approved",
+        "delivered": "Delivered"
+      },
+      "lighthouse": {
+        "performance": "Performance",
+        "accessibility": "Accessibility",
+        "seo": "SEO",
+        "bestPractices": "Best Practices"
+      },
+      "mockupTitle": "Visual Mockup — Awaiting Approval",
+      "mockupDesc": "Approve for the CODER to start the final HTML, or reject for the DESIGNER to redo.",
+      "reject": "Reject",
+      "approveMockup": "Approve Mockup",
+      "createdAt": "Created",
+      "updatedAt": "Updated"
     }
   },
   "briefings": {
