@@ -395,8 +395,18 @@ async function cmdStart() {
   }
   log.ok(".env carregado. JWT verificado.");
 
-  // 3. Docker Compose
-  log.step("3/6", "Subindo infraestrutura (Docker Compose)...");
+  // 3. Dependências npm
+  log.step("3/7", "Instalando dependências npm...");
+  try {
+    run("npm", ["install"], { cwd: ROOT });
+    log.ok("Dependências instaladas.");
+  } catch (err) {
+    log.fail(`Falha no npm install: ${err.message}`);
+    process.exit(1);
+  }
+
+  // 4. Docker Compose
+  log.step("4/7", "Subindo infraestrutura (Docker Compose)...");
   const up = silent("docker", [
     "compose",
     "-f",
@@ -431,8 +441,8 @@ async function cmdStart() {
     process.exit(1);
   }
 
-  // 4. Aguardar PostgreSQL
-  log.step("4/6", "Aguardando PostgreSQL...");
+  // 5. Aguardar PostgreSQL
+  log.step("5/7", "Aguardando PostgreSQL...");
   let dbReady = false;
   process.stdout.write("  ");
   for (let i = 0; i < 30; i++) {
@@ -460,8 +470,8 @@ async function cmdStart() {
   }
   log.ok("PostgreSQL operacional.");
 
-  // 5. Migrations
-  log.step("5/6", "Aplicando migrations...");
+  // 6. Migrations
+  log.step("6/7", "Aplicando migrations...");
   try {
     run("npm", ["run", "db:migrate"], { cwd: path.join(ROOT, "apps", "api") });
     log.ok("Migrations aplicadas.");
@@ -473,8 +483,8 @@ async function cmdStart() {
     process.exit(1);
   }
 
-  // 6. Dev servers
-  log.step("6/6", "Iniciando serviços...");
+  // 7. Dev servers
+  log.step("7/7", "Iniciando serviços...");
   console.log("");
   console.log("  \x1b[36m💻  Web Dashboard  →  http://localhost:3000\x1b[0m");
   console.log("  \x1b[36m⚙️   API Fastify    →  http://localhost:3001\x1b[0m");
