@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { CalComAdapter } from "../../infrastructure/integrations/CalComAdapter.js";
-import { ValidationError } from "../../domain/shared/errors.js";
+import { ValidationError } from "../../domain/shared/Result.js";
 
 const BookingSchema = z.object({
   eventTypeId: z.number().int().positive(),
