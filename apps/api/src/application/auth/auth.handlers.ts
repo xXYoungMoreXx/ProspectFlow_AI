@@ -97,6 +97,16 @@ export class RegisterHandler {
 
       if (!operator) return err(new Error("Failed to create user"));
 
+      // Auto-assign to bootstrap org as owner
+      const orgId = process.env["BOOTSTRAP_ORG_ID"] ?? "org_mvp";
+      await this.db.insert(schema.members).values({
+        id:             randomUUID(),
+        organizationId: orgId,
+        userId:         operator.id,
+        role:           "owner",
+        createdAt:      new Date(),
+      });
+
       // Generate verification token
       const { token, tokenHash } = generateSecureToken();
 
