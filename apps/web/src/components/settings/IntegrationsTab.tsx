@@ -126,7 +126,7 @@ export function IntegrationsTab() {
   const mcpEntries = getMcpEntries();
 
   return (
-    <TooltipProvider delayDuration={300}>
+    <TooltipProvider>
       <div className="space-y-4">
         {/* MCP Brasil */}
         <Card className="border-border/60">

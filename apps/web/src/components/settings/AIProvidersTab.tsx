@@ -86,8 +86,14 @@ const PROVIDERS: ProviderConfig[] = [
     keyField: "llm.gemini.api_key",
     keyPlaceholder: "AIza••••••••••••••",
     modelField: "llm.gemini.default_model",
-    defaultModel: "gemini-2.5-flash",
-    models: ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite"],
+    defaultModel: "gemini-3.5-flash",
+    models: [
+      "gemini-3.1-pro",
+      "gemini-3.5-flash",
+      "gemini-2.5-pro",
+      "gemini-2.5-flash",
+      "gemini-2.5-flash-lite",
+    ],
   },
   {
     id: "groq",
@@ -128,6 +134,8 @@ const PROVIDERS: ProviderConfig[] = [
       "openai/gpt-4.1",
       "openai/o4-mini",
       "openai/o3",
+      "google/gemini-3.1-pro",
+      "google/gemini-3.5-flash",
       "google/gemini-2.5-pro",
       "google/gemini-2.5-flash",
       "deepseek/deepseek-v4-pro",
@@ -229,7 +237,7 @@ export function AIProvidersTab() {
     setPending({ key, category: "media", value, isSecret });
 
   return (
-    <TooltipProvider delayDuration={300}>
+    <TooltipProvider>
       <div className="space-y-4">
         {/* Cloud providers */}
         {PROVIDERS.map((provider) => (
@@ -317,7 +325,9 @@ export function AIProvidersTab() {
                 </div>
                 <Select
                   value={get(provider.modelField) || provider.defaultModel}
-                  onValueChange={(v) => set(provider.modelField, v)}
+                  onValueChange={(v) =>
+                    v !== null && set(provider.modelField, v)
+                  }
                   disabled={!isEnabled(provider.id)}
                 >
                   <SelectTrigger
@@ -437,7 +447,9 @@ export function AIProvidersTab() {
                     </div>
                     <Select
                       value={get(modelField) || vp.defaultModel}
-                      onValueChange={(v) => setMedia(modelField, v)}
+                      onValueChange={(v) =>
+                        v !== null && setMedia(modelField, v)
+                      }
                     >
                       <SelectTrigger
                         id={`${vp.id}-model`}

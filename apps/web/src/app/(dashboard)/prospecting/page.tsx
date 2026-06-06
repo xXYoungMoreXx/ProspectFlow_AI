@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -15,6 +16,33 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Loader2, X, Plus } from "lucide-react";
 import { usePagination } from "@/hooks/usePagination";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { ProspectingConfigTab } from "@/components/prospecting/ProspectingConfigTab";
+
+// Leaflet requires the DOM — disable SSR
+const ProspectingMap = dynamic(
+  () =>
+    import("@/components/prospecting/ProspectingMap").then((m) => ({
+      default: m.ProspectingMap,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-lg bg-muted/40 animate-pulse h-[240px] w-full border border-border" />
+    ),
+  },
+);
+
+interface QueueLead {
+  id: string;
+  contactName: string;
+  contactPhone: string | null;
+  contactEmail: string | null;
+  businessName: string;
+  qualificationScore: number | null;
+  source: string;
+  pendingHitl: boolean;
+  createdAt: string;
+}
 
 export default function ProspectingPage() {
   const t = useTranslations("prospecting");
@@ -34,12 +62,6 @@ export default function ProspectingPage() {
     enabled: !!token,
   });
 
-  const configQuery = useQuery({
-    queryKey: ["prospecting-config"],
-    queryFn: () => api.prospecting.getConfig(token!),
-    enabled: !!token,
-  });
-
   const searchMutation = useMutation({
     mutationFn: () =>
       api.prospecting.searchMaps(
@@ -49,7 +71,6 @@ export default function ProspectingPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["prospecting-queue"] });
     },
-    onError: (err) => console.warn("Search failed:", err),
   });
 
   const addCategory = () => {
@@ -66,7 +87,7 @@ export default function ProspectingPage() {
   const canSearch =
     categories.length > 0 && city.trim().length >= 2 && state.length === 2;
 
-  const leads: any[] = queueQuery.data?.data?.leads ?? [];
+  const leads: QueueLead[] = queueQuery.data?.data?.leads ?? [];
   const {
     page,
     totalPages,
@@ -98,6 +119,7 @@ export default function ProspectingPage() {
           <TabsTrigger value="config">{t("tabs.config")}</TabsTrigger>
         </TabsList>
 
+        {/* ── Nova Busca ──────────────────────────────── */}
         <TabsContent value="search" className="mt-6">
           <Card>
             <CardHeader>
@@ -190,6 +212,14 @@ export default function ProspectingPage() {
                 </div>
               </div>
 
+              {/* Map preview — updates as city / radius changes */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">
+                  {t("search.mapPreview")}
+                </Label>
+                <ProspectingMap city={city} state={state} radiusKm={radiusKm} />
+              </div>
+
               <Button
                 className="w-full gap-2"
                 disabled={!canSearch || searchMutation.isPending}
@@ -211,6 +241,7 @@ export default function ProspectingPage() {
           </Card>
         </TabsContent>
 
+        {/* ── Fila ───────────────────────────────────── */}
         <TabsContent value="queue" className="mt-6">
           {queueQuery.isLoading ? (
             <div className="space-y-3">
@@ -256,13 +287,13 @@ export default function ProspectingPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {paginatedLeads.map((lead: any) => (
+                    {paginatedLeads.map((lead) => (
                       <tr
                         key={lead.id}
                         className="hover:bg-muted/20 transition-colors"
                       >
                         <td className="px-4 py-3 font-medium">
-                          {lead.businessName ?? "—"}
+                          {lead.businessName}
                         </td>
                         <td className="px-4 py-3">
                           <span
@@ -278,12 +309,10 @@ export default function ProspectingPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-xs text-muted-foreground">
-                          {lead.source ?? "—"}
+                          {lead.source}
                         </td>
                         <td className="px-4 py-3 text-xs text-muted-foreground">
-                          {lead.createdAt
-                            ? new Date(lead.createdAt).toLocaleDateString()
-                            : "—"}
+                          {new Date(lead.createdAt).toLocaleDateString("pt-BR")}
                         </td>
                         <td className="px-4 py-3">
                           {lead.pendingHitl && (
@@ -309,42 +338,9 @@ export default function ProspectingPage() {
           )}
         </TabsContent>
 
+        {/* ── Configuração ───────────────────────────── */}
         <TabsContent value="config" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold">
-                {t("config.title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {configQuery.isLoading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-8 w-full" />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-3 text-sm">
-                  {configQuery.data?.data &&
-                    Object.entries(
-                      configQuery.data.data as Record<string, unknown>,
-                    ).map(([key, value]) => (
-                      <div
-                        key={key}
-                        className="flex justify-between py-2 border-b border-border last:border-0"
-                      >
-                        <span className="text-muted-foreground font-mono text-xs">
-                          {key}
-                        </span>
-                        <span className="font-medium text-xs">
-                          {String(value ?? "—")}
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <ProspectingConfigTab />
         </TabsContent>
       </Tabs>
     </div>
