@@ -24,6 +24,7 @@ import { whatsappWebhookRoutes } from "./http/routes/whatsapp.webhook.routes.js"
 import { telegramSalesRoutes } from "./http/routes/telegram.sales.routes.js";
 import { costsRoutes } from "./http/routes/costs.routes.js";
 import { internalHeyGenRoutes } from "./http/routes/internal/heygen.routes.js";
+import { schedulingRoutes } from "./http/routes/scheduling.routes.js";
 import { errorHandler } from "./http/middleware/errorHandler.js";
 import { requestIdHook } from "./http/middleware/requestId.middleware.js";
 import { ssrfMiddleware } from "./http/middleware/ssrf.middleware.js";
@@ -124,6 +125,7 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
   await app.register(costsRoutes, { prefix: "/api/v1/costs" });
   await app.register(telegramWebhookRoutes, { prefix: "/api/v1/telegram" });
   await app.register(internalHeyGenRoutes, { prefix: "/api/v1/internal" });
+  await app.register(schedulingRoutes, { prefix: "/api/v1/scheduling" });
 
   return app;
 }
