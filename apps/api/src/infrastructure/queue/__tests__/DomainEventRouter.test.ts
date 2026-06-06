@@ -74,7 +74,11 @@ describe("DomainEventRouter — deal.closed", () => {
 
     await router.handleDealClosed(event);
 
-    expect(briefingRepo.findByDealId).toHaveBeenCalledWith(deal.id, "op-1");
+    expect(briefingRepo.findByDealId).toHaveBeenCalledWith(
+      deal.id,
+      "op-1",
+      "org_mvp",
+    );
     expect(briefingRepo.save).toHaveBeenCalledOnce();
   });
 
