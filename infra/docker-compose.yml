@@ -111,9 +111,9 @@ services:
     container_name: agentepro-jaeger
     restart: unless-stopped
     ports:
-      - "16686:16686"   # UI
-      - "4318:4318"     # OTLP HTTP
-      - "4317:4317"     # OTLP gRPC
+      - "16686:16686" # UI
+      - "4318:4318" # OTLP HTTP
+      - "4317:4317" # OTLP gRPC
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
 
@@ -166,6 +166,33 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  # ── SearXNG ────────────────────────────────────────────────────────────────
+  searxng:
+    image: searxng/searxng:latest
+    container_name: agentepro-searxng
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --spider http://localhost:8080/healthz || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
 
 volumes:
   postgres_data:
