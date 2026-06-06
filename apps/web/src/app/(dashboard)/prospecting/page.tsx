@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +25,7 @@ import {
   MapPin,
   ExternalLink,
   PlayCircle,
+  AlertCircle,
 } from "lucide-react";
 import { usePagination } from "@/hooks/usePagination";
 import { PaginationControls } from "@/components/ui/pagination-controls";
@@ -71,6 +73,7 @@ export default function ProspectingPage() {
   const t = useTranslations("prospecting");
   const token = useAuthStore((s) => s.token);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
@@ -227,7 +230,7 @@ export default function ProspectingPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label>
-                    {t("search.radius")} {radiusKm}
+                    {t("search.radius")} {radiusKm} km
                   </Label>
                   <Input
                     type="range"
@@ -241,7 +244,7 @@ export default function ProspectingPage() {
                 </div>
                 <div className="space-y-1">
                   <Label>
-                    {t("search.minScore")} {minScore}
+                    {t("search.minScore")} {minScore} pts
                   </Label>
                   <Input
                     type="range"
@@ -283,6 +286,13 @@ export default function ProspectingPage() {
                   </>
                 )}
               </Button>
+
+              {previewMutation.isError && (
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{t("search.errorPreview")}</span>
+                </div>
+              )}
 
               {previewResults !== null && (
                 <div className="space-y-3 pt-1">
@@ -381,6 +391,17 @@ export default function ProspectingPage() {
                           </>
                         )}
                       </Button>
+
+                      {searchMutation.isError && (
+                        <div className="flex items-center gap-2 text-sm text-destructive">
+                          <AlertCircle className="w-4 h-4 shrink-0" />
+                          <span>{t("search.errorSubmit")}</span>
+                        </div>
+                      )}
+
+                      <p className="text-[10px] text-muted-foreground text-center">
+                        {t("search.googleAttribution")}
+                      </p>
                     </>
                   )}
                 </div>
@@ -413,12 +434,15 @@ export default function ProspectingPage() {
             </Card>
           ) : (
             <>
-              <div className="rounded-lg border border-border overflow-hidden">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto rounded-lg border border-border">
+                <table className="w-full text-sm min-w-[620px]">
                   <thead>
                     <tr className="bg-muted/50 border-b border-border">
                       <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                         {t("queue.columns.business")}
+                      </th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                        {t("queue.columns.contact")}
                       </th>
                       <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                         {t("queue.columns.score")}
@@ -438,10 +462,14 @@ export default function ProspectingPage() {
                     {paginatedLeads.map((lead) => (
                       <tr
                         key={lead.id}
-                        className="hover:bg-muted/20 transition-colors"
+                        className="hover:bg-muted/20 transition-colors cursor-pointer"
+                        onClick={() => router.push(`/leads/${lead.id}`)}
                       >
                         <td className="px-4 py-3 font-medium">
                           {lead.businessName}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                          {lead.contactName || "—"}
                         </td>
                         <td className="px-4 py-3">
                           <span

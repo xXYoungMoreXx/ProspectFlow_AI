@@ -233,7 +233,14 @@
     "subtitle": "Track site deliveries and Lighthouse scores",
     "empty": "No projects yet",
     "perf": "Perf:",
-    "a11y": "A11y:"
+    "a11y": "A11y:",
+    "status": {
+      "PENDING": "Pending",
+      "IN_PROGRESS": "In Progress",
+      "REVIEW": "In Review",
+      "DELIVERED": "Delivered",
+      "REVISION": "In Revision"
+    }
   },
   "briefings": {
     "title": "Briefings",
@@ -276,12 +283,16 @@
       "results": "{count} result(s) — {city}/{state}",
       "noResults": "No results found for these filters.",
       "website": "Website",
-      "startProspecting": "Start Prospecting ({count} leads)"
+      "startProspecting": "Start Prospecting ({count} leads)",
+      "errorPreview": "Failed to fetch results. Check your Google Maps key in Settings.",
+      "errorSubmit": "Failed to queue prospecting. Please try again.",
+      "googleAttribution": "Data provided by Google Business · Google Maps"
     },
     "queue": {
       "empty": "No leads in queue",
       "columns": {
         "business": "Business",
+        "contact": "Contact",
         "score": "Score",
         "source": "Source",
         "date": "Date",
@@ -310,7 +321,9 @@
         "sun": "Sun"
       },
       "save": "Save Configuration",
-      "saving": "Saving..."
+      "saving": "Saving...",
+      "saveSuccess": "Configuration saved successfully.",
+      "saveError": "Failed to save. Please try again."
     }
   },
   "hitl": {

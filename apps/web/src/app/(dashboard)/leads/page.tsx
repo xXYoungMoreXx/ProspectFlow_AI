@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { useLeadsStore, Lead } from "@/lib/stores/leads-store";
 import { Card, CardContent } from "@/components/ui/card";
@@ -59,6 +60,8 @@ function SortableLeadCard({
   lead: Lead;
   columnLabel: string;
 }) {
+  const router = useRouter();
+  const didDrag = useRef(false);
   const {
     attributes,
     listeners,
@@ -80,6 +83,9 @@ function SortableLeadCard({
       style={style}
       {...attributes}
       {...listeners}
+      onPointerDown={() => { didDrag.current = false; }}
+      onPointerMove={() => { didDrag.current = true; }}
+      onClick={() => { if (!didDrag.current) router.push(`/leads/${lead.id}`); }}
       className="mb-3 cursor-grab active:cursor-grabbing"
     >
       <Card className="group border-border/50 hover:border-primary/30 hover:shadow-sm transition-all bg-card/50 backdrop-blur-sm relative">
@@ -280,7 +286,7 @@ export default function LeadsPage() {
                         variant="outline"
                         className={`text-[9px] px-1.5 py-0 ${statusColors[activeLead.status] || ""}`}
                       >
-                        {activeLead.status}
+                        {t(`columns.${activeLead.status}`)}
                       </Badge>
                     </div>
                   </div>
