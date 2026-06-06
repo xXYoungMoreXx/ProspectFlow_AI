@@ -7,6 +7,8 @@ type JoseKey = Awaited<ReturnType<typeof importSPKI>>;
 declare module "fastify" {
   interface FastifyRequest {
     operatorId: string;
+    organizationId: string;
+    role: string;
     jwtPayload: JWTPayload;
   }
 }
@@ -69,6 +71,24 @@ export async function authMiddleware(
 
     request.operatorId = payload.sub;
     request.jwtPayload = payload;
+
+    const orgId = payload["organizationId"];
+    if (typeof orgId !== "string" || !orgId) {
+      void reply.status(401).send({
+        errors: [
+          {
+            code: "AUTHENTICATION_ERROR",
+            message: "Invalid token: missing organizationId",
+            requestId: request.requestId,
+          },
+        ],
+      });
+      return;
+    }
+
+    request.organizationId = orgId;
+    request.role =
+      typeof payload["role"] === "string" ? payload["role"] : "member";
   } catch {
     void reply.status(401).send({
       errors: [

@@ -31,6 +31,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
     const getListHandler = new GetDealsHandler(app.container.dealRepo);
     const result = await getListHandler.execute({
       operatorId: request.operatorId,
+      organizationId: request.organizationId,
       ...parsed.data,
       status: parsed.data.status as DealStatus | undefined,
     });
@@ -51,6 +52,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
     const result = await getByIdHandler.execute(
       request.params.id,
       request.operatorId,
+      request.organizationId,
     );
     if (result.isErr()) {
       return reply.status(404).send({
@@ -91,6 +93,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
         request.params.id,
         request.operatorId,
         parsed.data.reason,
+        request.organizationId,
       );
       if (result.isErr()) {
         const status = result.error.message.includes("not found") ? 404 : 400;
@@ -125,6 +128,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
     const result = await handler.execute({
       leadId: request.params.id,
       operatorId: request.operatorId,
+      organizationId: request.organizationId,
     });
 
     if (result.isErr()) {
@@ -156,6 +160,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
       const deal = await app.container.dealRepo.findById(
         request.params.id,
         request.operatorId,
+        request.organizationId,
       );
       if (!deal) {
         return reply.status(404).send({
@@ -191,6 +196,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
       const lead = await app.container.leadRepo.findById(
         deal.leadId,
         request.operatorId,
+        request.organizationId,
       );
       if (!lead) {
         return reply.status(404).send({
@@ -243,6 +249,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
     const deal = await app.container.dealRepo.findById(
       request.params.id,
       request.operatorId,
+      request.organizationId,
     );
     if (!deal) {
       return reply.status(404).send({

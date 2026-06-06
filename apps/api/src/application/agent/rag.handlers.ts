@@ -23,8 +23,9 @@ export class ListRagDocumentsHandler {
   async execute(
     agentId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<QueryResult[], Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
     if (!agent.ragEnabled || !agent.ragCollection) {
       return ok([]);
@@ -54,8 +55,9 @@ export class UploadRagDocumentHandler {
     filename: string,
     content: string,
     correlationId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<UploadRagDocumentResult, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const docId = ulid();
@@ -91,8 +93,9 @@ export class DeleteRagDocumentHandler {
     agentId: string,
     docId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<void, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
     if (!agent.ragEnabled || !agent.ragCollection) {
       return err(new Error("RAG is not enabled for this agent"));
@@ -122,8 +125,9 @@ export class QueryRagHandler {
     operatorId: string,
     queryText: string,
     topK = 5,
+    organizationId: string = "org_mvp",
   ): Promise<Result<RagQueryResult[], Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
     if (!agent.ragEnabled || !agent.ragCollection) {
       return err(new Error("RAG is not enabled for this agent"));

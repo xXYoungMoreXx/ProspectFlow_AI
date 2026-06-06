@@ -3,6 +3,7 @@ import type { DealStatus } from "@agentepro/shared-types";
 
 export interface DealFilters {
   operatorId: string;
+  organizationId: string;
   status?: DealStatus;
   leadId?: string;
   cursor?: string;
@@ -16,7 +17,11 @@ export interface DealListResult {
 }
 
 export interface DealRepository {
-  findById(id: string, operatorId: string): Promise<Deal | null>;
+  findById(
+    id: string,
+    operatorId: string,
+    organizationId: string,
+  ): Promise<Deal | null>;
   /** Internal use only — skips tenant check. Use for event handlers / workers. */
   findByIdInternal(id: string): Promise<Deal | null>;
   findMany(filters: DealFilters): Promise<DealListResult>;

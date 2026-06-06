@@ -1,6 +1,7 @@
 import { buildApp } from "./app.js";
 import { config } from "./config.js";
 import { destroyContainer, redis } from "./container.js";
+import { bootstrapOrganization } from "./infrastructure/db/seeds/bootstrap.js";
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
@@ -21,6 +22,8 @@ async function bootstrap(): Promise<void> {
 
   await redis.connect();
   app.log.info("✅ Database and Redis connected");
+
+  await bootstrapOrganization(app.container.db, app.log);
 
   // ── Start ───────────────────────────────────────────────────────────────
   await app.listen({ port: config.PORT, host: config.HOST });

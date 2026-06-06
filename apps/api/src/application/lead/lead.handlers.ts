@@ -27,6 +27,7 @@ export class CreateLeadHandler {
       source?: LeadSource;
       assignedAgentId?: string;
     },
+    _organizationId: string = "org_mvp",
   ): Promise<Result<Lead, Error>> {
     const contact: ContactInfo = {
       name: input.contactName,
@@ -60,8 +61,9 @@ export class UpdateLeadStatusHandler {
     operatorId: string,
     status: LeadStatus,
     reason?: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<Lead, Error>> {
-    const lead = await this.repo.findById(leadId, operatorId);
+    const lead = await this.repo.findById(leadId, operatorId, organizationId);
     if (!lead) return err(new NotFoundError("Lead", leadId));
 
     if (status === "LOST" && reason) {
@@ -89,8 +91,9 @@ export class GetLeadByIdHandler {
   async execute(
     leadId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<Lead, NotFoundError>> {
-    const lead = await this.repo.findById(leadId, operatorId);
+    const lead = await this.repo.findById(leadId, operatorId, organizationId);
     if (!lead) return err(new NotFoundError("Lead", leadId));
     return ok(lead);
   }

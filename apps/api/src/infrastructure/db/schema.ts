@@ -183,6 +183,7 @@ export const pricingConfig = pgTable(
 
 export const agents = pgTable("agents", {
   id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: text("organization_id").notNull().default("org_mvp"),
   operatorId: uuid("operator_id")
     .notNull()
     .references(() => operators.id),
@@ -273,6 +274,7 @@ export const subAgents = pgTable(
   "sub_agents",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     agentId: uuid("agent_id")
       .notNull()
       .references(() => agents.id, { onDelete: "cascade" }),
@@ -308,6 +310,7 @@ export const leads = pgTable(
   "leads",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     operatorId: uuid("operator_id")
       .notNull()
       .references(() => operators.id),
@@ -366,6 +369,7 @@ export const deals = pgTable(
   "deals",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     leadId: uuid("lead_id")
       .notNull()
       .references(() => leads.id),
@@ -413,6 +417,7 @@ export const followUps = pgTable(
   "follow_ups",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     dealId: uuid("deal_id")
       .notNull()
       .references(() => deals.id, { onDelete: "cascade" }),
@@ -454,6 +459,7 @@ export const briefings = pgTable(
   "briefings",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     dealId: uuid("deal_id")
       .notNull()
       .references(() => deals.id)
@@ -489,6 +495,7 @@ export const briefingAssets = pgTable(
   "briefing_assets",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     briefingId: uuid("briefing_id")
       .notNull()
       .references(() => briefings.id, { onDelete: "cascade" }),
@@ -559,6 +566,7 @@ export const projects = pgTable(
   "projects",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     dealId: uuid("deal_id")
       .notNull()
       .references(() => deals.id),
@@ -601,6 +609,7 @@ export const mediaAssets = pgTable(
   "media_assets",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     projectId: uuid("project_id")
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
@@ -630,6 +639,7 @@ export const hitlApprovals = pgTable(
   "hitl_approvals",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     operatorId: uuid("operator_id")
       .notNull()
       .references(() => operators.id),
@@ -661,6 +671,7 @@ export const tokenUsage = pgTable(
   "token_usage",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     agentId: uuid("agent_id")
       .notNull()
       .references(() => agents.id, { onDelete: "cascade" }),
@@ -749,4 +760,34 @@ export const systemSettings = pgTable(
     uniqueIndex("uq_settings_operator_key").on(table.operatorId, table.key),
     index("idx_settings_operator_cat").on(table.operatorId, table.category),
   ],
+);
+
+// ── Multi-tenancy ──────────────────────────────────────────────────────────
+
+export const organizations = pgTable("organizations", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const members = pgTable(
+  "members",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
+    role: text("role").notNull().default("owner"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [uniqueIndex("members_org_user_uidx").on(t.organizationId, t.userId)],
 );

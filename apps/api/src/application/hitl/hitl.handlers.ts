@@ -19,8 +19,11 @@ import { SchedulePostDeliveryFollowUpUseCase } from "../project/SchedulePostDeli
 export class GetPendingApprovalsHandler {
   constructor(private readonly repo: HITLApprovalRepository) {}
 
-  async execute(operatorId: string): Promise<HITLApproval[]> {
-    return this.repo.findPending(operatorId);
+  async execute(
+    operatorId: string,
+    organizationId: string = "org_mvp",
+  ): Promise<HITLApproval[]> {
+    return this.repo.findPending(operatorId, organizationId);
   }
 }
 
@@ -36,8 +39,13 @@ export class ApproveHITLHandler {
     approvalId: string,
     operatorId: string,
     note?: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<HITLApproval, Error>> {
-    const approval = await this.repo.findById(approvalId, operatorId);
+    const approval = await this.repo.findById(
+      approvalId,
+      operatorId,
+      organizationId,
+    );
     if (!approval) return err(new NotFoundError("HITLApproval", approvalId));
 
     const result = approval.approve(note);
@@ -125,7 +133,11 @@ export class ApproveHITLHandler {
       return;
     }
 
-    const project = await this.projectRepo!.findById(projectId, operatorId);
+    const project = await this.projectRepo!.findById(
+      projectId,
+      operatorId,
+      "org_mvp",
+    );
     if (!project) {
       console.warn(
         `[ApproveHITLHandler] APPROVE_STAGING: project ${projectId} not found`,
@@ -200,8 +212,13 @@ export class RejectHITLHandler {
     approvalId: string,
     operatorId: string,
     note?: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<HITLApproval, Error>> {
-    const approval = await this.repo.findById(approvalId, operatorId);
+    const approval = await this.repo.findById(
+      approvalId,
+      operatorId,
+      organizationId,
+    );
     if (!approval) return err(new NotFoundError("HITLApproval", approvalId));
 
     const result = approval.reject(note);
@@ -221,8 +238,13 @@ export class EditAndApproveHITLHandler {
     operatorId: string,
     editedPayload: Record<string, unknown>,
     note?: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<HITLApproval, Error>> {
-    const approval = await this.repo.findById(approvalId, operatorId);
+    const approval = await this.repo.findById(
+      approvalId,
+      operatorId,
+      organizationId,
+    );
     if (!approval) return err(new NotFoundError("HITLApproval", approvalId));
 
     const result = approval.editAndApprove(editedPayload, note);

@@ -2,8 +2,16 @@ import { type DealRepository } from "../../domain/deal/DealRepository.js";
 import { type LeadRepository } from "../../domain/lead/LeadRepository.js";
 import { type CompositeLLMRouter } from "../../infrastructure/llm/CompositeLLMRouter.js";
 import { Deal } from "../../domain/deal/Deal.js";
-import { PricingEngine, PricingConfig } from "../../domain/pricing/PricingEngine.js";
-import { ClientBriefing, OperationalCosts, PaymentMethod, ServiceType as PricingServiceType } from "../../domain/pricing/PricingModels.js";
+import {
+  PricingEngine,
+  PricingConfig,
+} from "../../domain/pricing/PricingEngine.js";
+import {
+  ClientBriefing,
+  OperationalCosts,
+  PaymentMethod,
+  ServiceType as PricingServiceType,
+} from "../../domain/pricing/PricingModels.js";
 import { Money } from "../../domain/pricing/Money.js";
 import {
   NotFoundError,
@@ -17,6 +25,7 @@ import { ulid } from "ulid";
 export interface GenerateQuoteInput {
   leadId: string;
   operatorId: string;
+  organizationId: string;
   agentId?: string;
 }
 
@@ -29,7 +38,11 @@ export class GenerateQuoteHandler {
 
   async execute(input: GenerateQuoteInput): Promise<Result<Deal, Error>> {
     // 1. Fetch Lead
-    const lead = await this.leadRepo.findById(input.leadId, input.operatorId);
+    const lead = await this.leadRepo.findById(
+      input.leadId,
+      input.operatorId,
+      input.organizationId,
+    );
     if (!lead) {
       return err(new NotFoundError("Lead", input.leadId));
     }
@@ -84,26 +97,38 @@ Respond strictly in JSON format with the following structure:
     }
 
     // 5. Use PricingEngine to calculate the price
-    const serviceType = (parsed.serviceType || "LANDING_PAGE") as PricingServiceType;
+    const serviceType = (parsed.serviceType ||
+      "LANDING_PAGE") as PricingServiceType;
     const paymentMethod = (parsed.paymentMethod || "PIX") as PaymentMethod;
     const pageCount = parsed.pageCount || 1;
     const deliveryDays = parsed.deliveryDays || 14;
 
-    const addonsForEngine = Array.isArray(parsed.addons) 
-      ? parsed.addons.map((a: any) => ({ name: String(a.name), price: Money.BRL(Number(a.priceCents) || 0) }))
+    const addonsForEngine = Array.isArray(parsed.addons)
+      ? parsed.addons.map((a: any) => ({
+          name: String(a.name),
+          price: Money.BRL(Number(a.priceCents) || 0),
+        }))
       : [];
 
     let briefing: ClientBriefing;
     try {
-      briefing = new ClientBriefing(serviceType, pageCount, deliveryDays, paymentMethod, addonsForEngine);
+      briefing = new ClientBriefing(
+        serviceType,
+        pageCount,
+        deliveryDays,
+        paymentMethod,
+        addonsForEngine,
+      );
     } catch (e: any) {
-      return err(new ValidationError(`Invalid briefing parameters: ${e.message}`));
+      return err(
+        new ValidationError(`Invalid briefing parameters: ${e.message}`),
+      );
     }
 
     const opsCosts = new OperationalCosts(
       Money.fromReal(50), // estimated LLM tokens
       Money.fromReal(150), // deploy costs
-      Money.fromReal(20) // prospecting cost
+      Money.fromReal(20), // prospecting cost
     );
 
     const pricingEngine = new PricingEngine();
@@ -131,7 +156,7 @@ Respond strictly in JSON format with the following structure:
       deal.setProposal(parsed.proposalText);
     }
 
-    addonsForEngine.forEach((addon: { name: string, price: Money }) => {
+    addonsForEngine.forEach((addon: { name: string; price: Money }) => {
       deal.addAddon({
         name: addon.name,
         priceCents: addon.price.getCents(),
@@ -142,7 +167,7 @@ Respond strictly in JSON format with the following structure:
     if (pricingResult.paymentFee.getCents() > 0) {
       deal.addAddon({
         name: "Taxa de Pagamento",
-        priceCents: pricingResult.paymentFee.getCents()
+        priceCents: pricingResult.paymentFee.getCents(),
       });
     }
 

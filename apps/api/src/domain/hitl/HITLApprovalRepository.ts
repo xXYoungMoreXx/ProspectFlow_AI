@@ -3,6 +3,7 @@ import type { HITLStatus } from "@agentepro/shared-types";
 
 export interface HITLFilters {
   operatorId: string;
+  organizationId: string;
   status?: HITLStatus;
   agentId?: string;
   cursor?: string;
@@ -16,8 +17,15 @@ export interface HITLListResult {
 }
 
 export interface HITLApprovalRepository {
-  findById(id: string, operatorId: string): Promise<HITLApproval | null>;
-  findPending(operatorId: string): Promise<HITLApproval[]>;
+  findById(
+    id: string,
+    operatorId: string,
+    organizationId: string,
+  ): Promise<HITLApproval | null>;
+  findPending(
+    operatorId: string,
+    organizationId: string,
+  ): Promise<HITLApproval[]>;
   findMany(filters: HITLFilters): Promise<HITLListResult>;
   findExpired(): Promise<HITLApproval[]>;
   save(approval: HITLApproval): Promise<void>;

@@ -15,43 +15,44 @@ export async function projectRoutes(app: FastifyInstance): Promise<void> {
 
   app.get("/", async (request, reply) => {
     const getList = new GetProjectsHandler(app.container.projectRepo);
-    const result = await getList.execute({ operatorId: request.operatorId });
-    return reply
-      .status(200)
-      .send({
-        data: result.projects.map((p) => p.toJSON()),
-        meta: {
-          requestId: request.requestId,
-          timestamp: new Date().toISOString(),
-          total: result.total,
-        },
-      });
+    const result = await getList.execute({
+      operatorId: request.operatorId,
+      organizationId: request.organizationId,
+    });
+    return reply.status(200).send({
+      data: result.projects.map((p) => p.toJSON()),
+      meta: {
+        requestId: request.requestId,
+        timestamp: new Date().toISOString(),
+        total: result.total,
+      },
+    });
   });
 
   app.get<{ Params: { id: string } }>("/:id", async (request, reply) => {
     const getById = new GetProjectByIdHandler(app.container.projectRepo);
-    const result = await getById.execute(request.params.id, request.operatorId);
+    const result = await getById.execute(
+      request.params.id,
+      request.operatorId,
+      request.organizationId,
+    );
     if (result.isErr())
-      return reply
-        .status(404)
-        .send({
-          errors: [
-            {
-              code: "NOT_FOUND",
-              message: result.error.message,
-              requestId: request.requestId,
-            },
-          ],
-        });
-    return reply
-      .status(200)
-      .send({
-        data: result.value.toJSON(),
-        meta: {
-          requestId: request.requestId,
-          timestamp: new Date().toISOString(),
-        },
+      return reply.status(404).send({
+        errors: [
+          {
+            code: "NOT_FOUND",
+            message: result.error.message,
+            requestId: request.requestId,
+          },
+        ],
       });
+    return reply.status(200).send({
+      data: result.value.toJSON(),
+      meta: {
+        requestId: request.requestId,
+        timestamp: new Date().toISOString(),
+      },
+    });
   });
 
   app.post<{ Params: { id: string } }>(
@@ -59,15 +60,13 @@ export async function projectRoutes(app: FastifyInstance): Promise<void> {
     async (request, reply) => {
       const parsed = RevisionSchema.safeParse(request.body);
       if (!parsed.success)
-        return reply
-          .status(400)
-          .send({
-            errors: parsed.error.issues.map((i) => ({
-              code: "VALIDATION_ERROR",
-              message: i.message,
-              requestId: request.requestId,
-            })),
-          });
+        return reply.status(400).send({
+          errors: parsed.error.issues.map((i) => ({
+            code: "VALIDATION_ERROR",
+            message: i.message,
+            requestId: request.requestId,
+          })),
+        });
       const requestRevision = new RequestRevisionHandler(
         app.container.projectRepo,
       );
@@ -75,6 +74,7 @@ export async function projectRoutes(app: FastifyInstance): Promise<void> {
         request.params.id,
         request.operatorId,
         parsed.data.notes,
+        request.organizationId,
       );
       if (result.isErr())
         return reply
@@ -88,15 +88,13 @@ export async function projectRoutes(app: FastifyInstance): Promise<void> {
               },
             ],
           });
-      return reply
-        .status(200)
-        .send({
-          data: result.value.toJSON(),
-          meta: {
-            requestId: request.requestId,
-            timestamp: new Date().toISOString(),
-          },
-        });
+      return reply.status(200).send({
+        data: result.value.toJSON(),
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
+      });
     },
   );
 }

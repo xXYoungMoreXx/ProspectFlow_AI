@@ -12,7 +12,11 @@ type BriefingRow = typeof schema.briefings.$inferSelect;
 export class DrizzleBriefingRepository implements BriefingRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
-  async findById(id: string, operatorId: string): Promise<Briefing | null> {
+  async findById(
+    id: string,
+    operatorId: string,
+    organizationId: string,
+  ): Promise<Briefing | null> {
     const [row] = await this.db
       .select()
       .from(schema.briefings)
@@ -20,6 +24,7 @@ export class DrizzleBriefingRepository implements BriefingRepository {
         and(
           eq(schema.briefings.id, id),
           eq(schema.briefings.operatorId, operatorId),
+          eq(schema.briefings.organizationId, organizationId),
         ),
       )
       .limit(1);
@@ -30,6 +35,7 @@ export class DrizzleBriefingRepository implements BriefingRepository {
   async findByDealId(
     dealId: string,
     operatorId: string,
+    organizationId: string,
   ): Promise<Briefing | null> {
     const [row] = await this.db
       .select()
@@ -38,6 +44,7 @@ export class DrizzleBriefingRepository implements BriefingRepository {
         and(
           eq(schema.briefings.dealId, dealId),
           eq(schema.briefings.operatorId, operatorId),
+          eq(schema.briefings.organizationId, organizationId),
         ),
       )
       .limit(1);
@@ -78,13 +85,19 @@ export class DrizzleBriefingRepository implements BriefingRepository {
 
   async listByOperator(
     operatorId: string,
+    organizationId: string,
     limit: number,
     offset = 0,
   ): Promise<Briefing[]> {
     const rows = await this.db
       .select()
       .from(schema.briefings)
-      .where(eq(schema.briefings.operatorId, operatorId))
+      .where(
+        and(
+          eq(schema.briefings.operatorId, operatorId),
+          eq(schema.briefings.organizationId, organizationId),
+        ),
+      )
       .orderBy(desc(schema.briefings.createdAt))
       .limit(limit)
       .offset(offset);

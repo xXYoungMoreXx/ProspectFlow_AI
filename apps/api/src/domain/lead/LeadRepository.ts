@@ -3,6 +3,7 @@ import type { LeadStatus } from "@agentepro/shared-types";
 
 export interface LeadFilters {
   operatorId: string;
+  organizationId: string;
   status?: LeadStatus;
   assignedAgentId?: string;
   search?: string;
@@ -17,7 +18,11 @@ export interface LeadListResult {
 }
 
 export interface LeadRepository {
-  findById(id: string, operatorId: string): Promise<Lead | null>;
+  findById(
+    id: string,
+    operatorId: string,
+    organizationId: string,
+  ): Promise<Lead | null>;
   findMany(filters: LeadFilters): Promise<LeadListResult>;
   save(lead: Lead): Promise<void>;
 }

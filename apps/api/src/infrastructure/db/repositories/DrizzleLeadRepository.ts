@@ -16,12 +16,20 @@ import type { LeadStatus, LeadSource } from "@agentepro/shared-types";
 export class DrizzleLeadRepository implements LeadRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
-  async findById(id: string, operatorId: string): Promise<Lead | null> {
+  async findById(
+    id: string,
+    operatorId: string,
+    organizationId: string,
+  ): Promise<Lead | null> {
     const [row] = await this.db
       .select()
       .from(schema.leads)
       .where(
-        and(eq(schema.leads.id, id), eq(schema.leads.operatorId, operatorId)),
+        and(
+          eq(schema.leads.id, id),
+          eq(schema.leads.operatorId, operatorId),
+          eq(schema.leads.organizationId, organizationId),
+        ),
       )
       .limit(1);
 
@@ -30,7 +38,10 @@ export class DrizzleLeadRepository implements LeadRepository {
   }
 
   async findMany(filters: LeadFilters): Promise<LeadListResult> {
-    const conditions = [eq(schema.leads.operatorId, filters.operatorId)];
+    const conditions = [
+      eq(schema.leads.operatorId, filters.operatorId),
+      eq(schema.leads.organizationId, filters.organizationId),
+    ];
     if (filters.status)
       conditions.push(eq(schema.leads.status, filters.status));
     if (filters.assignedAgentId)
@@ -39,7 +50,8 @@ export class DrizzleLeadRepository implements LeadRepository {
       );
     if (filters.search)
       conditions.push(ilike(schema.leads.contactName, `%${filters.search}%`));
-    if (filters.cursor) conditions.push(lt(schema.leads.createdAt, new Date(filters.cursor)));
+    if (filters.cursor)
+      conditions.push(lt(schema.leads.createdAt, new Date(filters.cursor)));
 
     const limit = filters.limit ?? 20;
 
@@ -61,7 +73,9 @@ export class DrizzleLeadRepository implements LeadRepository {
     return {
       leads: items.map((r) => this.toDomain(r)),
       total: countResult?.count ?? 0,
-      nextCursor: hasMore ? items[items.length - 1]!.createdAt.toISOString() : null,
+      nextCursor: hasMore
+        ? items[items.length - 1]!.createdAt.toISOString()
+        : null,
     };
   }
 

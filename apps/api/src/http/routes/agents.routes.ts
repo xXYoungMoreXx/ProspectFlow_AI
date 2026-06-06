@@ -69,6 +69,7 @@ export async function agentRoutes(app: FastifyInstance): Promise<void> {
     const getListHandler = new GetAgentsHandler(app.container.agentRepo);
     const result = await getListHandler.execute({
       operatorId: request.operatorId,
+      organizationId: request.organizationId,
       status: parsed.data.status as
         | "ACTIVE"
         | "INACTIVE"
