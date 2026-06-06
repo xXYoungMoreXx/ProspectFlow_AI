@@ -96,6 +96,13 @@ async function setupAllMocks(page: Page) {
             isSecret: false,
             isActive: true,
           },
+          {
+            key: "media.remotion.api_key",
+            category: "media",
+            value: "rmtn-••••••••",
+            isSecret: true,
+            isActive: true,
+          },
         ],
       },
     });
@@ -138,18 +145,14 @@ test.describe("Settings Hub", () => {
 
     // h2 heading (not the sidebar nav link which is an <a>)
     await expect(
-      page.locator("h2").filter({ hasText: /^Settings$/ }),
+      page.locator("h2").filter({ hasText: /^Configurações$/ }),
     ).toBeVisible();
 
-    // Tab triggers rendered by Shadcn Tabs
-    await expect(
-      page.getByRole("tab", { name: /ai providers/i }),
-    ).toBeVisible();
-    await expect(page.getByRole("tab", { name: /messaging/i })).toBeVisible();
-    await expect(
-      page.getByRole("tab", { name: /integrations/i }),
-    ).toBeVisible();
-    await expect(page.getByRole("tab", { name: /system/i })).toBeVisible();
+    // Tab triggers rendered by Shadcn Tabs (pt-BR labels)
+    await expect(page.getByRole("tab", { name: /provedores/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /mensagens/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /integra/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /sistema/i })).toBeVisible();
   });
 
   // ── AI Providers Tab ──────────────────────────────────────────────────────
@@ -199,14 +202,16 @@ test.describe("Settings Hub", () => {
   test("should show save bar when an API key is edited", async ({ page }) => {
     await page.goto("/settings");
 
-    await expect(page.getByText(/unsaved/i)).not.toBeVisible();
+    await expect(page.getByText(/não salvo/i)).not.toBeVisible();
 
     const keyInput = page.locator('[id="openai-key"]');
     await keyInput.fill("sk-newkey123456789");
 
-    await expect(page.getByText(/unsaved/i)).toBeVisible();
-    await expect(page.getByRole("button", { name: /^save$/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /discard/i })).toBeVisible();
+    await expect(page.getByText(/não salvo/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: /^salvar$/i })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /descartar/i }),
+    ).toBeVisible();
   });
 
   test("should clear pending changes on Discard", async ({ page }) => {
@@ -214,10 +219,10 @@ test.describe("Settings Hub", () => {
 
     const keyInput = page.locator('[id="openai-key"]');
     await keyInput.fill("sk-temporary");
-    await expect(page.getByText(/unsaved/i)).toBeVisible();
+    await expect(page.getByText(/não salvo/i)).toBeVisible();
 
-    await page.getByRole("button", { name: /discard/i }).click();
-    await expect(page.getByText(/unsaved/i)).not.toBeVisible();
+    await page.getByRole("button", { name: /descartar/i }).click();
+    await expect(page.getByText(/não salvo/i)).not.toBeVisible();
   });
 
   test("should call save API and clear pending on Save", async ({ page }) => {
@@ -235,10 +240,12 @@ test.describe("Settings Hub", () => {
     const keyInput = page.locator('[id="openai-key"]');
     await keyInput.fill("sk-finalnewkey");
 
-    await page.getByRole("button", { name: /^save$/i }).click();
+    await page.getByRole("button", { name: /^salvar$/i }).click();
 
     // After successful save, pending bar disappears
-    await expect(page.getByText(/unsaved/i)).not.toBeVisible({ timeout: 8000 });
+    await expect(page.getByText(/não salvo/i)).not.toBeVisible({
+      timeout: 8000,
+    });
     expect(saveCallCount).toBeGreaterThanOrEqual(1);
   });
 
@@ -246,13 +253,13 @@ test.describe("Settings Hub", () => {
 
   test("should display messaging channel cards", async ({ page }) => {
     await page.goto("/settings");
-    await page.getByRole("tab", { name: /messaging/i }).click();
+    await page.getByRole("tab", { name: /mensagens/i }).click();
 
     const title = (name: string) =>
       page.locator('[data-slot="card-title"]', { hasText: name }).first();
 
     await expect(title("WhatsApp")).toBeVisible();
-    await expect(title("Email")).toBeVisible();
+    await expect(title("E-mail")).toBeVisible();
     await expect(title("Telegram")).toBeVisible();
     await expect(page.getByText(/evolution api/i).first()).toBeVisible();
     await expect(page.getByText(/brevo/i).first()).toBeVisible();
@@ -262,7 +269,8 @@ test.describe("Settings Hub", () => {
 
   test("should display integrations cards", async ({ page }) => {
     await page.goto("/settings");
-    await page.getByRole("tab", { name: /integrations/i }).click();
+    await page.getByRole("tab", { name: /integra/i }).click({ force: true });
+    await page.waitForLoadState("domcontentloaded");
 
     const title = (name: string) =>
       page.locator('[data-slot="card-title"]', { hasText: name }).first();
@@ -276,13 +284,13 @@ test.describe("Settings Hub", () => {
 
   test("should display system configuration cards", async ({ page }) => {
     await page.goto("/settings");
-    await page.getByRole("tab", { name: /system/i }).click();
+    await page.getByRole("tab", { name: /sistema/i }).click();
 
     const title = (name: string | RegExp) =>
       page.locator('[data-slot="card-title"]', { hasText: name }).first();
 
-    await expect(title("HITL Timeouts")).toBeVisible();
-    await expect(title("Security Limits")).toBeVisible();
+    await expect(title("Timeouts de HITL")).toBeVisible();
+    await expect(title("Limites de Segurança")).toBeVisible();
     await expect(title(/backup/i)).toBeVisible();
   });
 
@@ -290,19 +298,19 @@ test.describe("Settings Hub", () => {
     page,
   }) => {
     await page.goto("/settings");
-    await page.getByRole("tab", { name: /system/i }).click();
+    await page.getByRole("tab", { name: /sistema/i }).click();
 
     await expect(
-      page.getByRole("button", { name: /export json/i }),
+      page.getByRole("button", { name: /exportar json/i }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /import json/i }),
+      page.getByRole("button", { name: /importar json/i }),
     ).toBeVisible();
   });
 
   test("should display HITL timeout values from store", async ({ page }) => {
     await page.goto("/settings");
-    await page.getByRole("tab", { name: /system/i }).click();
+    await page.getByRole("tab", { name: /sistema/i }).click();
 
     const timeoutInput = page.locator('[id="hitl-timeout"]');
     await expect(timeoutInput).toHaveValue("60");
