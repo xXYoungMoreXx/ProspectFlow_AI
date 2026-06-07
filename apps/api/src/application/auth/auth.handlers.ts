@@ -180,11 +180,13 @@ export class ResendVerificationHandler {
       .where(eq(schema.operators.email, emailLower))
       .limit(1);
 
+    const { token, tokenHash } = generateSecureToken();
+
     if (!operator || operator.emailVerified) {
+      // VULN-007 Fix: Perform dummy work to prevent timing attack
+      await hash(token, ARGON2_OPTIONS);
       return ok(undefined);
     }
-
-    const { token, tokenHash } = generateSecureToken();
 
     await this.db.insert(schema.emailVerifications).values({
       operatorId: operator.id,
@@ -221,8 +223,9 @@ export class ForgotPasswordHandler {
     const { token, tokenHash } = generateSecureToken();
 
     if (!operator || !operator.isActive) {
-      // VULN-003 Remediation: Perform dummy work
-      await hash(token, { ...ARGON2_OPTIONS, memoryCost: 2048, timeCost: 2 });
+      // VULN-004 Remediation: Perform dummy work using standard ARGON2_OPTIONS
+      // to match real hash timing and prevent email enumeration.
+      await hash(token, ARGON2_OPTIONS);
       return ok(undefined);
     }
 

@@ -296,41 +296,52 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
-  app.post("/refresh", async (request, reply) => {
-    const parsed = RefreshSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.status(400).send({
-        errors: parsed.error.issues.map((i) => ({
-          code: "VALIDATION_ERROR",
-          message: i.message,
-          field: i.path.join("."),
-          requestId: request.requestId,
-        })),
-      });
-    }
-
-    const refreshHandler = new RefreshTokenHandler(app.container.db);
-    const result = await refreshHandler.execute(parsed.data.refreshToken);
-    if (result.isErr()) {
-      return reply.status(401).send({
-        errors: [
-          {
-            code: "AUTHENTICATION_ERROR",
-            message: "Credenciais inválidas",
-            requestId: request.requestId,
-          },
-        ],
-      });
-    }
-
-    return reply.status(200).send({
-      data: result.value,
-      meta: {
-        requestId: request.requestId,
-        timestamp: new Date().toISOString(),
+  app.post(
+    "/refresh",
+    {
+      config: {
+        rateLimit: {
+          max: 10,
+          timeWindow: "5 minutes",
+        },
       },
-    });
-  });
+    },
+    async (request, reply) => {
+      const parsed = RefreshSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.status(400).send({
+          errors: parsed.error.issues.map((i) => ({
+            code: "VALIDATION_ERROR",
+            message: i.message,
+            field: i.path.join("."),
+            requestId: request.requestId,
+          })),
+        });
+      }
+
+      const refreshHandler = new RefreshTokenHandler(app.container.db);
+      const result = await refreshHandler.execute(parsed.data.refreshToken);
+      if (result.isErr()) {
+        return reply.status(401).send({
+          errors: [
+            {
+              code: "AUTHENTICATION_ERROR",
+              message: "Credenciais inválidas",
+              requestId: request.requestId,
+            },
+          ],
+        });
+      }
+
+      return reply.status(200).send({
+        data: result.value,
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    },
+  );
 
   app.delete(
     "/logout",
