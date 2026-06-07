@@ -1,10 +1,14 @@
 /**
- * SPEC-10: MediaGenerationRouter — NanaBanana → DALL-E → OllamaVision fallback chain.
+ * MediaGenerationRouter — Imagen → OpenAI (gpt-image-1/dall-e-3) → Ollama fallback chain.
  *
  * CONTRATO CRÍTICO: magic bytes validados em TODA imagem retornada.
  * Formatos aceitos: JPEG (FFD8FF), PNG (89504E47), WebP (RIFF????WEBP)
  * Imagem inválida → throws MediaGenerationError com code INVALID_IMAGE_MAGIC_BYTES.
  */
+
+import { ImagenAdapter } from "./ImagenAdapter.js";
+import { OpenAIImageAdapter } from "./OpenAIImageAdapter.js";
+import { OllamaImageAdapter } from "./OllamaImageAdapter.js";
 
 // Magic byte signatures
 const MAGIC = {
@@ -56,125 +60,11 @@ export interface GeneratedImage {
   provider: string;
 }
 
-// ─── NanaBanana ──────────────────────────────────────────────────────────────
-
-async function generateViaNanaBanana(
-  input: GenerateImageInput,
-  apiKey: string,
-): Promise<Buffer> {
-  const res = await fetch("https://api.nanabanana.ai/v1/generate", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      prompt: input.prompt,
-      width: input.width ?? 1024,
-      height: input.height ?? 1024,
-      output_format: "webp",
-    }),
-    signal: AbortSignal.timeout(60_000),
-  });
-
-  if (!res.ok)
-    throw new MediaGenerationError(
-      `NanaBanana ${res.status}`,
-      "NANABANANA_ERROR",
-    );
-  const data = (await res.json()) as {
-    image_url?: string;
-    image_base64?: string;
-  };
-
-  if (data.image_base64) return Buffer.from(data.image_base64, "base64");
-  if (data.image_url) {
-    const img = await fetch(data.image_url, {
-      signal: AbortSignal.timeout(30_000),
-    });
-    return Buffer.from(await img.arrayBuffer());
-  }
-  throw new MediaGenerationError(
-    "NanaBanana returned no image",
-    "NANABANANA_ERROR",
-  );
-}
-
-// ─── DALL-E ──────────────────────────────────────────────────────────────────
-
-async function generateViaDalle(
-  input: GenerateImageInput,
-  apiKey: string,
-): Promise<Buffer> {
-  const res = await fetch("https://api.openai.com/v1/images/generations", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "dall-e-3",
-      prompt: input.prompt,
-      size: `${input.width ?? 1024}x${input.height ?? 1024}`,
-      response_format: "b64_json",
-      n: 1,
-    }),
-    signal: AbortSignal.timeout(90_000),
-  });
-
-  if (!res.ok)
-    throw new MediaGenerationError(`DALL-E ${res.status}`, "DALLE_ERROR");
-  const data = (await res.json()) as {
-    data?: Array<{ b64_json?: string; url?: string }>;
-  };
-  const item = data.data?.[0];
-  if (!item)
-    throw new MediaGenerationError("DALL-E returned no image", "DALLE_ERROR");
-
-  if (item.b64_json) return Buffer.from(item.b64_json, "base64");
-  if (item.url) {
-    const img = await fetch(item.url, { signal: AbortSignal.timeout(30_000) });
-    return Buffer.from(await img.arrayBuffer());
-  }
-  throw new MediaGenerationError(
-    "DALL-E returned no usable image",
-    "DALLE_ERROR",
-  );
-}
-
-// ─── Ollama Vision (local fallback) ──────────────────────────────────────────
-
-async function generateViaOllama(input: GenerateImageInput): Promise<Buffer> {
-  const ollamaUrl = process.env["OLLAMA_BASE_URL"] ?? "http://localhost:11434";
-  const res = await fetch(`${ollamaUrl}/api/generate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "llava:7b",
-      prompt: `Generate image: ${input.prompt}. Return ONLY base64 PNG data, no explanation.`,
-      stream: false,
-    }),
-    signal: AbortSignal.timeout(120_000),
-  });
-
-  if (!res.ok)
-    throw new MediaGenerationError(`Ollama ${res.status}`, "OLLAMA_ERROR");
-  const data = (await res.json()) as { response?: string };
-  const b64 = data.response?.trim();
-  if (!b64)
-    throw new MediaGenerationError(
-      "Ollama returned no image data",
-      "OLLAMA_ERROR",
-    );
-
-  return Buffer.from(b64, "base64");
-}
-
 // ─── Router (fallback chain) ──────────────────────────────────────────────────
 
 export interface MediaGenSecrets {
-  getNanaBananaKey(): Promise<string | null>;
-  getDalleKey(): Promise<string | null>;
+  getImagenKey(): Promise<string | null>;
+  getOpenAIKey(): Promise<string | null>;
 }
 
 export class MediaGenerationRouter {
@@ -183,25 +73,25 @@ export class MediaGenerationRouter {
   async generate(input: GenerateImageInput): Promise<GeneratedImage> {
     const providers: Array<{ name: string; fn: () => Promise<Buffer> }> = [];
 
-    const nanaKey = await this.secrets.getNanaBananaKey();
-    if (nanaKey) {
+    const imagenKey = await this.secrets.getImagenKey();
+    if (imagenKey) {
       providers.push({
-        name: "NanaBanana",
-        fn: () => generateViaNanaBanana(input, nanaKey),
+        name: "Imagen",
+        fn: () => new ImagenAdapter(imagenKey).generate(input),
       });
     }
 
-    const dalleKey = await this.secrets.getDalleKey();
-    if (dalleKey) {
+    const openaiKey = await this.secrets.getOpenAIKey();
+    if (openaiKey) {
       providers.push({
-        name: "DALL-E",
-        fn: () => generateViaDalle(input, dalleKey),
+        name: "OpenAI",
+        fn: () => new OpenAIImageAdapter(openaiKey).generate(input),
       });
     }
 
     providers.push({
       name: "OllamaVision",
-      fn: () => generateViaOllama(input),
+      fn: () => new OllamaImageAdapter().generate(input),
     });
 
     const errors: string[] = [];
@@ -218,7 +108,6 @@ export class MediaGenerationRouter {
           e instanceof MediaGenerationError &&
           e.code === "INVALID_IMAGE_MAGIC_BYTES"
         ) {
-          // Provider returned invalid image — try next
           continue;
         }
       }
