@@ -3,6 +3,17 @@ import { test, expect } from "@playwright/test";
 // ── Shared mock setup ─────────────────────────────────────────────────────────
 
 async function setupMocks(page: import("@playwright/test").Page) {
+  // SSE — the dashboard layout opens this on every authenticated render and
+  // fires fetchPending/fetchLeads/fetchAgents on each heartbeat. Fulfilling it
+  // statically (no heartbeat events) keeps those background polls quiet so
+  // they can't race with — and overwrite — this test's mocked store data.
+  await page.route("**/api/events", (route) =>
+    route.fulfill({
+      body: 'event: connected\ndata: {"status":"ok"}\n\n',
+      headers: { "Content-Type": "text/event-stream" },
+    }),
+  );
+
   await page.route("**/api/v1/auth/login", (route) =>
     route.fulfill({
       json: {
@@ -10,6 +21,15 @@ async function setupMocks(page: import("@playwright/test").Page) {
       },
     }),
   );
+
+  // Dashboard layout fetches the agents list on mount/heartbeat — mock it so
+  // the background poll never falls through to the live API with a fake token.
+  await page.route("**/api/v1/agents", (route) => {
+    if (route.request().method() === "GET") {
+      return route.fulfill({ json: { data: [] } });
+    }
+    return route.continue();
+  });
 
   await page.route("**/api/v1/leads", (route) => {
     if (route.request().method() === "POST") {

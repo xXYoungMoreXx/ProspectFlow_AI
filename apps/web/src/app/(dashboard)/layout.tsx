@@ -203,7 +203,14 @@ export default function DashboardLayout({
       ? operatorEmail.substring(0, 2).toUpperCase()
       : "OP";
 
-  if (!mounted || !isAuthenticated) return null;
+  // Gate only on `mounted` (avoids SSR/hydration flash). Do NOT also gate on
+  // `isAuthenticated`: a transient false→true flip (e.g. a background 401 from
+  // a heartbeat poll triggering silent-refresh-then-relogin) would unmount
+  // `children` and wipe any in-progress page state (open forms, uploads).
+  // The redirect effect above already routes genuinely unauthenticated users
+  // to /login; stores guard their fetches on token presence, so a brief
+  // unauthenticated render here shows no protected data.
+  if (!mounted) return null;
 
   const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
 

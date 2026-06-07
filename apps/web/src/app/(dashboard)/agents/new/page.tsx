@@ -108,12 +108,14 @@ export default function NewAgentPage() {
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
+    // Capture files synchronously — e.target.files is a live FileList that
+    // can go stale by the time the deferred callback below runs.
+    const newFiles = Array.from(e.target.files).map((f) => ({
+      name: f.name,
+      size: f.size,
+    }));
     setIsUploading(true);
     setTimeout(() => {
-      const newFiles = Array.from(e.target.files!).map((f) => ({
-        name: f.name,
-        size: f.size,
-      }));
       setFiles((prev) => [...prev, ...newFiles]);
       setIsUploading(false);
     }, 1500);

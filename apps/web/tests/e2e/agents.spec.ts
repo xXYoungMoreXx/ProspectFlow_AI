@@ -109,8 +109,9 @@ test.describe("Agents Module E2E", () => {
       buffer: Buffer.from("mock pdf content"),
     });
 
-    // Explicitly wait for the upload to complete
-    await page.waitForTimeout(2000);
+    // Confirm the upload started (validates onChange fired) before waiting
+    // for the simulated upload to finish — avoids a fixed-timeout race.
+    await expect(page.getByText(/validando e enviando/i)).toBeVisible();
 
     // Check if file appears in list
     await expect(page.getByText("kb-document.pdf")).toBeVisible();
