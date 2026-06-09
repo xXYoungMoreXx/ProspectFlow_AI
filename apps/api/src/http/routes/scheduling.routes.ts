@@ -17,21 +17,18 @@ const BookingSchema = z.object({
 export async function schedulingRoutes(app: FastifyInstance): Promise<void> {
   app.addHook("preHandler", authMiddleware);
 
-  app.post(
-    "/booking",
-    { schema: { body: BookingSchema } },
-    async (request, reply) => {
-      const body = BookingSchema.safeParse(request.body);
-      if (!body.success) {
-        throw new ValidationError(
-          body.error.errors[0]?.message ?? "invalid body",
-        );
-      }
+  // Fastify 5 schema validation requires JSON Schema (not Zod) — manual safeParse used instead
+  app.post("/booking", {}, async (request, reply) => {
+    const body = BookingSchema.safeParse(request.body);
+    if (!body.success) {
+      throw new ValidationError(
+        body.error.errors[0]?.message ?? "invalid body",
+      );
+    }
 
-      const adapter = new CalComAdapter(app.container.secrets);
-      const result = await adapter.scheduleBooking(body.data);
+    const adapter = new CalComAdapter(app.container.secrets);
+    const result = await adapter.scheduleBooking(body.data);
 
-      return reply.status(201).send({ data: result });
-    },
-  );
+    return reply.status(201).send({ data: result });
+  });
 }
