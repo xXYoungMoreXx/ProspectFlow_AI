@@ -1,0 +1,39 @@
+# SearXNG settings for AgentePro dev environment
+use_default_settings: true
+
+general:
+  debug: false
+  instance_name: "AgentePro Search"
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "agentepro-searxng-dev-secret-key-change-in-prod"
+  base_url: false
+
+ui:
+  static_use_hash: true
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  default_lang: "pt-BR"
+
+engines:
+  - name: google
+    engine: google
+    shortcut: g
+    use_mobile_ui: false
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: ddg
+  - name: bing
+    engine: bing
+    shortcut: b
+
+outgoing:
+  request_timeout: 10.0
+  max_request_timeout: 30.0
+  useragent_suffix: ""
+  pool_connections: 100
+  pool_maxsize: 20
