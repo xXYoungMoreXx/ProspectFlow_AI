@@ -18,11 +18,30 @@ from src.agents.callbacks import RequiresApprovalException
 from src.agents.state import AgentSessionManager
 from src.config import config
 
-# Prometheus Metrics
-agent_sessions_total = Counter(
+
+# Prometheus Metrics — guard against double-import when uvicorn reload=True re-imports this module
+def _counter(name: str, documentation: str, labelnames: list[str]) -> Counter:
+    try:
+        return Counter(name, documentation, labelnames)
+    except ValueError:
+        from prometheus_client import REGISTRY  # noqa: PLC0415
+
+        return REGISTRY._names_to_collectors.get(name)  # type: ignore[return-value]
+
+
+def _histogram(name: str, documentation: str, labelnames: list[str]) -> Histogram:
+    try:
+        return Histogram(name, documentation, labelnames)
+    except ValueError:
+        from prometheus_client import REGISTRY  # noqa: PLC0415
+
+        return REGISTRY._names_to_collectors.get(name)  # type: ignore[return-value]
+
+
+agent_sessions_total = _counter(
     "agentepro_agent_sessions_total", "Total number of agent sessions executed", ["persona", "status"]
 )
-agent_session_duration_seconds = Histogram(
+agent_session_duration_seconds = _histogram(
     "agentepro_agent_session_duration_seconds", "Duration of agent sessions in seconds", ["persona"]
 )
 
