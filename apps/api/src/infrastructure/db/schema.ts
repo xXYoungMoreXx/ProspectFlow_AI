@@ -97,6 +97,16 @@ export const verificationTypeEnum = pgEnum("verification_type", [
   "EMAIL_VERIFICATION",
   "PASSWORD_RESET",
 ]);
+export const hitlActionTypeEnum = pgEnum("hitl_action_type", [
+  "APPROVE_LEAD_LIST",
+  "SEND_EXTERNAL_MESSAGE",
+  "SEND_PROPOSAL",
+  "APPROVE_MOCKUP",
+  "APPROVE_STAGING",
+  "DEPLOY_PRODUCTION",
+  "APPROVE_BRIEFING",
+  "SEND_DELIVERY",
+]);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // IAM CONTEXT
@@ -647,7 +657,7 @@ export const hitlApprovals = pgTable(
       .notNull()
       .references(() => agents.id),
     hitlLevel: text("hitl_level").notNull().default("HITL-1"),
-    actionType: text("action_type").notNull(),
+    actionType: hitlActionTypeEnum("action_type").notNull(),
     contextType: text("context_type").notNull(), // LEAD | DEAL | PROJECT
     contextId: uuid("context_id").notNull(),
     payloadPreview: jsonb("payload_preview").notNull(),
