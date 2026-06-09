@@ -23,7 +23,16 @@ class WebSearchTool(BaseTool):
 
     def _run(self, query: str, city: str = None) -> str:
         # 1. SSRF Protection: Block local IPs and hostnames
-        ssrf_blacklist = ["127.0.0.1", "10.", "192.168.", "172.16.", "169.254.", "0.0.0.0", "metadata.google.internal"]  # noqa: S104
+        ssrf_blacklist = [
+            "localhost",
+            "127.0.0.1",
+            "10.",
+            "192.168.",
+            "172.16.",
+            "169.254.",
+            "0.0.0.0",  # noqa: S104
+            "metadata.google.internal",
+        ]
         full_query = f"{query} em {city}" if city else query
 
         if any(bad in full_query.lower() for bad in ssrf_blacklist):
