@@ -151,13 +151,6 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
       interval: 15s
@@ -200,3 +193,4 @@ volumes:
   grafana_data:
   prometheus_data:
   loki_data:
+  ollama_data:
