@@ -53,7 +53,7 @@ jobs:
       - run: npm ci
 
       - name: Run Vitest
-        run: npx turbo test -- --coverage --reporter=json --outputFile=coverage.json
+        run: npx turbo test -- --coverage --coverage.thresholds.branches=80 --reporter=json --outputFile=coverage.json
 
       - name: Upload Coverage
         if: always()
@@ -112,7 +112,7 @@ jobs:
           python -m pytest tests/ -v --tb=short \
             --cov=src \
             --cov-report=term-missing \
-            --cov-fail-under=50
+            --cov-fail-under=80
 
   # ── E2E Tests (Playwright + real stack) ────────────────────────────
   test-e2e:
