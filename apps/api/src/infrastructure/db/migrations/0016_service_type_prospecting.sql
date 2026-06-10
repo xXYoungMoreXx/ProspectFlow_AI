@@ -1,0 +1,2 @@
+ALTER TABLE prospecting_configs
+  ADD COLUMN IF NOT EXISTS service_type text NOT NULL DEFAULT 'SITE_CREATION';
