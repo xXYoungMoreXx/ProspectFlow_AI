@@ -74,12 +74,26 @@ export const DealStatus = {
 export type DealStatus = (typeof DealStatus)[keyof typeof DealStatus];
 
 export const ServiceType = {
-  WEBSITE: "WEBSITE",
-  TRAFFIC: "TRAFFIC",
+  SITE_CREATION: "SITE_CREATION",
+  TRAFFIC_MANAGEMENT: "TRAFFIC_MANAGEMENT",
   SOCIAL_MEDIA: "SOCIAL_MEDIA",
-  OTHER: "OTHER",
+  FULL_DIGITAL: "FULL_DIGITAL",
 } as const;
 export type ServiceType = (typeof ServiceType)[keyof typeof ServiceType];
+
+export const SERVICE_TYPE_LABELS: Record<string, string> = {
+  SITE_CREATION: "Criação de Site",
+  TRAFFIC_MANAGEMENT: "Gestão de Tráfego",
+  SOCIAL_MEDIA: "Social Media",
+  FULL_DIGITAL: "Full Digital (Completo)",
+};
+
+export const SERVICE_TYPES = [
+  "SITE_CREATION",
+  "TRAFFIC_MANAGEMENT",
+  "SOCIAL_MEDIA",
+  "FULL_DIGITAL",
+] as const;
 
 // ─── Project Domain ──────────────────────────────────────────────────────────
 

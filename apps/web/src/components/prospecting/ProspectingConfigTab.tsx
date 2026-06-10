@@ -11,6 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { SERVICE_TYPE_LABELS, SERVICE_TYPES } from "@agentepro/shared-types";
 import { Loader2, X, Plus } from "lucide-react";
 
 const ALL_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
@@ -26,6 +34,7 @@ interface ConfigData {
   mapsQuotaLimit: number | null;
   lastRunAt: string | null;
   nextRunAt: string | null;
+  serviceType?: string;
 }
 
 function formatDateTime(iso: string | null, neverLabel: string): string {
@@ -54,6 +63,7 @@ export function ProspectingConfigTab() {
 
   const [categories, setCategories] = useState<string[]>([]);
   const [catInput, setCatInput] = useState("");
+  const [serviceType, setServiceType] = useState<string>("SITE_CREATION");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [radiusKm, setRadiusKm] = useState(20);
@@ -78,6 +88,7 @@ export function ProspectingConfigTab() {
     setScheduleDays(
       (remote.scheduleDays as Day[]) ?? ["mon", "tue", "wed", "thu", "fri"],
     );
+    if (remote.serviceType) setServiceType(remote.serviceType);
   }, [remote]);
 
   const saveMutation = useMutation({
@@ -89,6 +100,7 @@ export function ProspectingConfigTab() {
           minScore,
           scheduleTime,
           scheduleDays,
+          serviceType,
         },
         token!,
       ),
@@ -231,6 +243,33 @@ export function ProspectingConfigTab() {
                 className="h-8 text-sm"
               />
             </div>
+          </div>
+
+          {/* Service Type */}
+          <div className="space-y-2">
+            <Label htmlFor="service-type">
+              {t("config.serviceType") ?? "Serviço Alvo"}
+            </Label>
+            <Select
+              value={serviceType}
+              onValueChange={(v) => {
+                if (v != null) setServiceType(v);
+              }}
+            >
+              <SelectTrigger id="service-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SERVICE_TYPES.map((st) => (
+                  <SelectItem key={st} value={st}>
+                    {SERVICE_TYPE_LABELS[st]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Define a fórmula de qualificação dos leads prospectados.
+            </p>
           </div>
 
           {/* Radius + MinScore */}

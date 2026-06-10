@@ -3,6 +3,7 @@ import { z } from "zod";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { eq, and, desc } from "drizzle-orm";
 import * as schema from "../../infrastructure/db/schema.js";
+import type { ServiceType } from "@agentepro/shared-types";
 
 type LeadRow = typeof schema.leads.$inferSelect;
 
@@ -36,6 +37,14 @@ const UpdateConfigSchema = z.object({
   scheduleDays: z
     .array(z.enum(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]))
     .optional(),
+  serviceType: z
+    .enum([
+      "SITE_CREATION",
+      "TRAFFIC_MANAGEMENT",
+      "SOCIAL_MEDIA",
+      "FULL_DIGITAL",
+    ])
+    .optional(),
 });
 
 // ─── Config key helpers ──────────────────────────────────────────────────────
@@ -52,6 +61,7 @@ const CONFIG_KEYS = {
   next_run_at: "prospecting.next_run_at",
   maps_quota_remaining: "prospecting.maps_quota_remaining",
   maps_quota_limit: "prospecting.maps_quota_limit",
+  service_type: "prospecting.service_type",
 } as const;
 
 async function getConfigValue(
@@ -128,6 +138,15 @@ export async function prospectingRoutes(app: FastifyInstance): Promise<void> {
     }
 
     const correlationId = request.requestId;
+
+    // Read persisted serviceType so the Python runtime scores correctly
+    const serviceTypeRaw = await getConfigValue(
+      app.container.db,
+      request.operatorId,
+      CONFIG_KEYS.service_type,
+    );
+    const serviceType = (serviceTypeRaw ?? "FULL_DIGITAL") as ServiceType;
+
     const jobId = await app.container.queue.enqueueAgentTask(
       "hunter.search",
       {
@@ -136,6 +155,7 @@ export async function prospectingRoutes(app: FastifyInstance): Promise<void> {
         region: parsed.data.region,
         minScore: parsed.data.minScore,
         limit: parsed.data.limit,
+        serviceType,
       },
       correlationId,
     );
@@ -363,20 +383,34 @@ export async function prospectingRoutes(app: FastifyInstance): Promise<void> {
       hitlRows.map((r: { contextId: string }) => r.contextId),
     );
 
-    const leads = (rows as LeadRow[]).map((row) => ({
-      id: row.id,
-      contactName: row.contactName
-        ? `${row.contactName.slice(0, 3)}***`
-        : "***",
-      contactPhone: maskPhone(row.contactPhone),
-      contactEmail: maskEmail(row.contactEmail),
-      businessName: row.contactCompany ?? "—",
-      qualificationScore: row.qualificationScore,
-      source: row.source,
-      companyData: row.companyData,
-      pendingHitl: pendingHitlIds.has(row.id),
-      createdAt: row.createdAt.toISOString(),
-    }));
+    const leads = (rows as LeadRow[]).map((row) => {
+      const cd = (row.companyData ?? {}) as Record<string, unknown>;
+      return {
+        id: row.id,
+        contactName: row.contactName
+          ? `${row.contactName.slice(0, 3)}***`
+          : "***",
+        contactPhone: maskPhone(row.contactPhone),
+        contactEmail: maskEmail(row.contactEmail),
+        businessName: row.contactCompany ?? "—",
+        qualificationScore: row.qualificationScore,
+        source: row.source,
+        serviceType: (cd["serviceType"] as ServiceType | undefined) ?? null,
+        companyData: row.companyData,
+        // ── Extended Google Places enrichment (SPEC-03 v2.1) ─────────────────
+        businessStatus: (cd["businessStatus"] as string | undefined) ?? null,
+        priceLevel: (cd["priceLevel"] as string | undefined) ?? null,
+        editorialSummary:
+          (cd["editorialSummary"] as string | undefined) ?? null,
+        categories: (cd["categories"] as string[] | undefined) ?? [],
+        openingHoursText:
+          (cd["openingHoursText"] as string[] | undefined) ?? [],
+        photoUris: (cd["photoUris"] as string[] | undefined) ?? [],
+        googleMapsUri: (cd["googleMapsUri"] as string | undefined) ?? null,
+        pendingHitl: pendingHitlIds.has(row.id),
+        createdAt: row.createdAt.toISOString(),
+      };
+    });
 
     return reply.status(200).send({
       data: { leads },
@@ -408,6 +442,7 @@ export async function prospectingRoutes(app: FastifyInstance): Promise<void> {
       nextRunAt,
       mapsQuotaRemainingRaw,
       mapsQuotaLimitRaw,
+      serviceTypeRaw,
     ] = await Promise.all([
       getConfigValue(db, opId, CONFIG_KEYS.categories),
       getConfigValue(db, opId, CONFIG_KEYS.region_city),
@@ -420,6 +455,7 @@ export async function prospectingRoutes(app: FastifyInstance): Promise<void> {
       getConfigValue(db, opId, CONFIG_KEYS.next_run_at),
       getConfigValue(db, opId, CONFIG_KEYS.maps_quota_remaining),
       getConfigValue(db, opId, CONFIG_KEYS.maps_quota_limit),
+      getConfigValue(db, opId, CONFIG_KEYS.service_type),
     ]);
 
     return reply.status(200).send({
@@ -437,6 +473,7 @@ export async function prospectingRoutes(app: FastifyInstance): Promise<void> {
         scheduleDays: scheduleDaysRaw
           ? (JSON.parse(scheduleDaysRaw) as string[])
           : ["mon", "tue", "wed", "thu", "fri"],
+        serviceType: (serviceTypeRaw ?? "SITE_CREATION") as ServiceType,
         mapsQuotaRemaining: mapsQuotaRemainingRaw
           ? parseInt(mapsQuotaRemainingRaw, 10)
           : null,
@@ -534,6 +571,16 @@ export async function prospectingRoutes(app: FastifyInstance): Promise<void> {
           opId,
           CONFIG_KEYS.schedule_days,
           JSON.stringify(parsed.data.scheduleDays),
+        ),
+      );
+    }
+    if (parsed.data.serviceType !== undefined) {
+      updates.push(
+        upsertConfigValue(
+          db,
+          opId,
+          CONFIG_KEYS.service_type,
+          parsed.data.serviceType,
         ),
       );
     }
