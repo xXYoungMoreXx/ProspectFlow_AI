@@ -428,6 +428,51 @@ export async function agentRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
+  // POST /api/v1/agents/:id/skills/from-catalog
+  app.post<{ Params: { id: string } }>(
+    "/:id/skills/from-catalog",
+    async (request, reply) => {
+      const { catalogSkillId, subAgentId } = request.body as {
+        catalogSkillId?: string;
+        subAgentId?: string;
+      };
+
+      if (!catalogSkillId) {
+        return reply.status(400).send({
+          errors: [
+            {
+              code: "VALIDATION_ERROR",
+              message: "catalogSkillId is required",
+              field: "catalogSkillId",
+              requestId: request.requestId,
+            },
+          ],
+        });
+      }
+
+      const { AddSkillFromCatalogHandler } =
+        await import("../../application/agent/skill-catalog.handlers.js");
+
+      const handler = new AddSkillFromCatalogHandler(
+        (app as any).container.database,
+      );
+      const result = await handler.execute({
+        agentId: request.params.id,
+        catalogSkillId,
+        operatorId: request.operatorId,
+        subAgentId,
+      });
+
+      return reply.status(201).send({
+        data: result.data,
+        meta: {
+          requestId: request.requestId,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    },
+  );
+
   // ═══════════════════════════════════════════════════════════════════════════
   // RULE SUB-RESOURCES
   // ═══════════════════════════════════════════════════════════════════════════
