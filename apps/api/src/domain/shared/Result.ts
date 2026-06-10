@@ -137,3 +137,10 @@ export class InsufficientBudgetError extends DomainError {
     this.name = "InsufficientBudgetError";
   }
 }
+
+export class SecurityError extends DomainError {
+  constructor(message: string) {
+    super("SECURITY_ERROR", message);
+    this.name = "SecurityError";
+  }
+}
