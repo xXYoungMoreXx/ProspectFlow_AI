@@ -67,6 +67,11 @@ interface Place {
   reviewsCount: number | null;
   types: string[];
   mapsUrl: string;
+  enrichmentData?: {
+    photoUris?: string[];
+    editorialSummary?: string;
+    categories?: string[];
+  };
 }
 
 export default function ProspectingPage() {
@@ -332,6 +337,50 @@ export default function ProspectingPage() {
                                 <ExternalLink className="w-3.5 h-3.5" />
                               </a>
                             </div>
+
+                            {/* Photos carousel */}
+                            {place.enrichmentData?.photoUris &&
+                              place.enrichmentData.photoUris.length > 0 && (
+                                <div className="flex gap-2 overflow-x-auto pb-2">
+                                  {place.enrichmentData.photoUris
+                                    .slice(0, 5)
+                                    .map((uri, i) => (
+                                      <img
+                                        key={i}
+                                        src={uri}
+                                        alt={`Foto ${i + 1}`}
+                                        className="h-20 w-28 object-cover rounded flex-shrink-0"
+                                        loading="lazy"
+                                      />
+                                    ))}
+                                </div>
+                              )}
+
+                            {/* Editorial summary */}
+                            {place.enrichmentData?.editorialSummary && (
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {place.enrichmentData.editorialSummary}
+                              </p>
+                            )}
+
+                            {/* Categories */}
+                            {place.enrichmentData?.categories &&
+                              place.enrichmentData.categories.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  {place.enrichmentData.categories
+                                    .slice(0, 3)
+                                    .map((cat) => (
+                                      <Badge
+                                        key={cat}
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
+                                        {cat}
+                                      </Badge>
+                                    ))}
+                                </div>
+                              )}
+
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <MapPin className="w-3 h-3 shrink-0" />
                               <span className="line-clamp-1">
