@@ -967,6 +967,87 @@ export async function agentRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MCP SERVER SUB-RESOURCES  (SPEC-13)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // GET /api/v1/agents/:id/mcp-servers
+  app.get<{ Params: { id: string } }>(
+    "/:id/mcp-servers",
+    async (request, reply) => {
+      const rows = await app.container.db
+        .select()
+        .from(schema.mcpServers)
+        .where(eq(schema.mcpServers.agentId, request.params.id))
+        .execute();
+      return reply.send({ data: rows });
+    },
+  );
+
+  // POST /api/v1/agents/:id/mcp-servers
+  app.post<{ Params: { id: string } }>(
+    "/:id/mcp-servers",
+    async (request, reply) => {
+      const { AddMCPServerHandler } =
+        await import("../../application/agent/mcp-server.handlers.js");
+      const handler = new AddMCPServerHandler(app.container.db);
+      const result = await handler.execute({
+        agentId: request.params.id,
+        ...(request.body as object),
+      } as Parameters<InstanceType<typeof AddMCPServerHandler>["execute"]>[0]);
+      return reply.status(201).send(result);
+    },
+  );
+
+  // POST /api/v1/agents/:id/mcp-servers/:mcpId/test
+  app.post<{ Params: { id: string; mcpId: string } }>(
+    "/:id/mcp-servers/:mcpId/test",
+    async (request, reply) => {
+      const { TestMCPServerHandler } =
+        await import("../../application/agent/mcp-server.handlers.js");
+      const handler = new TestMCPServerHandler(app.container.db);
+      return reply.send(
+        await handler.execute({
+          agentId: request.params.id,
+          mcpId: request.params.mcpId,
+        }),
+      );
+    },
+  );
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WORKFLOW DEFINITION  (SPEC-13)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // GET /api/v1/agents/:id/workflow
+  app.get<{ Params: { id: string } }>(
+    "/:id/workflow",
+    async (request, reply) => {
+      const { GetWorkflowHandler } =
+        await import("../../application/agent/workflow.handlers.js");
+      return reply.send(
+        await new GetWorkflowHandler(app.container.db).execute({
+          agentId: request.params.id,
+        }),
+      );
+    },
+  );
+
+  // PUT /api/v1/agents/:id/workflow
+  app.put<{ Params: { id: string } }>(
+    "/:id/workflow",
+    async (request, reply) => {
+      const { SaveWorkflowHandler } =
+        await import("../../application/agent/workflow.handlers.js");
+      const result = await new SaveWorkflowHandler(app.container.db).execute({
+        agentId: request.params.id,
+        workflow:
+          request.body as import("../../domain/agent/WorkflowDefinition.js").WorkflowDefinition,
+      });
+      return reply.send(result);
+    },
+  );
+
   // POST /api/v1/agents/:id/rag/query
   app.post<{ Params: { id: string } }>(
     "/:id/rag/query",
