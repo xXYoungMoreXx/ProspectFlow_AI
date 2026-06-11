@@ -155,6 +155,9 @@ jobs:
           # security-extended: OWASP A01-A10 + CWE top 25
           # security-and-quality: + code quality gates
           queries: security-extended,security-and-quality
+          # Exclude node_modules and build artifacts — avoids false positives from
+          # vendored Go binaries (esbuild) and generated output directories
+          config-file: .github/codeql/codeql-config.yml
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v4

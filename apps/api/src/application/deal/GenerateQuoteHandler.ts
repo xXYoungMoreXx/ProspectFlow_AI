@@ -65,7 +65,7 @@ Respond strictly in JSON format with the following structure:
 }`;
 
     // 3. Call LLM
-    let llmResponseText = "";
+    let llmResponseText: string;
     try {
       const llmResult = await this.llm.complete({
         provider: "OPENAI",
