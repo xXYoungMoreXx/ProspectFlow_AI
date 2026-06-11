@@ -166,9 +166,9 @@ jobs:
       - run: npm ci
 
       - name: Apply database migrations
-        # drizzle-kit exits 1 on PostgreSQL NOTICE messages (IF NOT EXISTS skips) even
-        # when migrations succeed; || true prevents false-blocking E2E job
-        run: npm run db:migrate -w @agentepro/api || true
+        # Uses programmatic migrator with onnotice:()=>{} to silence IF NOT EXISTS
+        # notices that cause drizzle-kit 0.31 CLI to exit 1.
+        run: npm run db:migrate:silent -w @agentepro/api
 
       - name: Build shared-types
         run: npm run build -w @agentepro/shared-types
