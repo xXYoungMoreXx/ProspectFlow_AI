@@ -41,13 +41,12 @@ export default defineConfig({
 
   /**
    * Web server configuration.
-   * - CI: uses standalone output (next.config.ts output:'standalone').
-   *   `next start` does not work with standalone — must use server.js directly.
+   * - CI: runs `next start` against the pre-built .next/ directory.
    *   All API calls are mocked with page.route(), so no backend is needed.
    * - Local: reuses the already-running dev server on :3000.
    */
   webServer: {
-    command: isCI ? "node .next/standalone/server.js" : "npx next dev",
+    command: isCI ? "npx next start" : "npx next dev",
     url: "http://localhost:3000",
     reuseExistingServer: !isCI,
     timeout: 120 * 1000,

@@ -182,12 +182,6 @@ jobs:
       - name: Build Next.js for Playwright
         run: npm run build -w @agentepro/web
 
-      - name: Prepare Next.js standalone assets
-        run: |
-          mkdir -p apps/web/.next/standalone/.next
-          cp -r apps/web/.next/static apps/web/.next/standalone/.next/static
-          cp -r apps/web/public apps/web/.next/standalone/public
-
       - name: Install Playwright Browsers
         working-directory: apps/web
         run: npx playwright install --with-deps chromium
