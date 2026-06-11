@@ -73,7 +73,7 @@ class AgentSessionManager:
                 # Verify connection
                 cls._redis.ping()
                 logger.info("AgentSessionManager connected to Redis at %s", config.redis_url)
-            except (redis.ConnectionError, redis.TimeoutError) as e:
+            except Exception as e:
                 logger.warning("Redis unavailable for session management, falling back to in-memory: %s", str(e))
                 cls._redis = None
         return cls._redis
