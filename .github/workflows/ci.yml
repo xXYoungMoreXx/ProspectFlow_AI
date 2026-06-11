@@ -170,6 +170,9 @@ jobs:
         # when migrations succeed; || true prevents false-blocking E2E job
         run: npm run db:migrate -w @agentepro/api || true
 
+      - name: Build shared-types
+        run: npm run build -w @agentepro/shared-types
+
       - name: Start API server (background)
         run: npm run dev -w @agentepro/api &
 
