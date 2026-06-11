@@ -73,10 +73,10 @@ export const dealStatusEnum = pgEnum("deal_status", [
   "CANCELLED",
 ]);
 export const serviceTypeEnum = pgEnum("service_type", [
-  "WEBSITE",
-  "TRAFFIC",
+  "SITE_CREATION",
+  "TRAFFIC_MANAGEMENT",
   "SOCIAL_MEDIA",
-  "OTHER",
+  "FULL_DIGITAL",
 ]);
 export const projectStatusEnum = pgEnum("project_status", [
   "PLANNING",
@@ -268,6 +268,11 @@ export const mcpServers = pgTable("mcp_servers", {
   name: text("name").notNull(),
   url: text("url").notNull(),
   authRef: text("auth_ref"),
+  allowedTools: text("allowed_tools").array().notNull().default([]),
+  allowedSubAgentIds: uuid("allowed_sub_agent_ids")
+    .array()
+    .notNull()
+    .default([]),
   isEnabled: boolean("is_enabled").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -807,6 +812,38 @@ export const organizations = pgTable("organizations", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// SPEC-13: Skill Catalog — builtin seeds + per-agent copies
+export const skillCatalog = pgTable("skill_catalog", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description").notNull(),
+  skillType: text("skill_type").notNull(),
+  configTemplate: jsonb("config_template").notNull().default({}),
+  serviceTypes: text("service_types").array().notNull().default([]),
+  personaHints: text("persona_hints").array().notNull().default([]),
+  isBuiltin: boolean("is_builtin").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// SPEC-13: Workflow Definitions — DAG per orchestrator agent
+export const workflowDefinitions = pgTable("workflow_definitions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  agentId: uuid("agent_id")
+    .notNull()
+    .unique()
+    .references(() => agents.id, { onDelete: "cascade" }),
+  definition: jsonb("definition").notNull().default({}),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

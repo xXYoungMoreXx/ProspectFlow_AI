@@ -116,7 +116,8 @@ export class DrizzleHITLRepository implements HITLApprovalRepository {
         operatorId: json.operatorId,
         agentId: json.agentId,
         hitlLevel: json.hitlLevel,
-        actionType: json.actionType,
+        actionType:
+          json.actionType as (typeof schema.hitlApprovals.$inferInsert)["actionType"],
         contextType: json.contextType,
         contextId: json.contextId,
         payloadPreview: json.payloadPreview,

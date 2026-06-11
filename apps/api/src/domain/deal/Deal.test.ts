@@ -7,7 +7,7 @@ function makeDeal(overrides: Partial<Parameters<typeof Deal.create>[0]> = {}) {
     id: randomUUID(),
     leadId: randomUUID(),
     operatorId: randomUUID(),
-    serviceType: "WEBSITE",
+    serviceType: "SITE_CREATION",
     briefing: {},
     basePriceCents: 150_000,
     ...overrides,
