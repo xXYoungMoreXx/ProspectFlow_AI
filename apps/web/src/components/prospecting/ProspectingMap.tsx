@@ -35,12 +35,12 @@ export function ProspectingMap({ city, state, radiusKm }: Props) {
   const [coords, setCoords] = useState<[number, number]>(BRAZIL_CENTER);
 
   useEffect(() => {
-    if (city.trim().length < 2) {
-      setCoords(BRAZIL_CENTER);
-      return;
-    }
-
     const timer = setTimeout(async () => {
+      if (city.trim().length < 2) {
+        setCoords(BRAZIL_CENTER);
+        return;
+      }
+
       try {
         const params = new URLSearchParams({
           city: city.trim(),

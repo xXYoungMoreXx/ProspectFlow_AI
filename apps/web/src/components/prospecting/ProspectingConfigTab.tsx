@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, startTransition } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/stores/auth-store";
@@ -79,16 +79,18 @@ export function ProspectingConfigTab() {
 
   useEffect(() => {
     if (!remote) return;
-    setCategories(remote.categories ?? []);
-    setCity(remote.region?.city ?? "");
-    setState(remote.region?.state ?? "");
-    setRadiusKm(remote.region?.radiusKm ?? 20);
-    setMinScore(remote.minScore ?? 40);
-    setScheduleTime(remote.scheduleTime ?? "09:00");
-    setScheduleDays(
-      (remote.scheduleDays as Day[]) ?? ["mon", "tue", "wed", "thu", "fri"],
-    );
-    if (remote.serviceType) setServiceType(remote.serviceType);
+    startTransition(() => {
+      setCategories(remote.categories ?? []);
+      setCity(remote.region?.city ?? "");
+      setState(remote.region?.state ?? "");
+      setRadiusKm(remote.region?.radiusKm ?? 20);
+      setMinScore(remote.minScore ?? 40);
+      setScheduleTime(remote.scheduleTime ?? "09:00");
+      setScheduleDays(
+        (remote.scheduleDays as Day[]) ?? ["mon", "tue", "wed", "thu", "fri"],
+      );
+      if (remote.serviceType) setServiceType(remote.serviceType);
+    });
   }, [remote]);
 
   const saveMutation = useMutation({
