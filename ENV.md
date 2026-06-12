@@ -611,3 +611,29 @@ LOG_LEVEL=debug
 OPERATOR_NAME="Seu Nome — Sua Agência"
 OPERATOR_EMAIL=voce@email.com
 ```
+
+## Internal bridge + deploy real (2026-06-12)
+
+Adicionados na correcao B1/B2/B5 do pipeline E2E:
+
+```bash
+# Node (apps/api) — secret das rotas /api/v1/internal/* (messages + heygen)
+INTERNAL_API_TOKEN=<random-64-hex>
+
+# Python (apps/agent-runtime/.env) — DEVE ser identico ao INTERNAL_API_TOKEN
+API_TOKEN=<mesmo valor>
+API_URL=http://localhost:3001
+
+# Hunter (places_search.py le via os.getenv no processo do runtime)
+GOOGLE_MAPS_API_KEY=
+
+# Deploy fallback chain (Vercel -> CF Pages -> Render -> Netlify)
+VERCEL_TOKEN=                 # primario — deploy REAL via API v13
+CF_ACCOUNT_ID=                # CF Pages: desabilitado ate upload flow (err honesto)
+CF_API_TOKEN=
+NETLIFY_TOKEN=                # deploy REAL via file-digest API
+RENDER_API_KEY=
+
+# QA Lighthouse (PageSpeed Insights v5)
+PAGESPEED_API_KEY=
+```
