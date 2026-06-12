@@ -115,3 +115,6 @@ graphify-out/
 apps/api/test.cjs
 # agent output / analysis artifacts that shouldn't be tracked
 apps/api/test_output.txt
+
+# Playwright MCP artifacts
+.playwright-mcp/

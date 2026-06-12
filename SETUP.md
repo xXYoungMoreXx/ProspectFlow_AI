@@ -152,7 +152,7 @@ TELEGRAM_BOT_TOKEN=1234567890:ABCDefghijklmnopqrstuvwxyz
 3. Copie o valor de `chat.id` da resposta
 
 ```dotenv
-TELEGRAM_OPERATOR_CHAT_ID=123456789
+TELEGRAM_CHAT_ID=123456789
 ```
 
 ---
@@ -175,7 +175,7 @@ http://localhost:8080
 ```dotenv
 EVOLUTION_API_URL=http://localhost:8080
 EVOLUTION_API_KEY=sua-chave-do-painel-evolution
-EVOLUTION_INSTANCE_NAME=agentepro
+WPP_INSTANCE=agentepro
 ```
 
 > A chave de API aparece nas configurações do painel Evolution API.
@@ -276,12 +276,12 @@ GEMINI_API_KEY=AIza...
 
 # ── Telegram ──────────────────────────────────────────────────────────
 TELEGRAM_BOT_TOKEN=
-TELEGRAM_OPERATOR_CHAT_ID=
+TELEGRAM_CHAT_ID=
 
 # ── WhatsApp ──────────────────────────────────────────────────────────
 EVOLUTION_API_URL=http://localhost:8080
 EVOLUTION_API_KEY=
-EVOLUTION_INSTANCE_NAME=agentepro
+WPP_INSTANCE=agentepro
 
 # ── Google Maps ───────────────────────────────────────────────────────
 GOOGLE_MAPS_API_KEY=
@@ -294,8 +294,14 @@ CALCOM_DEFAULT_EVENT_SLUG=demo-30min
 HEYGEN_API_KEY=
 HEYGEN_AVATAR_ID=
 
+# ── Deploy dos sites gerados ─────────────────────────────────────────
+VERCEL_TOKEN=
+NETLIFY_TOKEN=
+
 # ── Segurança ─────────────────────────────────────────────────────────
 SETTINGS_ENCRYPTION_KEY=
+# Igual ao API_TOKEN em apps/agent-runtime/.env (rotas /api/v1/internal/*)
+INTERNAL_API_TOKEN=
 ```
 
 ---
