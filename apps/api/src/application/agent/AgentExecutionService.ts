@@ -190,6 +190,9 @@ export class AgentExecutionService {
           );
           if (project) {
             project.storeMockup(mockupHtml, mockupUrl);
+            // F2: persiste o design completo (copy, palette, image_prompts) —
+            // o dispatch do builder.build precisa dele após o APPROVE_MOCKUP
+            project.storeDesignResult(r ?? {});
             await this.projectRepo.save(project);
           }
         }
