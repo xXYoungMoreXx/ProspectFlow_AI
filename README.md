@@ -322,23 +322,9 @@ O código está pronto, mas estas integrações só funcionam com as chaves do o
 `EVOLUTION_API_*` (WhatsApp), `BREVO_API_KEY` (email). Sem elas, cada etapa retorna **erro explícito**
 (nunca sucesso simulado).
 
-### 2. Cloudflare Pages desabilitado na fallback chain de deploy
-
-O adapter retorna erro honesto até implementarmos o fluxo completo de Direct Upload
-(manifest + upload de assets com JWT). Deploy hoje: **Vercel (primário) → Netlify (fallback)**, ambos reais.
-
-### 3. Imagens geradas por IA ainda não entram automaticamente no site
-
-O sub-agente IMAGER gera os prompts e o `MediaGenerationRouter` (Node) gera imagens sob demanda
-(rota `/api/v1/media`), mas o pipeline ainda não conecta os dois entre as fases de design e build.
-O prompt do CODER já aceita `image_urls` quando o wiring for feito; sem imagens, o site usa
-visuais CSS/SVG (gradientes, formas).
-
-### 4. Mismatch de secret no aceite de contrato
-
-O link de proposta (skill `contract_notifier`, Python) assina o JWT com `API_TOKEN`, mas a rota pública
-de aceite valida com `JWT_SECRET`. Até alinhar os dois, defina `JWT_SECRET` com o mesmo valor do
-`API_TOKEN` no `.env`.
+> Também resolvidos (2026-06-12): Cloudflare Pages com Direct Upload real (fallback chain completa
+> Vercel → CF → Render → Netlify), imagens do IMAGER geradas automaticamente no APPROVE_MOCKUP e
+> incluídas no site/deploy, e secret do aceite de contrato alinhado (`JWT_SECRET ?? INTERNAL_API_TOKEN`).
 
 ---
 
