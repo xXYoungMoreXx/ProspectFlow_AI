@@ -14,6 +14,7 @@ import type { ProjectRepository } from "../../domain/project/ProjectRepository.j
 import type { DeploymentRouter } from "../../infrastructure/deploy/DeploymentRouter.js";
 import { hitlPendingGauge } from "../../infrastructure/metrics/registry.js";
 import type { BullMQAdapter } from "../../infrastructure/queue/BullMQAdapter.js";
+import type { MediaGenerationRouter } from "../../infrastructure/media/MediaGenerationRouter.js";
 import { SchedulePostDeliveryFollowUpUseCase } from "../project/SchedulePostDeliveryFollowUpUseCase.js";
 
 export class GetPendingApprovalsHandler {
@@ -33,6 +34,7 @@ export class ApproveHITLHandler {
     private readonly projectRepo?: ProjectRepository,
     private readonly deploymentRouter?: DeploymentRouter,
     private readonly queue?: BullMQAdapter,
+    private readonly mediaRouter?: MediaGenerationRouter,
   ) {}
 
   async execute(
@@ -83,6 +85,54 @@ export class ApproveHITLHandler {
       const projectId = (approval.payloadPreview as Record<string, unknown>)?.[
         "projectId"
       ] as string | undefined;
+
+      // F2: monta o design_result persistido + gera imagens dos prompts do IMAGER
+      let designResult: Record<string, unknown> = {};
+      let briefing: Record<string, unknown> = {};
+      if (projectId && this.projectRepo) {
+        const project = await this.projectRepo.findById(
+          projectId,
+          operatorId,
+          organizationId,
+        );
+        if (project) {
+          briefing = project.briefing;
+          designResult = (project.deliverableMeta["designResult"] ??
+            {}) as Record<string, unknown>;
+          if (project.mockupHtml && !designResult["mockup_html"]) {
+            designResult = { ...designResult, mockup_html: project.mockupHtml };
+          }
+
+          const prompts =
+            (designResult["image_prompts"] as string[] | undefined) ?? [];
+          if (this.mediaRouter && prompts.length > 0) {
+            const assets: Array<{ path: string; base64: string }> = [];
+            for (const [i, prompt] of prompts.slice(0, 4).entries()) {
+              try {
+                const img = await this.mediaRouter.generate({ prompt });
+                assets.push({
+                  path: `assets/img-${i + 1}.${img.format}`,
+                  base64: img.buffer.toString("base64"),
+                });
+              } catch (imgErr) {
+                console.warn(
+                  `[ApproveHITLHandler] image generation failed for prompt ${i + 1}:`,
+                  imgErr,
+                );
+              }
+            }
+            if (assets.length > 0) {
+              project.storeAssets(assets);
+              await this.projectRepo.save(project);
+              designResult = {
+                ...designResult,
+                image_urls: assets.map((a) => a.path),
+              };
+            }
+          }
+        }
+      }
+
       try {
         const runtimeUrl =
           process.env["AGENT_RUNTIME_URL"] || "http://localhost:8001";
@@ -95,7 +145,11 @@ export class ApproveHITLHandler {
             project_id: projectId,
             operator_id: operatorId,
             correlation_id: approval.id,
-            payload: { approved: true },
+            payload: {
+              approved: true,
+              briefing,
+              design_result: designResult,
+            },
           }),
           signal: AbortSignal.timeout(10_000),
         });
@@ -159,6 +213,18 @@ export class ApproveHITLHandler {
     try {
       tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "agentepro-deploy-"));
       await fs.writeFile(path.join(tmpDir, "index.html"), html, "utf8");
+
+      // F2: escreve as imagens geradas junto do HTML — os adapters de deploy
+      // sobem o diretório recursivamente, então assets/img-N.* vão ao ar também
+      const assets = (project.deliverableMeta["assets"] ?? []) as Array<{
+        path: string;
+        base64: string;
+      }>;
+      for (const asset of assets) {
+        const assetPath = path.join(tmpDir, asset.path);
+        await fs.mkdir(path.dirname(assetPath), { recursive: true });
+        await fs.writeFile(assetPath, Buffer.from(asset.base64, "base64"));
+      }
 
       const deployResult = await this.deploymentRouter!.deploy({
         projectId,
