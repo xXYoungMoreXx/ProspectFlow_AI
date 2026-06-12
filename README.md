@@ -1,6 +1,8 @@
 # AgentePro 🤖
 
-> **Status:** Sprints S5-07 a S5-10 entregues — MVP v1 funcional em localhost.
+> **Status (2026-06-12):** Sprints S5–S11 + Agent Capability Studio entregues; correções E2E B1–B5 aplicadas
+> (deploy real Vercel/Netlify, mensageria outbound, prompts Builder 2026). MVP v1 funcional em localhost —
+> pendências para produção na seção [Limitações e Roadmap](#limitações-e-roadmap).
 > Branch de integração: `develop` → `main` via PR com CI obrigatório.
 > 📖 **Guia detalhado de configuração:** [SETUP.md](SETUP.md)
 
@@ -144,14 +146,16 @@ Edite `.env` com seus valores reais. Veja as seções abaixo.
 
 #### Integrações opcionais
 
-| Variável                                  | Funcionalidade                                   |
-| ----------------------------------------- | ------------------------------------------------ |
-| `TELEGRAM_BOT_TOKEN`                      | HITL inline com botões no Telegram               |
-| `EVOLUTION_API_URL` + `EVOLUTION_API_KEY` | Canal WhatsApp via Evolution API                 |
-| `GOOGLE_MAPS_API_KEY`                     | Prospecção por categoria e região                |
-| `CALCOM_API_KEY`                          | Agendamento de reuniões (Cal.com)                |
-| `HEYGEN_API_KEY`                          | Tutoriais em vídeo personalizados para clientes  |
-| `SETTINGS_ENCRYPTION_KEY`                 | Criptografia de credenciais armazenadas no banco |
+| Variável                                  | Funcionalidade                                                                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `TELEGRAM_BOT_TOKEN`                      | HITL inline com botões no Telegram                                                                                 |
+| `EVOLUTION_API_URL` + `EVOLUTION_API_KEY` | Canal WhatsApp via Evolution API                                                                                   |
+| `GOOGLE_MAPS_API_KEY`                     | Prospecção por categoria e região                                                                                  |
+| `CALCOM_API_KEY`                          | Agendamento de reuniões (Cal.com)                                                                                  |
+| `HEYGEN_API_KEY`                          | Tutoriais em vídeo personalizados para clientes                                                                    |
+| `SETTINGS_ENCRYPTION_KEY`                 | Criptografia de credenciais armazenadas no banco                                                                   |
+| `VERCEL_TOKEN` / `NETLIFY_TOKEN`          | Deploy real dos sites gerados (fallback chain)                                                                     |
+| `INTERNAL_API_TOKEN`                      | Secret das rotas internas `/api/v1/internal/*` — deve ser **idêntico** ao `API_TOKEN` em `apps/agent-runtime/.env` |
 
 ### Passo 3 — Verificar pré-requisitos
 
@@ -302,66 +306,39 @@ cd apps/agent-runtime && python -m pytest tests/ -v
 cd apps/web && npx playwright test
 ```
 
-**CI (GitHub Actions):** Lint ✅ · Typecheck ✅ · Unit Tests (102) ✅ · Build ✅ · Agent Runtime ✅
-E2E: `continue-on-error` — ver [roadmap](#limitações-e-roadmap).
+**CI (GitHub Actions):** Lint ✅ · Typecheck ✅ · Testes Node (216) ✅ · Testes Python (81) ✅ · Build ✅ · E2E Playwright ✅ (bloqueante — roda com Postgres/Redis como `services` do Actions)
 
 ---
 
 ## Limitações e Roadmap
 
-### 1. Orchestrator sem persistência de estado entre restarts
+> Resolvidos em versões anteriores: persistência de retries do Orchestrator em Redis (antes era em memória)
+> e E2E bloqueante no CI (antes `continue-on-error`).
 
-**Situação atual:** O `OrchestratorAgent` (Python) armazena `retry_counts` em memória. Um restart do processo limpa o histórico de tentativas dos estados `BUILDING`, `DESIGNING` e `QA`.
+### 1. Preencher chaves reais no `.env` (bloqueia o ciclo completo)
 
-**Impacto:** Após restart, o Orchestrator pode tentar mais vezes do que o limite definido (3x para BUILDING, 2x para DESIGNING). Aceitável no MVP onde restarts são raros.
+O código está pronto, mas estas integrações só funcionam com as chaves do operador:
+`GOOGLE_MAPS_API_KEY` (prospecção), `VERCEL_TOKEN` e/ou `NETLIFY_TOKEN` (deploy real do site),
+`EVOLUTION_API_*` (WhatsApp), `BREVO_API_KEY` (email). Sem elas, cada etapa retorna **erro explícito**
+(nunca sucesso simulado).
 
-**Solução planejada (sem nova infra):** Persistir o estado em Redis (já presente na stack) com TTL de 24h:
+### 2. Cloudflare Pages desabilitado na fallback chain de deploy
 
-```python
-# apps/agent-runtime/src/agents/orchestrator/agent.py
-async def record_retry(self, state_name: str) -> None:
-    key = f"orchestrator:{self.payload.get('project_id', self.agent_id)}"
-    async with aioredis.from_url(self.redis_url) as r:
-        await r.hincrby(key, state_name, 1)
-        await r.expire(key, 86400)  # auto-limpa após 24h
+O adapter retorna erro honesto até implementarmos o fluxo completo de Direct Upload
+(manifest + upload de assets com JWT). Deploy hoje: **Vercel (primário) → Netlify (fallback)**, ambos reais.
 
-async def can_retry(self, state_name: str) -> bool:
-    key = f"orchestrator:{self.payload.get('project_id', self.agent_id)}"
-    async with aioredis.from_url(self.redis_url) as r:
-        count = int(await r.hget(key, state_name) or 0)
-    return count < _RETRY_LIMITS.get(state_name, 999)
-```
+### 3. Imagens geradas por IA ainda não entram automaticamente no site
 
-### 2. E2E tests não bloqueiam CI
+O sub-agente IMAGER gera os prompts e o `MediaGenerationRouter` (Node) gera imagens sob demanda
+(rota `/api/v1/media`), mas o pipeline ainda não conecta os dois entre as fases de design e build.
+O prompt do CODER já aceita `image_urls` quando o wiring for feito; sem imagens, o site usa
+visuais CSS/SVG (gradientes, formas).
 
-**Situação atual:** O job `test-e2e` usa `continue-on-error: true` porque a stack completa (API + DB + Redis + Web) não sobe nos runners do GitHub Actions.
+### 4. Mismatch de secret no aceite de contrato
 
-**Solução planejada:** Usar `services:` nativos do GitHub Actions:
-
-```yaml
-# .github/workflows/ci.yml
-test-e2e:
-  services:
-    postgres:
-      image: postgres:16-alpine
-      env:
-        {
-          POSTGRES_USER: test,
-          POSTGRES_PASSWORD: test,
-          POSTGRES_DB: agentepro_test,
-        }
-      options: --health-cmd pg_isready --health-interval 5s --health-retries 10
-    redis:
-      image: redis:7-alpine
-      options: --health-cmd "redis-cli ping" --health-interval 5s
-  steps:
-    - run: npm run db:migrate
-    - run: npm run dev &
-    - run: npx wait-on http://localhost:3001/api/v1/health
-    - run: npx playwright test
-```
-
-Resultado: remove `continue-on-error`, E2E bloqueia merge em falha. Custo: ~3 minutos a mais por run.
+O link de proposta (skill `contract_notifier`, Python) assina o JWT com `API_TOKEN`, mas a rota pública
+de aceite valida com `JWT_SECRET`. Até alinhar os dois, defina `JWT_SECRET` com o mesmo valor do
+`API_TOKEN` no `.env`.
 
 ---
 
@@ -376,8 +353,8 @@ apps/
     http/           Routes, Middleware, Schemas (Fastify)
   agent-runtime/src/
     agents/         orchestrator/ hunter/ closer/ briefing/ builder/ qa/ delivery/
-    config/         llm_routing.py — mapa de 24 sub-agentes para modelos LLM
-    skills/         google_maps, cnpj_lookup, email_sender, whatsapp_sender...
+    config/         llm_routing.py — mapa de 22 sub-agentes para modelos LLM
+    skills/         places_search, cnpj_lookup, email_sender, whatsapp_sender, site_generator...
     rag/            ChromaDB + Ollama nomic-embed-text
   web/src/
     app/            Next.js App Router — (dashboard)/ e (auth)/
@@ -389,10 +366,10 @@ infra/
   grafana/dashboards/     6 dashboards JSON provisionados
 scripts/
   init.js                 Inicializador (start | stop | restart | check | status)
+specs/                    Especificações por módulo (00–14)
 docs/
   PRD_AgentePro_v2.md     Product Requirements Document (fonte da verdade)
   adr/                    Architecture Decision Records
-  specs/                  Especificações por módulo (00–11)
 ```
 
 ---
