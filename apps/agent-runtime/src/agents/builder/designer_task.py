@@ -13,17 +13,29 @@ def build_designer_description(briefing: dict) -> str:
     references = briefing.get("styleReferences", "")
 
     return f"""
-Crie um mockup visual completo em HTML/CSS semântico para {business_name} ({niche}).
+Crie um mockup visual completo em HTML/CSS semântico para {business_name} ({niche}),
+com padrão de design de 2026 — nível de agência premium, não template genérico.
 
 Especificações obrigatórias:
 - Tipo de site: {site_type}
-- Cor primária: {primary_color} (derive paleta complementar)
+- Cor primária: {primary_color} (derive paleta completa em CSS custom properties,
+  incluindo tons de superfície, texto e um accent de contraste)
 - Estilo visual: {style}
 - Referências: {references or "nenhuma — use julgamento profissional"}
-- Estrutura: header+hero, serviços (3 cards), depoimentos, CTA, footer
-- Mobile-first (breakpoints 768px e 1024px)
+- Estrutura: header sticky + hero, serviços (3-6 cards), prova social/depoimentos, CTA, footer
+
+Linguagem visual 2026 (obrigatório):
+- Tipografia fluida com clamp() — display expressivo no hero, corpo legível (16px+)
+- Hero com profundidade: gradiente mesh/radial sutil ou formas orgânicas em CSS, nunca flat branco
+- Cards com elevação suave (sombras em camadas) ou glassmorphism discreto
+- Espaço em branco generoso; grid assimétrico onde fizer sentido
+- Micro-interações CSS: hover states com transform/transition, scroll-margin, :focus-visible
+- @media (prefers-reduced-motion: reduce) desativando animações
+- Mobile-first (breakpoints 768px e 1024px), CSS Grid + Flexbox
+
+Restrições técnicas:
 - Sem JS complexo — CSS puro para animações simples
-- Google Fonts via CDN
+- Google Fonts via CDN (máx 2 famílias, display=swap)
 - Copy real e específico para {niche} — proibido lorem ipsum
 - Imagens: placeholders CSS (background gradient) — sem <img src external>
 

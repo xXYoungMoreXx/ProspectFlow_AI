@@ -59,15 +59,40 @@ def create_build_phase_tasks(
     business_name = briefing.get("businessName", "cliente")
     niche = briefing.get("niche", "")
     mockup_desc = design_result.get("mockup_preview_description", "mockup aprovado")
+    mockup_html = design_result.get("mockup_html", "")
     copy_data = design_result.get("copy", {})
     color_palette = design_result.get("color_palette", [])
+    image_urls: list = design_result.get("image_urls", [])
+
+    if image_urls:
+        images_rule = (
+            f"Imagens reais geradas (usar nesta ordem: hero, serviços, sobre): {image_urls}. "
+            f"Cada <img> com alt descritivo, loading='lazy', width/height explícitos. "
+        )
+    else:
+        images_rule = (
+            "Sem imagens externas: visuais via CSS (gradientes mesh, formas orgânicas, "
+            "padrões SVG inline) — nunca caixas cinzas vazias. "
+        )
 
     coder_task = Task(
         description=(
-            f"Converta o mockup aprovado em HTML5 final para {business_name} ({niche}). "
-            f"Mockup: {mockup_desc}. Paleta: {color_palette}. Textos: {copy_data}. "
-            f"Requisitos: mobile-first, sem JS externo, imagens como placeholders CSS, "
-            f"Google Fonts via CDN, HTML5 semântico. "
+            f"Converta o mockup aprovado em HTML5 final de produção para {business_name} ({niche}), "
+            f"padrão visual 2026 (nível agência premium). "
+            f"Mockup aprovado: {mockup_desc}. "
+            f"HTML do mockup como base (preserve a direção visual): {mockup_html[:3000]}. "
+            f"Paleta: {color_palette}. Textos do copywriter (usar integralmente): {copy_data}. "
+            f"{images_rule}"
+            f"REQUISITOS DE QUALIDADE (Lighthouse): "
+            f"acessibilidade 100 obrigatória — contraste AA+, alt em toda imagem, "
+            f"aria-label em links de ícone, :focus-visible, hierarquia h1-h3 correta, "
+            f"html lang='pt-BR'; performance >= 85 — zero JS externo, máx 2 Google Fonts "
+            f"com display=swap e preconnect, CSS inline no <style>. "
+            f"DESIGN: tipografia fluida com clamp(), hero com profundidade (gradiente/formas), "
+            f"cards com sombras em camadas, micro-interações hover/transition, "
+            f"prefers-reduced-motion respeitado, scroll-reveal com IntersectionObserver "
+            f"em <script> inline pequeno (<30 linhas), mobile-first. "
+            f"CTA principal: botão WhatsApp flutuante + CTA no hero. "
             f"Output: HTML completo (<!DOCTYPE html>...</html>). Sem markdown."
         ),
         expected_output="HTML5 completo e válido, sem markdown, começando com <!DOCTYPE html>.",
