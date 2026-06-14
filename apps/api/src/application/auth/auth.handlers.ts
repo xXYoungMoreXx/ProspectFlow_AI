@@ -49,6 +49,7 @@ function generateSecureToken(): { token: string; tokenHash: string } {
 
 function verifyTokenHash(providedToken: string, storedHash: string): boolean {
   try {
+    if (!/^[0-9a-f]{64}$/.test(providedToken)) return false;
     const providedHash = createHash("sha256")
       .update(providedToken)
       .digest("hex");
@@ -124,6 +125,9 @@ export class VerifyEmailHandler {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
   async execute(token: string): Promise<Result<void, Error>> {
+    if (!/^[0-9a-f]{64}$/.test(token)) {
+      return err(new Error("Invalid token format"));
+    }
     const tokenHash = createHash("sha256").update(token).digest("hex");
 
     const [verification] = await this.db
@@ -221,8 +225,8 @@ export class ForgotPasswordHandler {
     const { token, tokenHash } = generateSecureToken();
 
     if (!operator || !operator.isActive) {
-      // VULN-003 Remediation: Perform dummy work
-      await hash(token, { ...ARGON2_OPTIONS, memoryCost: 2048, timeCost: 2 });
+      // VULN-003/VULN-004 Remediation: Perform dummy work matching standard cost
+      await hash(token, ARGON2_OPTIONS);
       return ok(undefined);
     }
 
@@ -247,6 +251,9 @@ export class ResetPasswordHandler {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
   async execute(token: string, password: string): Promise<Result<void, Error>> {
+    if (!/^[0-9a-f]{64}$/.test(token)) {
+      return err(new Error("Invalid token format"));
+    }
     const tokenHash = createHash("sha256").update(token).digest("hex");
 
     const [verification] = await this.db
@@ -391,7 +398,11 @@ export class RefreshTokenHandler {
       .limit(1);
 
     if (!token || new Date() > token.expiresAt) {
-      await verify("$argon2id$v=19$m=65536,t=3,p=4$dummysalt$dummyhash", "dummy").catch(() => {});
+      // VULN-006: Hardened dummy work
+      await verify(
+        "$argon2id$v=19$m=65536,t=3,p=4$dummysalt$dummyhash",
+        "dummy-token-parity-length-64-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      ).catch(() => {});
       return err(new AuthenticationError());
     }
 
