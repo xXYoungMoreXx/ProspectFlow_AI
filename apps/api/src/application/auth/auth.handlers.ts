@@ -509,27 +509,29 @@ export class RefreshTokenHandler {
   }
 }
 
-// ── Dev-only: auto-create + login for localhost dev mode ─────────────────────
-// Only active when NODE_ENV !== 'production'. Never ships to prod.
-export class DevLoginHandler {
+// ── Local-first: auto-create + login for self-hosted single-machine install ──
+// Only active when APP_MODE === 'local' (the default for self-hosted installs).
+// Bypasses SMTP/email verification so the first-run admin can sign in offline.
+// Disabled when APP_MODE === 'cloud'. Never reachable in a managed deployment.
+export class LocalLoginHandler {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
   async execute(
     email: string,
     password: string,
   ): Promise<Result<AuthTokens, AuthenticationError>> {
-    if (process.env["NODE_ENV"] === "production") {
-      return err(new AuthenticationError("Não disponível em produção"));
+    if (config.APP_MODE !== "local") {
+      return err(new AuthenticationError("Não disponível neste modo"));
     }
 
     const emailLower = email.toLowerCase().trim();
 
-    // Upsert dev user with emailVerified=true — bypasses SMTP requirement
+    // Upsert local admin with emailVerified=true — bypasses SMTP requirement
     const passwordHash = await hash(password, ARGON2_OPTIONS);
     await this.db
       .insert(schema.operators)
       .values({
-        name: "Dev Admin",
+        name: "Local Admin",
         email: emailLower,
         passwordHash,
         isActive: true,
@@ -541,7 +543,10 @@ export class DevLoginHandler {
     const firstTry = await loginHandler.execute(email, password);
     if (firstTry.isOk()) return firstTry;
 
-    // Hash mismatch (user existed with different password) — update hash
+    // Hash mismatch (user existed with different password) — reset it.
+    // WHY: on a self-hosted single-machine install this is the intentional
+    // offline password-recovery escape hatch (no SMTP/reset email available).
+    // Bounded by APP_MODE==='local' (gate above) + route rate limit (5/15min).
     await this.db
       .update(schema.operators)
       .set({ passwordHash, emailVerified: true, isActive: true })

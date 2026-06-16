@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import {
   LoginHandler,
   RefreshTokenHandler,
@@ -8,8 +8,9 @@ import {
   ForgotPasswordHandler,
   ResetPasswordHandler,
   ResendVerificationHandler,
-  DevLoginHandler,
+  LocalLoginHandler,
 } from "../../application/auth/auth.handlers.js";
+import { config } from "../../config.js";
 import {
   LoginSchema,
   RefreshSchema,
@@ -354,18 +355,33 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
-  // Dev-only endpoint — creates or re-authenticates a dev user without SMTP
-  // Disabled in production (handler enforces NODE_ENV check)
-  if (process.env["NODE_ENV"] !== "production") {
-    app.post("/dev-login", async (request, reply) => {
-      const body = request.body as { email?: string; password?: string };
-      const email =
-        body?.email ?? process.env["DEV_ADMIN_EMAIL"] ?? "admin@agentepro.dev";
-      const password =
-        body?.password ?? process.env["DEV_ADMIN_PASSWORD"] ?? "admin123";
+  // Local-first endpoint — creates or re-authenticates the first-run admin
+  // without SMTP/email verification. Active only when APP_MODE === 'local'
+  // (the default for self-hosted single-machine installs); disabled in cloud.
+  // Registered under both /local-login (canonical) and /dev-login (legacy alias).
+  if (config.APP_MODE === "local") {
+    const handleLocalLogin = async (
+      request: FastifyRequest,
+      reply: FastifyReply,
+    ) => {
+      // Validate like /login — never trust an unparsed body (CLAUDE.md §5).
+      const parsed = LoginSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.status(400).send({
+          errors: parsed.error.issues.map((i) => ({
+            code: "VALIDATION_ERROR",
+            message: i.message,
+            field: i.path.join("."),
+            requestId: request.requestId,
+          })),
+        });
+      }
 
-      const handler = new DevLoginHandler(app.container.db);
-      const result = await handler.execute(email, password);
+      const handler = new LocalLoginHandler(app.container.db);
+      const result = await handler.execute(
+        parsed.data.email,
+        parsed.data.password,
+      );
 
       if (result.isErr()) {
         return reply.status(401).send({
@@ -386,6 +402,13 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
           timestamp: new Date().toISOString(),
         },
       });
-    });
+    };
+
+    // Rate-limited like /login to bound Argon2 work and brute-force attempts.
+    const localLoginOpts = {
+      config: { rateLimit: { max: 5, timeWindow: "15 minutes" } },
+    };
+    app.post("/local-login", localLoginOpts, handleLocalLogin);
+    app.post("/dev-login", localLoginOpts, handleLocalLogin); // legacy alias
   }
 }

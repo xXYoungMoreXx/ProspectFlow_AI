@@ -12,6 +12,34 @@ O **AgentePro** automatiza o ciclo completo de uma agência digital: da prospec�
 
 ---
 
+## Rodar localmente (local-first)
+
+Cada usuário roda o **backend na própria máquina** — não há hospedagem paga nem
+necessidade de expor a máquina via túnel. A interface web pode opcionalmente ser
+servida pela Vercel apenas como página de onboarding; o app de fato roda local.
+
+**Pré-requisitos:** Docker Desktop + Node 22.
+
+```bash
+cp .env.example .env.local          # 1. configure (mantenha APP_MODE=local)
+docker compose -f infra/docker-compose.yml up -d   # 2. Postgres, Redis, etc.
+npm install                          # 3. dependências
+npm run dev                          # 4. sobe API (3001) + web (3000)
+```
+
+Abra <http://localhost:3000>. Com `NEXT_PUBLIC_APP_MODE=local`, a web te **guia**:
+
+- **Backend desligado** → tela com os comandos acima e botão “Tentar de novo”.
+- **Primeira execução** → tela cria o **admin local** (e-mail + senha, sem SMTP)
+  e já te autentica. O login usa token Bearer emitido pela sua API local.
+- **Execuções seguintes** → login normal e-mail/senha (ou auto-login opt-in via
+  `NEXT_PUBLIC_DEV_AUTO_LOGIN=true`).
+
+> Em produção gerenciada, defina `APP_MODE=cloud` para desativar o `local-login`
+> e exigir verificação de e-mail completa.
+
+---
+
 ## Pipeline End-to-End
 
 ```
