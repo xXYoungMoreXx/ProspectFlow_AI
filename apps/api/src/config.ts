@@ -8,6 +8,10 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
+  // Deployment mode. `local` = self-hosted single-machine install (default):
+  // enables the offline first-run admin/local-login path (no SMTP needed).
+  // `cloud` = managed deployment: disables local-login, full email verification.
+  APP_MODE: z.enum(["local", "cloud"]).default("local"),
   CORS_ORIGINS: z.string().default("http://localhost:3000"),
   FRONTEND_URL: z.string().default("http://localhost:3000"),
 

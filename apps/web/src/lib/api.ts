@@ -110,6 +110,19 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ email, password }),
       }),
+    // Local-first first-run: creates (or re-authenticates) the offline admin.
+    // Active only when the backend runs with APP_MODE=local.
+    localLogin: (email: string, password: string) =>
+      request<{
+        data: {
+          accessToken: string;
+          refreshToken: string;
+          organizationId?: string;
+        };
+      }>("/auth/local-login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      }),
     refresh: (refreshToken: string) =>
       request<{ data: { accessToken: string; refreshToken: string } }>(
         "/auth/refresh",
