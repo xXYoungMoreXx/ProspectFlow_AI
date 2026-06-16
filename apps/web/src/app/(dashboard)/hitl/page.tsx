@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   ShieldCheck,
   Check,
@@ -32,18 +34,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-
-// SPEC-09 §2 — action type labels in Portuguese
-const ACTION_LABELS: Record<string, string> = {
-  APPROVE_LEAD_LIST: "Aprovar Lista de Leads",
-  SEND_EXTERNAL_MESSAGE: "Enviar Mensagem Externa",
-  SEND_PROPOSAL: "Enviar Proposta",
-  APPROVE_MOCKUP: "Aprovar Mockup",
-  APPROVE_STAGING: "Aprovar Staging",
-  DEPLOY_PRODUCTION: "Deploy em Produção",
-  APPROVE_BRIEFING: "Aprovar Briefing",
-  SEND_DELIVERY: "Enviar Entrega ao Cliente",
-};
+import { useTranslations } from "next-intl";
 
 // Live countdown hook — updates every second
 function useCountdown(expiresAt: string) {
@@ -110,6 +101,7 @@ function CountdownBadge({ expiresAt }: { expiresAt: string }) {
 }
 
 export default function HITLPage() {
+  const t = useTranslations("hitl");
   const token = useAuthStore((s) => s.token);
   const { pendingApprovals, isLoading, fetchPending, approve, reject } =
     useHitlStore();
@@ -145,18 +137,27 @@ export default function HITLPage() {
 
   const approvals = (pendingApprovals || []) as any[];
 
+  const actionLabels: Record<string, string> = {
+    APPROVE_LEAD_LIST: t("actionLabels.APPROVE_LEAD_LIST"),
+    SEND_EXTERNAL_MESSAGE: t("actionLabels.SEND_EXTERNAL_MESSAGE"),
+    SEND_PROPOSAL: t("actionLabels.SEND_PROPOSAL"),
+    APPROVE_MOCKUP: t("actionLabels.APPROVE_MOCKUP"),
+    APPROVE_STAGING: t("actionLabels.APPROVE_STAGING"),
+    DEPLOY_PRODUCTION: t("actionLabels.DEPLOY_PRODUCTION"),
+    APPROVE_BRIEFING: t("actionLabels.APPROVE_BRIEFING"),
+    SEND_CLIENT_DELIVERY: t("actionLabels.SEND_CLIENT_DELIVERY"),
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">HITL Approvals</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Revise e aprove ações dos agentes antes da execução
-          </p>
+          <h2 className="text-2xl font-bold tracking-tight">{t("title")}</h2>
+          <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         {approvals.length > 0 && (
           <Badge variant="default" className="bg-primary/80">
-            {approvals.length} pendentes
+            {approvals.length} {t("pending")}
           </Badge>
         )}
       </div>
@@ -164,27 +165,17 @@ export default function HITLPage() {
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="py-4">
-                <div className="h-4 w-40 bg-muted rounded" />
-              </CardContent>
-            </Card>
+            <div key={i} className="rounded-xl border border-border p-4">
+              <Skeleton className="h-4 w-40" />
+            </div>
           ))}
         </div>
       ) : approvals.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16 space-y-3">
-            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-              <ShieldCheck className="w-8 h-8 text-emerald-400" />
-            </div>
-            <div className="text-center">
-              <h3 className="font-semibold">Tudo limpo!</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Nenhuma aprovação pendente no momento
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={ShieldCheck}
+          title={t("empty.title")}
+          description={t("empty.description")}
+        />
       ) : (
         <div className="space-y-3">
           {approvals.map((approval) => (
@@ -198,12 +189,12 @@ export default function HITLPage() {
                   <div className="flex-1 min-w-0">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                       <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-                      {ACTION_LABELS[approval.actionType] ??
+                      {actionLabels[approval.actionType] ??
                         approval.actionType ??
-                        "Ação do Agente"}
+                        t("columns.action")}
                     </CardTitle>
                     <CardDescription className="mt-1 text-xs">
-                      Agente: {approval.agentId?.slice(-8)} ·{" "}
+                      {t("columns.agent")} {approval.agentId?.slice(-8)} ·{" "}
                       {new Date(approval.createdAt).toLocaleString("pt-BR")}
                     </CardDescription>
                   </div>
@@ -217,7 +208,7 @@ export default function HITLPage() {
                       variant="outline"
                       className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px]"
                     >
-                      PENDING
+                      {t("columns.status")}
                     </Badge>
                   </div>
                 </div>
@@ -232,7 +223,7 @@ export default function HITLPage() {
                 )}
 
                 <div className="flex items-center gap-2 justify-end">
-                  {/* Reject dialog — base-ui uses render= not asChild */}
+                  {/* Reject dialog */}
                   <Dialog>
                     <DialogTrigger
                       render={
@@ -246,27 +237,29 @@ export default function HITLPage() {
                       }
                     >
                       <X className="w-3.5 h-3.5" />
-                      Rejeitar
+                      {t("reject")}
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Rejeitar Ação</DialogTitle>
+                        <DialogTitle>{t("rejectDialog.title")}</DialogTitle>
                         <DialogDescription>
-                          Informe o motivo da rejeição para o agente.
+                          {t("rejectDialog.description")}
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-2">
-                        <Label htmlFor="reject-note">Motivo</Label>
+                        <Label htmlFor="reject-note">
+                          {t("rejectDialog.reasonLabel")}
+                        </Label>
                         <Input
                           id="reject-note"
-                          placeholder="Por que está rejeitando esta ação?"
+                          placeholder={t("rejectDialog.reasonPlaceholder")}
                           value={note}
                           onChange={(e) => setNote(e.target.value)}
                         />
                       </div>
                       <DialogFooter>
                         <DialogClose render={<Button variant="ghost" />}>
-                          Cancelar
+                          {t("rejectDialog.cancel")}
                         </DialogClose>
                         <Button
                           variant="destructive"
@@ -276,7 +269,7 @@ export default function HITLPage() {
                           {isProcessing === approval.id ? (
                             <Loader2 className="w-4 h-4 animate-spin mr-2" />
                           ) : null}
-                          Confirmar Rejeição
+                          {t("rejectDialog.confirm")}
                         </Button>
                       </DialogFooter>
                     </DialogContent>
@@ -295,7 +288,7 @@ export default function HITLPage() {
                     ) : (
                       <Check className="w-3.5 h-3.5" />
                     )}
-                    Aprovar
+                    {t("approve")}
                   </Button>
                 </div>
               </CardContent>

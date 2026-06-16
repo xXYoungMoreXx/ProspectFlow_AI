@@ -61,6 +61,52 @@ describe("Project Entity", () => {
     expect(project.domainEvents[0].eventType).toBe("project.delivered");
   });
 
+  describe("storeMockup()", () => {
+    it("should persist mockupHtml and mockupUrl", () => {
+      const project = Project.create({
+        id: "proj-1",
+        dealId: "deal-1",
+        operatorId: "op-1",
+        briefing: {},
+      }).unwrap();
+
+      project.storeMockup(
+        "<html>mockup</html>",
+        "https://example.com/mockup.html",
+      );
+
+      expect(project.mockupHtml).toBe("<html>mockup</html>");
+      expect(project.mockupUrl).toBe("https://example.com/mockup.html");
+    });
+
+    it("should overwrite previous mockup values", () => {
+      const project = Project.create({
+        id: "proj-2",
+        dealId: "deal-2",
+        operatorId: "op-1",
+        briefing: {},
+      }).unwrap();
+
+      project.storeMockup("<html>v1</html>", "https://example.com/v1.html");
+      project.storeMockup("<html>v2</html>", "https://example.com/v2.html");
+
+      expect(project.mockupHtml).toBe("<html>v2</html>");
+      expect(project.mockupUrl).toBe("https://example.com/v2.html");
+    });
+
+    it("should have undefined mockupHtml and mockupUrl before storeMockup is called", () => {
+      const project = Project.create({
+        id: "proj-3",
+        dealId: "deal-3",
+        operatorId: "op-1",
+        briefing: {},
+      }).unwrap();
+
+      expect(project.mockupHtml).toBeUndefined();
+      expect(project.mockupUrl).toBeUndefined();
+    });
+  });
+
   it("should request revision and increment counter", () => {
     const project = Project.create({
       id: "proj-1",

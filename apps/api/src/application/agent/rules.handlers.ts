@@ -28,8 +28,9 @@ export class AddRuleHandler {
       priority?: number;
       isEnabled?: boolean;
     },
+    organizationId: string = "org_mvp",
   ): Promise<Result<AgentRule, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const data: CreateRuleData = {
@@ -54,8 +55,9 @@ export class UpdateRuleHandler {
     ruleId: string,
     operatorId: string,
     updates: UpdateRuleData,
+    organizationId: string = "org_mvp",
   ): Promise<Result<AgentRule, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const rule = await this.repo.updateRule(ruleId, agentId, updates);
@@ -71,8 +73,9 @@ export class RemoveRuleHandler {
     agentId: string,
     ruleId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<void, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const removed = await this.repo.removeRule(ruleId, agentId);
@@ -87,8 +90,9 @@ export class ListRulesHandler {
   async execute(
     agentId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<AgentRule[], Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const rules = await this.repo.listRules(agentId);

@@ -175,9 +175,9 @@ export function createContainer(): Container {
   );
 
   const mediaRouter = new MediaGenerationRouter({
-    getNanaBananaKey: () =>
-      secrets.getSecretGlobal("NANABANANA_API_KEY").then((v) => v ?? null),
-    getDalleKey: () =>
+    getImagenKey: () =>
+      secrets.getSecretGlobal("GOOGLE_IMAGEN_API_KEY").then((v) => v ?? null),
+    getOpenAIKey: () =>
       secrets.getSecretGlobal("OPENAI_API_KEY").then((v) => v ?? null),
   });
 

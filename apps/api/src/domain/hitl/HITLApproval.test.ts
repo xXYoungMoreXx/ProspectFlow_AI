@@ -148,6 +148,45 @@ describe("HITLApproval", () => {
     });
   });
 
+  describe("editAndApprove() error paths", () => {
+    it("fails when status is APPROVED (not PENDING)", () => {
+      const approval = makeApproval().unwrap();
+      approval.approve();
+      expect(approval.editAndApprove({ x: 1 }).isErr()).toBe(true);
+    });
+
+    it("fails when approval is expired", () => {
+      const approval = makeApproval({ timeoutMinutes: 1 }).unwrap();
+      approval.expire();
+      expect(approval.editAndApprove({ x: 1 }).isErr()).toBe(true);
+    });
+  });
+
+  describe("escalateToFinancial()", () => {
+    it("escalates PENDING approval to HITL-FINANCEIRO", () => {
+      const approval = makeApproval({ hitlLevel: HITLLevel.HITL_1 }).unwrap();
+      approval.clearDomainEvents();
+      approval.escalateToFinancial();
+      expect(approval.hitlLevel).toBe(HITLLevel.HITL_FINANCEIRO);
+      const events = approval.clearDomainEvents();
+      expect(events[0]!.eventType).toBe("hitl.financial_escalated");
+    });
+
+    it("no-op when already APPROVED", () => {
+      const approval = makeApproval().unwrap();
+      approval.approve();
+      approval.clearDomainEvents();
+      approval.escalateToFinancial();
+      expect(approval.clearDomainEvents()).toHaveLength(0);
+    });
+
+    it("toJSON returns plain object", () => {
+      const approval = makeApproval().unwrap();
+      const json = approval.toJSON();
+      expect(json).toMatchObject({ status: "PENDING" });
+    });
+  });
+
   describe("isFinancial / canAutoApprove", () => {
     it("isFinancial true for HITL-FINANCEIRO level", () => {
       const approval = makeApproval({

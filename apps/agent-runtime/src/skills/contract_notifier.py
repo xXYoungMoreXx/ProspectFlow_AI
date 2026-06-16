@@ -30,8 +30,8 @@ class ContractNotifierTool(BaseTool):
             payload = {"dealId": deal_id, "amount": contract_value, "exp": int(time.time()) + 7 * 24 * 3600}
             token = jwt.encode(payload, secret, algorithm="HS256")
 
-            # 2. Constrói o link
-            proposal_link = f"{config.api_url}/public/deals/{deal_id}/proposal?token={token}"
+            # 2. Constrói o link (rota pública registrada em /api/v1/deals)
+            proposal_link = f"{config.api_url}/api/v1/deals/{deal_id}/proposal?token={token}"
 
             message = (
                 f"Olá! Conforme nossa negociação, sua proposta no valor de R$ {contract_value:.2f} "
@@ -41,11 +41,11 @@ class ContractNotifierTool(BaseTool):
             )
 
             # 3. Chama a API Node.js central para enviar a mensagem
-            with httpx.Client() as client:
-                headers = {"Authorization": f"Bearer {config.api_token}"} if config.api_token else {}
+            with httpx.Client(timeout=30.0) as client:
+                headers = {"X-Internal-Token": config.api_token} if config.api_token else {}
 
                 resp = client.post(
-                    f"{config.api_url}/internal/messages/whatsapp",
+                    f"{config.api_url}/api/v1/internal/messages/whatsapp",
                     json={
                         "phone": phone,
                         "message": message,

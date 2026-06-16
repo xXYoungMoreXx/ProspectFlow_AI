@@ -1,6 +1,6 @@
 # SPEC-03: Agente Hunter — Prospecção Inteligente de Leads
 
-> Versão: 2.0.0 | Fase: 1 | Dependências: SPEC-00, SPEC-02
+> Versão: 2.1.0 | Fase: 1 | Dependências: SPEC-00, SPEC-02 | Ver também: SPEC-14 (ServiceType + fórmula de score por serviço)
 
 ---
 
@@ -13,11 +13,11 @@ profissional. É o único ponto de entrada de novos leads no sistema.
 
 ## Sub-agentes e Modelos
 
-| Sub-agente | Modelo | Modo | Grupo |
-|---|---|---|---|
-| PROSPECTOR | `gemini/gemini-3.5-flash` | parallel | 1 |
-| SITE_INSPECTOR | `gemini/gemini-3.5-flash` | parallel | 1 |
-| DATA_ENRICHER | `ollama/llama3.2:3b` | sequential | — |
+| Sub-agente     | Modelo                    | Modo       | Grupo |
+| -------------- | ------------------------- | ---------- | ----- |
+| PROSPECTOR     | `gemini/gemini-3.5-flash` | parallel   | 1     |
+| SITE_INSPECTOR | `gemini/gemini-3.5-flash` | parallel   | 1     |
+| DATA_ENRICHER  | `ollama/llama3.2:3b`      | sequential | —     |
 
 ---
 
@@ -49,26 +49,35 @@ Trigger (Schedule 09:00 ou Manual)
 
 ## Fórmula de Qualification Score
 
+> ⚠️ **SPEC-14 Override**: A fórmula abaixo é a referência original (FULL_DIGITAL).
+> A partir da v2.1.0, a fórmula usa pesos por `ServiceType` — ver SPEC-14 para
+> a tabela completa de `SCORING_WEIGHTS`. A implementação deve chamar
+> `calculateScore(place, enrichment, config.serviceType)` com `serviceType`
+> da configuração de prospecção.
+
 ```typescript
-function calculateScore(place: GooglePlace, enrichment: EnrichmentData): number {
+function calculateScore(
+  place: GooglePlace,
+  enrichment: EnrichmentData,
+): number {
   let score = 0;
 
   // PRESENÇA DIGITAL (30 pts)
-  if (!enrichment.hasWebsite)                        score += 30;
-  else if (enrichment.websiteQualityHint === 'outdated')    score += 20;
-  else if (enrichment.websiteQualityHint === 'mobile_broken') score += 15;
+  if (!enrichment.hasWebsite) score += 30;
+  else if (enrichment.websiteQualityHint === "outdated") score += 20;
+  else if (enrichment.websiteQualityHint === "mobile_broken") score += 15;
 
   // SAÚDE DO NEGÓCIO (30 pts)
-  if (enrichment.cnpjStatus === 'ATIVA')             score += 20;
-  if ((enrichment.yearsInBusiness ?? 0) >= 2)        score += 10;
+  if (enrichment.cnpjStatus === "ATIVA") score += 20;
+  if ((enrichment.yearsInBusiness ?? 0) >= 2) score += 10;
 
   // REPUTAÇÃO GOOGLE (25 pts)
-  if (place.rating >= 4.5)      score += 25;
+  if (place.rating >= 4.5) score += 25;
   else if (place.rating >= 4.0) score += 20;
   else if (place.rating >= 3.5) score += 10;
 
   // VOLUME DE AVALIAÇÕES (15 pts)
-  if (place.reviewsCount >= 100)     score += 15;
+  if (place.reviewsCount >= 100) score += 15;
   else if (place.reviewsCount >= 50) score += 10;
   else if (place.reviewsCount >= 10) score += 5;
 
@@ -83,36 +92,37 @@ function calculateScore(place: GooglePlace, enrichment: EnrichmentData): number 
 ```typescript
 const HUNTER_RULES: Rule[] = [
   {
-    name: 'block_suspended_cnpj',
+    name: "block_suspended_cnpj",
     condition: "enrichment.cnpjStatus IN ['SUSPENSA','INAPTA','BAIXADA']",
-    action: 'BLOCK',
+    action: "BLOCK",
     priority: 1,
-    blockReason: 'block_suspended_cnpj',
+    blockReason: "block_suspended_cnpj",
   },
   {
-    name: 'block_government',
+    name: "block_government",
     condition: "lead.sector == 'GOVERNMENT'",
-    action: 'BLOCK',
+    action: "BLOCK",
     priority: 2,
-    blockReason: 'government_entity',
+    blockReason: "government_entity",
   },
   {
-    name: 'deduplicate_30_days',
-    condition: "existingLead.mapsPlaceId == lead.mapsPlaceId AND existingLead.lastContactedAt > NOW() - 30d",
-    action: 'BLOCK',
+    name: "deduplicate_30_days",
+    condition:
+      "existingLead.mapsPlaceId == lead.mapsPlaceId AND existingLead.lastContactedAt > NOW() - 30d",
+    action: "BLOCK",
     priority: 3,
-    blockReason: 'duplicate_within_30_days',
+    blockReason: "duplicate_within_30_days",
   },
   {
-    name: 'min_score_threshold',
+    name: "min_score_threshold",
     condition: "lead.qualificationScore < agentConfig.minScore",
-    action: 'LOG',
+    action: "LOG",
     priority: 10,
   },
   {
-    name: 'rate_limit_scraping',
+    name: "rate_limit_scraping",
     condition: "agent.requestsInLastMinute > 30",
-    action: 'BLOCK',
+    action: "BLOCK",
     priority: 1,
   },
 ];
@@ -126,39 +136,77 @@ const HUNTER_RULES: Rule[] = [
 // infrastructure/maps/GoogleMapsAdapter.ts
 
 interface LeadSearchParams {
-  query: string;                // Ex: "restaurante Salvador BA"
-  includedTypes: string[];      // Ex: ['restaurant', 'food']
+  query: string; // Ex: "restaurante Salvador BA"
+  includedTypes: string[]; // Ex: ['restaurant', 'food']
   locationCenter: { lat: number; lng: number };
   radiusMeters: number;
-  maxResults: number;           // Máx 20 por request na API
-  languageCode: 'pt-BR';
+  maxResults: number; // Máx 20 por request na API
+  languageCode: "pt-BR";
+  serviceType?: ServiceType; // NOVO — para score weights (SPEC-14)
 }
 
+// GooglePlace agora captura TODOS os campos disponíveis na API (New)
 interface GooglePlace {
   id: string;
   displayName: string;
   formattedAddress: string;
+  shortFormattedAddress?: string; // NOVO — endereço curto
   nationalPhoneNumber?: string;
-  websiteUri?: string;          // undefined = lead quente
+  internationalPhoneNumber?: string; // NOVO — formato internacional
+  websiteUri?: string;
+  googleMapsUri?: string; // NOVO — link direto para o Google Maps
   rating?: number;
   reviewsCount?: number;
   primaryType?: string;
-  openingHours?: { weekdayDescriptions: string[] };
+  types?: string[]; // NOVO — todas as categorias, não só primária
+  businessStatus?: "OPERATIONAL" | "CLOSED_TEMPORARILY" | "CLOSED_PERMANENTLY"; // NOVO
+  priceLevel?:
+    | "FREE"
+    | "INEXPENSIVE"
+    | "MODERATE"
+    | "EXPENSIVE"
+    | "VERY_EXPENSIVE"; // NOVO
+  openingHours?: {
+    weekdayDescriptions: string[];
+    openNow?: boolean; // NOVO
+  };
+  editorialSummary?: string; // NOVO — descrição editorial do negócio
+  photos?: Array<{
+    // NOVO — até 10 fotos do estabelecimento
+    name: string; // ex: "places/ChIJ.../photos/AXCi..."
+    widthPx: number;
+    heightPx: number;
+    photoUri?: string; // URL gerada após fetch da foto
+  }>;
 }
 
-// Campos solicitados na API (FieldMask):
+// Campos solicitados na API (FieldMask) — v2: conjunto completo
 const REQUIRED_FIELDS = [
-  'places.id',
-  'places.displayName',
-  'places.formattedAddress',
-  'places.nationalPhoneNumber',
-  'places.websiteUri',
-  'places.rating',
-  'places.userRatingCount',
-  'places.primaryTypeDisplayName',
-  'places.regularOpeningHours',
-].join(',');
+  "places.id",
+  "places.displayName",
+  "places.formattedAddress",
+  "places.shortFormattedAddress",
+  "places.nationalPhoneNumber",
+  "places.internationalPhoneNumber",
+  "places.websiteUri",
+  "places.googleMapsUri",
+  "places.rating",
+  "places.userRatingCount",
+  "places.primaryType",
+  "places.types",
+  "places.businessStatus",
+  "places.priceLevel",
+  "places.currentOpeningHours",
+  "places.editorialSummary",
+  "places.photos",
+].join(",");
+
+// Endpoint de foto:
+// GET https://places.googleapis.com/v1/{photo.name}/media?maxWidthPx=800&key=API_KEY
+// Retorna redirect para a URL da imagem (cachear a URL por 7 dias)
 ```
+
+````
 
 ---
 
@@ -198,7 +246,7 @@ interface CEPData {
 // MCP Brasil é chamado via HTTP para o container mcp-brasil
 // Tool: brasilapi_consultar_cnpj → retorna CNPJData
 // Tool: brasilapi_consultar_cep  → retorna CEPData
-```
+````
 
 ---
 
@@ -208,30 +256,64 @@ interface CEPData {
 // domain/lead/EnrichmentData.ts
 
 class EnrichmentData {
-  constructor(private readonly props: {
-    cnpj?: string;
-    cnpjStatus?: 'ATIVA' | 'SUSPENSA' | 'INAPTA' | 'BAIXADA' | 'NULA';
-    yearsInBusiness?: number;
-    googleMapsPlaceId?: string;
-    googleRating?: number;
-    googleReviewsCount?: number;
-    hasWebsite: boolean;
-    websiteQualityHint?: 'modern' | 'outdated' | 'mobile_broken' | 'none';
-    neighborhood?: string;
-    city?: string;
-    state?: string;
-  }) {}
+  constructor(
+    private readonly props: {
+      cnpj?: string;
+      cnpjStatus?: "ATIVA" | "SUSPENSA" | "INAPTA" | "BAIXADA" | "NULA";
+      yearsInBusiness?: number;
+      googleMapsPlaceId?: string;
+      googleMapsUri?: string; // NOVO
+      googleRating?: number;
+      googleReviewsCount?: number;
+      hasWebsite: boolean;
+      websiteQualityHint?: "modern" | "outdated" | "mobile_broken" | "none";
+      neighborhood?: string;
+      city?: string;
+      state?: string;
+      // NOVOS campos de dados completos do Google Maps
+      businessStatus?:
+        | "OPERATIONAL"
+        | "CLOSED_TEMPORARILY"
+        | "CLOSED_PERMANENTLY";
+      priceLevel?:
+        | "FREE"
+        | "INEXPENSIVE"
+        | "MODERATE"
+        | "EXPENSIVE"
+        | "VERY_EXPENSIVE";
+      editorialSummary?: string;
+      categories?: string[]; // todas as categorias do negócio
+      openingHoursText?: string[]; // ex: ["Segunda: 09:00–18:00", ...]
+      internationalPhone?: string;
+      photoUris?: string[]; // até 10 URLs de fotos (cacheadas 7 dias)
+      serviceType?: ServiceType; // NOVO — serviço para o qual foi prospectado
+    },
+  ) {}
 
-  get cnpj()              { return this.props.cnpj; }
-  get cnpjStatus()        { return this.props.cnpjStatus; }
-  get yearsInBusiness()   { return this.props.yearsInBusiness; }
-  get googleMapsPlaceId() { return this.props.googleMapsPlaceId; }
-  get googleRating()      { return this.props.googleRating; }
-  get googleReviewsCount(){ return this.props.googleReviewsCount; }
-  get hasWebsite()        { return this.props.hasWebsite; }
+  get cnpj() {
+    return this.props.cnpj;
+  }
+  get cnpjStatus() {
+    return this.props.cnpjStatus;
+  }
+  get yearsInBusiness() {
+    return this.props.yearsInBusiness;
+  }
+  get googleMapsPlaceId() {
+    return this.props.googleMapsPlaceId;
+  }
+  get googleRating() {
+    return this.props.googleRating;
+  }
+  get googleReviewsCount() {
+    return this.props.googleReviewsCount;
+  }
+  get hasWebsite() {
+    return this.props.hasWebsite;
+  }
 
   isCNPJActive(): boolean {
-    return this.props.cnpjStatus === 'ATIVA';
+    return this.props.cnpjStatus === "ATIVA";
   }
 
   isEstablished(): boolean {
@@ -240,8 +322,8 @@ class EnrichmentData {
 
   qualificationBonus(): number {
     let bonus = 0;
-    if (this.isCNPJActive())    bonus += 20;
-    if (this.isEstablished())   bonus += 10;
+    if (this.isCNPJActive()) bonus += 20;
+    if (this.isEstablished()) bonus += 10;
     if ((this.props.googleRating ?? 0) >= 4.0) bonus += 15;
     if ((this.props.googleReviewsCount ?? 0) >= 50) bonus += 10;
     return bonus;
@@ -265,9 +347,9 @@ class EnrichmentData {
 
 function buildMapsCacheKey(params: LeadSearchParams): string {
   const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const lat  = params.locationCenter.lat.toFixed(4);
-  const lng  = params.locationCenter.lng.toFixed(4);
-  return `maps:${params.includedTypes.join('-')}:${lat}:${lng}:${params.radiusMeters}:${date}`;
+  const lat = params.locationCenter.lat.toFixed(4);
+  const lng = params.locationCenter.lng.toFixed(4);
+  return `maps:${params.includedTypes.join("-")}:${lat}:${lng}:${params.radiusMeters}:${date}`;
 }
 ```
 
@@ -285,8 +367,8 @@ async function isDuplicate(mapsPlaceId: string): Promise<boolean> {
     .where(
       and(
         eq(sql`enrichment_data->>'maps_place_id'`, mapsPlaceId),
-        gt(leads.createdAt, sql`NOW() - INTERVAL '30 days'`)
-      )
+        gt(leads.createdAt, sql`NOW() - INTERVAL '30 days'`),
+      ),
     )
     .limit(1);
 
@@ -299,6 +381,7 @@ async function isDuplicate(mapsPlaceId: string): Promise<boolean> {
 ## API Endpoints
 
 ### POST /api/v1/prospecting/search-maps
+
 **Trigger manual de prospecção**
 
 ```typescript
@@ -325,6 +408,7 @@ async function isDuplicate(mapsPlaceId: string): Promise<boolean> {
 ```
 
 ### GET /api/v1/prospecting/queue
+
 **Leads qualificados aguardando HITL**
 
 ```typescript
@@ -333,10 +417,11 @@ async function isDuplicate(mapsPlaceId: string): Promise<boolean> {
   data: {
     leads: Array<{
       id: string;
-      contactName: string;       // mascarado nos 3 primeiros chars
+      contactName: string; // mascarado nos 3 primeiros chars
       businessName: string;
       qualificationScore: number;
-      source: 'GOOGLE_MAPS';
+      source: "GOOGLE_MAPS";
+      serviceType: ServiceType; // NOVO — serviço para o qual foi prospectado
       enrichmentData: {
         cnpjStatus: string;
         googleRating: number;
@@ -344,16 +429,28 @@ async function isDuplicate(mapsPlaceId: string): Promise<boolean> {
         hasWebsite: boolean;
         city: string;
         state: string;
+        // NOVOS campos
+        businessStatus?: string;
+        priceLevel?: string;
+        editorialSummary?: string;
+        categories?: string[];
+        openingHoursText?: string[];
+        photoUris?: string[]; // até 10 URLs (PII: sem faces, só estabelecimento)
+        googleMapsUri?: string;
       };
-      mapsUrl?: string;          // Link para o Maps do negócio
+      mapsUrl?: string; // Link para o Maps do negócio
       createdAt: string;
     }>;
-  };
-  meta: { total: number; pending_hitl: number };
+  }
+  meta: {
+    total: number;
+    pending_hitl: number;
+  }
 }
 ```
 
 ### GET /api/v1/prospecting/config
+
 **Configuração atual da prospecção**
 
 ```typescript
@@ -363,9 +460,10 @@ async function isDuplicate(mapsPlaceId: string): Promise<boolean> {
     categories: string[];
     region: { city: string; state: string; radiusKm: number };
     minScore: number;
+    serviceType: ServiceType;    // NOVO — default: 'SITE_CREATION'
     scheduleTime: string;        // '09:00'
     scheduleDays: string[];      // ['mon','tue','wed','thu','fri']
-    mapsQuotaRemaining: number;  // da API do Maps
+    mapsQuotaRemaining: number;
     mapsQuotaLimit: number;
     lastRunAt: string | null;
     nextRunAt: string | null;
@@ -374,12 +472,14 @@ async function isDuplicate(mapsPlaceId: string): Promise<boolean> {
 ```
 
 ### PATCH /api/v1/prospecting/config
+
 ```typescript
 // Request (todos os campos opcionais)
 {
   categories?: string[];
   region?: { city?: string; state?: string; radiusKm?: number };
   minScore?: number;             // 0-100
+  serviceType?: ServiceType;     // NOVO — 'SITE_CREATION' | 'TRAFFIC_MANAGEMENT' | 'SOCIAL_MEDIA' | 'FULL_DIGITAL'
   scheduleTime?: string;         // 'HH:MM'
   scheduleDays?: string[];
 }
@@ -466,37 +566,41 @@ class HunterAgent:
 
 ```typescript
 // Unit tests — LeadQualificationService
-describe('LeadQualificationService', () => {
-  it('deve retornar 85 para lead sem site + CNPJ ativo + rating 4.8 + 200 reviews')
-  it('deve retornar 0 para lead com site moderno + CNPJ suspenso + rating baixo')
-  it('deve nunca exceder 100')
-  it('deve nunca ser negativo')
-  it('deve considerar todos os 4 critérios independentemente')
+describe("LeadQualificationService", () => {
+  it(
+    "deve retornar 85 para lead sem site + CNPJ ativo + rating 4.8 + 200 reviews",
+  );
+  it(
+    "deve retornar 0 para lead com site moderno + CNPJ suspenso + rating baixo",
+  );
+  it("deve nunca exceder 100");
+  it("deve nunca ser negativo");
+  it("deve considerar todos os 4 critérios independentemente");
 });
 
 // Integration tests — GoogleMapsAdapter
-describe('GoogleMapsAdapter', () => {
-  it('deve retornar array vazio para categoria sem resultados')
-  it('deve filtrar places com website quando filtro ativo')
-  it('deve usar cache em busca repetida com mesmos parâmetros')
-  it('deve renovar cache após TTL expirado')
-  it('deve lançar QuotaExceededError quando remaining < 0')
-  it('deve lançar ExternalServiceError para 4xx da API do Maps')
+describe("GoogleMapsAdapter", () => {
+  it("deve retornar array vazio para categoria sem resultados");
+  it("deve filtrar places com website quando filtro ativo");
+  it("deve usar cache em busca repetida com mesmos parâmetros");
+  it("deve renovar cache após TTL expirado");
+  it("deve lançar QuotaExceededError quando remaining < 0");
+  it("deve lançar ExternalServiceError para 4xx da API do Maps");
 });
 
 // Integration tests — MCPBrasilAdapter
-describe('MCPBrasilAdapter', () => {
-  it('deve retornar CNPJData correta para CNPJ ativo válido')
-  it('deve retornar situacaoCadastral SUSPENSA para CNPJ suspenso')
-  it('deve retornar null para CNPJ inválido')
-  it('deve usar cache de 7 dias para CNPJ já consultado')
+describe("MCPBrasilAdapter", () => {
+  it("deve retornar CNPJData correta para CNPJ ativo válido");
+  it("deve retornar situacaoCadastral SUSPENSA para CNPJ suspenso");
+  it("deve retornar null para CNPJ inválido");
+  it("deve usar cache de 7 dias para CNPJ já consultado");
 });
 
 // Security test
-describe('Hunter Security', () => {
-  it('SSRF: deve bloquear URL interna no campo de configuração de região')
-  it('deve requerer HITL antes de qualquer ação externa')
-  it('deve mascarar telefone e email do lead no payloadPreview do HITL')
+describe("Hunter Security", () => {
+  it("SSRF: deve bloquear URL interna no campo de configuração de região");
+  it("deve requerer HITL antes de qualquer ação externa");
+  it("deve mascarar telefone e email do lead no payloadPreview do HITL");
 });
 ```
 
@@ -509,8 +613,13 @@ describe('Hunter Security', () => {
 - [ ] DATA_ENRICHER roda após o paralelo (verificar sequência nos logs)
 - [ ] CNPJ suspenso → lead bloqueado (nenhum HITL criado)
 - [ ] Lead com mesmo Maps Place ID nos últimos 30 dias → ignorado
-- [ ] Score calculado corretamente conforme fórmula acima
+- [ ] Score calculado com pesos do ServiceType configurado (SPEC-14)
 - [ ] Cache do Maps funciona (2ª chamada com mesmos params < 5ms)
 - [ ] HITL criado com PII mascarado no preview
 - [ ] Operador recebe notificação no Telegram com botões inline
 - [ ] Aprovação da lista dispara LeadApprovedForContact para o Closer
+- [ ] Google Maps retorna fotos (photoUris[]), editorialSummary, businessStatus, priceLevel
+- [ ] Photos cacheadas por 7 dias (URL do media endpoint do Places API)
+- [ ] Lead card na fila exibe fotos, horário de funcionamento, todas as categorias
+- [ ] ProspectingConfig tem campo serviceType (default: SITE_CREATION)
+- [ ] Fórmula de score usa SCORING_WEIGHTS[serviceType] do SPEC-14

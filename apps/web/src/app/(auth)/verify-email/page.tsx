@@ -12,8 +12,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 function VerifyEmailContent() {
+  const t = useTranslations("auth");
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
@@ -21,7 +23,7 @@ function VerifyEmailContent() {
     !token ? "error" : "loading",
   );
   const [errorMessage, setErrorMessage] = useState(
-    !token ? "Token de verificação ausente." : "",
+    !token ? t("verifyEmail.errors.noToken") : "",
   );
 
   useEffect(() => {
@@ -31,17 +33,17 @@ function VerifyEmailContent() {
       try {
         await api.auth.verifyEmail(token);
         setStatus("success");
-      } catch (err: any) {
+      } catch (err: unknown) {
         setStatus("error");
+        const apiErr = err as { errors?: Array<{ message?: string }> };
         setErrorMessage(
-          err.errors?.[0]?.message ||
-            "Falha ao verificar e-mail. O link pode ter expirado.",
+          apiErr.errors?.[0]?.message ?? t("verifyEmail.errors.failed"),
         );
       }
     };
 
     verifyToken();
-  }, [token]);
+  }, [token, t]);
 
   return (
     <Card className="w-full max-w-md mx-4 border-border/50 bg-card/80 backdrop-blur-sm shadow-2xl">
@@ -51,8 +53,8 @@ function VerifyEmailContent() {
             <div className="mx-auto flex items-center justify-center w-16 h-16">
               <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
-            <CardTitle>Verificando e-mail...</CardTitle>
-            <CardDescription>Aguarde um momento.</CardDescription>
+            <CardTitle>{t("verifyEmail.loading")}</CardTitle>
+            <CardDescription>{t("verifyEmail.loadingMessage")}</CardDescription>
           </>
         )}
 
@@ -61,9 +63,9 @@ function VerifyEmailContent() {
             <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 text-green-500">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <CardTitle>E-mail verificado!</CardTitle>
+            <CardTitle>{t("verifyEmail.success.title")}</CardTitle>
             <CardDescription>
-              Sua conta foi ativada com sucesso. Você já pode fazer login.
+              {t("verifyEmail.success.message")}
             </CardDescription>
             <div className="pt-4 flex">
               <Link
@@ -73,7 +75,7 @@ function VerifyEmailContent() {
                   className: "w-full",
                 })}
               >
-                Ir para o Login
+                {t("verifyEmail.success.goToLogin")}
               </Link>
             </div>
           </>
@@ -84,7 +86,7 @@ function VerifyEmailContent() {
             <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 text-destructive">
               <XCircle className="w-8 h-8" />
             </div>
-            <CardTitle>Erro na verificação</CardTitle>
+            <CardTitle>{t("verifyEmail.errors.title")}</CardTitle>
             <CardDescription>{errorMessage}</CardDescription>
             <div className="pt-4 flex">
               <Link
@@ -94,7 +96,7 @@ function VerifyEmailContent() {
                   className: "w-full",
                 })}
               >
-                Voltar para o Login
+                {t("verifyEmail.errors.backToLogin")}
               </Link>
             </div>
           </>

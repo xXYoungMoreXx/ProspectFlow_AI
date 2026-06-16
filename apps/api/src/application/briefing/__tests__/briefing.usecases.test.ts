@@ -110,6 +110,7 @@ describe("ApproveBriefingUseCase", () => {
       briefingId: briefing.id,
       operatorId: "op-1",
       correlationId: randomUUID(),
+      organizationId: "org_mvp",
     });
 
     expect(result.isOk()).toBe(true);
@@ -117,7 +118,7 @@ describe("ApproveBriefingUseCase", () => {
     expect(repo.save).toHaveBeenCalledOnce();
     expect(queue.publishEvent).toHaveBeenCalledOnce();
     expect(queue.enqueueAgentTask).toHaveBeenCalledWith(
-      "builder.generate",
+      "builder.design",
       expect.objectContaining({ briefingId: briefing.id }),
       expect.any(String),
     );
@@ -130,6 +131,7 @@ describe("ApproveBriefingUseCase", () => {
       briefingId: randomUUID(),
       operatorId: "op-1",
       correlationId: randomUUID(),
+      organizationId: "org_mvp",
     });
 
     expect(result.isErr()).toBe(true);
@@ -145,6 +147,7 @@ describe("ApproveBriefingUseCase", () => {
       briefingId: briefing.id,
       operatorId: "op-1",
       correlationId: randomUUID(),
+      organizationId: "org_mvp",
     });
 
     expect(result.isErr()).toBe(true);
@@ -170,7 +173,11 @@ describe("GetBriefingQuery", () => {
     const briefing = makeBriefing();
     repo.findById.mockResolvedValue(briefing);
 
-    const result = await query.execute({ id: briefing.id, operatorId: "op-1" });
+    const result = await query.execute({
+      id: briefing.id,
+      operatorId: "op-1",
+      organizationId: "org_mvp",
+    });
 
     expect(result.isOk()).toBe(true);
     expect(result.unwrap().id).toBe(briefing.id);
@@ -182,6 +189,7 @@ describe("GetBriefingQuery", () => {
     const result = await query.execute({
       id: randomUUID(),
       operatorId: "op-1",
+      organizationId: "org_mvp",
     });
 
     expect(result.isErr()).toBe(true);
@@ -207,7 +215,11 @@ describe("ListBriefingsQuery", () => {
     const briefings = [makeBriefing(), makeBriefing()];
     (repo as any).listByOperator.mockResolvedValue(briefings);
 
-    const result = await query.execute({ operatorId: "op-1", limit: 20 });
+    const result = await query.execute({
+      operatorId: "op-1",
+      organizationId: "org_mvp",
+      limit: 20,
+    });
 
     expect(result.isOk()).toBe(true);
     expect(result.unwrap()).toHaveLength(2);
@@ -261,7 +273,12 @@ describe("DomainEventRouter.handleDealClosed — Redis session", () => {
       set: vi.fn().mockResolvedValue("OK"),
     } as Partial<Redis>;
     const router = makeRouter(
-      { id: "deal-1", operatorId: "op-1", leadId: "lead-1" },
+      {
+        id: "deal-1",
+        operatorId: "op-1",
+        leadId: "lead-1",
+        organizationId: "org_mvp",
+      },
       { id: "lead-1", contact: { name: "Fulano", phone: "+5511999990000" } },
       redisMock,
     );
@@ -279,7 +296,12 @@ describe("DomainEventRouter.handleDealClosed — Redis session", () => {
   it("não chama Redis.set quando lead não tem telefone", async () => {
     const redisMock = { set: vi.fn() } as Partial<Redis>;
     const router = makeRouter(
-      { id: "deal-2", operatorId: "op-1", leadId: "lead-2" },
+      {
+        id: "deal-2",
+        operatorId: "op-1",
+        leadId: "lead-2",
+        organizationId: "org_mvp",
+      },
       { id: "lead-2", contact: { name: "Ciclano", phone: undefined } },
       redisMock,
     );
@@ -349,6 +371,7 @@ describe("ExtractBriefingUseCase", () => {
       briefingId: briefing.id,
       operatorId: "op-1",
       correlationId: randomUUID(),
+      organizationId: "org_mvp",
     });
 
     expect(result.isOk()).toBe(true);
@@ -367,6 +390,7 @@ describe("ExtractBriefingUseCase", () => {
       briefingId: randomUUID(),
       operatorId: "op-1",
       correlationId: randomUUID(),
+      organizationId: "org_mvp",
     });
 
     expect(result.isErr()).toBe(true);
@@ -381,6 +405,7 @@ describe("ExtractBriefingUseCase", () => {
       briefingId: briefing.id,
       operatorId: "op-1",
       correlationId: randomUUID(),
+      organizationId: "org_mvp",
     });
 
     expect(result.isErr()).toBe(true);
@@ -396,6 +421,7 @@ describe("ExtractBriefingUseCase", () => {
       briefingId: briefing.id,
       operatorId: "op-1",
       correlationId: randomUUID(),
+      organizationId: "org_mvp",
     });
 
     expect(result.isErr()).toBe(true);

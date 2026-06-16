@@ -14,7 +14,7 @@ function makeDeal(operatorId = "op-1") {
     operatorId,
     agentId: randomUUID(),
     status: "CLOSED",
-    serviceType: "WEBSITE",
+    serviceType: "SITE_CREATION",
     briefing: {},
     basePriceCents: 150000,
     discountPct: 0,
@@ -69,12 +69,16 @@ describe("DomainEventRouter — deal.closed", () => {
       dealId: deal.id,
       leadId: deal.leadId,
       totalCents: 150000,
-      serviceType: "WEBSITE",
+      serviceType: "SITE_CREATION",
     });
 
     await router.handleDealClosed(event);
 
-    expect(briefingRepo.findByDealId).toHaveBeenCalledWith(deal.id, "op-1");
+    expect(briefingRepo.findByDealId).toHaveBeenCalledWith(
+      deal.id,
+      "op-1",
+      "org_mvp",
+    );
     expect(briefingRepo.save).toHaveBeenCalledOnce();
   });
 
@@ -89,7 +93,7 @@ describe("DomainEventRouter — deal.closed", () => {
       dealId: deal.id,
       leadId: deal.leadId,
       totalCents: 150000,
-      serviceType: "WEBSITE",
+      serviceType: "SITE_CREATION",
     });
 
     await router.handleDealClosed(event);
@@ -104,7 +108,7 @@ describe("DomainEventRouter — deal.closed", () => {
       dealId: "no-such-deal",
       leadId: randomUUID(),
       totalCents: 0,
-      serviceType: "WEBSITE",
+      serviceType: "SITE_CREATION",
     });
 
     await router.handleDealClosed(event);

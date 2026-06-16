@@ -25,7 +25,7 @@ def test_contract_notifier_generates_valid_jwt(mock_client_class, mock_config):
     result = tool._run(deal_id=deal_id, phone="5511999999999", contract_value=1500.00)
 
     assert "sucesso" in result
-    assert "public/deals/deal-123/proposal?token=" in result
+    assert "api/v1/deals/deal-123/proposal?token=" in result
 
     # Extract and validate token
     token = result.split("token=")[1].strip()

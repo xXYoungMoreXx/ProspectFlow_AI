@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useAuthStore } from "@/lib/stores/auth-store";
+import { api } from "@/lib/api";
 
 import {
   Card,
@@ -33,51 +37,68 @@ import {
   UploadCloud,
   FileText,
   X,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 
 const AVAILABLE_SKILLS = [
-  {
-    id: "web_search",
-    name: "Web Search",
-    description: "Allows the agent to search the internet.",
-  },
-  {
-    id: "read_file",
-    name: "Read Files",
-    description: "Allows the agent to read local files.",
-  },
-  {
-    id: "write_file",
-    name: "Write Files",
-    description: "Allows the agent to modify files.",
-  },
-  {
-    id: "security_guard",
-    name: "Security Guard",
-    description: "Runs payload analysis to prevent injection.",
-  },
-];
+  "web_search",
+  "places_search",
+  "cnpj_lookup",
+  "cnpj_enricher",
+  "email_sender",
+  "whatsapp_sender",
+  "contract_notifier",
+  "site_generator",
+] as const;
+
+type AgentSkill = (typeof AVAILABLE_SKILLS)[number];
+
+const MODELS_BY_PROVIDER: Record<string, { value: string; label: string }[]> = {
+  anthropic: [
+    { value: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
+    { value: "claude-opus-4-8", label: "Claude Opus 4.8" },
+    { value: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
+  ],
+  openai: [
+    { value: "o3", label: "o3" },
+    { value: "gpt-4.1", label: "GPT-4.1" },
+    { value: "gpt-4o", label: "GPT-4o" },
+    { value: "gpt-4-turbo", label: "GPT-4 Turbo" },
+  ],
+  google: [
+    { value: "gemini-3.5-flash", label: "Gemini 3.5 Flash" },
+    { value: "gemini-3.1-pro", label: "Gemini 3.1 Pro" },
+  ],
+};
 
 export default function NewAgentPage() {
+  const t = useTranslations("agents");
   const router = useRouter();
+  const token = useAuthStore((s) => s.token);
 
   const [name, setName] = useState("");
   const [persona, setPersona] = useState("HUNTER");
-  const [provider, setProvider] = useState("openai");
-  const [model, setModel] = useState("gpt-4o");
+  const [provider, setProvider] = useState("anthropic");
+  const [model, setModel] = useState("claude-sonnet-4-6");
   const [temperature, setTemperature] = useState([0.7]);
   const [systemPrompt, setSystemPrompt] = useState("");
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<AgentSkill[]>([]);
   const [files, setFiles] = useState<{ name: string; size: number }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Naive token counter approximation (1 word ~ 1.3 tokens)
   const tokenCount = Math.ceil(
     systemPrompt.split(/\s+/).filter(Boolean).length * 1.3,
   );
 
-  const toggleSkill = (skillId: string) => {
+  const handleProviderChange = (newProvider: string | null) => {
+    if (!newProvider) return;
+    setProvider(newProvider);
+    const models = MODELS_BY_PROVIDER[newProvider];
+    if (models && models.length > 0) setModel(models[0]!.value);
+  };
+
+  const toggleSkill = (skillId: AgentSkill) => {
     setSelectedSkills((prev) =>
       prev.includes(skillId)
         ? prev.filter((id) => id !== skillId)
@@ -87,13 +108,14 @@ export default function NewAgentPage() {
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
+    // Capture files synchronously — e.target.files is a live FileList that
+    // can go stale by the time the deferred callback below runs.
+    const newFiles = Array.from(e.target.files).map((f) => ({
+      name: f.name,
+      size: f.size,
+    }));
     setIsUploading(true);
-    // Simulate upload delay
     setTimeout(() => {
-      const newFiles = Array.from(e.target.files!).map((f) => ({
-        name: f.name,
-        size: f.size,
-      }));
       setFiles((prev) => [...prev, ...newFiles]);
       setIsUploading(false);
     }, 1500);
@@ -103,24 +125,20 @@ export default function NewAgentPage() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSave = async () => {
-    // In a real app, we'd make an API call to create the agent
-    console.log({
-      name,
-      persona,
-      systemPrompt,
-      llmConfig: {
-        provider,
-        model,
-        temperature: temperature[0],
-      },
-      skills: selectedSkills,
-    });
-
-    // Simulate API delay
-    await new Promise((r) => setTimeout(r, 1000));
-    router.push("/agents");
-  };
+  const createMutation = useMutation({
+    mutationFn: () =>
+      api.agents.create(
+        {
+          name,
+          persona,
+          llmConfig: { provider, model, temperature: temperature[0] },
+          systemPrompt,
+          skills: selectedSkills,
+        },
+        token!,
+      ),
+    onSuccess: () => router.push("/agents"),
+  });
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-10">
@@ -131,9 +149,11 @@ export default function NewAgentPage() {
           </Button>
         </Link>
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Create Agent</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            {t("new.title")}
+          </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Configure a new autonomous AI agent persona and capabilities
+            {t("new.subtitle")}
           </p>
         </div>
       </div>
@@ -145,54 +165,56 @@ export default function NewAgentPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Bot className="w-5 h-5 text-primary" />
-                Agent Identity
+                {t("new.identity")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Agent Name</Label>
+                <Label htmlFor="name">{t("new.agentName")}</Label>
                 <Input
                   id="name"
-                  placeholder="e.g. Prospector Alpha"
+                  placeholder={t("new.agentNamePlaceholder")}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Persona Type</Label>
+                <Label>{t("new.persona")}</Label>
                 <Select
                   value={persona}
                   onValueChange={(v) => v && setPersona(v)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select persona" />
+                    <SelectValue placeholder={t("new.personaPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="HUNTER">
-                      Hunter (Lead Generation)
+                      {t("new.personas.HUNTER")}
                     </SelectItem>
-                    <SelectItem value="CLOSER">Closer (Negotiation)</SelectItem>
+                    <SelectItem value="CLOSER">
+                      {t("new.personas.CLOSER")}
+                    </SelectItem>
                     <SelectItem value="BUILDER">
-                      Builder (Development/Execution)
+                      {t("new.personas.BUILDER")}
                     </SelectItem>
-                    <SelectItem value="QA">QA (Quality Assurance)</SelectItem>
+                    <SelectItem value="QA">{t("new.personas.QA")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2 pt-2">
                 <div className="flex justify-between items-end">
-                  <Label htmlFor="prompt">System Prompt</Label>
+                  <Label htmlFor="prompt">{t("new.systemPrompt")}</Label>
                   <span
                     className={`text-xs ${tokenCount > 6000 ? "text-destructive font-semibold" : "text-muted-foreground"}`}
                   >
-                    ~{tokenCount} tokens
+                    ~{tokenCount} {t("new.tokens")}
                   </span>
                 </div>
                 <Textarea
                   id="prompt"
-                  placeholder="You are an expert lead generator..."
+                  placeholder={t("new.systemPromptPlaceholder")}
                   className="min-h-[200px] font-mono text-sm"
                   value={systemPrompt}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
@@ -200,8 +222,7 @@ export default function NewAgentPage() {
                   }
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  Define the agent&apos;s behavior, constraints, and operational
-                  guidelines.
+                  {t("new.systemPromptHint")}
                 </p>
               </div>
             </CardContent>
@@ -212,71 +233,36 @@ export default function NewAgentPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Cpu className="w-5 h-5 text-primary" />
-                LLM Configuration
+                {t("new.llmConfig")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Provider</Label>
-                  <Select
-                    value={provider}
-                    onValueChange={(v) => v && setProvider(v)}
-                  >
+                  <Label>{t("new.provider")}</Label>
+                  <Select value={provider} onValueChange={handleProviderChange}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select provider" />
+                      <SelectValue placeholder={t("new.providerPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="openai">OpenAI</SelectItem>
                       <SelectItem value="anthropic">Anthropic</SelectItem>
+                      <SelectItem value="openai">OpenAI</SelectItem>
                       <SelectItem value="google">Google Gemini</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Model</Label>
+                  <Label>{t("new.model")}</Label>
                   <Select value={model} onValueChange={(v) => v && setModel(v)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select model" />
+                      <SelectValue placeholder={t("new.modelPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {provider === "openai" && (
-                        <>
-                          <SelectItem value="gpt-4o">GPT-4o</SelectItem>
-                          <SelectItem value="gpt-4-turbo">
-                            GPT-4 Turbo
-                          </SelectItem>
-                          <SelectItem value="gpt-3.5-turbo">
-                            GPT-3.5 Turbo
-                          </SelectItem>
-                        </>
-                      )}
-                      {provider === "anthropic" && (
-                        <>
-                          <SelectItem value="claude-4.7-opus">
-                            Claude 4.7 Opus
-                          </SelectItem>
-                          <SelectItem value="claude-4.6-opus">
-                            Claude 4.6 Opus
-                          </SelectItem>
-                          <SelectItem value="claude-4.7-sonnet">
-                            Claude 4.7 Sonnet
-                          </SelectItem>
-                        </>
-                      )}
-                      {provider === "google" && (
-                        <>
-                          <SelectItem value="gemini-3.1-pro">
-                            Gemini 3.1 Pro
-                          </SelectItem>
-                          <SelectItem value="gemini-3.1-flash">
-                            Gemini 3.1 Flash
-                          </SelectItem>
-                          <SelectItem value="gemini-3.0-ultra">
-                            Gemini 3.0 Ultra
-                          </SelectItem>
-                        </>
-                      )}
+                      {(MODELS_BY_PROVIDER[provider] ?? []).map((m) => (
+                        <SelectItem key={m.value} value={m.value}>
+                          {m.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -284,7 +270,7 @@ export default function NewAgentPage() {
 
               <div className="space-y-4">
                 <div className="flex justify-between">
-                  <Label>Temperature</Label>
+                  <Label>{t("new.temperature")}</Label>
                   <span className="text-sm text-muted-foreground font-mono">
                     {temperature[0]}
                   </span>
@@ -299,8 +285,8 @@ export default function NewAgentPage() {
                   className="py-2"
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Deterministic (0.0)</span>
-                  <span>Creative (2.0)</span>
+                  <span>{t("new.tempMin")}</span>
+                  <span>{t("new.tempMax")}</span>
                 </div>
               </div>
             </CardContent>
@@ -311,12 +297,9 @@ export default function NewAgentPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary" />
-                Knowledge Base & Rules
+                {t("new.knowledgeBase")}
               </CardTitle>
-              <CardDescription>
-                Upload reference materials (.pdf, .txt, .csv) for the
-                agent&apos;s context.
-              </CardDescription>
+              <CardDescription>{t("new.knowledgeHint")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center space-y-3 hover:bg-muted/50 transition-colors relative">
@@ -333,12 +316,10 @@ export default function NewAgentPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">
-                    {isUploading
-                      ? "Validating and uploading..."
-                      : "Click or drag files here"}
+                    {isUploading ? t("new.uploading") : t("new.uploadCta")}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Files will be parsed into vector embeddings automatically
+                    {t("new.uploadHint")}
                   </p>
                 </div>
               </div>
@@ -346,7 +327,7 @@ export default function NewAgentPage() {
               {files.length > 0 && (
                 <div className="space-y-2 mt-4">
                   <h4 className="text-sm font-medium">
-                    Uploaded Files ({files.length})
+                    {t("new.uploadedFiles")} ({files.length})
                   </h4>
                   <div className="space-y-2">
                     {files.map((file, i) => (
@@ -384,32 +365,30 @@ export default function NewAgentPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-amber-500" />
-                Agent Skills
+                {t("new.agentSkills")}
               </CardTitle>
-              <CardDescription>
-                Select capabilities for this agent
-              </CardDescription>
+              <CardDescription>{t("new.skillsHint")}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               {AVAILABLE_SKILLS.map((skill) => (
                 <div
-                  key={skill.id}
+                  key={skill}
                   className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                 >
                   <Switch
-                    id={`skill-${skill.id}`}
-                    checked={selectedSkills.includes(skill.id)}
-                    onCheckedChange={() => toggleSkill(skill.id)}
+                    id={`skill-${skill}`}
+                    checked={selectedSkills.includes(skill)}
+                    onCheckedChange={() => toggleSkill(skill)}
                   />
                   <div className="space-y-1 mt-[-2px]">
                     <Label
-                      htmlFor={`skill-${skill.id}`}
+                      htmlFor={`skill-${skill}`}
                       className="font-semibold cursor-pointer"
                     >
-                      {skill.name}
+                      {t(`new.skillLabels.${skill}`)}
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      {skill.description}
+                      {t(`new.skillLabels.${skill}Desc`)}
                     </p>
                   </div>
                 </div>
@@ -424,16 +403,29 @@ export default function NewAgentPage() {
                 Security Guard
               </div>
               <p className="text-xs text-muted-foreground">
-                All agents are subjected to the global security middleware.
-                Outbound payloads are inspected automatically.
+                {t("new.securityNote")}
               </p>
+              {createMutation.isError && (
+                <p className="text-xs text-destructive">
+                  {t("new.deployError")}
+                </p>
+              )}
               <Button
-                onClick={handleSave}
+                onClick={() => createMutation.mutate()}
                 className="w-full gap-2 mt-4"
-                disabled={!name}
+                disabled={!name || createMutation.isPending}
               >
-                <Save className="w-4 h-4" />
-                Deploy Agent
+                {createMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {t("new.deploying")}
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    {t("new.deploy")}
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>

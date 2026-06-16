@@ -1,0 +1,306 @@
+﻿# AgentePro - Production Infrastructure
+# All secrets via environment variables - never hardcode credentials here.
+# Usage: docker compose -f infra/docker-compose.prod.yml up -d
+
+services:
+  api:
+    image: ghcr.io/agentepro/api:${API_IMAGE_TAG:-latest}
+    container_name: agentepro-api
+    restart: always
+    ports:
+      - "127.0.0.1:3001:3001"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      AGENT_RUNTIME_URL: http://agent-runtime:8001
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+      EVOLUTION_API_URL: ${EVOLUTION_API_URL}
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        ["CMD-SHELL", "curl -sf http://localhost:3001/api/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - internal
+      - proxy
+
+  web:
+    image: ghcr.io/agentepro/web:${WEB_IMAGE_TAG:-latest}
+    container_name: agentepro-web
+    restart: always
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - internal
+      - proxy
+
+  agent-runtime:
+    image: ghcr.io/agentepro/agent-runtime:${RUNTIME_IMAGE_TAG:-latest}
+    container_name: agentepro-agent-runtime
+    restart: always
+    ports:
+      - "127.0.0.1:8001:8001"
+    environment:
+      REDIS_URL: ${REDIS_URL}
+      CHROMADB_URL: http://chromadb:8000
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      LLM_MODEL: ${LLM_MODEL:-anthropic/claude-sonnet-4-20250514}
+      LLM_SMALL_MODEL: ${LLM_SMALL_MODEL:-anthropic/claude-haiku-4-20250414}
+      API_URL: http://api:3001
+      API_TOKEN: ${RUNTIME_API_TOKEN}
+      RUNTIME_HOST: 0.0.0.0
+      RUNTIME_PORT: "8001"
+      TRANSPARENCIA_API_KEY: ${TRANSPARENCIA_API_KEY}
+      SEARXNG_URL: http://searxng:8080
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    depends_on:
+      chromadb:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: agentepro-postgres
+    restart: always
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-agentepro}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agentepro}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: agentepro-redis
+    restart: always
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: redis-server --maxmemory-policy noeviction --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - internal
+
+  chromadb:
+    image: chromadb/chroma:0.5.20
+    container_name: agentepro-chromadb
+    restart: always
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      ANONYMIZED_TELEMETRY: "false"
+    networks:
+      - internal
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: agentepro-ollama
+    restart: always
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - internal
+
+  searxng:
+    image: searxng/searxng:latest
+    container_name: agentepro-searxng
+    restart: always
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      - SEARXNG_BASE_URL=${SEARXNG_BASE_URL:-http://localhost:8080}
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --spider http://localhost:8080/healthz || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - internal
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: agentepro-n8n
+    restart: always
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: ${N8N_ADMIN_USER}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_ADMIN_PASSWORD}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-https}
+      WEBHOOK_URL: ${N8N_WEBHOOK_URL}
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: "5432"
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: agentepro-prometheus
+    restart: always
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - internal
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: agentepro-grafana
+    restart: always
+    ports:
+      - "127.0.0.1:3333:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+      - jaeger
+    networks:
+      - internal
+      - proxy
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.60
+    container_name: agentepro-jaeger
+    restart: always
+    ports:
+      - "127.0.0.1:16686:16686"
+      - "127.0.0.1:4318:4318"
+      - "127.0.0.1:4317:4317"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    networks:
+      - internal
+
+  loki:
+    image: grafana/loki:3.1.0
+    container_name: agentepro-loki
+    restart: always
+    ports:
+      - "127.0.0.1:3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    networks:
+      - internal
+
+  promtail:
+    image: grafana/promtail:3.1.0
+    container_name: agentepro-promtail
+    restart: always
+    volumes:
+      - ./promtail/config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:-nginx-proxy}
+
+volumes:
+  postgres_data:
+  redis_data:
+  chroma_data:
+  n8n_data:
+  grafana_data:
+  prometheus_data:
+  loki_data:
+  ollama_data:

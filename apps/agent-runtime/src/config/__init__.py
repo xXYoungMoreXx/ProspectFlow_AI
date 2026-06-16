@@ -2,6 +2,7 @@
 AgentePro Runtime Configuration — Pydantic Settings
 Validated on startup, fails fast on missing required values.
 """
+
 from __future__ import annotations
 
 from pydantic import SecretStr
@@ -35,7 +36,7 @@ class RuntimeConfig(BaseSettings):
     api_url: str = "http://localhost:3001"
     api_token: str | None = None
     runtime_port: int = 8001
-    runtime_host: str = "0.0.0.0"
+    runtime_host: str = "0.0.0.0"  # noqa: S104
 
     # ── Security ─────────────────────────────────────────────────────────
     max_input_length: int = 4000
@@ -43,5 +44,9 @@ class RuntimeConfig(BaseSettings):
 
     # ── MCP Brasil ───────────────────────────────────────────────────────
     transparencia_api_key: SecretStr | None = None
-    
+
+    # ── SearXNG ──────────────────────────────────────────────────────────────
+    searxng_url: str | None = None
+
+
 config = RuntimeConfig()

@@ -11,6 +11,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## Commits
+
+- Use lowercase commit subjects following Conventional Commits (e.g., `fix: ...`, `feat: ...`); avoid uppercase subjects even in pt-BR.
+- Run typecheck and relevant tests before committing.
+
+## Environment & Tooling
+
+- This project runs on Windows; prefer PowerShell for shell commands. Never use bash heredocs for file creation — use the Write tool or PowerShell `Set-Content`/`Out-File -Encoding utf8` instead (heredocs fail here).
+- Watch for CRLF line endings when parsing .env files.
+
+## MCP & Config
+
+- Place MCP server config in `.mcp.json` (not `settings.json`). Hooks go in `.claude/settings.json`.
+
+## Workflow
+
+- Use the spec-driven, isolated-worktree workflow: implement in a worktree, run typecheck/tests, merge to develop, then update specs and memory files.
+- After completing any feature or fix, update memory files (project-sprint-backlog, project-architectural-decisions-s5, project-domain-gotchas, project-gap-analysis) with key learnings and current project state — do this automatically, without waiting to be asked.
+
+## CI
+
+- Before pushing CI changes, validate pytest flags, GitHub Action version tags, and avoid double-passing flags to catch failures locally.
+
+---
+
 ## 0-A. COMANDOS DE DESENVOLVIMENTO
 
 Monorepo npm workspaces + Turborepo. `node >= 22`, `npm@10.9.0`. Rode os comandos da raiz salvo indicação.
@@ -72,6 +97,7 @@ python scripts/seed_builder_rag.py          # popula ChromaDB com knowledge do B
 ```bash
 docker compose -f infra/docker-compose.yml up -d
 ```
+
 Sobe: PostgreSQL 16 (5432), Redis 7 (6379), ChromaDB (8000), Ollama (11434), n8n (5678),
 e a stack de observabilidade — Prometheus (9090), Grafana (3333), Jaeger (16686 UI / 4318 OTLP), Loki (3100), Promtail.
 
@@ -250,6 +276,7 @@ application → http              ❌ PROIBIDO
 ```
 
 ### Proibido sem exceção:
+
 ```typescript
 // ❌ NUNCA usar 'any' explícito
 const data: any = ...;
@@ -272,6 +299,7 @@ process.env.ANTHROPIC_API_KEY; // PROIBIDO fora de infrastructure/config
 ```
 
 ### Obrigatório:
+
 ```typescript
 // ✅ Tipos explícitos em assinaturas públicas
 async function findById(id: LeadId): Promise<Lead | null> { ... }
@@ -298,26 +326,26 @@ type Result<T, E = DomainError> =
 
 ## 6. NOMENCLATURA — SEGUIR EXATAMENTE
 
-| Artefato | Convenção | Exemplo |
-|---|---|---|
-| Arquivos TypeScript | kebab-case | `lead-repository.ts` |
-| Arquivos Python | snake_case | `lead_repository.py` |
-| Classes | PascalCase | `LeadRepository` |
-| Interfaces | PascalCase sem prefixo I | `LeadRepository` (não `ILeadRepository`) |
-| Funções/métodos | camelCase | `findByEmail()` |
-| Variáveis | camelCase | `qualificationScore` |
-| Constantes de módulo | SCREAMING_SNAKE_CASE | `MAX_FILE_SIZE_MB` |
-| Tipos/Enums TypeScript | PascalCase | `LeadStatus`, `AgentPersona` |
-| Domain Events | PascalCase + sufixo | `LeadQualified`, `DealClosed` |
-| Use Cases | PascalCase + sufixo UC | `QualifyLeadUseCase` |
-| Commands | PascalCase + sufixo Command | `QualifyLeadCommand` |
-| Handlers | PascalCase + sufixo Handler | `QualifyLeadHandler` |
-| Adapters | PascalCase + Adapter | `GoogleMapsAdapter` |
-| Ports (interfaces) | PascalCase + Port | `MediaGenerationPort` |
-| Tabelas SQL | snake_case plural | `leads`, `sub_agents`, `hitl_approvals` |
-| Colunas SQL | snake_case | `qualification_score`, `created_at` |
-| Rotas HTTP | kebab-case plural | `/api/v1/sub-agents` |
-| Variáveis de ambiente | SCREAMING_SNAKE_CASE | `GOOGLE_MAPS_API_KEY` |
+| Artefato               | Convenção                   | Exemplo                                  |
+| ---------------------- | --------------------------- | ---------------------------------------- |
+| Arquivos TypeScript    | kebab-case                  | `lead-repository.ts`                     |
+| Arquivos Python        | snake_case                  | `lead_repository.py`                     |
+| Classes                | PascalCase                  | `LeadRepository`                         |
+| Interfaces             | PascalCase sem prefixo I    | `LeadRepository` (não `ILeadRepository`) |
+| Funções/métodos        | camelCase                   | `findByEmail()`                          |
+| Variáveis              | camelCase                   | `qualificationScore`                     |
+| Constantes de módulo   | SCREAMING_SNAKE_CASE        | `MAX_FILE_SIZE_MB`                       |
+| Tipos/Enums TypeScript | PascalCase                  | `LeadStatus`, `AgentPersona`             |
+| Domain Events          | PascalCase + sufixo         | `LeadQualified`, `DealClosed`            |
+| Use Cases              | PascalCase + sufixo UC      | `QualifyLeadUseCase`                     |
+| Commands               | PascalCase + sufixo Command | `QualifyLeadCommand`                     |
+| Handlers               | PascalCase + sufixo Handler | `QualifyLeadHandler`                     |
+| Adapters               | PascalCase + Adapter        | `GoogleMapsAdapter`                      |
+| Ports (interfaces)     | PascalCase + Port           | `MediaGenerationPort`                    |
+| Tabelas SQL            | snake_case plural           | `leads`, `sub_agents`, `hitl_approvals`  |
+| Colunas SQL            | snake_case                  | `qualification_score`, `created_at`      |
+| Rotas HTTP             | kebab-case plural           | `/api/v1/sub-agents`                     |
+| Variáveis de ambiente  | SCREAMING_SNAKE_CASE        | `GOOGLE_MAPS_API_KEY`                    |
 
 ---
 
@@ -330,67 +358,73 @@ export class DomainError extends Error {
   constructor(
     message: string,
     readonly code: string,
-    readonly context?: Record<string, unknown>
+    readonly context?: Record<string, unknown>,
   ) {
     super(message);
-    this.name = 'DomainError';
+    this.name = "DomainError";
   }
 }
 
 export class ValidationError extends DomainError {
-  constructor(message: string, readonly field?: string) {
-    super(message, 'VALIDATION_ERROR', { field });
-    this.name = 'ValidationError';
+  constructor(
+    message: string,
+    readonly field?: string,
+  ) {
+    super(message, "VALIDATION_ERROR", { field });
+    this.name = "ValidationError";
   }
 }
 
 export class AuthenticationError extends DomainError {
   constructor() {
     // SEMPRE mensagem genérica — anti-enumeração
-    super('Credenciais inválidas', 'AUTHENTICATION_ERROR');
-    this.name = 'AuthenticationError';
+    super("Credenciais inválidas", "AUTHENTICATION_ERROR");
+    this.name = "AuthenticationError";
   }
 }
 
 export class NotFoundError extends DomainError {
   constructor(resource: string, id: string) {
-    super(`${resource} não encontrado`, 'NOT_FOUND', { resource, id });
-    this.name = 'NotFoundError';
+    super(`${resource} não encontrado`, "NOT_FOUND", { resource, id });
+    this.name = "NotFoundError";
   }
 }
 
 export class HITLRequiredError extends DomainError {
   constructor(actionType: string) {
-    super(`Ação requer aprovação HITL: ${actionType}`, 'HITL_REQUIRED', { actionType });
-    this.name = 'HITLRequiredError';
+    super(`Ação requer aprovação HITL: ${actionType}`, "HITL_REQUIRED", {
+      actionType,
+    });
+    this.name = "HITLRequiredError";
   }
 }
 
 export class QuotaExceededError extends DomainError {
   constructor(service: string, limit: number) {
-    super(`Quota excedida: ${service}`, 'QUOTA_EXCEEDED', { service, limit });
-    this.name = 'QuotaExceededError';
+    super(`Quota excedida: ${service}`, "QUOTA_EXCEEDED", { service, limit });
+    this.name = "QuotaExceededError";
   }
 }
 
 export class SecurityError extends DomainError {
   constructor(message: string) {
-    super(message, 'SECURITY_ERROR');
-    this.name = 'SecurityError';
+    super(message, "SECURITY_ERROR");
+    this.name = "SecurityError";
   }
 }
 ```
 
 ### Mapeamento de erros para HTTP (no errorHandler do Fastify):
+
 ```typescript
 const HTTP_STATUS_MAP: Record<string, number> = {
-  'VALIDATION_ERROR':    400,
-  'AUTHENTICATION_ERROR':401,
-  'HITL_REQUIRED':       403,
-  'NOT_FOUND':           404,
-  'QUOTA_EXCEEDED':      429,
-  'SECURITY_ERROR':      400,
-  'DOMAIN_ERROR':        422,
+  VALIDATION_ERROR: 400,
+  AUTHENTICATION_ERROR: 401,
+  HITL_REQUIRED: 403,
+  NOT_FOUND: 404,
+  QUOTA_EXCEEDED: 429,
+  SECURITY_ERROR: 400,
+  DOMAIN_ERROR: 422,
   // Qualquer outro: 500 (sem expor detalhes)
 };
 ```
@@ -402,13 +436,20 @@ const HTTP_STATUS_MAP: Record<string, number> = {
 ```typescript
 // infrastructure/logger.ts — usar sempre este logger, nunca console.*
 
-import pino from 'pino';
+import pino from "pino";
 
 export const logger = pino({
-  level: process.env.LOG_LEVEL ?? 'info',
+  level: process.env.LOG_LEVEL ?? "info",
   redact: [
-    'email', 'password', 'contactPhone', 'contactEmail',
-    'cpf', 'cnpj', '*.apiKey', '*.token', 'authorization'
+    "email",
+    "password",
+    "contactPhone",
+    "contactEmail",
+    "cpf",
+    "cnpj",
+    "*.apiKey",
+    "*.token",
+    "authorization",
   ],
   serializers: {
     err: pino.stdSerializers.err,
@@ -419,17 +460,17 @@ export const logger = pino({
 const log = logger.child({
   correlationId: request.id,
   agentId: agent.id.value,
-  module: 'LeadQualificationUseCase',
+  module: "LeadQualificationUseCase",
 });
 
-log.info({ leadId: lead.id.value, score: 78 }, 'lead_qualified');
-log.warn({ source: 'google_maps', remaining: 150 }, 'maps_quota_low');
-log.error({ err: error, leadId }, 'lead_qualification_failed');
+log.info({ leadId: lead.id.value, score: 78 }, "lead_qualified");
+log.warn({ source: "google_maps", remaining: 150 }, "maps_quota_low");
+log.error({ err: error, leadId }, "lead_qualification_failed");
 
 // PROIBIDO:
-console.log('lead qualificado:', lead);      // ❌
-logger.info('lead qualificado ' + lead.id);  // ❌ interpolação
-log.info({ email: lead.email });             // ❌ PII sem redact
+console.log("lead qualificado:", lead); // ❌
+logger.info("lead qualificado " + lead.id); // ❌ interpolação
+log.info({ email: lead.email }); // ❌ PII sem redact
 ```
 
 ---
@@ -437,6 +478,7 @@ log.info({ email: lead.email });             // ❌ PII sem redact
 ## 9. TESTES — TDD OBRIGATÓRIO
 
 ### Ordem obrigatória para toda feature:
+
 ```
 1. Escrever o teste (RED — falha esperada)
 2. Escrever código mínimo para passar (GREEN)
@@ -445,41 +487,45 @@ log.info({ email: lead.email });             // ❌ PII sem redact
 ```
 
 ### Estrutura de teste obrigatória:
+
 ```typescript
 // tests/unit/domain/lead/Lead.test.ts
 
-describe('Lead', () => {
-  describe('qualify()', () => {
-    it('deve qualificar lead quando score >= 40', () => {
-      const lead = LeadFactory.create({ status: 'NEW' });
+describe("Lead", () => {
+  describe("qualify()", () => {
+    it("deve qualificar lead quando score >= 40", () => {
+      const lead = LeadFactory.create({ status: "NEW" });
       const score = new QualificationScore(75);
 
       const event = lead.qualify(score);
 
-      expect(lead.status).toBe('QUALIFIED');
+      expect(lead.status).toBe("QUALIFIED");
       expect(lead.qualificationScore.value).toBe(75);
-      expect(event.eventType).toBe('LeadQualified');
+      expect(event.eventType).toBe("LeadQualified");
       expect(event.payload.score).toBe(75);
     });
 
-    it('deve lançar ValidationError quando score < 0', () => {
+    it("deve lançar ValidationError quando score < 0", () => {
       const lead = LeadFactory.create();
 
-      expect(() => lead.qualify(new QualificationScore(-1)))
-        .toThrow(ValidationError);
+      expect(() => lead.qualify(new QualificationScore(-1))).toThrow(
+        ValidationError,
+      );
     });
 
-    it('deve lançar DomainError quando lead já foi convertido', () => {
+    it("deve lançar DomainError quando lead já foi convertido", () => {
       const lead = LeadFactory.createConverted();
 
-      expect(() => lead.qualify(new QualificationScore(80)))
-        .toThrow(expect.objectContaining({ code: 'INVALID_STATE' }));
+      expect(() => lead.qualify(new QualificationScore(80))).toThrow(
+        expect.objectContaining({ code: "INVALID_STATE" }),
+      );
     });
   });
 });
 ```
 
 ### Factories obrigatórias (nunca criar objetos "na mão" nos testes):
+
 ```typescript
 // tests/factories/lead.factory.ts
 
@@ -487,10 +533,10 @@ export class LeadFactory {
   static create(overrides: Partial<LeadProps> = {}): Lead {
     return Lead.create({
       id: new LeadId(randomUUID()),
-      contactName: 'João Silva',
-      source: 'GOOGLE_MAPS',
-      status: 'NEW',
-      preferredChannel: 'WHATSAPP',
+      contactName: "João Silva",
+      source: "GOOGLE_MAPS",
+      status: "NEW",
+      preferredChannel: "WHATSAPP",
       enrichmentData: EnrichmentDataFactory.createActive(),
       ...overrides,
     });
@@ -546,14 +592,14 @@ Para pular em emergências: `git commit --no-verify` / `git push --no-verify` �
 // domain/shared/DomainEvent.ts
 
 export interface DomainEvent<T = Record<string, unknown>> {
-  readonly eventId: string;           // UUID v4
-  readonly eventType: string;         // 'LeadQualified'
-  readonly aggregateId: string;       // ID da entidade principal
-  readonly aggregateType: string;     // 'Lead'
-  readonly occurredAt: string;        // ISO 8601
-  readonly correlationId: string;     // UUID — rastreia o fluxo
-  readonly causationId?: string;      // UUID — evento que causou este
-  readonly schemaVersion: string;     // '1.0.0'
+  readonly eventId: string; // UUID v4
+  readonly eventType: string; // 'LeadQualified'
+  readonly aggregateId: string; // ID da entidade principal
+  readonly aggregateType: string; // 'Lead'
+  readonly occurredAt: string; // ISO 8601
+  readonly correlationId: string; // UUID — rastreia o fluxo
+  readonly causationId?: string; // UUID — evento que causou este
+  readonly schemaVersion: string; // '1.0.0'
   readonly payload: T;
 }
 
@@ -568,7 +614,7 @@ class Lead extends AggregateRoot {
 
   qualify(score: QualificationScore): void {
     // ... lógica de domínio
-    this.status = 'QUALIFIED';
+    this.status = "QUALIFIED";
     this._events.push(createLeadQualifiedEvent(this));
   }
 
@@ -597,9 +643,9 @@ export interface QualifyLeadCommand {
 // USE CASE — sem estado, sem efeitos colaterais fora do método execute()
 export class QualifyLeadUseCase {
   constructor(
-    private readonly leadRepo: LeadRepository,         // interface, não impl
-    private readonly mapsAdapter: GoogleMapsPort,      // interface, não impl
-    private readonly mcpBrasil: MCPBrasilPort,         // interface, não impl
+    private readonly leadRepo: LeadRepository, // interface, não impl
+    private readonly mapsAdapter: GoogleMapsPort, // interface, não impl
+    private readonly mcpBrasil: MCPBrasilPort, // interface, não impl
     private readonly scoringService: LeadScoringService,
     private readonly hitlService: HITLService,
     private readonly eventBus: EventBus,
@@ -608,13 +654,13 @@ export class QualifyLeadUseCase {
 
   async execute(command: QualifyLeadCommand): Promise<QualifyLeadResult> {
     const log = this.logger.child({
-      useCase: 'QualifyLeadUseCase',
+      useCase: "QualifyLeadUseCase",
       correlationId: command.correlationId,
     });
 
     // 1. Buscar aggregate
     const lead = await this.leadRepo.findById(new LeadId(command.leadId));
-    if (!lead) throw new NotFoundError('Lead', command.leadId);
+    if (!lead) throw new NotFoundError("Lead", command.leadId);
 
     // 2. Enriquecer dados
     const enrichment = await this.mcpBrasil.consultarCNPJ(lead.cnpjHint);
@@ -633,7 +679,7 @@ export class QualifyLeadUseCase {
     const events = lead.pullEvents();
     await this.eventBus.publishAll(events);
 
-    log.info({ leadId: command.leadId, score: score.value }, 'lead_qualified');
+    log.info({ leadId: command.leadId, score: score.value }, "lead_qualified");
 
     return { leadId: lead.id.value, score: score.value };
   }
@@ -665,7 +711,7 @@ export class GoogleMapsAdapter implements GoogleMapsPort {
 
   async searchLeads(params: LeadSearchParams): Promise<GooglePlace[]> {
     // Rate limiting ANTES da chamada
-    await this.rateLimiter.consume('maps_daily', 1);
+    await this.rateLimiter.consume("maps_daily", 1);
 
     // Cache check
     const cacheKey = this.cache.mapsKey(params.category, params.region);
@@ -676,21 +722,25 @@ export class GoogleMapsAdapter implements GoogleMapsPort {
     // validateExternalUrl(this.baseUrl); // já fixo, não necessário aqui
 
     const response = await fetch(this.BASE_URL, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': this.apiKey,
-        'X-Goog-FieldMask': REQUIRED_FIELDS.join(','),
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": this.apiKey,
+        "X-Goog-FieldMask": REQUIRED_FIELDS.join(","),
       },
       body: JSON.stringify(this.buildRequest(params)),
       signal: AbortSignal.timeout(10_000), // timeout de 10s
     });
 
     if (!response.ok) {
-      throw new ExternalServiceError('Google Maps', response.status, await response.text());
+      throw new ExternalServiceError(
+        "Google Maps",
+        response.status,
+        await response.text(),
+      );
     }
 
-    const data = await response.json() as GoogleMapsResponse;
+    const data = (await response.json()) as GoogleMapsResponse;
     const places = this.mapToPlaces(data.places ?? []);
 
     // Cachear por 24h
@@ -701,9 +751,9 @@ export class GoogleMapsAdapter implements GoogleMapsPort {
 
   private mapToPlaces(raw: RawGooglePlace[]): GooglePlace[] {
     // Mapeamento isolado — mudança na API externa só afeta aqui
-    return raw.map(p => ({
+    return raw.map((p) => ({
       id: p.id,
-      displayName: p.displayName?.text ?? '',
+      displayName: p.displayName?.text ?? "",
       phone: p.nationalPhoneNumber,
       website: p.websiteUri,
       rating: p.rating,
@@ -721,50 +771,59 @@ export class GoogleMapsAdapter implements GoogleMapsPort {
 ```typescript
 // http/routes/leads.routes.ts
 
-import { FastifyInstance } from 'fastify';
-import { z } from 'zod';
-import { authMiddleware } from '../middleware/auth.middleware';
-import { CreateLeadCommand } from '../../application/lead/CreateLeadUseCase';
+import { FastifyInstance } from "fastify";
+import { z } from "zod";
+import { authMiddleware } from "../middleware/auth.middleware";
+import { CreateLeadCommand } from "../../application/lead/CreateLeadUseCase";
 
 // Schema Zod — compartilhado com frontend via @agentepro/shared-types
-const CreateLeadSchema = z.object({
-  contactName:   z.string().min(2).max(100),
-  contactPhone:  z.string().regex(/^\+55\d{10,11}$/).optional(),
-  contactEmail:  z.string().email().optional(),
-  businessName:  z.string().min(2).max(200),
-  source:        z.enum(['MANUAL', 'GOOGLE_MAPS', 'SCRAPED', 'REFERRAL', 'APOLLO']),
-}).refine(
-  data => data.contactPhone || data.contactEmail,
-  { message: 'Ao menos telefone ou email é obrigatório', path: ['contactPhone'] }
-);
+const CreateLeadSchema = z
+  .object({
+    contactName: z.string().min(2).max(100),
+    contactPhone: z
+      .string()
+      .regex(/^\+55\d{10,11}$/)
+      .optional(),
+    contactEmail: z.string().email().optional(),
+    businessName: z.string().min(2).max(200),
+    source: z.enum(["MANUAL", "GOOGLE_MAPS", "SCRAPED", "REFERRAL", "APOLLO"]),
+  })
+  .refine((data) => data.contactPhone || data.contactEmail, {
+    message: "Ao menos telefone ou email é obrigatório",
+    path: ["contactPhone"],
+  });
 
 export async function leadsRoutes(app: FastifyInstance): Promise<void> {
   // Aplicar auth em todas as rotas deste plugin
-  app.addHook('preHandler', authMiddleware);
+  app.addHook("preHandler", authMiddleware);
 
-  app.post('/leads', {
-    schema: {
-      body: CreateLeadSchema,
-      // Response schema para documentação automática
-      response: {
-        201: LeadResponseSchema,
-        400: ValidationErrorSchema,
-        429: RateLimitErrorSchema,
+  app.post(
+    "/leads",
+    {
+      schema: {
+        body: CreateLeadSchema,
+        // Response schema para documentação automática
+        response: {
+          201: LeadResponseSchema,
+          400: ValidationErrorSchema,
+          429: RateLimitErrorSchema,
+        },
       },
     },
-  }, async (request, reply) => {
-    const command: CreateLeadCommand = {
-      ...request.body,
-      operatorId: request.operator.id,
-      correlationId: request.id, // Fastify gera UUID por request
-    };
+    async (request, reply) => {
+      const command: CreateLeadCommand = {
+        ...request.body,
+        operatorId: request.operator.id,
+        correlationId: request.id, // Fastify gera UUID por request
+      };
 
-    const result = await app.container
-      .resolve(CreateLeadUseCase)
-      .execute(command);
+      const result = await app.container
+        .resolve(CreateLeadUseCase)
+        .execute(command);
 
-    return reply.status(201).send({ data: result });
-  });
+      return reply.status(201).send({ data: result });
+    },
+  );
 }
 ```
 
@@ -775,21 +834,25 @@ export async function leadsRoutes(app: FastifyInstance): Promise<void> {
 ```typescript
 // container.ts — todo wiring de dependências em um único lugar
 
-import 'reflect-metadata';
-import { container } from 'tsyringe';
+import "reflect-metadata";
+import { container } from "tsyringe";
 
 // Infrastructure
-container.register<LeadRepository>('LeadRepository',
-  { useClass: DrizzleLeadRepository });
+container.register<LeadRepository>("LeadRepository", {
+  useClass: DrizzleLeadRepository,
+});
 
-container.register<GoogleMapsPort>('GoogleMapsPort',
-  { useClass: GoogleMapsAdapter });
+container.register<GoogleMapsPort>("GoogleMapsPort", {
+  useClass: GoogleMapsAdapter,
+});
 
-container.register<MCPBrasilPort>('MCPBrasilPort',
-  { useClass: MCPBrasilAdapter });
+container.register<MCPBrasilPort>("MCPBrasilPort", {
+  useClass: MCPBrasilAdapter,
+});
 
-container.register<MediaGenerationPort>('MediaGenerationPort',
-  { useClass: MediaGenerationRouter }); // Router usa fallback chain
+container.register<MediaGenerationPort>("MediaGenerationPort", {
+  useClass: MediaGenerationRouter,
+}); // Router usa fallback chain
 
 // Use Cases (transient — nova instância a cada resolve)
 container.register(QualifyLeadUseCase, { useClass: QualifyLeadUseCase });

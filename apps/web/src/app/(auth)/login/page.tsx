@@ -16,10 +16,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Bot, Loader2, AlertCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const t = useTranslations("auth");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,13 +35,18 @@ export default function LoginPage() {
 
     try {
       const result = await api.auth.login(email, password);
-      setAuth(result.data.accessToken, email);
+      setAuth(
+        result.data.accessToken,
+        result.data.refreshToken,
+        email,
+        result.data.organizationId,
+      );
       router.push("/agents");
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.errors[0]?.message || "Credenciais inválidas");
+        setError(err.errors[0]?.message || t("login.errors.invalid"));
       } else {
-        setError("Não foi possível conectar ao servidor");
+        setError(t("login.errors.network"));
       }
     } finally {
       setLoading(false);
@@ -59,10 +66,10 @@ export default function LoginPage() {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold tracking-tight">
-              AgentePro
+              {t("brand")}
             </CardTitle>
             <CardDescription className="text-muted-foreground mt-1">
-              Faça login para gerenciar seus agentes de IA
+              {t("login.subtitle")}
             </CardDescription>
           </div>
         </CardHeader>
@@ -77,11 +84,11 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
+              <Label htmlFor="email">{t("login.email")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="operador@exemplo.com"
+                placeholder={t("login.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -92,18 +99,18 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Senha</Label>
+                <Label htmlFor="password">{t("login.password")}</Label>
                 <Link
                   href="/forgot-password"
                   className="text-sm font-medium text-primary hover:underline"
                 >
-                  Esqueceu a senha?
+                  {t("login.forgotPassword")}
                 </Link>
               </div>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t("login.passwordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -120,20 +127,20 @@ export default function LoginPage() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Entrando...
+                  {t("login.submitting")}
                 </>
               ) : (
-                "Entrar"
+                t("login.submit")
               )}
             </Button>
 
             <div className="text-center text-sm text-muted-foreground mt-4">
-              Não tem uma conta?{" "}
+              {t("login.noAccount")}{" "}
               <Link
                 href="/register"
                 className="font-medium text-primary hover:underline"
               >
-                Cadastre-se
+                {t("login.registerLink")}
               </Link>
             </div>
           </form>

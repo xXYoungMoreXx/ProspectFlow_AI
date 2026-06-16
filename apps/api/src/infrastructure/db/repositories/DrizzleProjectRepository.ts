@@ -16,7 +16,11 @@ import type { ProjectStatus } from "@agentepro/shared-types";
 export class DrizzleProjectRepository implements ProjectRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
-  async findById(id: string, operatorId: string): Promise<Project | null> {
+  async findById(
+    id: string,
+    operatorId: string,
+    organizationId: string,
+  ): Promise<Project | null> {
     const [row] = await this.db
       .select()
       .from(schema.projects)
@@ -24,6 +28,7 @@ export class DrizzleProjectRepository implements ProjectRepository {
         and(
           eq(schema.projects.id, id),
           eq(schema.projects.operatorId, operatorId),
+          eq(schema.projects.organizationId, organizationId),
         ),
       )
       .limit(1);
@@ -33,7 +38,10 @@ export class DrizzleProjectRepository implements ProjectRepository {
   }
 
   async findMany(filters: ProjectFilters): Promise<ProjectListResult> {
-    const conditions = [eq(schema.projects.operatorId, filters.operatorId)];
+    const conditions = [
+      eq(schema.projects.operatorId, filters.operatorId),
+      eq(schema.projects.organizationId, filters.organizationId),
+    ];
     if (filters.status)
       conditions.push(eq(schema.projects.status, filters.status));
     if (filters.cursor) conditions.push(gt(schema.projects.id, filters.cursor));
@@ -76,6 +84,8 @@ export class DrizzleProjectRepository implements ProjectRepository {
         templateId: json.templateId ?? null,
         briefing: json.briefing,
         deliverableUrl: json.deliverableUrl ?? null,
+        mockupHtml: json.mockupHtml ?? null,
+        mockupUrl: json.mockupUrl ?? null,
         deliverableMeta: json.deliverableMeta,
         lighthousePerf: json.lighthouse.performance ?? null,
         lighthouseA11y: json.lighthouse.accessibility ?? null,
@@ -95,6 +105,8 @@ export class DrizzleProjectRepository implements ProjectRepository {
           templateId: json.templateId ?? null,
           briefing: json.briefing,
           deliverableUrl: json.deliverableUrl ?? null,
+          mockupHtml: json.mockupHtml ?? null,
+          mockupUrl: json.mockupUrl ?? null,
           deliverableMeta: json.deliverableMeta,
           lighthousePerf: json.lighthouse.performance ?? null,
           lighthouseA11y: json.lighthouse.accessibility ?? null,
@@ -125,6 +137,8 @@ export class DrizzleProjectRepository implements ProjectRepository {
       templateId: row.templateId ?? undefined,
       briefing: (row.briefing ?? {}) as Record<string, unknown>,
       deliverableUrl: row.deliverableUrl ?? undefined,
+      mockupHtml: row.mockupHtml ?? undefined,
+      mockupUrl: row.mockupUrl ?? undefined,
       deliverableMeta: (row.deliverableMeta ?? {}) as Record<string, unknown>,
       lighthouse,
       revisionCount: row.revisionCount,

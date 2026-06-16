@@ -7,6 +7,7 @@ import type { BullMQAdapter } from "../../infrastructure/queue/BullMQAdapter.js"
 export interface ApproveBriefingCommand {
   briefingId: string;
   operatorId: string;
+  organizationId: string;
   correlationId: string;
 }
 
@@ -19,7 +20,11 @@ export class ApproveBriefingUseCase {
   async execute(
     cmd: ApproveBriefingCommand,
   ): Promise<Result<BriefingProps, Error>> {
-    const briefing = await this.repo.findById(cmd.briefingId, cmd.operatorId);
+    const briefing = await this.repo.findById(
+      cmd.briefingId,
+      cmd.operatorId,
+      cmd.organizationId,
+    );
     if (!briefing) {
       return err(new NotFoundError("Briefing", cmd.briefingId));
     }
@@ -34,12 +39,14 @@ export class ApproveBriefingUseCase {
       await this.queue.publishEvent(event);
     }
 
+    // Phase 1 of 2-stage build: COPYWRITER+DESIGNER+IMAGER → HITL APPROVE_MOCKUP
+    // On operator approval: builder.build (phase 2) → CODER → SEO+DEPLOY → HITL APPROVE_STAGING
     await this.queue.enqueueAgentTask(
-      "builder.generate",
+      "builder.design",
       {
         briefingId: briefing.id,
         dealId: briefing.dealId,
-        briefingData: briefing.briefingData,
+        briefing: briefing.briefingData,
       },
       cmd.correlationId,
     );

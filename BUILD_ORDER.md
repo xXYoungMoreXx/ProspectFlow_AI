@@ -647,6 +647,81 @@ Critério: aprovação HITL funcional; funil de leads visual; editor de agentes 
 
 ---
 
+## Fase 4 — Agent Capability Studio + Service Catalog (SPEC-13, SPEC-14)
+
+> Estado: planejado | Início após Fase 3 completa
+
+### 4.1 — Service Types e Skills Catalog
+
+```
+Depende de: 0.5 (domain/deal/ServiceType.ts já existe), 1.1 (AgentSkill)
+
+Ordem:  packages/shared-types/src/service.types.ts
+        infrastructure/db/migrations/XXXX_service_type_prospecting.sql
+        infrastructure/db/migrations/XXXX_skill_catalog.sql
+        infrastructure/db/migrations/XXXX_seed_skill_catalog.sql
+        infrastructure/db/migrations/XXXX_workflow_definitions.sql
+        domain/lead/LeadQualificationService.ts        (scoring por ServiceType)
+        http/routes/service-types.routes.ts
+        http/routes/skill-catalog.routes.ts
+
+Critério: 8 skills builtin no banco; calculateScore() usa SCORING_WEIGHTS[serviceType].
+```
+
+### 4.2 — Google Maps Full Data Enrichment
+
+```
+Depende de: 1.3 (GoogleMapsAdapter), 4.1
+
+Ordem:  infrastructure/maps/GoogleMapsAdapter.ts       (extend: novos campos SPEC-03 v2.1)
+        domain/lead/EnrichmentData.ts                  (extend: photos, summary, businessStatus)
+        infrastructure/db/schema.ts                    (extend: companyData jsonb)
+
+Critério: GooglePlace retorna photos[], editorialSummary, priceLevel, businessStatus,
+          types[], internationalPhoneNumber, googleMapsUri, currentOpeningHours.
+          Photos cacheadas 7 dias. Lead card mostra fotos e horário.
+```
+
+### 4.3 — MCP Server Management + Workflow Definitions
+
+```
+Depende de: 1.1 (Agent domain), 4.1
+
+Ordem:  domain/agent/MCPServer.ts
+        domain/agent/WorkflowDefinition.ts
+        infrastructure/db/repositories/MCPServerRepositoryImpl.ts
+        infrastructure/db/repositories/WorkflowDefinitionRepositoryImpl.ts
+        application/agent/AddMCPServerUseCase.ts
+        application/agent/TestMCPServerUseCase.ts
+        application/agent/SaveWorkflowUseCase.ts       (validação DAG)
+        application/agent/TestWorkflowUseCase.ts       (sandbox)
+        http/routes/mcp-servers.routes.ts
+        http/routes/workflow.routes.ts
+        container.ts                                   (registrar novos repos)
+
+Critério: SSRF check bloqueia RFC1918; ciclo no workflow → 422 WORKFLOW_HAS_CYCLE;
+          workflow test executa sem persistir leads (sandbox).
+```
+
+### 4.4 — Agent Capability Studio Frontend
+
+```
+Depende de: 3.3 (Frontend base), 4.1, 4.2, 4.3
+
+Ordem:  apps/web/src/components/agents/capability-studio/AgentCapabilityStudio.tsx
+        apps/web/src/components/agents/capability-studio/tabs/  (8 abas)
+        apps/web/src/components/agents/capability-studio/SkillCatalogModal.tsx
+        apps/web/src/components/agents/capability-studio/WorkflowBuilder/
+        apps/web/src/app/(dashboard)/agents/[id]/page.tsx  (REPLACE: AgentCapabilityStudio)
+        apps/web/src/components/prospecting/ProspectingConfigTab.tsx  (ADD: serviceType)
+        apps/web/src/components/prospecting/LeadCard.tsx   (ADD: photos, businessStatus)
+
+Critério: 8 abas; workflow builder visual (DAG); skills catalog filtrado;
+          lead card com fotos e serviço sugerido; serviceType altera pesos de score.
+```
+
+---
+
 ## Regras de Ouro do BUILD_ORDER
 
 ```

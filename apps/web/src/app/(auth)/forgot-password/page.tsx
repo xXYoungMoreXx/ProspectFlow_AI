@@ -14,8 +14,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Bot, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,9 +33,9 @@ export default function ForgotPasswordPage() {
       setSuccess(true);
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.errors[0]?.message || "Erro ao solicitar redefinição");
+        setError(err.errors[0]?.message || t("forgotPassword.errors.generic"));
       } else {
-        setError("Não foi possível conectar ao servidor");
+        setError(t("forgotPassword.errors.generic"));
       }
     } finally {
       setLoading(false);
@@ -48,10 +50,10 @@ export default function ForgotPasswordPage() {
             <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 text-green-500">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <CardTitle>Solicitação enviada</CardTitle>
+            <CardTitle>{t("forgotPassword.success.title")}</CardTitle>
             <CardDescription>
-              Se o e-mail <strong>{email}</strong> estiver cadastrado em nossa
-              base, você receberá um link para redefinir sua senha.
+              {t("forgotPassword.success.messagePre")} <strong>{email}</strong>{" "}
+              {t("forgotPassword.success.messagePost")}
             </CardDescription>
             <div className="pt-4 flex">
               <Link
@@ -61,7 +63,7 @@ export default function ForgotPasswordPage() {
                   className: "w-full",
                 })}
               >
-                Voltar para o Login
+                {t("forgotPassword.success.backToLogin")}
               </Link>
             </div>
           </CardContent>
@@ -79,10 +81,10 @@ export default function ForgotPasswordPage() {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold tracking-tight">
-              Recuperar Senha
+              {t("forgotPassword.title")}
             </CardTitle>
             <CardDescription className="text-muted-foreground mt-1">
-              Digite seu e-mail para receber um link de redefinição
+              {t("forgotPassword.subtitle")}
             </CardDescription>
           </div>
         </CardHeader>
@@ -97,11 +99,11 @@ export default function ForgotPasswordPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
+              <Label htmlFor="email">{t("forgotPassword.email")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="operador@exemplo.com"
+                placeholder={t("forgotPassword.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -117,10 +119,10 @@ export default function ForgotPasswordPage() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Enviando...
+                  {t("forgotPassword.submitting")}
                 </>
               ) : (
-                "Enviar link de redefinição"
+                t("forgotPassword.submit")
               )}
             </Button>
 
@@ -129,7 +131,7 @@ export default function ForgotPasswordPage() {
                 href="/login"
                 className="font-medium text-primary hover:underline"
               >
-                Voltar para o login
+                {t("forgotPassword.backToLogin")}
               </Link>
             </div>
           </form>

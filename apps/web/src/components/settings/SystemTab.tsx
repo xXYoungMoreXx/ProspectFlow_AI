@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Clock, Shield, Download, Upload, AlertTriangle } from "lucide-react";
+import {
+  Clock,
+  Shield,
+  Download,
+  Upload,
+  AlertTriangle,
+  HelpCircle,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -12,9 +20,37 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useSettingsStore, type PendingUpdate } from "@/lib/stores/settings-store";
+import {
+  useSettingsStore,
+  type PendingUpdate,
+} from "@/lib/stores/settings-store";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+function FieldTooltip({ content }: Readonly<{ content: string }>) {
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={<span className="inline-flex items-center cursor-help" />}
+      >
+        <HelpCircle className="h-3 w-3 text-muted-foreground/60 shrink-0" />
+      </TooltipTrigger>
+      <TooltipContent
+        side="right"
+        className="max-w-[260px] text-xs leading-relaxed"
+      >
+        {content}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 export function SystemTab() {
+  const t = useTranslations("settings");
   const { settings, pending, setPending, getValue, fetchSettings } =
     useSettingsStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,19 +64,24 @@ export function SystemTab() {
     return p !== undefined ? p : (getValue(key) ?? "");
   };
 
-  const set = (key: string, value: string, category: PendingUpdate["category"] = "system") =>
-    setPending({ key, category, value, isSecret: false });
+  const set = (
+    key: string,
+    value: string,
+    category: PendingUpdate["category"] = "system",
+  ) => setPending({ key, category, value, isSecret: false });
 
   // Export all settings as JSON (secrets are server-masked, safe to export)
   const handleExport = () => {
-    const exportable = settings.map(({ key, category, value, isSecret, isActive, metadata }) => ({
-      key,
-      category,
-      value: isSecret ? "••••" : value,
-      isSecret,
-      isActive,
-      metadata,
-    }));
+    const exportable = settings.map(
+      ({ key, category, value, isSecret, isActive, metadata }) => ({
+        key,
+        category,
+        value: isSecret ? "••••" : value,
+        isSecret,
+        isActive,
+        metadata,
+      }),
+    );
     const blob = new Blob([JSON.stringify(exportable, null, 2)], {
       type: "application/json",
     });
@@ -67,7 +108,14 @@ export function SystemTab() {
         }>;
         parsed
           .filter((s) => !s.isSecret && s.value && s.value !== "••••")
-          .forEach((s) => setPending({ key: s.key, category: s.category, value: s.value, isSecret: false }));
+          .forEach((s) =>
+            setPending({
+              key: s.key,
+              category: s.category,
+              value: s.value,
+              isSecret: false,
+            }),
+          );
       } catch {
         alert("Invalid settings file");
       }
@@ -78,145 +126,190 @@ export function SystemTab() {
   };
 
   return (
-    <div className="space-y-4">
-      {/* HITL Config */}
-      <Card className="border-border/60">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-              <Clock className="h-4 w-4 text-amber-400" />
+    <TooltipProvider>
+      <div className="space-y-4">
+        {/* HITL Config */}
+        <Card className="border-border/60">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <Clock className="h-4 w-4 text-amber-400" />
+              </div>
+              <div>
+                <CardTitle className="text-sm">
+                  {t("system.hitlTimeouts.title")}
+                </CardTitle>
+                <CardDescription className="text-xs mt-0.5">
+                  {t("system.hitlTimeouts.description")}
+                </CardDescription>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-sm">HITL Timeouts</CardTitle>
-              <CardDescription className="text-xs mt-0.5">
-                Human-in-the-loop approval window configuration
-              </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 pt-0">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Label
+                    htmlFor="hitl-timeout"
+                    className="text-xs text-muted-foreground"
+                  >
+                    {t("system.hitlTimeouts.defaultTimeout")}
+                  </Label>
+                  <FieldTooltip content={t("tooltips.hitlTimeout")} />
+                </div>
+                <Input
+                  id="hitl-timeout"
+                  type="number"
+                  min={1}
+                  max={10080}
+                  value={get("system.hitl.default_timeout_minutes") || "60"}
+                  onChange={(e) =>
+                    set("system.hitl.default_timeout_minutes", e.target.value)
+                  }
+                  className="text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Label
+                    htmlFor="hitl-financial-reminder"
+                    className="text-xs text-muted-foreground"
+                  >
+                    {t("system.hitlTimeouts.financialInterval")}
+                  </Label>
+                  <FieldTooltip content={t("tooltips.financialInterval")} />
+                </div>
+                <Input
+                  id="hitl-financial-reminder"
+                  type="number"
+                  min={5}
+                  value={get("system.hitl.financial_reminder_minutes") || "30"}
+                  onChange={(e) =>
+                    set(
+                      "system.hitl.financial_reminder_minutes",
+                      e.target.value,
+                    )
+                  }
+                  className="text-sm"
+                />
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3 pt-0">
-          <div className="grid grid-cols-2 gap-3">
+          </CardContent>
+        </Card>
+
+        {/* Security */}
+        <Card className="border-border/60">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                <Shield className="h-4 w-4 text-red-400" />
+              </div>
+              <div>
+                <CardTitle className="text-sm">
+                  {t("system.security.title")}
+                </CardTitle>
+                <CardDescription className="text-xs mt-0.5">
+                  {t("system.security.description")}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3 pt-0">
             <div className="space-y-1.5">
-              <Label htmlFor="hitl-timeout" className="text-xs text-muted-foreground">
-                Default Timeout (minutes)
-              </Label>
+              <div className="flex items-center gap-1.5">
+                <Label
+                  htmlFor="max-body"
+                  className="text-xs text-muted-foreground"
+                >
+                  {t("system.security.maxBodySize")}
+                </Label>
+                <FieldTooltip content={t("tooltips.maxBodySize")} />
+              </div>
               <Input
-                id="hitl-timeout"
+                id="max-body"
                 type="number"
-                min={1}
-                max={10080}
-                value={get("system.hitl.default_timeout_minutes") || "60"}
-                onChange={(e) => set("system.hitl.default_timeout_minutes", e.target.value)}
-                className="text-sm"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="hitl-financial-reminder" className="text-xs text-muted-foreground">
-                Financial Alert Interval (min)
-              </Label>
-              <Input
-                id="hitl-financial-reminder"
-                type="number"
-                min={5}
-                value={get("system.hitl.financial_reminder_minutes") || "30"}
+                min={1024}
+                value={get("system.security.max_body_size") || "1048576"}
                 onChange={(e) =>
-                  set("system.hitl.financial_reminder_minutes", e.target.value)
+                  set("system.security.max_body_size", e.target.value)
                 }
-                className="text-sm"
+                className="text-sm font-mono"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("system.security.hint")}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Export / Import */}
+        <Card className="border-border/60">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
+                <Download className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div>
+                <CardTitle className="text-sm">
+                  {t("system.backup.title")}
+                </CardTitle>
+                <CardDescription className="text-xs mt-0.5">
+                  {t("system.backup.description")}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3 pt-0">
+            <div className="flex items-center gap-3">
+              <Tooltip>
+                <TooltipTrigger render={<span className="inline-flex" />}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={handleExport}
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    {t("system.backup.export")}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs max-w-[220px]">
+                  {t("tooltips.backupExport")}
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger render={<span className="inline-flex" />}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    {t("system.backup.import")}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs max-w-[220px]">
+                  {t("tooltips.backupImport")}
+                </TooltipContent>
+              </Tooltip>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={handleImport}
               />
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Security */}
-      <Card className="border-border/60">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-red-500/10 flex items-center justify-center">
-              <Shield className="h-4 w-4 text-red-400" />
+            <div className="flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-400 mt-0.5 shrink-0" />
+              <p className="text-xs text-muted-foreground">
+                {t("system.backup.note")}
+              </p>
             </div>
-            <div>
-              <CardTitle className="text-sm">Security Limits</CardTitle>
-              <CardDescription className="text-xs mt-0.5">
-                Input validation and rate-limiting thresholds
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3 pt-0">
-          <div className="space-y-1.5">
-            <Label htmlFor="max-body" className="text-xs text-muted-foreground">
-              Max Request Body Size (bytes)
-            </Label>
-            <Input
-              id="max-body"
-              type="number"
-              min={1024}
-              value={get("system.security.max_body_size") || "1048576"}
-              onChange={(e) => set("system.security.max_body_size", e.target.value)}
-              className="text-sm font-mono"
-            />
-            <p className="text-xs text-muted-foreground">
-              Default: 1 MB (1048576). Increase only if large file uploads are needed.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Export / Import */}
-      <Card className="border-border/60">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
-              <Download className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div>
-              <CardTitle className="text-sm">Backup & Restore</CardTitle>
-              <CardDescription className="text-xs mt-0.5">
-                Export or import non-secret settings as JSON
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3 pt-0">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={handleExport}
-            >
-              <Download className="h-3.5 w-3.5" />
-              Export JSON
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Upload className="h-3.5 w-3.5" />
-              Import JSON
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              className="hidden"
-              onChange={handleImport}
-            />
-          </div>
-          <div className="flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-400 mt-0.5 shrink-0" />
-            <p className="text-xs text-muted-foreground">
-              Secrets (API Keys, tokens) are{" "}
-              <strong className="text-foreground">never exported</strong>. They
-              must be re-entered manually after import.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </TooltipProvider>
   );
 }

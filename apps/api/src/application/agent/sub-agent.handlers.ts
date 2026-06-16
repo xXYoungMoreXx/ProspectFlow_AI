@@ -20,8 +20,9 @@ export class ListSubAgentsHandler {
   async execute(
     agentId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<SubAgentData[], Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
     const list = await this.repo.listSubAgents(agentId);
     return ok(list);
@@ -37,8 +38,9 @@ export class CreateSubAgentHandler {
     agentId: string,
     operatorId: string,
     input: Omit<CreateSubAgentData, "agentId">,
+    organizationId: string = "org_mvp",
   ): Promise<Result<SubAgentData, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     if (
@@ -64,8 +66,9 @@ export class GetSubAgentHandler {
     agentId: string,
     subAgentId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<SubAgentData, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
     const sub = await this.repo.getSubAgent(subAgentId, agentId);
     if (!sub) return err(new NotFoundError("SubAgent", subAgentId));
@@ -83,8 +86,9 @@ export class UpdateSubAgentHandler {
     subAgentId: string,
     operatorId: string,
     data: UpdateSubAgentData,
+    organizationId: string = "org_mvp",
   ): Promise<Result<SubAgentData, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     if (data.executionMode === "parallel" && data.parallelGroup === undefined) {
@@ -108,8 +112,9 @@ export class DeleteSubAgentHandler {
     agentId: string,
     subAgentId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<void, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     if (agent.status === "ACTIVE") {
@@ -147,8 +152,9 @@ export class TestSubAgentHandler {
     agentId: string,
     subAgentId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<SubAgentTestResult, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const sub = await this.repo.getSubAgent(subAgentId, agentId);

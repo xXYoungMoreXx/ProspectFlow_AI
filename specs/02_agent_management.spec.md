@@ -1,6 +1,6 @@
 # SPEC-02: Agent Management — Gestão de Agentes e Sub-agentes
 
-> Versão: 2.0.0 | Fase: 1 | Dependências: SPEC-01 (IAM)
+> Versão: 2.1.0 | Fase: 1 | Dependências: SPEC-01 (IAM) | Ver também: SPEC-13 (Agent Capability Studio UI), SPEC-14 (Service Catalog + Skills Builtin)
 
 ---
 
@@ -39,7 +39,10 @@ class Agent extends AggregateRoot {
   // Factory
   static create(props: CreateAgentProps): Agent {
     if (!props.name || props.name.trim().length < 3) {
-      throw new ValidationError('Nome do agente deve ter ao menos 3 caracteres', 'name');
+      throw new ValidationError(
+        "Nome do agente deve ter ao menos 3 caracteres",
+        "name",
+      );
     }
 
     const agent = new Agent({
@@ -47,7 +50,7 @@ class Agent extends AggregateRoot {
       operatorId: props.operatorId,
       name: new AgentName(props.name.trim()),
       persona: props.persona,
-      status: 'INACTIVE',
+      status: "INACTIVE",
       llmConfig: props.llmConfig,
       subAgents: [],
       skills: [],
@@ -59,7 +62,7 @@ class Agent extends AggregateRoot {
       parallelExecutionEnabled: props.parallelExecutionEnabled ?? false,
       maxParallelSubAgents: props.maxParallelSubAgents ?? 1,
       hitlTimeoutMinutes: props.hitlTimeoutMinutes ?? 60,
-      hitlNotifyChannel: props.hitlNotifyChannel ?? 'telegram',
+      hitlNotifyChannel: props.hitlNotifyChannel ?? "telegram",
     });
     agent.addEvent(createAgentCreatedEvent(agent));
     return agent;
@@ -67,41 +70,47 @@ class Agent extends AggregateRoot {
 
   // Ativar
   activate(): void {
-    if (this.status === 'ACTIVE') return; // idempotente
+    if (this.status === "ACTIVE") return; // idempotente
     if (this.skills.length === 0) {
       throw new DomainError(
-        'Agente precisa de ao menos 1 skill configurada para ser ativado',
-        'AGENT_NO_SKILLS'
+        "Agente precisa de ao menos 1 skill configurada para ser ativado",
+        "AGENT_NO_SKILLS",
       );
     }
     if (this.tokenBudgetRemaining <= 0) {
-      throw new DomainError('Token budget esgotado', 'BUDGET_EXHAUSTED');
+      throw new DomainError("Token budget esgotado", "BUDGET_EXHAUSTED");
     }
-    this.status = 'ACTIVE';
+    this.status = "ACTIVE";
     this.addEvent(createAgentActivatedEvent(this));
   }
 
   // Pausar
   pause(): void {
-    if (this.status === 'INACTIVE') {
-      throw new DomainError('Não é possível pausar agente INACTIVE', 'INVALID_STATE');
+    if (this.status === "INACTIVE") {
+      throw new DomainError(
+        "Não é possível pausar agente INACTIVE",
+        "INVALID_STATE",
+      );
     }
-    this.status = 'PAUSED';
+    this.status = "PAUSED";
     this.addEvent(createAgentPausedEvent(this));
   }
 
   // Gestão de sub-agentes
   addSubAgent(sub: SubAgent): void {
-    const exists = this.subAgents.some(s => s.role === sub.role);
+    const exists = this.subAgents.some((s) => s.role === sub.role);
     if (exists) {
-      throw new DomainError(`Sub-agente ${sub.role} já existe neste agente`, 'DUPLICATE_SUB_AGENT');
+      throw new DomainError(
+        `Sub-agente ${sub.role} já existe neste agente`,
+        "DUPLICATE_SUB_AGENT",
+      );
     }
     this.subAgents.push(sub);
   }
 
   removeSubAgent(subAgentId: SubAgentId): void {
-    const idx = this.subAgents.findIndex(s => s.id.equals(subAgentId));
-    if (idx === -1) throw new NotFoundError('SubAgent', subAgentId.value);
+    const idx = this.subAgents.findIndex((s) => s.id.equals(subAgentId));
+    if (idx === -1) throw new NotFoundError("SubAgent", subAgentId.value);
     this.subAgents.splice(idx, 1);
   }
 
@@ -111,8 +120,8 @@ class Agent extends AggregateRoot {
   }
 
   removeSkill(skillId: SkillId): void {
-    const idx = this.skills.findIndex(s => s.id.equals(skillId));
-    if (idx === -1) throw new NotFoundError('Skill', skillId.value);
+    const idx = this.skills.findIndex((s) => s.id.equals(skillId));
+    if (idx === -1) throw new NotFoundError("Skill", skillId.value);
     this.skills.splice(idx, 1);
   }
 
@@ -130,7 +139,7 @@ class Agent extends AggregateRoot {
 
   // Canary check
   canExecuteTask(taskType: string): boolean {
-    return this.status === 'ACTIVE' && this.tokenBudgetRemaining > 0;
+    return this.status === "ACTIVE" && this.tokenBudgetRemaining > 0;
   }
 }
 ```
@@ -193,15 +202,25 @@ class SubAgent {
 // domain/agent/AgentSkill.ts
 
 type SkillType =
-  | 'web_search' | 'scraping' | 'email' | 'whatsapp' | 'telegram'
-  | 'file_gen' | 'deploy' | 'code_gen' | 'rag_query'
-  | 'external_database' | 'image_gen' | 'design_gen' | 'scheduling';
+  | "web_search"
+  | "scraping"
+  | "email"
+  | "whatsapp"
+  | "telegram"
+  | "file_gen"
+  | "deploy"
+  | "code_gen"
+  | "rag_query"
+  | "external_database"
+  | "image_gen"
+  | "design_gen"
+  | "scheduling";
 
 class AgentSkill {
   constructor(
     readonly id: SkillId,
     readonly agentId: AgentId,
-    readonly subAgentId: SubAgentId | undefined,  // null = skill do agente principal
+    readonly subAgentId: SubAgentId | undefined, // null = skill do agente principal
     readonly name: string,
     readonly type: SkillType,
     readonly config: Record<string, unknown>,
@@ -209,15 +228,18 @@ class AgentSkill {
   ) {}
 
   // Config é validado por tipo de skill:
-  static validateConfig(type: SkillType, config: Record<string, unknown>): void {
+  static validateConfig(
+    type: SkillType,
+    config: Record<string, unknown>,
+  ): void {
     const validators: Record<SkillType, (c: unknown) => void> = {
-      whatsapp:          (c) => assert(c, 'evolution_api_url', 'instance_name'),
-      telegram:          (c) => assert(c, 'bot_token_ref', 'parse_mode'),
-      external_database: (c) => assert(c, 'provider'),
-      image_gen:         (c) => assert(c, 'providers', 'fallback_chain'),
-      design_gen:        (c) => assert(c, 'model', 'api_key_ref'),
-      scheduling:        (c) => assert(c, 'provider', 'event_type_id'),
-      deploy:            (c) => assert(c, 'platforms', 'default_platform'),
+      whatsapp: (c) => assert(c, "evolution_api_url", "instance_name"),
+      telegram: (c) => assert(c, "bot_token_ref", "parse_mode"),
+      external_database: (c) => assert(c, "provider"),
+      image_gen: (c) => assert(c, "providers", "fallback_chain"),
+      design_gen: (c) => assert(c, "model", "api_key_ref"),
+      scheduling: (c) => assert(c, "provider", "event_type_id"),
+      deploy: (c) => assert(c, "platforms", "default_platform"),
       // ... demais tipos
     };
     validators[type]?.(config);
@@ -247,7 +269,7 @@ interface CreateAgentCommand {
   };
   tokenBudgetTotal?: number;
   hitlTimeoutMinutes?: number;
-  hitlNotifyChannel?: 'telegram' | 'email';
+  hitlNotifyChannel?: "telegram" | "email";
   parallelExecutionEnabled?: boolean;
   maxParallelSubAgents?: number;
 }
@@ -256,7 +278,10 @@ class CreateAgentUseCase {
   async execute(cmd: CreateAgentCommand): Promise<{ agentId: string }> {
     // Validar system_prompt <= 32.000 chars na camada de aplicação
     if ((cmd.llmConfig.systemPrompt?.length ?? 0) > 32_000) {
-      throw new ValidationError('systemPrompt excede 32.000 caracteres', 'systemPrompt');
+      throw new ValidationError(
+        "systemPrompt excede 32.000 caracteres",
+        "systemPrompt",
+      );
     }
 
     const agent = Agent.create({
@@ -277,8 +302,9 @@ class CreateAgentUseCase {
 class ActivateAgentUseCase {
   async execute(cmd: { agentId: string; operatorId: string }): Promise<void> {
     const agent = await this.agentRepo.findById(new AgentId(cmd.agentId));
-    if (!agent) throw new NotFoundError('Agent', cmd.agentId);
-    if (agent.operatorId.value !== cmd.operatorId) throw new AuthorizationError();
+    if (!agent) throw new NotFoundError("Agent", cmd.agentId);
+    if (agent.operatorId.value !== cmd.operatorId)
+      throw new AuthorizationError();
 
     // Verificar conectividade com o LLM antes de ativar
     await this.testLLMConnectivity(agent.llmConfig);
@@ -294,7 +320,7 @@ class ActivateAgentUseCase {
     } catch {
       throw new DomainError(
         `Não foi possível conectar ao LLM ${config.provider}/${config.modelName}`,
-        'LLM_CONNECTIVITY_ERROR'
+        "LLM_CONNECTIVITY_ERROR",
       );
     }
   }
@@ -305,13 +331,16 @@ class ActivateAgentUseCase {
 
 ```typescript
 class TestLLMUseCase {
-  async execute(cmd: { agentId: string; testPrompt: string }): Promise<{ response: string; latencyMs: number }> {
+  async execute(cmd: {
+    agentId: string;
+    testPrompt: string;
+  }): Promise<{ response: string; latencyMs: number }> {
     const agent = await this.agentRepo.findById(new AgentId(cmd.agentId));
-    if (!agent) throw new NotFoundError('Agent', cmd.agentId);
+    if (!agent) throw new NotFoundError("Agent", cmd.agentId);
 
     const start = Date.now();
     const response = await this.llmRouter.complete(agent.llmConfig, [
-      { role: 'user', content: cmd.testPrompt }
+      { role: "user", content: cmd.testPrompt },
     ]);
 
     return {
@@ -426,6 +455,59 @@ POST   /api/v1/agents/:id/rag/query
   Response 200: { data: { results: RagResult[], durationMs: number } }
 ```
 
+### MCP Servers CRUD
+
+```
+GET    /api/v1/agents/:id/mcp-servers
+  Response 200: { data: MCPServer[] }
+
+POST   /api/v1/agents/:id/mcp-servers
+  Body: { name, url, authType, authSecretRef?, allowedTools, allowedSubAgentIds? }
+  Validação: SSRF check (bloquear RFC1918 exceto ALLOWED_MCP_HOSTS env)
+  Ação: tenta conectar e listar ferramentas disponíveis no MCP
+  Response 201: { data: MCPServer }
+  Erros: 422 MCP_CONNECTION_FAILED | 400 SSRF_BLOCKED
+
+PATCH  /api/v1/agents/:id/mcp-servers/:mcpId
+  Body: Partial<MCPServer>
+  Response 200: { data: MCPServer }
+
+DELETE /api/v1/agents/:id/mcp-servers/:mcpId
+  Response 204
+
+POST   /api/v1/agents/:id/mcp-servers/:mcpId/test
+  Response 200: { data: { connected: boolean, tools: string[], latencyMs: number } }
+```
+
+### Workflow Management (ver SPEC-13 para definição completa)
+
+```
+GET    /api/v1/agents/:id/workflow
+  Response 200: { data: WorkflowDefinition }
+
+PUT    /api/v1/agents/:id/workflow
+  Body: WorkflowDefinition
+  Validação: DAG (sem ciclos), subAgentIds devem existir
+  Response 200: { data: WorkflowDefinition }
+  Erros: 422 WORKFLOW_HAS_CYCLE | 422 SUBAGENT_NOT_FOUND
+
+POST   /api/v1/agents/:id/workflow/test
+  Body: { testPayload: Record<string, unknown> }
+  Response 202: { data: { jobId, estimatedSeconds } }
+```
+
+### Skill Catalog (ver SPEC-14 para lista completa de skills builtin)
+
+```
+GET    /api/v1/skill-catalog
+  Query: serviceType?, persona?, search?, limit?, cursor?
+  Response 200: { data: SkillCatalogEntry[], meta: PaginationMeta }
+
+POST   /api/v1/agents/:id/skills/from-catalog
+  Body: { catalogSkillId: string, subAgentId?: string }
+  Response 201: { data: AgentSkill }
+```
+
 ---
 
 ## Database Schema
@@ -503,3 +585,9 @@ describe('POST /api/v1/agents/:id/activate') {
 - [ ] systemPrompt > 32k chars rejeitado com ValidationError claro
 - [ ] Sub-agente parallel sem parallelGroup rejeitado
 - [ ] Apenas o dono do agente pode editá-lo/ativá-lo
+- [ ] MCP Server: SSRF check bloqueia RFC1918 não na whitelist (400 SSRF_BLOCKED)
+- [ ] MCP Server: recusado se não responder em 5s (422 MCP_CONNECTION_FAILED)
+- [ ] Workflow: grafo com ciclo rejeitado (422 WORKFLOW_HAS_CYCLE)
+- [ ] Skill builtin não pode ser deletada (403)
+- [ ] Skill clonada do catálogo é editável no agente (is_builtin=false)
+- [ ] UI implementada como Agent Capability Studio com 8 abas (ver SPEC-13)

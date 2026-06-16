@@ -3,6 +3,7 @@ import type { ProjectStatus } from "@agentepro/shared-types";
 
 export interface ProjectFilters {
   operatorId: string;
+  organizationId: string;
   status?: ProjectStatus;
   dealId?: string;
   cursor?: string;
@@ -16,7 +17,11 @@ export interface ProjectListResult {
 }
 
 export interface ProjectRepository {
-  findById(id: string, operatorId: string): Promise<Project | null>;
+  findById(
+    id: string,
+    operatorId: string,
+    organizationId: string,
+  ): Promise<Project | null>;
   findMany(filters: ProjectFilters): Promise<ProjectListResult>;
   save(project: Project): Promise<void>;
 }

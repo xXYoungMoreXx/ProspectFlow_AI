@@ -83,6 +83,7 @@ describe("AgentExecutionService", () => {
     expect(agentRepo.findById).toHaveBeenCalledWith(
       "agent-123",
       "operator-123",
+      "org_mvp",
     );
 
     // Verify HTTP call was made correctly

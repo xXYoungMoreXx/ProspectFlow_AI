@@ -30,6 +30,7 @@ import { agentTokensConsumedTotal } from "../../infrastructure/metrics/registry.
 export interface AgentTaskPayload {
   agentId: string;
   operatorId: string;
+  organizationId?: string;
   taskType: string;
   userPrompt: string;
   correlationId: string;
@@ -83,6 +84,7 @@ export class AgentExecutionService {
     const agent = await this.agentRepo.findById(
       payload.agentId,
       payload.operatorId,
+      (payload.organizationId as string | undefined) ?? "org_mvp",
     );
     if (!agent) {
       throw new Error(
@@ -168,6 +170,32 @@ export class AgentExecutionService {
           payload.correlationId,
           result.result.raw_output as string,
         );
+      }
+
+      // Post-process: builder.design completed → save mockup to project for HITL APPROVE_MOCKUP
+      if (
+        payload.taskType === "builder.design" &&
+        result.status === "completed" &&
+        this.projectRepo
+      ) {
+        const r = result.result as Record<string, unknown> | null;
+        const mockupHtml = r?.["mockup_html"] as string | undefined;
+        const mockupUrl = (r?.["mockup_url"] as string | undefined) ?? "";
+        const projectId = payload.metadata?.["projectId"] as string | undefined;
+        if (mockupHtml && projectId) {
+          const project = await this.projectRepo.findById(
+            projectId,
+            payload.operatorId as string,
+            (payload.organizationId as string | undefined) ?? "org_mvp",
+          );
+          if (project) {
+            project.storeMockup(mockupHtml, mockupUrl);
+            // F2: persiste o design completo (copy, palette, image_prompts) —
+            // o dispatch do builder.build precisa dele após o APPROVE_MOCKUP
+            project.storeDesignResult(r ?? {});
+            await this.projectRepo.save(project);
+          }
+        }
       }
 
       // Post-process: builder.generate completed → store artifact + HITL APPROVE_STAGING
@@ -311,6 +339,7 @@ export class AgentExecutionService {
     const project = await this.projectRepo.findById(
       projectId,
       payload.operatorId,
+      (payload.organizationId as string | undefined) ?? "org_mvp",
     );
     if (!project) {
       console.warn(

@@ -29,12 +29,20 @@ import type {
 export class DrizzleAgentRepository implements AgentRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
 
-  async findById(id: string, operatorId: string): Promise<Agent | null> {
+  async findById(
+    id: string,
+    operatorId: string,
+    organizationId: string,
+  ): Promise<Agent | null> {
     const [row] = await this.db
       .select()
       .from(schema.agents)
       .where(
-        and(eq(schema.agents.id, id), eq(schema.agents.operatorId, operatorId)),
+        and(
+          eq(schema.agents.id, id),
+          eq(schema.agents.operatorId, operatorId),
+          eq(schema.agents.organizationId, organizationId),
+        ),
       )
       .limit(1);
 
@@ -54,7 +62,10 @@ export class DrizzleAgentRepository implements AgentRepository {
   }
 
   async findMany(filters: AgentFilters): Promise<AgentListResult> {
-    const conditions = [eq(schema.agents.operatorId, filters.operatorId)];
+    const conditions = [
+      eq(schema.agents.operatorId, filters.operatorId),
+      eq(schema.agents.organizationId, filters.organizationId),
+    ];
     if (filters.status)
       conditions.push(eq(schema.agents.status, filters.status));
     if (filters.persona)

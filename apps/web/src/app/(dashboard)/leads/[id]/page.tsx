@@ -30,6 +30,7 @@ import {
 import Link from "next/link";
 import { use, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { useTranslations } from "next-intl";
 
 const statusColors: Record<string, string> = {
   NEW: "bg-sky-500/10 text-sky-400 border-sky-500/20",
@@ -74,6 +75,7 @@ export default function LeadDetailPage({
 }) {
   const resolvedParams = use(params);
   const token = useAuthStore((s) => s.token);
+  const t = useTranslations("leads");
 
   const [quoteItems] = useState(MOCK_QUOTE_ITEMS);
   const [isGeneratingQuote, setIsGeneratingQuote] = useState(false);
@@ -89,12 +91,11 @@ export default function LeadDetailPage({
 
   const leads = data?.data || [];
   const lead = leads.find(
-    (l: Record<string, any>) => l.id === resolvedParams.id,
+    (l: Record<string, unknown>) => l.id === resolvedParams.id,
   );
 
   const handleGenerateQuoteWithAgent = () => {
     setIsGeneratingQuote(true);
-    // Simulate agent analyzing requirements and calculating costs
     setTimeout(() => {
       setQuoteGenerated(true);
       setIsGeneratingQuote(false);
@@ -110,13 +111,15 @@ export default function LeadDetailPage({
   if (!lead) {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <p className="text-muted-foreground">Lead not found</p>
+        <p className="text-muted-foreground">{t("detail.notFound")}</p>
         <Link href="/leads">
-          <Button variant="outline">Back to Leads</Button>
+          <Button variant="outline">{t("detail.backToLeads")}</Button>
         </Link>
       </div>
     );
   }
+
+  const contact = lead.contact as Record<string, string> | undefined;
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-10">
@@ -129,18 +132,20 @@ export default function LeadDetailPage({
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold tracking-tight">
-              {lead.contact?.name || lead.contactName || "Unknown Contact"}
+              {contact?.name ||
+                (lead.contactName as string) ||
+                t("detail.unknownContact")}
             </h2>
             <Badge
               variant="outline"
-              className={`text-xs ${statusColors[lead.status] || ""}`}
+              className={`text-xs ${statusColors[lead.status as string] || ""}`}
             >
-              {lead.status}
+              {lead.status as string}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Lead #{lead.id?.slice(-8)} · Created on{" "}
-            {new Date(lead.createdAt).toLocaleDateString()}
+            Lead #{(lead.id as string)?.slice(-8)} · {t("detail.createdOn")}{" "}
+            {new Date(lead.createdAt as string).toLocaleDateString()}
           </p>
         </div>
       </div>
@@ -151,21 +156,21 @@ export default function LeadDetailPage({
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-semibold">
-                Contact Information
+                {t("detail.contactInfo")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-muted-foreground" />
-                <span>{lead.contact?.email || "No email provided"}</span>
+                <span>{contact?.email || t("detail.noEmail")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-muted-foreground" />
-                <span>{lead.contact?.phone || "No phone provided"}</span>
+                <span>{contact?.phone || t("detail.noPhone")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Building2 className="w-4 h-4 text-muted-foreground" />
-                <span>{lead.contact?.company || "No company provided"}</span>
+                <span>{contact?.company || t("detail.noCompany")}</span>
               </div>
             </CardContent>
           </Card>
@@ -173,7 +178,7 @@ export default function LeadDetailPage({
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-semibold">
-                Lead Context / Notes
+                {t("detail.contextNotes")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -192,11 +197,11 @@ export default function LeadDetailPage({
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="history" className="gap-2">
                 <MessageSquare className="w-4 h-4" />
-                Conversation History
+                {t("detail.tabHistory")}
               </TabsTrigger>
               <TabsTrigger value="quote" className="gap-2">
                 <Calculator className="w-4 h-4" />
-                Smart Quoting
+                {t("detail.tabQuote")}
               </TabsTrigger>
             </TabsList>
 
@@ -204,7 +209,6 @@ export default function LeadDetailPage({
               <Card>
                 <CardContent className="p-0 flex flex-col h-[500px]">
                   <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {/* Mock history */}
                     <div className="flex gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                         <Users className="w-4 h-4 text-primary" />
@@ -238,7 +242,7 @@ export default function LeadDetailPage({
                   <div className="p-3 border-t border-border bg-muted/30">
                     <div className="flex gap-2">
                       <Input
-                        placeholder="Type a message or internal note..."
+                        placeholder={t("detail.messagePlaceholder")}
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         className="bg-background"
@@ -255,37 +259,34 @@ export default function LeadDetailPage({
             <TabsContent value="quote" className="mt-4">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">AI Quote Generation</CardTitle>
-                  <CardDescription>
-                    Analyze the client&apos;s request and automatically
-                    calculate platform, infrastructure, and development costs.
-                  </CardDescription>
+                  <CardTitle className="text-lg">
+                    {t("detail.quoteTitle")}
+                  </CardTitle>
+                  <CardDescription>{t("detail.quoteDesc")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {!quoteGenerated && !isGeneratingQuote ? (
                     <div className="flex flex-col items-center justify-center py-12 border border-dashed rounded-lg bg-muted/20">
                       <Calculator className="w-12 h-12 text-muted-foreground/40 mb-4" />
                       <h3 className="font-medium text-lg">
-                        No quote generated yet
+                        {t("detail.noQuote")}
                       </h3>
                       <p className="text-sm text-muted-foreground text-center max-w-sm mt-2 mb-6">
-                        Let our specialized Pricing Agent analyze the
-                        conversation history and project requirements to suggest
-                        a budget.
+                        {t("detail.quotePricing")}
                       </p>
                       <div className="flex gap-3">
                         <Button
                           variant="outline"
                           onClick={() => setQuoteGenerated(true)}
                         >
-                          Create Manually
+                          {t("detail.createManually")}
                         </Button>
                         <Button
                           className="gap-2"
                           onClick={handleGenerateQuoteWithAgent}
                         >
                           <Bot className="w-4 h-4" />
-                          Generate with AI
+                          {t("detail.generateWithAI")}
                         </Button>
                       </div>
                     </div>
@@ -294,11 +295,10 @@ export default function LeadDetailPage({
                       <Bot className="w-12 h-12 text-primary animate-pulse" />
                       <div className="text-center space-y-2">
                         <h3 className="font-medium text-lg text-primary">
-                          Agent analyzing requirements...
+                          {t("detail.agentAnalyzing")}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          Checking tool costs, infrastructure needs, and effort
-                          estimation.
+                          {t("detail.agentChecking")}
                         </p>
                       </div>
                     </div>
@@ -310,19 +310,23 @@ export default function LeadDetailPage({
                           className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                         >
                           <Check className="w-3 h-3 mr-1" />
-                          AI Generated Quote
+                          {t("detail.aiGeneratedQuote")}
                         </Badge>
                         <span className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> Updated just now
+                          <Clock className="w-3 h-3" /> {t("detail.updatedNow")}
                         </span>
                       </div>
 
                       <div className="rounded-md border">
                         <div className="grid grid-cols-12 text-sm font-medium bg-muted/50 p-3 border-b">
-                          <div className="col-span-6">Description</div>
-                          <div className="col-span-3">Category</div>
+                          <div className="col-span-6">
+                            {t("detail.colDescription")}
+                          </div>
+                          <div className="col-span-3">
+                            {t("detail.colCategory")}
+                          </div>
                           <div className="col-span-3 text-right">
-                            Cost (USD)
+                            {t("detail.colCost")}
                           </div>
                         </div>
                         <div className="divide-y">
@@ -348,7 +352,7 @@ export default function LeadDetailPage({
                         </div>
                         <div className="grid grid-cols-12 text-sm font-medium bg-primary/5 p-4 border-t">
                           <div className="col-span-9 text-right text-muted-foreground uppercase tracking-wider text-xs flex items-center justify-end">
-                            Estimated Total
+                            {t("detail.estimatedTotal")}
                           </div>
                           <div className="col-span-3 text-right text-lg text-primary tabular-nums">
                             $
@@ -361,7 +365,7 @@ export default function LeadDetailPage({
 
                       <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
                         <h4 className="text-sm font-semibold text-amber-500 mb-2">
-                          Agent Rationale
+                          {t("detail.agentRationale")}
                         </h4>
                         <p className="text-xs text-muted-foreground leading-relaxed">
                           Based on the client&apos;s request for a complete CRM
@@ -375,11 +379,11 @@ export default function LeadDetailPage({
                       <div className="flex gap-3 justify-end pt-4 border-t">
                         <Button variant="outline">
                           <Plus className="w-4 h-4 mr-2" />
-                          Add Item
+                          {t("detail.addItem")}
                         </Button>
                         <Button className="gap-2">
                           <Send className="w-4 h-4" />
-                          Send Proposal to Client
+                          {t("detail.sendProposal")}
                         </Button>
                       </div>
                     </div>

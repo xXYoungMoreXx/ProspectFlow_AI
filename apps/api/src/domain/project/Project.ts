@@ -19,6 +19,8 @@ export interface ProjectProps {
   templateId?: string;
   briefing: Record<string, unknown>;
   deliverableUrl?: string;
+  mockupHtml?: string | undefined;
+  mockupUrl?: string | undefined;
   deliverableMeta: Record<string, unknown>;
   lighthouse: LighthouseScores;
   revisionCount: number;
@@ -102,6 +104,40 @@ export class Project extends AggregateRoot {
   }
   get updatedAt(): Date {
     return this.props.updatedAt;
+  }
+
+  storeMockup(html: string, url: string): void {
+    this.props.mockupHtml = html;
+    this.props.mockupUrl = url;
+    this.props.updatedAt = new Date();
+  }
+
+  get mockupHtml(): string | undefined {
+    return this.props.mockupHtml;
+  }
+
+  get mockupUrl(): string | undefined {
+    return this.props.mockupUrl;
+  }
+
+  get briefing(): Record<string, unknown> {
+    return this.props.briefing;
+  }
+
+  storeDesignResult(design: Record<string, unknown>): void {
+    this.props.deliverableMeta = {
+      ...this.props.deliverableMeta,
+      designResult: design,
+    };
+    this.props.updatedAt = new Date();
+  }
+
+  storeAssets(assets: Array<{ path: string; base64: string }>): void {
+    this.props.deliverableMeta = {
+      ...this.props.deliverableMeta,
+      assets,
+    };
+    this.props.updatedAt = new Date();
   }
 
   storeBuildArtifact(html: string): void {

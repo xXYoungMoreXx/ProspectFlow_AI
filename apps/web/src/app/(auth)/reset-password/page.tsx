@@ -15,8 +15,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Bot, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 function ResetPasswordForm() {
+  const t = useTranslations("auth");
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
@@ -33,9 +35,9 @@ function ResetPasswordForm() {
           <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 text-destructive">
             <AlertCircle className="w-8 h-8" />
           </div>
-          <CardTitle>Token inválido</CardTitle>
+          <CardTitle>{t("resetPassword.errors.invalidToken.title")}</CardTitle>
           <CardDescription>
-            O link de redefinição de senha está incompleto ou inválido.
+            {t("resetPassword.errors.invalidToken.message")}
           </CardDescription>
           <div className="pt-4 flex">
             <Link
@@ -45,7 +47,7 @@ function ResetPasswordForm() {
                 className: "w-full",
               })}
             >
-              Solicitar novo link
+              {t("resetPassword.errors.invalidToken.requestNew")}
             </Link>
           </div>
         </CardContent>
@@ -58,7 +60,7 @@ function ResetPasswordForm() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("As senhas não coincidem");
+      setError(t("resetPassword.errors.passwordMismatch"));
       return;
     }
 
@@ -69,9 +71,9 @@ function ResetPasswordForm() {
       setSuccess(true);
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.errors[0]?.message || "Erro ao redefinir senha");
+        setError(err.errors[0]?.message || t("resetPassword.errors.generic"));
       } else {
-        setError("Não foi possível conectar ao servidor");
+        setError(t("resetPassword.errors.generic"));
       }
     } finally {
       setLoading(false);
@@ -85,9 +87,9 @@ function ResetPasswordForm() {
           <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 text-green-500">
             <CheckCircle2 className="w-8 h-8" />
           </div>
-          <CardTitle>Senha redefinida!</CardTitle>
+          <CardTitle>{t("resetPassword.success.title")}</CardTitle>
           <CardDescription>
-            Sua senha foi alterada com sucesso. Você já pode fazer login.
+            {t("resetPassword.success.message")}
           </CardDescription>
           <div className="pt-4 flex">
             <Link
@@ -97,7 +99,7 @@ function ResetPasswordForm() {
                 className: "w-full",
               })}
             >
-              Ir para o Login
+              {t("resetPassword.success.goToLogin")}
             </Link>
           </div>
         </CardContent>
@@ -113,10 +115,10 @@ function ResetPasswordForm() {
         </div>
         <div>
           <CardTitle className="text-2xl font-bold tracking-tight">
-            Nova Senha
+            {t("resetPassword.title")}
           </CardTitle>
           <CardDescription className="text-muted-foreground mt-1">
-            Digite sua nova senha abaixo
+            {t("resetPassword.subtitle")}
           </CardDescription>
         </div>
       </CardHeader>
@@ -131,11 +133,11 @@ function ResetPasswordForm() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="password">Nova Senha</Label>
+            <Label htmlFor="password">{t("resetPassword.newPassword")}</Label>
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder={t("resetPassword.passwordPlaceholder")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -144,11 +146,13 @@ function ResetPasswordForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
+            <Label htmlFor="confirmPassword">
+              {t("resetPassword.confirmPassword")}
+            </Label>
             <Input
               id="confirmPassword"
               type="password"
-              placeholder="••••••••"
+              placeholder={t("resetPassword.passwordPlaceholder")}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -167,10 +171,10 @@ function ResetPasswordForm() {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Salvando...
+                {t("resetPassword.submitting")}
               </>
             ) : (
-              "Redefinir Senha"
+              t("resetPassword.submit")
             )}
           </button>
         </form>

@@ -36,6 +36,7 @@ export async function leadRoutes(app: FastifyInstance): Promise<void> {
     const getListHandler = new GetLeadsHandler(app.container.leadRepo);
     const result = await getListHandler.execute({
       operatorId: request.operatorId,
+      organizationId: request.organizationId,
       ...parsed.data,
       status: parsed.data.status as LeadStatus | undefined,
     });
@@ -56,6 +57,7 @@ export async function leadRoutes(app: FastifyInstance): Promise<void> {
     const result = await getByIdHandler.execute(
       request.params.id,
       request.operatorId,
+      request.organizationId,
     );
     if (result.isErr()) {
       return reply.status(404).send({
@@ -129,6 +131,7 @@ export async function leadRoutes(app: FastifyInstance): Promise<void> {
     const result = await createHandler.execute(
       request.operatorId,
       parsed.data as Parameters<typeof createHandler.execute>[1],
+      request.organizationId,
     );
     if (result.isErr()) {
       return reply.status(400).send({
@@ -172,6 +175,7 @@ export async function leadRoutes(app: FastifyInstance): Promise<void> {
         request.operatorId,
         parsed.data.status as LeadStatus,
         parsed.data.reason,
+        request.organizationId,
       );
       if (result.isErr()) {
         const status = result.error.message.includes("not found") ? 404 : 400;
@@ -202,6 +206,7 @@ export async function leadRoutes(app: FastifyInstance): Promise<void> {
       const lead = await app.container.leadRepo.findById(
         request.params.id,
         request.operatorId,
+        request.organizationId,
       );
       if (!lead) {
         return reply.status(404).send({

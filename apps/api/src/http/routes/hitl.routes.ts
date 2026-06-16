@@ -18,7 +18,10 @@ export async function hitlRoutes(app: FastifyInstance): Promise<void> {
 
   app.get("/pending", async (request, reply) => {
     const getPending = new GetPendingApprovalsHandler(app.container.hitlRepo);
-    const approvals = await getPending.execute(request.operatorId);
+    const approvals = await getPending.execute(
+      request.operatorId,
+      request.organizationId,
+    );
     return reply.status(200).send({
       data: approvals.map((a) => a.toJSON()),
       meta: {
@@ -45,11 +48,14 @@ export async function hitlRoutes(app: FastifyInstance): Promise<void> {
         app.container.hitlRepo,
         app.container.projectRepo,
         app.container.deploymentRouter,
+        app.container.queue,
+        app.container.mediaRouter,
       );
       const result = await approve.execute(
         request.params.id,
         request.operatorId,
         parsed.data.note,
+        request.organizationId,
       );
       if (result.isErr())
         return reply
@@ -90,6 +96,7 @@ export async function hitlRoutes(app: FastifyInstance): Promise<void> {
         request.params.id,
         request.operatorId,
         parsed.data.note,
+        request.organizationId,
       );
       if (result.isErr())
         return reply
@@ -131,6 +138,7 @@ export async function hitlRoutes(app: FastifyInstance): Promise<void> {
         request.operatorId,
         parsed.data.editedPayload,
         parsed.data.note,
+        request.organizationId,
       );
       if (result.isErr())
         return reply

@@ -1,0 +1,752 @@
+{
+  "nav": {
+    "agents": "Agents",
+    "leads": "Leads",
+    "deals": "Deals",
+    "projects": "Projects",
+    "briefings": "Briefings",
+    "prospecting": "Prospecting",
+    "hitl": "Approvals",
+    "costs": "Costs",
+    "settings": "Settings"
+  },
+  "auth": {
+    "brand": "AgentePro",
+    "login": {
+      "subtitle": "Sign in to manage your AI agents",
+      "email": "Email",
+      "emailPlaceholder": "operator@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Sign up",
+      "errors": {
+        "invalid": "Invalid credentials",
+        "network": "Could not connect to server"
+      }
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Sign up to manage your AI agents",
+      "fullName": "Full name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "operator@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "At least 8 characters with uppercase, lowercase, number, and symbol.",
+      "confirmPassword": "Confirm Password",
+      "submit": "Sign up",
+      "submitting": "Signing up...",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Sign in",
+      "success": {
+        "title": "Account created!",
+        "emailSentTo": "We sent a verification email to",
+        "instructions": "Please check your inbox to activate your account.",
+        "goToLogin": "Go to sign in"
+      },
+      "errors": {
+        "passwordMismatch": "Passwords do not match",
+        "generic": "Error creating account",
+        "network": "Could not connect to server"
+      }
+    },
+    "forgotPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email to receive a reset link",
+      "email": "Email",
+      "emailPlaceholder": "operator@example.com",
+      "submit": "Send reset link",
+      "submitting": "Sending...",
+      "backToLogin": "Back to sign in",
+      "success": {
+        "title": "Request sent",
+        "messagePre": "If the email",
+        "messagePost": "is registered, you'll receive a link to reset your password.",
+        "backToLogin": "Back to sign in"
+      },
+      "errors": {
+        "generic": "Error requesting reset",
+        "network": "Could not connect to server"
+      }
+    },
+    "resetPassword": {
+      "title": "New Password",
+      "subtitle": "Enter your new password below",
+      "newPassword": "New Password",
+      "passwordPlaceholder": "••••••••",
+      "confirmPassword": "Confirm New Password",
+      "submit": "Reset Password",
+      "submitting": "Saving...",
+      "success": {
+        "title": "Password reset!",
+        "message": "Your password was changed successfully. You can now sign in.",
+        "goToLogin": "Go to sign in"
+      },
+      "errors": {
+        "passwordMismatch": "Passwords do not match",
+        "generic": "Error resetting password",
+        "network": "Could not connect to server",
+        "invalidToken": {
+          "title": "Invalid token",
+          "message": "The reset link is incomplete or invalid.",
+          "requestNew": "Request new link"
+        }
+      }
+    },
+    "verifyEmail": {
+      "loading": "Verifying email...",
+      "loadingMessage": "Please wait.",
+      "success": {
+        "title": "Email verified!",
+        "message": "Your account was activated. You can now sign in.",
+        "goToLogin": "Go to sign in"
+      },
+      "errors": {
+        "noToken": "Verification token missing.",
+        "failed": "Failed to verify email. The link may have expired.",
+        "title": "Verification error",
+        "backToLogin": "Back to sign in"
+      }
+    }
+  },
+  "agents": {
+    "title": "AI Agents",
+    "subtitle": "Manage and configure your autonomous agents",
+    "newAgent": "New Agent",
+    "noModel": "No model configured",
+    "skillsCount": "{count} skills",
+    "empty": {
+      "title": "No agents yet",
+      "description": "Create your first AI agent to get started",
+      "cta": "Create Agent"
+    },
+    "error": "Failed to load agents. Check your connection.",
+    "personas": {
+      "HUNTER": "Hunter",
+      "CLOSER": "Closer",
+      "BUILDER": "Builder",
+      "QA": "QA"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "PAUSED": "Paused",
+      "INACTIVE": "Inactive"
+    },
+    "new": {
+      "title": "Create Agent",
+      "subtitle": "Configure a new autonomous AI agent persona",
+      "identity": "Agent Identity",
+      "agentName": "Agent Name",
+      "agentNamePlaceholder": "e.g. Prospector Alpha",
+      "persona": "Persona Type",
+      "personaPlaceholder": "Select persona",
+      "personas": {
+        "HUNTER": "Hunter (Lead Generation)",
+        "CLOSER": "Closer (Negotiation)",
+        "BUILDER": "Builder (Development/Execution)",
+        "QA": "QA (Quality Assurance)"
+      },
+      "systemPrompt": "System Prompt",
+      "systemPromptPlaceholder": "You are an expert lead generator...",
+      "tokens": "tokens",
+      "systemPromptHint": "Define the agent's behavior, constraints, and operational guidelines.",
+      "llmConfig": "LLM Configuration",
+      "provider": "Provider",
+      "providerPlaceholder": "Select provider",
+      "model": "Model",
+      "modelPlaceholder": "Select model",
+      "temperature": "Temperature",
+      "tempMin": "Deterministic (0.0)",
+      "tempMax": "Creative (2.0)",
+      "knowledgeBase": "Knowledge Base & Rules",
+      "knowledgeHint": "Upload reference materials (.pdf, .txt, .csv) for the agent's context.",
+      "uploadCta": "Click or drag files here",
+      "uploadHint": "Files will be parsed into vector embeddings automatically",
+      "uploading": "Validating and uploading...",
+      "uploadedFiles": "Uploaded Files",
+      "agentSkills": "Agent Skills",
+      "skillsHint": "Select capabilities for this agent",
+      "skillLabels": {
+        "web_search": "Web Search",
+        "web_searchDesc": "Real-time internet search.",
+        "places_search": "Places Search",
+        "places_searchDesc": "Finds businesses via Google Maps (Places API).",
+        "cnpj_lookup": "CNPJ Lookup",
+        "cnpj_lookupDesc": "Queries Brazilian company data from Receita Federal.",
+        "cnpj_enricher": "CNPJ Enricher",
+        "cnpj_enricherDesc": "Enriches leads with additional CNPJ data.",
+        "email_sender": "Email Sender",
+        "email_senderDesc": "Sends prospecting and follow-up emails.",
+        "whatsapp_sender": "WhatsApp Sender",
+        "whatsapp_senderDesc": "Sends messages via Evolution API (WhatsApp).",
+        "contract_notifier": "Contract Notifier",
+        "contract_notifierDesc": "Sends contract notifications for approval.",
+        "site_generator": "Site Generator",
+        "site_generatorDesc": "Generates client sites via Builder persona.",
+        "security_guard": "Security Guard",
+        "security_guardDesc": "Runs payload analysis to prevent injection."
+      },
+      "securityNote": "All agents are subjected to the global security middleware. Outbound payloads are inspected automatically.",
+      "deploy": "Deploy Agent",
+      "deploying": "Deploying...",
+      "deployError": "Failed to create agent. Please try again."
+    },
+    "detail": {
+      "configuration": "Configuration",
+      "name": "Name",
+      "namePlaceholder": "Agent name",
+      "model": "LLM Model",
+      "modelPlaceholder": "Select model",
+      "statusLabel": "Status",
+      "saving": "Saving...",
+      "save": "Save Changes",
+      "subAgents": "Sub-agents",
+      "skills": "Skills",
+      "created": "Created",
+      "lastUpdated": "Last updated",
+      "notFound": "Agent not found",
+      "backToAgents": "Back to Agents"
+    }
+  },
+  "leads": {
+    "title": "Leads Pipeline",
+    "subtitle": "Drag and drop leads to update their status",
+    "newLead": "New Lead",
+    "dropHere": "Drop leads here",
+    "columns": {
+      "PROSPECTED": "Prospected",
+      "APPROVED": "Approved",
+      "NEW": "New",
+      "CONTACTED": "Contacted",
+      "QUALIFIED": "Qualified",
+      "NEGOTIATING": "Negotiating",
+      "CONVERTED": "Converted",
+      "LOST": "Lost"
+    },
+    "new": {
+      "title": "New Lead",
+      "subtitle": "Add a lead manually to the pipeline",
+      "contactName": "Contact Name",
+      "contactNamePlaceholder": "e.g. John Doe",
+      "contactCompany": "Company",
+      "contactCompanyPlaceholder": "e.g. John's Bakery",
+      "contactPhone": "Phone",
+      "contactPhonePlaceholder": "+55 (11) 9 9999-9999",
+      "contactEmail": "Email",
+      "contactEmailPlaceholder": "john@company.com",
+      "source": "Source",
+      "sourcePlaceholder": "Select source",
+      "sources": {
+        "MANUAL": "Manual",
+        "GOOGLE_MAPS": "Google Maps",
+        "SCRAPED": "Scraped",
+        "REFERRAL": "Referral",
+        "APOLLO": "Apollo"
+      },
+      "contactRequired": "Provide phone or email",
+      "submit": "Create Lead",
+      "submitting": "Creating...",
+      "submitError": "Failed to create lead. Please try again.",
+      "backToLeads": "Back to Leads"
+    },
+    "detail": {
+      "notFound": "Lead not found",
+      "backToLeads": "Back to Leads",
+      "unknownContact": "Unknown Contact",
+      "createdOn": "Created on",
+      "contactInfo": "Contact Information",
+      "noEmail": "No email provided",
+      "noPhone": "No phone provided",
+      "noCompany": "No company provided",
+      "contextNotes": "Lead Context / Notes",
+      "tabHistory": "Conversation History",
+      "tabQuote": "Smart Quoting",
+      "messagePlaceholder": "Type a message or internal note...",
+      "quoteTitle": "AI Quote Generation",
+      "quoteDesc": "Analyze the client's request and automatically calculate platform, infrastructure, and development costs.",
+      "noQuote": "No quote generated yet",
+      "quotePricing": "Let our specialized Pricing Agent analyze the conversation history and project requirements to suggest a budget.",
+      "createManually": "Create Manually",
+      "generateWithAI": "Generate with AI",
+      "agentAnalyzing": "Agent analyzing requirements...",
+      "agentChecking": "Checking tool costs, infrastructure needs, and effort estimation.",
+      "aiGeneratedQuote": "AI Generated Quote",
+      "updatedNow": "Updated just now",
+      "colDescription": "Description",
+      "colCategory": "Category",
+      "colCost": "Cost (USD)",
+      "estimatedTotal": "Estimated Total",
+      "agentRationale": "Agent Rationale",
+      "addItem": "Add Item",
+      "sendProposal": "Send Proposal to Client"
+    }
+  },
+  "deals": {
+    "title": "Deals",
+    "subtitle": "Track negotiations and closed contracts",
+    "empty": "No deals yet",
+    "status": {
+      "PROPOSED": "Proposed",
+      "NEGOTIATING": "Negotiating",
+      "CLOSED": "Closed",
+      "CANCELLED": "Cancelled"
+    }
+  },
+  "projects": {
+    "title": "Projects",
+    "subtitle": "Track site deliveries and Lighthouse scores",
+    "empty": "No projects yet",
+    "perf": "Perf:",
+    "a11y": "A11y:",
+    "status": {
+      "PENDING": "Pending",
+      "IN_PROGRESS": "In Progress",
+      "REVIEW": "In Review",
+      "DELIVERED": "Delivered",
+      "REVISION": "In Revision"
+    },
+    "detail": {
+      "notFound": "Project not found",
+      "backToProjects": "Back to Projects",
+      "siteDelivered": "Site Delivered",
+      "tutorial": "Tutorial",
+      "openSite": "Open Site",
+      "notDelivered": "Site not yet delivered — pipeline in progress.",
+      "pipelineStatus": "Pipeline Status",
+      "currentStage": "Current stage",
+      "lighthouseTitle": "Lighthouse Scores",
+      "scoresNotAvailable": "Scores not yet available",
+      "stages": {
+        "created": "Project Created",
+        "briefing_approved": "Briefing Approved",
+        "builder_started": "Builder Started",
+        "staging_approved": "Staging Approved",
+        "delivered": "Delivered"
+      },
+      "lighthouse": {
+        "performance": "Performance",
+        "accessibility": "Accessibility",
+        "seo": "SEO",
+        "bestPractices": "Best Practices"
+      },
+      "mockupTitle": "Visual Mockup — Awaiting Approval",
+      "mockupDesc": "Approve for the CODER to start the final HTML, or reject for the DESIGNER to redo.",
+      "reject": "Reject",
+      "approveMockup": "Approve Mockup",
+      "createdAt": "Created",
+      "updatedAt": "Updated"
+    }
+  },
+  "briefings": {
+    "title": "Briefings",
+    "subtitle": "Manage client briefings and trigger extractions",
+    "empty": "No briefings yet",
+    "columns": {
+      "id": "ID",
+      "deal": "Deal",
+      "status": "Status",
+      "started": "Started",
+      "action": "Action"
+    },
+    "status": {
+      "COLLECTING": "Collecting",
+      "COMPLETED": "Completed",
+      "APPROVED": "Approved"
+    },
+    "forceExtract": "Force Extract",
+    "extracting": "Extracting..."
+  },
+  "prospecting": {
+    "title": "Prospecting",
+    "subtitle": "Dispatch Hunter agent and manage prospected leads",
+    "newSearch": "New Search",
+    "tabs": {
+      "queue": "Queue",
+      "config": "Config"
+    },
+    "search": {
+      "title": "Search Parameters",
+      "categories": "Categories",
+      "categoriesPlaceholder": "e.g. restaurants",
+      "city": "City",
+      "cityPlaceholder": "New York",
+      "state": "State (2 chars)",
+      "statePlaceholder": "NY",
+      "radius": "Radius (km):",
+      "minScore": "Min Score:",
+      "submit": "Preview results",
+      "submitting": "Dispatching...",
+      "searching": "Searching Google Maps...",
+      "mapPreview": "Area preview",
+      "results": "{count} result(s) — {city}/{state}",
+      "noResults": "No results found for these filters.",
+      "website": "Website",
+      "startProspecting": "Start Prospecting ({count} leads)",
+      "errorPreview": "Failed to fetch results. Check your Google Maps key in Settings.",
+      "errorSubmit": "Failed to queue prospecting. Please try again.",
+      "googleAttribution": "Data provided by Google Business · Google Maps"
+    },
+    "queue": {
+      "empty": "No leads in queue",
+      "columns": {
+        "business": "Business",
+        "contact": "Contact",
+        "score": "Score",
+        "source": "Source",
+        "date": "Date",
+        "hitl": "HITL"
+      }
+    },
+    "config": {
+      "title": "Prospecting Configuration",
+      "statusSection": "Status",
+      "editSection": "Default Parameters",
+      "lastRun": "Last run",
+      "nextRun": "Next run",
+      "quotaRemaining": "Quota remaining",
+      "quotaLimit": "Quota limit",
+      "never": "Never",
+      "notScheduled": "Not scheduled",
+      "scheduleTime": "Schedule time",
+      "scheduleDays": "Schedule days",
+      "days": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
+      },
+      "save": "Save Configuration",
+      "saving": "Saving...",
+      "saveSuccess": "Configuration saved successfully.",
+      "saveError": "Failed to save. Please try again."
+    }
+  },
+  "hitl": {
+    "title": "HITL Approvals",
+    "subtitle": "Review and approve agent actions before execution",
+    "pending": "pending",
+    "empty": {
+      "title": "All clear!",
+      "description": "No pending approvals at the moment"
+    },
+    "columns": {
+      "action": "Agent Action",
+      "agent": "Agent:",
+      "expired": "Expired",
+      "status": "PENDING"
+    },
+    "actionLabels": {
+      "APPROVE_LEAD_LIST": "Approve Lead List",
+      "SEND_EXTERNAL_MESSAGE": "Send External Message",
+      "SEND_PROPOSAL": "Send Proposal",
+      "APPROVE_MOCKUP": "Approve Mockup",
+      "APPROVE_STAGING": "Approve Staging",
+      "DEPLOY_PRODUCTION": "Deploy to Production",
+      "APPROVE_BRIEFING": "Approve Briefing",
+      "SEND_CLIENT_DELIVERY": "Send Client Delivery"
+    },
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectDialog": {
+      "title": "Reject Action",
+      "description": "Provide the rejection reason to the agent.",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "Why are you rejecting this action?",
+      "cancel": "Cancel",
+      "confirm": "Confirm Rejection"
+    }
+  },
+  "costs": {
+    "title": "LLM Costs",
+    "subtitle": "Token consumption and cost per agent",
+    "periods": {
+      "today": "Today",
+      "7days": "7 days",
+      "30days": "30 days"
+    },
+    "totalCost": "Total Cost",
+    "totalTokens": "Total Tokens",
+    "requests": "Requests",
+    "breakdown": "Breakdown by Agent",
+    "loading": "Loading...",
+    "empty": "No usage recorded in the selected period.",
+    "columns": {
+      "agent": "Agent",
+      "provider": "Provider",
+      "tokens": "Tokens",
+      "requests": "Requests",
+      "cost": "Cost"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Configure AI providers, messaging channels, and integrations",
+    "unsaved": "unsaved",
+    "discard": "Discard",
+    "save": "Save",
+    "tabs": {
+      "aiProviders": "AI Providers",
+      "messaging": "Messaging",
+      "integrations": "Integrations",
+      "system": "System"
+    },
+    "aiProviders": {
+      "openai": {
+        "name": "OpenAI",
+        "description": "GPT-4o, GPT-4o-mini and o-series models",
+        "apiKey": "API Key",
+        "defaultModel": "Default Model"
+      },
+      "anthropic": {
+        "name": "Anthropic",
+        "description": "Claude 3.5 Sonnet, Haiku and Opus",
+        "apiKey": "API Key",
+        "defaultModel": "Default Model"
+      },
+      "google": {
+        "name": "Google Gemini",
+        "description": "Gemini 2.0 Flash and Pro",
+        "apiKey": "API Key",
+        "defaultModel": "Default Model"
+      },
+      "groq": {
+        "name": "Groq",
+        "description": "Ultra-fast inference with Llama and Mixtral",
+        "apiKey": "API Key",
+        "defaultModel": "Default Model",
+        "fastBadge": "Fast"
+      },
+      "deepseek": {
+        "name": "DeepSeek",
+        "description": "Reasoning and coding models by DeepSeek AI",
+        "apiKey": "API Key",
+        "defaultModel": "Default Model"
+      },
+      "openrouter": {
+        "name": "OpenRouter",
+        "description": "Unified gateway to hundreds of AI models",
+        "apiKey": "API Key",
+        "defaultModel": "Default Model"
+      },
+      "ollama": {
+        "name": "Ollama (Local)",
+        "description": "Run open-source models locally — no API key required"
+      },
+      "videoSection": "Video Generation",
+      "heygen": {
+        "name": "HeyGen",
+        "description": "AI avatar video synthesis for conversational and marketing videos",
+        "apiKey": "HeyGen API Key"
+      },
+      "higgsfield": {
+        "name": "Higgsfield AI",
+        "description": "Cinematic video generation with custom camera movements",
+        "apiKey": "Higgsfield API Key"
+      },
+      "seedance": {
+        "name": "Seedance (ByteDance)",
+        "description": "High-quality video generation via Ark API — Pro and Lite models",
+        "apiKey": "ByteDance Ark API Key",
+        "defaultModel": "Default Model"
+      },
+      "remotion": {
+        "name": "Remotion",
+        "description": "Programmatic video rendering with React — requires Cloud license (Lambda)",
+        "serveUrl": "Serve URL (Lambda)",
+        "apiKey": "Remotion Cloud API Key"
+      }
+    },
+    "messaging": {
+      "whatsapp": {
+        "name": "WhatsApp",
+        "description": "Evolution API integration for WhatsApp Business",
+        "apiUrl": "Evolution API URL",
+        "apiKey": "API Key",
+        "instanceName": "Instance Name"
+      },
+      "email": {
+        "name": "Email",
+        "description": "Brevo (formerly Sendinblue) transactional email",
+        "apiKey": "Brevo API Key",
+        "senderName": "Sender Name",
+        "senderAddress": "Sender Address"
+      },
+      "telegram": {
+        "name": "Telegram",
+        "description": "Bot for operator alerts and HITL approval workflows",
+        "botToken": "Bot Token",
+        "chatId": "Operator Chat ID"
+      }
+    },
+    "integrations": {
+      "mcpBrasil": {
+        "name": "MCP Brasil",
+        "description": "Brazilian government APIs — Transparência, DataJud, TSE",
+        "transparenciaKey": "Transparência Federal API Key",
+        "datajudKey": "DataJud API Key"
+      },
+      "mcpMeta": {
+        "name": "MCP Meta",
+        "description": "Meta Business Platform — WhatsApp Business, Instagram and Facebook Graph API",
+        "appId": "App ID",
+        "appSecret": "App Secret",
+        "accessToken": "Access Token",
+        "phoneNumberId": "Phone Number ID"
+      },
+      "googleMaps": {
+        "name": "Google Maps",
+        "description": "Google Places API (New) for location-based lead prospecting",
+        "apiKey": "Maps API Key"
+      },
+      "chromadb": {
+        "name": "ChromaDB",
+        "description": "Vector database for RAG and agent memory",
+        "url": "ChromaDB URL"
+      },
+      "webhooks": {
+        "name": "Webhooks",
+        "description": "Outbound webhook for system events and integrations",
+        "url": "Webhook URL",
+        "secret": "Signing Secret"
+      },
+      "mcpManager": {
+        "name": "Agent MCPs",
+        "description": "Connect Model Context Protocol servers to expand agent capabilities",
+        "addTitle": "Add MCP",
+        "nameLabel": "MCP Name",
+        "namePlaceholder": "e.g. brave-search",
+        "typeLabel": "Connection Type",
+        "typeCommand": "Command (stdio)",
+        "typeUrl": "URL (HTTP/SSE)",
+        "valueLabelCommand": "Command",
+        "valueLabelUrl": "URL",
+        "valuePlaceholderCommand": "npx @modelcontextprotocol/server-brave-search",
+        "valuePlaceholderUrl": "http://localhost:3001/sse",
+        "addButton": "Add MCP",
+        "installedTitle": "Configured MCPs",
+        "noMcps": "No MCPs configured",
+        "noMcpsHint": "Add an MCP above to extend agent capabilities with external tools.",
+        "remove": "Remove",
+        "test": "Test",
+        "typeCommandBadge": "stdio",
+        "typeUrlBadge": "HTTP"
+      }
+    },
+    "system": {
+      "hitlTimeouts": {
+        "title": "HITL Timeouts",
+        "description": "Human-in-the-loop approval window configuration",
+        "defaultTimeout": "Default Timeout (minutes)",
+        "financialInterval": "Financial Alert Interval (min)"
+      },
+      "security": {
+        "title": "Security Limits",
+        "description": "Input validation and rate-limiting thresholds",
+        "maxBodySize": "Max Request Body Size (bytes)",
+        "hint": "Default: 1 MB (1048576). Increase only if large file uploads are needed."
+      },
+      "backup": {
+        "title": "Backup & Restore",
+        "description": "Export or import non-secret settings as JSON",
+        "export": "Export JSON",
+        "import": "Import JSON",
+        "note": "Secrets (API Keys, tokens) are never exported. They must be re-entered manually after import."
+      }
+    },
+    "tooltips": {
+      "enableProvider": "Enable or disable this provider. When disabled, agents won't use this provider for inference.",
+      "apiKey": "Secret key to authenticate with the provider's API. Obtain it from the provider's dashboard.",
+      "defaultModel": "The AI model used by default for this provider when no specific model is selected by the agent.",
+      "testConnection": "Checks if the API Key is valid and the provider is reachable.",
+      "ollamaStatus": "Connection status with local Ollama (port 11434). Ollama must be installed and running.",
+      "mcpName": "Identifier name for this MCP. Use only lowercase letters, numbers, and hyphens.",
+      "mcpType": "Stdio: runs a local process via command line. HTTP/SSE: connects to a remote server via URL.",
+      "mcpValue": "For stdio: full command with arguments (e.g. npx @mcp/server-name). For HTTP: MCP server base URL.",
+      "whatsappUrl": "URL of the Evolution API instance. Usually http://localhost:8080 for local installs.",
+      "whatsappKey": "Evolution API API Key. Generated in the Evolution API admin panel.",
+      "whatsappInstance": "Name of the WhatsApp instance created in Evolution API.",
+      "brevoKey": "Brevo API Key (formerly Sendinblue). Get it at app.brevo.com > SMTP & API.",
+      "resendKey": "Resend API Key (re_xxxxxxxxx). Get it at resend.com/api-keys.",
+      "senderName": "Name that will appear in the 'From' field of sent emails.",
+      "senderAddress": "Sender email address. Must be verified in Brevo.",
+      "telegramToken": "Telegram bot token. Obtain it by creating a bot with @BotFather on Telegram.",
+      "telegramChatId": "Operator chat ID. Send /getid to @userinfobot on Telegram to find your ID.",
+      "hitlTimeout": "Maximum time (in minutes) the system waits for a HITL approval before marking it as expired.",
+      "financialInterval": "Interval (in minutes) to resend alerts about pending financial approvals.",
+      "maxBodySize": "Maximum accepted size in bytes per request. 1048576 = 1 MB. Increase for larger uploads.",
+      "backupExport": "Generates a JSON file with all settings (except secrets). Useful for migrating to another server.",
+      "backupImport": "Restores settings from an exported JSON. Secrets are never automatically imported.",
+      "transparenciaKey": "Portal da Transparência Federal API Key. Request at portaldatransparencia.gov.br/api-de-dados.",
+      "datajudKey": "DataJud API Key (TJDFT/CNJ). Required to query judicial process data.",
+      "metaToken": "Meta Business Access Token. Required for official WhatsApp Business API integration.",
+      "metaAppId": "Meta App ID (Facebook for Developers). Find it at developers.facebook.com.",
+      "metaAppSecret": "Meta App Secret. Generated alongside the App ID at developers.facebook.com.",
+      "metaAccessToken": "Meta Business Access Token (EAA...). Generate in Meta Business Suite or via Graph API.",
+      "metaPhoneNumberId": "WhatsApp Business Phone Number ID. Find it in Meta Business Manager > WhatsApp Accounts.",
+      "googleMapsKey": "Google Maps/Places API Key. Create at console.cloud.google.com with the Places (New) API enabled.",
+      "chromaUrl": "ChromaDB server URL. Used as a vector database for agent memory and RAG.",
+      "webhookUrl": "URL where the system sends event notifications (qualified leads, closed deals, etc).",
+      "webhookSecret": "Key used to sign webhook payloads (HMAC-SHA256). Validate on your receiving server."
+    },
+    "ollama": {
+      "pullModel": "Pull Model",
+      "pullPlaceholder": "llama3.2:3b",
+      "pull": "Pull",
+      "online": "Ollama Online",
+      "unreachable": "Ollama Unreachable",
+      "cpuOnly": "CPU only",
+      "installed": "Installed Models",
+      "noModels": "No models installed",
+      "activeModel": "Active Model",
+      "setActive": "Use",
+      "active": "Active",
+      "inferenceParams": "Inference Parameters",
+      "contextWindow": "Context Window (tokens)",
+      "maxTokens": "Max Tokens",
+      "topP": "Top-p",
+      "temperature": "Temperature",
+      "unreachableTitle": "Ollama Unreachable",
+      "unreachableSubtitle": "Could not connect to Ollama on port 11434",
+      "cause1": "Ollama is not installed",
+      "cause1Fix": "Download and install from ollama.com/download",
+      "cause2": "The Ollama service is not running",
+      "cause2Fix": "Run in terminal: ollama serve",
+      "cause3": "Port 11434 is blocked (firewall or another process)",
+      "cause3Fix": "Check if another process uses port 11434 with: netstat -ano | findstr 11434",
+      "downloadLink": "Download Ollama",
+      "retryButton": "Try Again"
+    }
+  },
+  "common": {
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "logout": "Sign out"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "pt-BR": "Português",
+    "es": "Español",
+    "en": "English"
+  }
+}

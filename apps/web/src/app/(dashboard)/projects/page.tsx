@@ -1,12 +1,24 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { api } from "@/lib/api";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { FolderKanban, ExternalLink } from "lucide-react";
+
+interface Project {
+  id: string;
+  clientName?: string;
+  status: "PENDING" | "IN_PROGRESS" | "REVIEW" | "DELIVERED" | "REVISION";
+  lighthouseScores?: { performance?: number; accessibility?: number };
+  previewUrl?: string;
+  createdAt: string;
+}
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-sky-500/10 text-sky-400 border-sky-500/20",
@@ -17,6 +29,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function ProjectsPage() {
+  const t = useTranslations("projects");
   const token = useAuthStore((s) => s.token);
 
   const { data, isLoading } = useQuery({
@@ -30,35 +43,27 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Projects</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Track site deliveries and Lighthouse scores
-        </p>
+        <h2 className="text-2xl font-bold tracking-tight">{t("title")}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
       </div>
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-4 w-32 bg-muted rounded" />
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 w-full bg-muted rounded" />
-              </CardContent>
-            </Card>
+            <div
+              key={i}
+              className="rounded-xl border border-border p-5 space-y-3"
+            >
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-8 w-full" />
+            </div>
           ))}
         </div>
       ) : projects.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16 space-y-3">
-            <FolderKanban className="w-10 h-10 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">No projects yet</p>
-          </CardContent>
-        </Card>
+        <EmptyState icon={FolderKanban} title={t("empty")} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {projects.map((project: any) => (
+          {projects.map((project: Project) => (
             <Link key={project.id} href={`/projects/${project.id}`}>
               <Card className="group hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer">
                 <CardHeader className="pb-2">
@@ -71,7 +76,7 @@ export default function ProjectsPage() {
                       variant="outline"
                       className={`text-[10px] ${statusColors[project.status] || ""}`}
                     >
-                      {project.status}
+                      {t(`status.${project.status}`)}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -80,13 +85,13 @@ export default function ProjectsPage() {
                     {project.lighthouseScores && (
                       <div className="flex gap-2">
                         <span className="text-xs text-muted-foreground">
-                          Perf:{" "}
+                          {t("perf")}{" "}
                           <strong className="text-foreground">
                             {project.lighthouseScores.performance}
                           </strong>
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          A11y:{" "}
+                          {t("a11y")}{" "}
                           <strong className="text-foreground">
                             {project.lighthouseScores.accessibility}
                           </strong>

@@ -73,10 +73,10 @@ export const dealStatusEnum = pgEnum("deal_status", [
   "CANCELLED",
 ]);
 export const serviceTypeEnum = pgEnum("service_type", [
-  "WEBSITE",
-  "TRAFFIC",
+  "SITE_CREATION",
+  "TRAFFIC_MANAGEMENT",
   "SOCIAL_MEDIA",
-  "OTHER",
+  "FULL_DIGITAL",
 ]);
 export const projectStatusEnum = pgEnum("project_status", [
   "PLANNING",
@@ -96,6 +96,16 @@ export const hitlStatusEnum = pgEnum("hitl_status", [
 export const verificationTypeEnum = pgEnum("verification_type", [
   "EMAIL_VERIFICATION",
   "PASSWORD_RESET",
+]);
+export const hitlActionTypeEnum = pgEnum("hitl_action_type", [
+  "APPROVE_LEAD_LIST",
+  "SEND_EXTERNAL_MESSAGE",
+  "SEND_PROPOSAL",
+  "APPROVE_MOCKUP",
+  "APPROVE_STAGING",
+  "DEPLOY_PRODUCTION",
+  "APPROVE_BRIEFING",
+  "SEND_DELIVERY",
 ]);
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -183,6 +193,7 @@ export const pricingConfig = pgTable(
 
 export const agents = pgTable("agents", {
   id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: text("organization_id").notNull().default("org_mvp"),
   operatorId: uuid("operator_id")
     .notNull()
     .references(() => operators.id),
@@ -257,6 +268,11 @@ export const mcpServers = pgTable("mcp_servers", {
   name: text("name").notNull(),
   url: text("url").notNull(),
   authRef: text("auth_ref"),
+  allowedTools: text("allowed_tools").array().notNull().default([]),
+  allowedSubAgentIds: uuid("allowed_sub_agent_ids")
+    .array()
+    .notNull()
+    .default([]),
   isEnabled: boolean("is_enabled").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -273,6 +289,7 @@ export const subAgents = pgTable(
   "sub_agents",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     agentId: uuid("agent_id")
       .notNull()
       .references(() => agents.id, { onDelete: "cascade" }),
@@ -308,6 +325,7 @@ export const leads = pgTable(
   "leads",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     operatorId: uuid("operator_id")
       .notNull()
       .references(() => operators.id),
@@ -366,6 +384,7 @@ export const deals = pgTable(
   "deals",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     leadId: uuid("lead_id")
       .notNull()
       .references(() => leads.id),
@@ -413,6 +432,7 @@ export const followUps = pgTable(
   "follow_ups",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     dealId: uuid("deal_id")
       .notNull()
       .references(() => deals.id, { onDelete: "cascade" }),
@@ -454,6 +474,7 @@ export const briefings = pgTable(
   "briefings",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     dealId: uuid("deal_id")
       .notNull()
       .references(() => deals.id)
@@ -489,6 +510,7 @@ export const briefingAssets = pgTable(
   "briefing_assets",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     briefingId: uuid("briefing_id")
       .notNull()
       .references(() => briefings.id, { onDelete: "cascade" }),
@@ -559,6 +581,7 @@ export const projects = pgTable(
   "projects",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     dealId: uuid("deal_id")
       .notNull()
       .references(() => deals.id),
@@ -570,6 +593,8 @@ export const projects = pgTable(
     templateId: text("template_id"),
     briefing: jsonb("briefing").notNull().default({}),
     deliverableUrl: text("deliverable_url"),
+    mockupHtml: text("mockup_html"),
+    mockupUrl: text("mockup_url"),
     deliverableMeta: jsonb("deliverable_meta").default({}),
     lighthousePerf: integer("lighthouse_perf"),
     lighthouseA11y: integer("lighthouse_a11y"),
@@ -599,6 +624,7 @@ export const mediaAssets = pgTable(
   "media_assets",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     projectId: uuid("project_id")
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
@@ -628,6 +654,7 @@ export const hitlApprovals = pgTable(
   "hitl_approvals",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     operatorId: uuid("operator_id")
       .notNull()
       .references(() => operators.id),
@@ -635,7 +662,7 @@ export const hitlApprovals = pgTable(
       .notNull()
       .references(() => agents.id),
     hitlLevel: text("hitl_level").notNull().default("HITL-1"),
-    actionType: text("action_type").notNull(),
+    actionType: hitlActionTypeEnum("action_type").notNull(),
     contextType: text("context_type").notNull(), // LEAD | DEAL | PROJECT
     contextId: uuid("context_id").notNull(),
     payloadPreview: jsonb("payload_preview").notNull(),
@@ -659,6 +686,7 @@ export const tokenUsage = pgTable(
   "token_usage",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull().default("org_mvp"),
     agentId: uuid("agent_id")
       .notNull()
       .references(() => agents.id, { onDelete: "cascade" }),
@@ -682,6 +710,35 @@ export const tokenUsage = pgTable(
   (table) => [
     index("idx_token_usage_agent").on(table.agentId, table.createdAt),
     index("idx_token_usage_operator").on(table.operatorId, table.createdAt),
+  ],
+);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QA RESULTS — QA agent validation output per project
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const qaResults = pgTable(
+  "qa_results",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: text("organization_id").notNull(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    agentId: uuid("agent_id")
+      .notNull()
+      .references(() => agents.id),
+    checkType: text("check_type").notNull(), // 'LIGHTHOUSE' | 'CONTENT' | 'LINKS' | 'MOBILE'
+    status: text("status").notNull(), // 'PASS' | 'FAIL' | 'WARNING'
+    score: integer("score"),
+    details: jsonb("details"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("idx_qa_results_project").on(table.projectId),
+    index("idx_qa_results_org").on(table.organizationId),
   ],
 );
 
@@ -747,4 +804,66 @@ export const systemSettings = pgTable(
     uniqueIndex("uq_settings_operator_key").on(table.operatorId, table.key),
     index("idx_settings_operator_cat").on(table.operatorId, table.category),
   ],
+);
+
+// ── Multi-tenancy ──────────────────────────────────────────────────────────
+
+export const organizations = pgTable("organizations", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// SPEC-13: Skill Catalog — builtin seeds + per-agent copies
+export const skillCatalog = pgTable("skill_catalog", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description").notNull(),
+  skillType: text("skill_type").notNull(),
+  configTemplate: jsonb("config_template").notNull().default({}),
+  serviceTypes: text("service_types").array().notNull().default([]),
+  personaHints: text("persona_hints").array().notNull().default([]),
+  isBuiltin: boolean("is_builtin").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// SPEC-13: Workflow Definitions — DAG per orchestrator agent
+export const workflowDefinitions = pgTable("workflow_definitions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  agentId: uuid("agent_id")
+    .notNull()
+    .unique()
+    .references(() => agents.id, { onDelete: "cascade" }),
+  definition: jsonb("definition").notNull().default({}),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const members = pgTable(
+  "members",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
+    role: text("role").notNull().default("owner"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [uniqueIndex("members_org_user_uidx").on(t.organizationId, t.userId)],
 );

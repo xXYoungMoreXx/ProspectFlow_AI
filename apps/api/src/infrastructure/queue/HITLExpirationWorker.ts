@@ -48,6 +48,7 @@ export class HITLExpirationWorker {
         const approval = await this.hitlRepository.findById(
           approvalId,
           row.operatorId,
+          "org_mvp",
         );
 
         if (!approval) return;
@@ -56,22 +57,33 @@ export class HITLExpirationWorker {
           console.info(
             `[HITLExpirationWorker] Approval ${approvalId} is HITL-FINANCEIRO. Never auto-expires. Dispatching Telegram alert.`,
           );
-          
+
           try {
             await this.telegram.sendMessage({
               text: `🚨 <b>ALERTA DE APROVAÇÃO FINANCEIRA</b> 🚨\n\n📋 <b>ID:</b> <code>${approvalId}</code>\n🏷️ <b>Tipo:</b> HITL-FINANCEIRO\n👤 <b>Operador:</b> <code>${row.operatorId}</code>\n⚠️ <b>Contexto:</b> ${row.actionType || "Aprovação crítica pendente"}\n\nAprove ou rejeite diretamente abaixo:`,
               inlineKeyboard: [
                 [
-                  { text: "✅ Aprovar", callback_data: `hitl_approve:${approvalId}` },
-                  { text: "❌ Rejeitar", callback_data: `hitl_reject:${approvalId}` },
+                  {
+                    text: "✅ Aprovar",
+                    callback_data: `hitl_approve:${approvalId}`,
+                  },
+                  {
+                    text: "❌ Rejeitar",
+                    callback_data: `hitl_reject:${approvalId}`,
+                  },
                 ],
               ],
             });
-            console.info(`[HITLExpirationWorker] Telegram alert with inline buttons dispatched for ${approvalId}`);
+            console.info(
+              `[HITLExpirationWorker] Telegram alert with inline buttons dispatched for ${approvalId}`,
+            );
           } catch (err) {
-            console.error(`[HITLExpirationWorker] Failed to dispatch Telegram alert for ${approvalId}:`, err);
+            console.error(
+              `[HITLExpirationWorker] Failed to dispatch Telegram alert for ${approvalId}:`,
+              err,
+            );
           }
-          
+
           return;
         }
 

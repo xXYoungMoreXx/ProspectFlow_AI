@@ -1,6 +1,9 @@
 import * as promClient from "prom-client";
 
-promClient.register.clear();
+// Guard: only clear registry in test environment to avoid data loss on hot-reload
+if (process.env["NODE_ENV"] === "test") {
+  promClient.register.clear();
+}
 
 export const agentTokensConsumedTotal = new promClient.Counter({
   name: "agentepro_agent_tokens_consumed_total",
@@ -55,4 +58,10 @@ export const llmRequestsTotal = new promClient.Counter({
   name: "agentepro_llm_requests_total",
   help: "Total LLM API requests",
   labelNames: ["provider", "model", "status"],
+});
+
+export const siteGenerationCostUsd = new promClient.Gauge({
+  name: "agentepro_site_generation_cost_usd",
+  help: "cost in usd for the most recently completed site generation",
+  labelNames: ["project_id"],
 });

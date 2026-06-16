@@ -66,8 +66,9 @@ export class UpdateAgentHandler {
     agentId: string,
     operatorId: string,
     updates: Record<string, unknown>,
+    organizationId: string = "org_mvp",
   ): Promise<Result<Agent, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     // Map flat updates to domain model
@@ -131,8 +132,9 @@ export class ActivateAgentHandler {
   async execute(
     agentId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<void, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     // SPEC-02 rule 3: verify LLM connectivity before activation
@@ -164,8 +166,9 @@ export class PauseAgentHandler {
     agentId: string,
     operatorId: string,
     reason?: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<void, Error>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
 
     const result = agent.pause(reason);
@@ -192,8 +195,9 @@ export class GetAgentByIdHandler {
   async execute(
     agentId: string,
     operatorId: string,
+    organizationId: string = "org_mvp",
   ): Promise<Result<Agent, NotFoundError>> {
-    const agent = await this.repo.findById(agentId, operatorId);
+    const agent = await this.repo.findById(agentId, operatorId, organizationId);
     if (!agent) return err(new NotFoundError("Agent", agentId));
     return ok(agent);
   }

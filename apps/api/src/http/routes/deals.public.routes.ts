@@ -46,15 +46,17 @@ export async function publicDealRoutes(app: FastifyInstance): Promise<void> {
       });
     }
 
-    const jwtSecret = process.env["JWT_SECRET"];
+    // WHY: o contract_notifier (Python) assina o link com API_TOKEN, que é o
+    // mesmo valor de INTERNAL_API_TOKEN — fallback garante validação coerente
+    // sem exigir um terceiro secret duplicado no .env.
+    const jwtSecret =
+      process.env["JWT_SECRET"] ?? process.env["INTERNAL_API_TOKEN"];
     if (!jwtSecret) {
-      return reply
-        .status(500)
-        .send({
-          errors: [
-            { code: "CONFIG_ERROR", message: "JWT_SECRET not configured" },
-          ],
-        });
+      return reply.status(500).send({
+        errors: [
+          { code: "CONFIG_ERROR", message: "JWT_SECRET not configured" },
+        ],
+      });
     }
     const handler = new RecordContractAcceptanceHandler(
       app.container.contractAcceptanceRepo,

@@ -47,6 +47,7 @@ venv/
 *.egg-info/
 .eggs/
 *.egg
+uv.lock
 
 # ─── Docker ───────────────────────────────────
 infra/data/
@@ -99,6 +100,11 @@ ARCHITECTURE.md
 # AI session planning docs — ephemeral, regenerated per session
 docs/superpowers/plans/
 
+# ─── Git worktrees ────────────────────────────────────────────────────────────
+.worktrees/
+.clone/
+graphify-out/
+
 # ─── Claude Code / AI tooling ─────────────────────────────────────────────────
 # settings.local.json is personal (local paths, tokens) — never commit
 .claude/settings.local.json
@@ -109,3 +115,6 @@ docs/superpowers/plans/
 apps/api/test.cjs
 # agent output / analysis artifacts that shouldn't be tracked
 apps/api/test_output.txt
+
+# Playwright MCP artifacts
+.playwright-mcp/

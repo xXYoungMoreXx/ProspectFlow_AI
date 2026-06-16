@@ -1,34 +1,31 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { api } from "@/lib/api";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Bot, Plus, Zap, Pause, Settings2 } from "lucide-react";
 import Link from "next/link";
 
-const personaConfig: Record<string, { color: string; label: string }> = {
-  HUNTER: {
-    color: "bg-chart-1/10 text-chart-1 border-chart-1/20",
-    label: "Hunter",
-  },
-  CLOSER: {
-    color: "bg-chart-2/10 text-chart-2 border-chart-2/20",
-    label: "Closer",
-  },
-  BUILDER: {
-    color: "bg-chart-3/10 text-chart-3 border-chart-3/20",
-    label: "Builder",
-  },
-  QA: { color: "bg-chart-4/10 text-chart-4 border-chart-4/20", label: "QA" },
+interface AgentListItem {
+  id: string;
+  name: string;
+  persona: "HUNTER" | "CLOSER" | "BUILDER" | "QA";
+  status: "ACTIVE" | "PAUSED" | "INACTIVE";
+  llmConfig?: { model?: string };
+  skills?: { id?: string; skillType?: string }[];
+}
+
+const personaColors: Record<string, string> = {
+  HUNTER: "bg-chart-1/10 text-chart-1 border-chart-1/20",
+  CLOSER: "bg-chart-2/10 text-chart-2 border-chart-2/20",
+  BUILDER: "bg-chart-3/10 text-chart-3 border-chart-3/20",
+  QA: "bg-chart-4/10 text-chart-4 border-chart-4/20",
 };
 
 const statusConfig: Record<string, { color: string; icon: typeof Zap }> = {
@@ -47,6 +44,7 @@ const statusConfig: Record<string, { color: string; icon: typeof Zap }> = {
 };
 
 export default function AgentsPage() {
+  const t = useTranslations("agents");
   const token = useAuthStore((s) => s.token);
 
   const { data, isLoading, error } = useQuery({
@@ -62,15 +60,13 @@ export default function AgentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">AI Agents</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage and configure your autonomous agents
-          </p>
+          <h2 className="text-2xl font-bold tracking-tight">{t("title")}</h2>
+          <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <Link href="/agents/new">
           <Button className="gap-2">
             <Plus className="w-4 h-4" />
-            New Agent
+            {t("newAgent")}
           </Button>
         </Link>
       </div>
@@ -79,15 +75,14 @@ export default function AgentsPage() {
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="space-y-3">
-                <div className="h-4 w-32 bg-muted rounded" />
-                <div className="h-3 w-48 bg-muted rounded" />
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 w-full bg-muted rounded" />
-              </CardContent>
-            </Card>
+            <div
+              key={i}
+              className="rounded-xl border border-border p-5 space-y-3"
+            >
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-48" />
+              <Skeleton className="h-8 w-full mt-2" />
+            </div>
           ))}
         </div>
       )}
@@ -96,80 +91,69 @@ export default function AgentsPage() {
       {error && (
         <Card className="border-destructive/30 bg-destructive/5">
           <CardContent className="pt-6">
-            <p className="text-sm text-destructive">
-              Failed to load agents. Please check your connection.
-            </p>
+            <p className="text-sm text-destructive">{t("error")}</p>
           </CardContent>
         </Card>
       )}
 
       {/* Empty state */}
       {!isLoading && !error && agents.length === 0 && (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16 space-y-4">
-            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20">
-              <Bot className="w-8 h-8 text-primary" />
-            </div>
-            <div className="text-center">
-              <h3 className="font-semibold">No agents yet</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Create your first AI agent to get started
-              </p>
-            </div>
+        <EmptyState
+          icon={Bot}
+          title={t("empty.title")}
+          description={t("empty.description")}
+          action={
             <Link href="/agents/new">
               <Button className="gap-2">
                 <Plus className="w-4 h-4" />
-                Create Agent
+                {t("empty.cta")}
               </Button>
             </Link>
-          </CardContent>
-        </Card>
+          }
+        />
       )}
 
       {/* Agent cards */}
       {agents.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {agents.map((agent: any) => {
-            const persona =
-              personaConfig[agent.persona] || personaConfig.HUNTER;
-            const status = statusConfig[agent.status] || statusConfig.INACTIVE;
+          {agents.map((agent: AgentListItem) => {
+            const color = personaColors[agent.persona] ?? personaColors.HUNTER;
+            const status = statusConfig[agent.status] ?? statusConfig.INACTIVE;
             const StatusIcon = status.icon;
 
             return (
               <Link key={agent.id} href={"/agents/" + agent.id}>
                 <Card className="group hover:shadow-lg hover:border-primary/30 transition-all duration-300 cursor-pointer">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-1">
                       <div className="space-y-1">
-                        <CardTitle className="text-base font-semibold group-hover:text-primary transition-colors">
+                        <p className="text-base font-semibold group-hover:text-primary transition-colors">
                           {agent.name}
-                        </CardTitle>
-                        <CardDescription className="text-xs">
-                          {agent.llmConfig?.model || "No model configured"}
-                        </CardDescription>
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {agent.llmConfig?.model || t("noModel")}
+                        </p>
                       </div>
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${persona.color}`}
+                        className={`text-[10px] ${color}`}
                       >
-                        {persona.label}
+                        {t(`personas.${agent.persona}`)}
                       </Badge>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mt-4">
                       <Badge
                         variant="outline"
                         className={`gap-1 ${status.color}`}
                       >
                         <StatusIcon className="w-3 h-3" />
-                        {agent.status}
+                        {t(`status.${agent.status}`)}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        {agent.skills?.length || 0} skills
+                        {t("skillsCount", { count: agent.skills?.length ?? 0 })}
                       </span>
                     </div>
-                  </CardContent>
+                  </div>
                 </Card>
               </Link>
             );

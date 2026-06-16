@@ -156,4 +156,40 @@ describe("Lead", () => {
       expect(events[0]!.eventType).toBe("lead.lost");
     });
   });
+
+  describe("markNegotiating()", () => {
+    it("transitions CONTACTED → NEGOTIATING", () => {
+      const lead = makeLead().unwrap();
+      lead.markContacted();
+      lead.markNegotiating();
+      expect(lead.status).toBe("NEGOTIATING");
+    });
+
+    it("transitions QUALIFIED → NEGOTIATING", () => {
+      const lead = makeLead().unwrap();
+      lead.qualify(60, "agent-x");
+      lead.markNegotiating();
+      expect(lead.status).toBe("NEGOTIATING");
+    });
+
+    it("ignores when status is NEW (not transitionable)", () => {
+      const lead = makeLead().unwrap();
+      lead.markNegotiating();
+      expect(lead.status).toBe("NEW");
+    });
+  });
+
+  describe("updateStatus() / toJSON()", () => {
+    it("updateStatus sets arbitrary status", () => {
+      const lead = makeLead().unwrap();
+      lead.updateStatus("LOST");
+      expect(lead.status).toBe("LOST");
+    });
+
+    it("toJSON returns a plain object copy", () => {
+      const lead = makeLead().unwrap();
+      const json = lead.toJSON();
+      expect(json).toMatchObject({ status: "NEW" });
+    });
+  });
 });
