@@ -60,9 +60,14 @@ export function BackendGuard({ children }: Readonly<{ children: ReactNode }>) {
   }, []);
 
   useEffect(() => {
+    // phase already starts as "checking" when ENABLED, so probe directly here
+    // instead of calling check() (which would setState synchronously in the
+    // effect and trigger a cascading render). check() stays for the retry button.
     if (!ENABLED) return;
-    void check();
-  }, [check]);
+    void probeBackend().then((next) => {
+      if (mounted.current) setPhase(next);
+    });
+  }, []);
 
   if (!ENABLED || phase === "ready") return <>{children}</>;
   if (phase === "checking")
