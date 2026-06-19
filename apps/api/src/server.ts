@@ -12,7 +12,7 @@ const sdk = new NodeSDK({
       config.OTEL_EXPORTER_OTLP_ENDPOINT || "http://localhost:4318/v1/traces",
   }),
   instrumentations: [getNodeAutoInstrumentations()],
-  serviceName: "agentepro-api",
+  serviceName: "hefesto-api",
 });
 
 sdk.start();
@@ -28,7 +28,7 @@ async function bootstrap(): Promise<void> {
   // ── Start ───────────────────────────────────────────────────────────────
   await app.listen({ port: config.PORT, host: config.HOST });
   app.log.info(
-    `🚀 AgentePro API running at http://${config.HOST}:${config.PORT}`,
+    `🚀 Hefesto API running at http://${config.HOST}:${config.PORT}`,
   );
 
   // Graceful shutdown

@@ -9,7 +9,7 @@
 
 ## Contexto
 
-O AgentePro é um sistema com múltiplos bounded contexts (IAM, Lead & Prospecting, Sales & Negotiation, Delivery & Development, Agent Management, CRM, Pricing), integrações com serviços externos voláteis (LLMs, WhatsApp, Vercel, gateways de pagamento) e um requisito explícito de extensibilidade: novos serviços (tráfego, social media, SEO) devem ser adicionados sem tocar no núcleo existente.
+O Hefesto é um sistema com múltiplos bounded contexts (IAM, Lead & Prospecting, Sales & Negotiation, Delivery & Development, Agent Management, CRM, Pricing), integrações com serviços externos voláteis (LLMs, WhatsApp, Vercel, gateways de pagamento) e um requisito explícito de extensibilidade: novos serviços (tráfego, social media, SEO) devem ser adicionados sem tocar no núcleo existente.
 
 O perfil de desenvolvimento é vibe coding com AI — o que cria um risco específico: **o AI pode introduzir acoplamento implícito entre camadas se a estrutura de diretórios não for explicitamente respeitada**. A arquitetura precisa ser suficientemente clara para que o CLAUDE.md a descreva em termos que o AI entenda e respeite durante a geração de código.
 

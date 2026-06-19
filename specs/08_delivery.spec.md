@@ -14,11 +14,11 @@ notificar o cliente por todos os canais e garantir o follow-up pós-entrega.
 
 ## Sub-agentes (TUTORIAL + DOC em paralelo; NOTIFIER depende dos dois)
 
-| Sub-agente | Modelo | Modo | Grupo |
-|---|---|---|---|
-| TUTORIAL_GENERATOR | `claude-haiku-4-5-20251001` | parallel | 1 |
-| DOC_GENERATOR | `claude-haiku-4-5-20251001` | parallel | 1 |
-| NOTIFIER | `claude-haiku-4-5-20251001` | sequential | — |
+| Sub-agente         | Modelo                      | Modo       | Grupo |
+| ------------------ | --------------------------- | ---------- | ----- |
+| TUTORIAL_GENERATOR | `claude-haiku-4-5-20251001` | parallel   | 1     |
+| DOC_GENERATOR      | `claude-haiku-4-5-20251001` | parallel   | 1     |
+| NOTIFIER           | `claude-haiku-4-5-20251001` | sequential | —     |
 
 ---
 
@@ -176,7 +176,7 @@ Estamos disponíveis para ajudar com qualquer dúvida!
 
 ---
 
-*Criado com AgentePro — {creation_date}*
+*Criado com Hefesto — {creation_date}*
 """
 
 class DocGeneratorSubAgent(BaseSubAgent):
@@ -263,15 +263,17 @@ Obrigado pela confiança!
 
 // +7 dias: satisfação pós-entrega
 const followup7 = {
-  message: `Oi {name}! Seu site já está no ar há uma semana 🎉 ` +
-           `Tudo certo? Alguma dúvida ou ajuste que precise?`,
+  message:
+    `Oi {name}! Seu site já está no ar há uma semana 🎉 ` +
+    `Tudo certo? Alguma dúvida ou ajuste que precise?`,
   channel: lead.preferredChannel,
 };
 
 // +30 dias: NPS
 const followup30 = {
-  message: `Oi {name}! De 0 a 10, quanto você indicaria nosso serviço ` +
-           `para outros empreendedores? Sua opinião vale muito 🙏`,
+  message:
+    `Oi {name}! De 0 a 10, quanto você indicaria nosso serviço ` +
+    `para outros empreendedores? Sua opinião vale muito 🙏`,
   channel: lead.preferredChannel,
 };
 ```

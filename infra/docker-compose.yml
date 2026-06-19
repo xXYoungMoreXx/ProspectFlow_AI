@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# AgentePro — Development Infrastructure
+# Hefesto — Development Infrastructure
 # PRD §16 Infrastructure Stack
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -7,18 +7,18 @@ services:
   # ── PostgreSQL 16 ──────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
-    container_name: agentepro-postgres
+    container_name: hefesto-postgres
     restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: agentepro
-      POSTGRES_PASSWORD: agentepro_dev
-      POSTGRES_DB: agentepro
+      POSTGRES_USER: hefesto
+      POSTGRES_PASSWORD: hefesto_dev
+      POSTGRES_DB: hefesto
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U agentepro"]
+      test: ["CMD-SHELL", "pg_isready -U hefesto"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -26,7 +26,7 @@ services:
   # ── Redis 7 ────────────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
-    container_name: agentepro-redis
+    container_name: hefesto-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -42,7 +42,7 @@ services:
   # ── ChromaDB (RAG) ────────────────────────────────────────────────────────
   chromadb:
     image: chromadb/chroma:latest
-    container_name: agentepro-chromadb
+    container_name: hefesto-chromadb
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -54,7 +54,7 @@ services:
   # ── n8n (Workflow Automation) ──────────────────────────────────────────────
   n8n:
     image: n8nio/n8n:latest
-    container_name: agentepro-n8n
+    container_name: hefesto-n8n
     restart: unless-stopped
     ports:
       - "5678:5678"
@@ -66,8 +66,8 @@ services:
       DB_POSTGRESDB_HOST: postgres
       DB_POSTGRESDB_PORT: "5432"
       DB_POSTGRESDB_DATABASE: n8n
-      DB_POSTGRESDB_USER: agentepro
-      DB_POSTGRESDB_PASSWORD: agentepro_dev
+      DB_POSTGRESDB_USER: hefesto
+      DB_POSTGRESDB_PASSWORD: hefesto_dev
     volumes:
       - n8n_data:/home/node/.n8n
     depends_on:
@@ -77,7 +77,7 @@ services:
   # ── Grafana (Observability Dashboard) ──────────────────────────────────────
   grafana:
     image: grafana/grafana:latest
-    container_name: agentepro-grafana
+    container_name: hefesto-grafana
     restart: unless-stopped
     ports:
       - "3333:3000"
@@ -95,7 +95,7 @@ services:
   # ── Prometheus (Metrics Scraper) ───────────────────────────────────────────
   prometheus:
     image: prom/prometheus:latest
-    container_name: agentepro-prometheus
+    container_name: hefesto-prometheus
     restart: unless-stopped
     ports:
       - "9090:9090"
@@ -108,7 +108,7 @@ services:
   # ── Jaeger (Distributed Tracing) ───────────────────────────────────────────
   jaeger:
     image: jaegertracing/all-in-one:latest
-    container_name: agentepro-jaeger
+    container_name: hefesto-jaeger
     restart: unless-stopped
     ports:
       - "16686:16686" # UI
@@ -120,7 +120,7 @@ services:
   # ── Loki (Log Aggregation) ─────────────────────────────────────────────────
   loki:
     image: grafana/loki:latest
-    container_name: agentepro-loki
+    container_name: hefesto-loki
     restart: unless-stopped
     ports:
       - "3100:3100"
@@ -132,7 +132,7 @@ services:
   # ── Promtail (Log Scraper) ─────────────────────────────────────────────────
   promtail:
     image: grafana/promtail:latest
-    container_name: agentepro-promtail
+    container_name: hefesto-promtail
     restart: unless-stopped
     volumes:
       - ./promtail/config.yml:/etc/promtail/config.yml
@@ -145,7 +145,7 @@ services:
   # ── Ollama (Local LLM Runtime) ─────────────────────────────────────────────
   ollama:
     image: ollama/ollama:latest
-    container_name: agentepro-ollama
+    container_name: hefesto-ollama
     restart: unless-stopped
     ports:
       - "11434:11434"
@@ -161,7 +161,7 @@ services:
   # ── SearXNG ────────────────────────────────────────────────────────────────
   searxng:
     image: searxng/searxng:latest
-    container_name: agentepro-searxng
+    container_name: hefesto-searxng
     restart: unless-stopped
     ports:
       - "8080:8080"

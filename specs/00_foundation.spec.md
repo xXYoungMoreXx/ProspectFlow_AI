@@ -8,6 +8,7 @@
 ## Escopo
 
 Tudo que precisa existir antes de escrever qualquer linha de código de feature:
+
 - Monorepo configurado
 - Docker Compose com todos os serviços
 - Schema de banco e migrations
@@ -20,8 +21,9 @@ Tudo que precisa existir antes de escrever qualquer linha de código de feature:
 ## 1. Monorepo (Turborepo)
 
 ### Estrutura obrigatória
+
 ```
-agentepro/
+hefesto/
 ├── apps/
 │   ├── api/              (Fastify — Node.js)
 │   ├── web/              (Next.js)
@@ -40,33 +42,35 @@ agentepro/
 ```
 
 ### turbo.json
+
 ```json
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
-    "build":    { "dependsOn": ["^build"], "outputs": [".next/**","dist/**"] },
-    "test":     { "dependsOn": ["^build"] },
-    "test:unit":{ "cache": false },
-    "lint":     { "dependsOn": ["^build"] },
-    "dev":      { "cache": false, "persistent": true }
+    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
+    "test": { "dependsOn": ["^build"] },
+    "test:unit": { "cache": false },
+    "lint": { "dependsOn": ["^build"] },
+    "dev": { "cache": false, "persistent": true }
   }
 }
 ```
 
 ### package.json raiz
+
 ```json
 {
-  "name": "agentepro",
+  "name": "hefesto",
   "private": true,
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev":       "turbo dev",
-    "build":     "turbo build",
-    "test":      "turbo test",
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
     "test:unit": "turbo test:unit",
-    "lint":      "turbo lint",
-    "db:migrate":"cd apps/api && npx drizzle-kit push",
-    "setup":     "bash infra/scripts/setup.sh"
+    "lint": "turbo lint",
+    "db:migrate": "cd apps/api && npx drizzle-kit push",
+    "setup": "bash infra/scripts/setup.sh"
   },
   "devDependencies": {
     "turbo": "^2.0.0"
@@ -75,6 +79,7 @@ agentepro/
 ```
 
 ### Critérios de aceite
+
 - [ ] `turbo build` passa sem erros em todos os apps
 - [ ] `turbo test:unit` roda e reporta cobertura
 - [ ] `npm run lint` sem warnings
@@ -84,16 +89,18 @@ agentepro/
 ## 2. Docker Compose Dev
 
 ### Serviços obrigatórios no `infra/docker-compose.yml`
+
 ```yaml
 # Todos os serviços já documentados no PRD seção 30
 # Healthchecks obrigatórios em todos os serviços de infra
-# Networks: todos na mesma rede 'agentepro-network'
+# Networks: todos na mesma rede 'hefesto-network'
 # Volumes: nomeados (não bind mounts) para persistência
 ```
 
 ### Healthchecks obrigatórios
+
 ```
-postgres:     pg_isready -U agentepro
+postgres:     pg_isready -U hefesto
 redis:        redis-cli ping
 chromadb:     curl -f http://localhost:8000/api/v1/heartbeat
 n8n:          curl -f http://localhost:5678/healthz
@@ -103,6 +110,7 @@ evolution-api:curl -f http://localhost:8080/
 ```
 
 ### Critérios de aceite
+
 - [ ] `docker-compose up -d` sem erros
 - [ ] Todos os healthchecks verdes após 60s
 - [ ] `docker-compose down && docker-compose up -d` funciona (dados persistem)
@@ -112,6 +120,7 @@ evolution-api:curl -f http://localhost:8080/
 ## 3. Schema do Banco — Migrations
 
 ### Ordem das migrations (CRÍTICA — não alterar)
+
 ```
 migrations/
   0001_initial_schema.sql       ← operators, refresh_tokens
@@ -129,6 +138,7 @@ migrations/
 ```
 
 ### Critérios de aceite
+
 - [ ] `drizzle-kit push` sem erros em banco limpo
 - [ ] Migrations idempotentes (rodar 2x não quebra)
 - [ ] `drizzle-kit push` falha com erro claro se banco inconsistente
@@ -138,19 +148,20 @@ migrations/
 ## 4. Shared Types Package
 
 ### Interface obrigatória
+
 ```typescript
 // packages/shared-types/src/index.ts
 
 // Exportar todos os tipos compartilhados entre API e Web
-export * from './api-responses';
-export * from './lead.types';
-export * from './agent.types';
-export * from './hitl.types';
-export * from './deal.types';
-export * from './briefing.types';
-export * from './project.types';
-export * from './errors.types';
-export * from './pagination.types';
+export * from "./api-responses";
+export * from "./lead.types";
+export * from "./agent.types";
+export * from "./hitl.types";
+export * from "./deal.types";
+export * from "./briefing.types";
+export * from "./project.types";
+export * from "./errors.types";
+export * from "./pagination.types";
 ```
 
 ```typescript
@@ -182,44 +193,47 @@ export interface ApiErrorResponse {
 ## 5. Configuração e Variáveis de Ambiente
 
 ### Zod Schema do env.ts (interface exata)
+
 ```typescript
 // apps/api/src/infrastructure/config/env.ts
 
 export const envSchema = z.object({
-  NODE_ENV:          z.enum(['development','test','production']),
-  DATABASE_URL:      z.string().url('DATABASE_URL inválida'),
-  REDIS_URL:         z.string().url('REDIS_URL inválida'),
-  JWT_PRIVATE_KEY:   z.string().min(100, 'JWT_PRIVATE_KEY muito curta — não é RSA?'),
-  JWT_PUBLIC_KEY:    z.string().min(100, 'JWT_PUBLIC_KEY muito curta'),
-  CHROMA_URL:        z.string().url().default('http://chromadb:8000'),
-  OLLAMA_BASE_URL:   z.string().url().default('http://ollama:11434'),
-  AGENT_RUNTIME_URL: z.string().url().default('http://agent-runtime:8000'),
-  API_PORT:          z.coerce.number().default(3001),
-  LOG_LEVEL:         z.enum(['debug','info','warn','error']).default('info'),
-  FRONTEND_URL:      z.string().url().default('http://localhost:3000'),
-  API_PUBLIC_URL:    z.string().url().default('http://localhost:3001'),
+  NODE_ENV: z.enum(["development", "test", "production"]),
+  DATABASE_URL: z.string().url("DATABASE_URL inválida"),
+  REDIS_URL: z.string().url("REDIS_URL inválida"),
+  JWT_PRIVATE_KEY: z
+    .string()
+    .min(100, "JWT_PRIVATE_KEY muito curta — não é RSA?"),
+  JWT_PUBLIC_KEY: z.string().min(100, "JWT_PUBLIC_KEY muito curta"),
+  CHROMA_URL: z.string().url().default("http://chromadb:8000"),
+  OLLAMA_BASE_URL: z.string().url().default("http://ollama:11434"),
+  AGENT_RUNTIME_URL: z.string().url().default("http://agent-runtime:8000"),
+  API_PORT: z.coerce.number().default(3001),
+  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+  FRONTEND_URL: z.string().url().default("http://localhost:3000"),
+  API_PUBLIC_URL: z.string().url().default("http://localhost:3001"),
 
   // Opcionais — não crasham o app
   ANTHROPIC_API_KEY: z.string().optional(),
-  GEMINI_API_KEY:    z.string().optional(),
-  OPENAI_API_KEY:    z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
+  OPENAI_API_KEY: z.string().optional(),
   GOOGLE_MAPS_API_KEY: z.string().optional(),
   EVOLUTION_API_URL: z.string().url().optional(),
   EVOLUTION_API_KEY: z.string().optional(),
-  WPP_INSTANCE:      z.string().optional(),
-  TELEGRAM_HITL_BOT_TOKEN:   z.string().optional(),
-  TELEGRAM_SALES_BOT_TOKEN:  z.string().optional(),
+  WPP_INSTANCE: z.string().optional(),
+  TELEGRAM_HITL_BOT_TOKEN: z.string().optional(),
+  TELEGRAM_SALES_BOT_TOKEN: z.string().optional(),
   TELEGRAM_OPERATOR_CHAT_ID: z.string().optional(),
-  HEYGEN_API_KEY:    z.string().optional(),
-  HEYGEN_AVATAR_ID:  z.string().optional(),
-  CAL_BASE_URL:      z.string().url().optional(),
-  CAL_API_KEY:       z.string().optional(),
-  MCP_BRASIL_URL:    z.string().url().default('http://mcp-brasil:8000'),
-  BREVO_API_KEY:     z.string().optional(),
-  VERCEL_TOKEN:      z.string().optional(),
+  HEYGEN_API_KEY: z.string().optional(),
+  HEYGEN_AVATAR_ID: z.string().optional(),
+  CAL_BASE_URL: z.string().url().optional(),
+  CAL_API_KEY: z.string().optional(),
+  MCP_BRASIL_URL: z.string().url().default("http://mcp-brasil:8000"),
+  BREVO_API_KEY: z.string().optional(),
+  VERCEL_TOKEN: z.string().optional(),
   CLOUDFLARE_PAGES_TOKEN: z.string().optional(),
-  OPERATOR_NAME:     z.string().optional(),
-  OPERATOR_EMAIL:    z.string().email().optional(),
+  OPERATOR_NAME: z.string().optional(),
+  OPERATOR_EMAIL: z.string().email().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -231,21 +245,31 @@ export const env = envSchema.parse(process.env);
 ## 6. Logger (Pino)
 
 ### Interface obrigatória
+
 ```typescript
 // apps/api/src/infrastructure/logger/logger.ts
 
-import pino from 'pino';
-import { env } from '../config/env';
+import pino from "pino";
+import { env } from "../config/env";
 
 export const logger = pino({
   level: env.LOG_LEVEL,
   redact: {
     paths: [
-      'email', 'password', 'contactPhone', 'contactEmail',
-      'cpf', 'cnpj', '*.apiKey', '*.token', '*.password',
-      'authorization', 'cookie', 'x-api-key',
+      "email",
+      "password",
+      "contactPhone",
+      "contactEmail",
+      "cpf",
+      "cnpj",
+      "*.apiKey",
+      "*.token",
+      "*.password",
+      "authorization",
+      "cookie",
+      "x-api-key",
     ],
-    censor: '***REDACTED***',
+    censor: "***REDACTED***",
   },
   formatters: {
     level: (label) => ({ level: label }),
@@ -260,6 +284,7 @@ export function createLogger(context: Record<string, string>) {
 ```
 
 ### Critérios de aceite
+
 - [ ] `email` e `password` aparecem como `***REDACTED***` nos logs
 - [ ] Timestamp ISO 8601 em todos os logs
 - [ ] `level` como string (não número)
@@ -270,43 +295,59 @@ export function createLogger(context: Record<string, string>) {
 ## 7. DI Container (tsyringe)
 
 ### Ordem de registro obrigatória
+
 ```typescript
 // apps/api/src/container.ts
 
-import 'reflect-metadata';
-import { container } from 'tsyringe';
+import "reflect-metadata";
+import { container } from "tsyringe";
 
 // 1. Configuração e secrets
-container.registerSingleton<SecretsPort>('SecretsPort', InfisicalAdapter);
-container.registerSingleton<Logger>('Logger', PinoLogger);
-container.registerSingleton<EventBus>('EventBus', InMemoryEventBus);
+container.registerSingleton<SecretsPort>("SecretsPort", InfisicalAdapter);
+container.registerSingleton<Logger>("Logger", PinoLogger);
+container.registerSingleton<EventBus>("EventBus", InMemoryEventBus);
 
 // 2. Infrastructure - Cache e Queue
-container.registerSingleton<CachePort>('CachePort', RedisCacheAdapter);
-container.registerSingleton<QueuePort>('QueuePort', BullMQAdapter);
+container.registerSingleton<CachePort>("CachePort", RedisCacheAdapter);
+container.registerSingleton<QueuePort>("QueuePort", BullMQAdapter);
 
 // 3. Infrastructure - Database
-container.registerSingleton<LeadRepository>('LeadRepository', DrizzleLeadRepository);
-container.registerSingleton<AgentRepository>('AgentRepository', DrizzleAgentRepository);
+container.registerSingleton<LeadRepository>(
+  "LeadRepository",
+  DrizzleLeadRepository,
+);
+container.registerSingleton<AgentRepository>(
+  "AgentRepository",
+  DrizzleAgentRepository,
+);
 // ... demais repositórios
 
 // 4. Infrastructure - External services
-container.registerSingleton<GoogleMapsPort>('GoogleMapsPort', GoogleMapsAdapter);
-container.registerSingleton<MCPBrasilPort>('MCPBrasilPort', MCPBrasilAdapter);
-container.registerSingleton<MessagingPort>('WhatsAppPort', WhatsAppAdapter);
-container.registerSingleton<MessagingPort>('TelegramSalesPort', TelegramSalesBot);
-container.registerSingleton<MediaGenerationPort>('MediaGenerationPort', MediaGenerationRouter);
-container.registerSingleton<SchedulingPort>('SchedulingPort', CalComAdapter);
+container.registerSingleton<GoogleMapsPort>(
+  "GoogleMapsPort",
+  GoogleMapsAdapter,
+);
+container.registerSingleton<MCPBrasilPort>("MCPBrasilPort", MCPBrasilAdapter);
+container.registerSingleton<MessagingPort>("WhatsAppPort", WhatsAppAdapter);
+container.registerSingleton<MessagingPort>(
+  "TelegramSalesPort",
+  TelegramSalesBot,
+);
+container.registerSingleton<MediaGenerationPort>(
+  "MediaGenerationPort",
+  MediaGenerationRouter,
+);
+container.registerSingleton<SchedulingPort>("SchedulingPort", CalComAdapter);
 
 // 5. Domain Services
 container.registerSingleton(LeadQualificationService);
 container.registerSingleton(HITLPayloadMasker);
 
 // 6. Use Cases (transient — nova instância a cada resolve)
-container.register(LoginUseCase,         { useClass: LoginUseCase });
-container.register(QualifyLeadUseCase,   { useClass: QualifyLeadUseCase });
-container.register(EnrichLeadUseCase,    { useClass: EnrichLeadUseCase });
-container.register(CreateHITLUseCase,    { useClass: CreateHITLUseCase });
+container.register(LoginUseCase, { useClass: LoginUseCase });
+container.register(QualifyLeadUseCase, { useClass: QualifyLeadUseCase });
+container.register(EnrichLeadUseCase, { useClass: EnrichLeadUseCase });
+container.register(CreateHITLUseCase, { useClass: CreateHITLUseCase });
 // ... demais use cases
 ```
 
@@ -317,31 +358,37 @@ container.register(CreateHITLUseCase,    { useClass: CreateHITLUseCase });
 ### POST /api/v1/auth/login
 
 **Request:**
+
 ```typescript
 {
-  email:    string;  // email válido
-  password: string;  // mín 8 chars
+  email: string; // email válido
+  password: string; // mín 8 chars
 }
 ```
 
 **Response 200:**
+
 ```typescript
 {
   data: {
-    accessToken:  string;  // JWT RS256, exp 1h
-    refreshToken: string;  // opaque token, exp 7d
-    expiresIn:    3600;
+    accessToken: string; // JWT RS256, exp 1h
+    refreshToken: string; // opaque token, exp 7d
+    expiresIn: 3600;
   }
 }
 ```
 
 **Response 401:**
+
 ```typescript
-{ errors: [{ code: 'AUTHENTICATION_ERROR', message: 'Credenciais inválidas' }] }
+{
+  errors: [{ code: "AUTHENTICATION_ERROR", message: "Credenciais inválidas" }];
+}
 // SEMPRE a mesma mensagem, independente se email existe ou não
 ```
 
 **Fluxo interno:**
+
 ```
 1. Validar input com Zod (400 se inválido)
 2. Buscar operator por email
@@ -355,9 +402,10 @@ container.register(CreateHITLUseCase,    { useClass: CreateHITLUseCase });
 ```
 
 **Hashing do refresh token:**
+
 ```typescript
-const tokenRaw = crypto.randomBytes(32).toString('hex');
-const tokenHash = createHash('sha256').update(tokenRaw).digest('hex');
+const tokenRaw = crypto.randomBytes(32).toString("hex");
+const tokenHash = createHash("sha256").update(tokenRaw).digest("hex");
 // Salvar tokenHash no banco, retornar tokenRaw ao cliente
 ```
 
@@ -393,6 +441,7 @@ const tokenHash = createHash('sha256').update(tokenRaw).digest('hex');
 ```
 
 ### Critérios de aceite
+
 - [ ] Login com credenciais corretas retorna 200 com tokens
 - [ ] Login com email errado retorna 401 IDÊNTICO ao com senha errada
 - [ ] Timing entre erro de email e erro de senha: diferença < 200ms
@@ -406,48 +455,50 @@ const tokenHash = createHash('sha256').update(tokenRaw).digest('hex');
 ## 9. Fastify Setup
 
 ### Plugins obrigatórios e ordem
+
 ```typescript
 // apps/api/src/main.ts
 
 const app = Fastify({
   logger: pinoLogger,
-  genReqId: () => ulid(),  // ULID como requestId
-  trustProxy: true,         // Para rate limiting por IP real atrás de proxy
+  genReqId: () => ulid(), // ULID como requestId
+  trustProxy: true, // Para rate limiting por IP real atrás de proxy
 });
 
 // Plugins — ORDEM IMPORTA
-await app.register(import('@fastify/helmet'), {
+await app.register(import("@fastify/helmet"), {
   contentSecurityPolicy: { directives: { defaultSrc: ["'self'"] } },
 });
-await app.register(import('@fastify/cors'), {
+await app.register(import("@fastify/cors"), {
   origin: [env.FRONTEND_URL],
   credentials: true,
 });
-await app.register(import('@fastify/rate-limit'), {
+await app.register(import("@fastify/rate-limit"), {
   global: true,
   max: 100,
-  timeWindow: '1 minute',
+  timeWindow: "1 minute",
   redis: redisClient,
 });
-await app.register(import('@fastify/swagger'));
-await app.register(import('@fastify/swagger-ui'), { routePrefix: '/docs' });
+await app.register(import("@fastify/swagger"));
+await app.register(import("@fastify/swagger-ui"), { routePrefix: "/docs" });
 
 // Error handler global
 app.setErrorHandler(errorHandler);
 
 // Rotas
-await app.register(authRoutes,         { prefix: '/api/v1' });
-await app.register(agentsRoutes,       { prefix: '/api/v1' });
-await app.register(leadsRoutes,        { prefix: '/api/v1' });
-await app.register(dealsRoutes,        { prefix: '/api/v1' });
-await app.register(briefingsRoutes,    { prefix: '/api/v1' });
-await app.register(projectsRoutes,     { prefix: '/api/v1' });
-await app.register(hitlRoutes,         { prefix: '/api/v1' });
-await app.register(webhooksRoutes,     { prefix: '/webhooks' });
-await app.register(healthRoutes,       { prefix: '/' });
+await app.register(authRoutes, { prefix: "/api/v1" });
+await app.register(agentsRoutes, { prefix: "/api/v1" });
+await app.register(leadsRoutes, { prefix: "/api/v1" });
+await app.register(dealsRoutes, { prefix: "/api/v1" });
+await app.register(briefingsRoutes, { prefix: "/api/v1" });
+await app.register(projectsRoutes, { prefix: "/api/v1" });
+await app.register(hitlRoutes, { prefix: "/api/v1" });
+await app.register(webhooksRoutes, { prefix: "/webhooks" });
+await app.register(healthRoutes, { prefix: "/" });
 ```
 
 ### GET /health — resposta obrigatória
+
 ```typescript
 {
   status: 'ok' | 'degraded' | 'down',

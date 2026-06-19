@@ -358,7 +358,7 @@ Substituir `project: any` por `Project` inline.
 - [ ] Lista Projetos: status em português (não "IN_PROGRESS" raw)
 - [ ] Sem `deal: any` ou `project: any`
 - [ ] Keys i18n adicionadas em pt-BR, en e es
-- [ ] `npm run typecheck -w @agentepro/web` passa sem erros novos
+- [ ] `npm run typecheck -w @hefesto/web` passa sem erros novos
 
 ---
 

@@ -8,8 +8,8 @@ export async function bootstrapOrganization(
   log: FastifyBaseLogger,
 ): Promise<void> {
   const orgId = process.env["BOOTSTRAP_ORG_ID"] ?? "org_mvp";
-  const orgName = process.env["BOOTSTRAP_ORG_NAME"] ?? "AgentePro";
-  const orgSlug = process.env["BOOTSTRAP_ORG_SLUG"] ?? "agentepro";
+  const orgName = process.env["BOOTSTRAP_ORG_NAME"] ?? "Hefesto";
+  const orgSlug = process.env["BOOTSTRAP_ORG_SLUG"] ?? "hefesto";
 
   const existing = await db
     .select({ id: schema.organizations.id })

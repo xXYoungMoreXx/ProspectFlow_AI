@@ -18,7 +18,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "parameters": {
         "method": "GET",
-        "url": "={{ $env.AGENTEPRO_API_URL }}/api/v1/leads?status=NEGOTIATING",
+        "url": "={{ $env.HEFESTO_API_URL }}/api/v1/leads?status=NEGOTIATING",
         "authentication": "headerAuth"
       },
       "position": [200, 0]

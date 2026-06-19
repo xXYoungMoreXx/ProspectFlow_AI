@@ -73,7 +73,7 @@ function SidebarContent({
           <Bot className="w-5 h-5 text-primary" />
         </div>
         <span className="text-lg font-bold tracking-tight text-sidebar-foreground">
-          AgentePro
+          Hefesto
         </span>
       </div>
       <Separator className="bg-sidebar-border" />
@@ -149,14 +149,14 @@ export default function DashboardLayout({
     if (process.env.NEXT_PUBLIC_DEV_AUTO_LOGIN === "true") {
       api.auth
         .devLogin(
-          process.env.NEXT_PUBLIC_DEV_AUTO_EMAIL ?? "admin@agentepro.dev",
+          process.env.NEXT_PUBLIC_DEV_AUTO_EMAIL ?? "admin@hefesto.dev",
           process.env.NEXT_PUBLIC_DEV_AUTO_PASSWORD ?? "admin123",
         )
         .then((res) => {
           setAuth(
             res.data.accessToken,
             res.data.refreshToken,
-            process.env.NEXT_PUBLIC_DEV_AUTO_EMAIL ?? "admin@agentepro.dev",
+            process.env.NEXT_PUBLIC_DEV_AUTO_EMAIL ?? "admin@hefesto.dev",
           );
         })
         .catch(() => router.push("/login"));

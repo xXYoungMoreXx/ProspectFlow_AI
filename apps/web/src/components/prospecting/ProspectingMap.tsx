@@ -55,7 +55,7 @@ export function ProspectingMap({ city, state, radiusKm }: Props) {
           {
             headers: {
               "Accept-Language": "pt-BR,pt;q=0.9",
-              "User-Agent": "AgentePro/1.0",
+              "User-Agent": "Hefesto/1.0",
             },
           },
         );

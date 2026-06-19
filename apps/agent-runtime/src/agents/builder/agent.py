@@ -6,14 +6,14 @@ from typing import Any
 
 from crewai import Agent, Crew, Process
 
-from src.agents.base import BaseAgentePro
+from src.agents.base import BaseHefesto
 from src.agents.builder.tasks import create_build_phase_tasks, create_design_phase_tasks
 from src.config.llm_routing import get_model
 
 logger = logging.getLogger(__name__)
 
 
-class BuilderAgent(BaseAgentePro):
+class BuilderAgent(BaseHefesto):
     """
     Builder Agent — 2 fases:
     - run_design_phase(): COPYWRITER + DESIGNER + IMAGER paralelo → HITL APPROVE_MOCKUP

@@ -18,8 +18,8 @@ async function signTestJWT(payload: Record<string, unknown>): Promise<string> {
     .setProtectedHeader({ alg: "RS256" })
     .setIssuedAt()
     .setExpirationTime("15m")
-    .setIssuer(process.env["JWT_ISSUER"] ?? "agentepro")
-    .setAudience(process.env["JWT_AUDIENCE"] ?? "agentepro-api")
+    .setIssuer(process.env["JWT_ISSUER"] ?? "hefesto")
+    .setAudience(process.env["JWT_AUDIENCE"] ?? "hefesto-api")
     .sign(key);
 }
 

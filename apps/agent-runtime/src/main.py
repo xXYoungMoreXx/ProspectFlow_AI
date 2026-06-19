@@ -1,5 +1,5 @@
 """
-AgentePro Agent Runtime — FastAPI bridge.
+Hefesto Agent Runtime — FastAPI bridge.
 Receives task requests from the Node.js API (via BullMQ HTTP bridge)
 and dispatches them to the appropriate CrewAI agent.
 """
@@ -39,10 +39,10 @@ def _histogram(name: str, documentation: str, labelnames: list[str]) -> Histogra
 
 
 agent_sessions_total = _counter(
-    "agentepro_agent_sessions_total", "Total number of agent sessions executed", ["persona", "status"]
+    "hefesto_agent_sessions_total", "Total number of agent sessions executed", ["persona", "status"]
 )
 agent_session_duration_seconds = _histogram(
-    "agentepro_agent_session_duration_seconds", "Duration of agent sessions in seconds", ["persona"]
+    "hefesto_agent_session_duration_seconds", "Duration of agent sessions in seconds", ["persona"]
 )
 
 logging.basicConfig(
@@ -58,7 +58,7 @@ def _s(value: str) -> str:
 
 
 app = FastAPI(
-    title="AgentePro Runtime",
+    title="Hefesto Runtime",
     description="CrewAI agent orchestration bridge",
     version="0.1.0",
 )

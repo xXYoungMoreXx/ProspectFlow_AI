@@ -1,5 +1,5 @@
 {
-  "name": "@agentepro/shared-types",
+  "name": "@hefesto/shared-types",
   "version": "0.1.0",
   "private": true,
   "type": "module",

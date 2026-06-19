@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SERVICE_TYPE_LABELS, SERVICE_TYPES } from "@agentepro/shared-types";
+import { SERVICE_TYPE_LABELS, SERVICE_TYPES } from "@hefesto/shared-types";
 import { useAuthStore } from "@/lib/stores/auth-store";
 
 interface CatalogSkill {

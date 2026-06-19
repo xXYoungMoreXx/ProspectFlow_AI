@@ -11,7 +11,7 @@
     "settings": "Settings"
   },
   "auth": {
-    "brand": "AgentePro",
+    "brand": "Hefesto",
     "login": {
       "subtitle": "Sign in to manage your AI agents",
       "email": "Email",

@@ -9,7 +9,7 @@
 
 ## Contexto
 
-O AgentePro tem componentes com requisitos radicalmente diferentes de runtime:
+O Hefesto tem componentes com requisitos radicalmente diferentes de runtime:
 
 | Componente              | Requisito crítico                                      |
 | ----------------------- | ------------------------------------------------------ |

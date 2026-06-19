@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AgentPersona, LLMProvider } from "@agentepro/shared-types";
+import { AgentPersona, LLMProvider } from "@hefesto/shared-types";
 
 const llmProviderValues = Object.values(LLMProvider) as [string, ...string[]];
 const agentPersonaValues = Object.values(AgentPersona) as [string, ...string[]];

@@ -211,7 +211,7 @@ export class ApproveHITLHandler {
 
     let tmpDir: string | undefined;
     try {
-      tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "agentepro-deploy-"));
+      tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "hefesto-deploy-"));
       await fs.writeFile(path.join(tmpDir, "index.html"), html, "utf8");
 
       // F2: escreve as imagens geradas junto do HTML — os adapters de deploy

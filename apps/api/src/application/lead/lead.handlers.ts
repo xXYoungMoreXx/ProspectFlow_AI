@@ -11,7 +11,7 @@ import {
   err,
   type Result,
 } from "../../domain/shared/Result.js";
-import type { LeadSource, LeadStatus } from "@agentepro/shared-types";
+import type { LeadSource, LeadStatus } from "@hefesto/shared-types";
 
 export class CreateLeadHandler {
   constructor(private readonly repo: LeadRepository) {}

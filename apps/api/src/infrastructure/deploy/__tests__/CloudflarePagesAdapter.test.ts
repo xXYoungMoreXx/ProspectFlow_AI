@@ -44,7 +44,7 @@ describe("CloudflarePagesAdapter", () => {
         json: async () => ({
           result: {
             id: "dep-1",
-            url: "https://abc.agentepro-proj-1.pages.dev",
+            url: "https://abc.hefesto-proj-1.pages.dev",
           },
         }),
       });
@@ -57,7 +57,7 @@ describe("CloudflarePagesAdapter", () => {
 
     expect(result.isOk()).toBe(true);
     const deployment = result.unwrap();
-    expect(deployment.url).toBe("https://abc.agentepro-proj-1.pages.dev");
+    expect(deployment.url).toBe("https://abc.hefesto-proj-1.pages.dev");
     expect(deployment.provider).toBe("cloudflare");
     expect(deployment.deploymentId).toBe("dep-1");
 

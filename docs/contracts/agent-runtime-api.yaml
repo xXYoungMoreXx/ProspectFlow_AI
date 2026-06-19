@@ -1,6 +1,6 @@
 openapi: "3.1.0"
 info:
-  title: AgentePro — Agent Runtime Internal API
+  title: Hefesto — Agent Runtime Internal API
   version: "2.0.0"
   description: |
     API interna do agent-runtime (Python/FastAPI).
@@ -19,57 +19,64 @@ servers:
 
 components:
   schemas:
-
     SubAgentInput:
       type: object
       required: [agentId, correlationId, payload]
       properties:
-        agentId:       { type: string, format: uuid }
-        subAgentId:    { type: string, format: uuid }
-        operatorId:    { type: string, format: uuid }
+        agentId: { type: string, format: uuid }
+        subAgentId: { type: string, format: uuid }
+        operatorId: { type: string, format: uuid }
         correlationId: { type: string, format: uuid }
-        projectId:     { type: string, format: uuid, nullable: true }
-        leadId:        { type: string, format: uuid, nullable: true }
-        payload:       { type: object }  # Varia por sub-agente
+        projectId: { type: string, format: uuid, nullable: true }
+        leadId: { type: string, format: uuid, nullable: true }
+        payload: { type: object } # Varia por sub-agente
 
     SubAgentResult:
       type: object
       required: [success]
       properties:
-        success:     { type: boolean }
-        output:      { type: object }
-        durationMs:  { type: integer }
-        costUsd:     { type: number }
-        tokensUsed:  { type: integer }
-        error:       { type: string, nullable: true }
+        success: { type: boolean }
+        output: { type: object }
+        durationMs: { type: integer }
+        costUsd: { type: number }
+        tokensUsed: { type: integer }
+        error: { type: string, nullable: true }
 
     AgentRunRequest:
       type: object
       required: [agentId, correlationId, params]
       properties:
-        agentId:       { type: string, format: uuid }
-        operatorId:    { type: string, format: uuid }
+        agentId: { type: string, format: uuid }
+        operatorId: { type: string, format: uuid }
         correlationId: { type: string, format: uuid }
-        params:        { type: object }
+        params: { type: object }
 
     JobStatus:
       type: object
       properties:
-        jobId:       { type: string }
-        status:      { type: string, enum: [queued, running, completed, failed] }
-        result:      { type: object, nullable: true }
-        error:       { type: string, nullable: true }
-        startedAt:   { type: string, format: date-time, nullable: true }
+        jobId: { type: string }
+        status: { type: string, enum: [queued, running, completed, failed] }
+        result: { type: object, nullable: true }
+        error: { type: string, nullable: true }
+        startedAt: { type: string, format: date-time, nullable: true }
         completedAt: { type: string, format: date-time, nullable: true }
-        durationMs:  { type: integer, nullable: true }
+        durationMs: { type: integer, nullable: true }
 
     HealthStatus:
       type: object
       properties:
-        status:   { type: string, enum: [ok, degraded, down] }
-        ollama:   { type: object, properties: { ok: { type: boolean }, latencyMs: { type: integer } } }
-        chromadb: { type: object, properties: { ok: { type: boolean }, latencyMs: { type: integer } } }
-        redis:    { type: object, properties: { ok: { type: boolean } } }
+        status: { type: string, enum: [ok, degraded, down] }
+        ollama:
+          {
+            type: object,
+            properties: { ok: { type: boolean }, latencyMs: { type: integer } },
+          }
+        chromadb:
+          {
+            type: object,
+            properties: { ok: { type: boolean }, latencyMs: { type: integer } },
+          }
+        redis: { type: object, properties: { ok: { type: boolean } } }
 
     # Payloads específicos por sub-agente
     ProspectorPayload:
@@ -83,11 +90,11 @@ components:
         region:
           type: object
           properties:
-            city:     { type: string }
-            state:    { type: string }
+            city: { type: string }
+            state: { type: string }
             radiusKm: { type: integer }
-        minScore:   { type: integer, default: 40 }
-        limit:      { type: integer, default: 50 }
+        minScore: { type: integer, default: 40 }
+        limit: { type: integer, default: 50 }
 
     OutreachWriterPayload:
       type: object
@@ -96,13 +103,14 @@ components:
         lead:
           type: object
           properties:
-            id:              { type: string }
-            contactName:     { type: string }
-            businessName:    { type: string }
-            niche:           { type: string }
-            preferredChannel:{ type: string }
-            enrichmentData:  { type: object }
-        tone:       { type: string, enum: [friendly, professional], default: friendly }
+            id: { type: string }
+            contactName: { type: string }
+            businessName: { type: string }
+            niche: { type: string }
+            preferredChannel: { type: string }
+            enrichmentData: { type: object }
+        tone:
+          { type: string, enum: [friendly, professional], default: friendly }
 
     InterviewerPayload:
       type: object
@@ -112,8 +120,8 @@ components:
           type: object
           properties:
             contactName: { type: string }
-            businessName:{ type: string }
-            niche:       { type: string }
+            businessName: { type: string }
+            niche: { type: string }
             preferredChannel: { type: string }
         deal:
           type: object
@@ -125,9 +133,9 @@ components:
       type: object
       required: [transcript, niche]
       properties:
-        transcript:  { type: string }  # Transcrição bruta da entrevista
-        niche:       { type: string }
-        leadId:      { type: string }
+        transcript: { type: string } # Transcrição bruta da entrevista
+        niche: { type: string }
+        leadId: { type: string }
 
     BuilderPayload:
       type: object
@@ -136,20 +144,20 @@ components:
         briefing:
           type: object
           description: ClientBriefingDTO completo
-        templateId:   { type: string }
-        projectId:    { type: string }
+        templateId: { type: string }
+        projectId: { type: string }
 
     CopywriterPayload:
       type: object
       required: [briefing]
       properties:
-        briefing: { type: object }  # ClientBriefingDTO
+        briefing: { type: object } # ClientBriefingDTO
 
     DesignerPayload:
       type: object
       required: [briefing, templateId]
       properties:
-        briefing:   { type: object }
+        briefing: { type: object }
         templateId: { type: string }
 
     ImagerPayload:
@@ -160,33 +168,34 @@ components:
         imageTypes:
           type: array
           items: { type: string, enum: [hero, about, service_icon, gallery] }
-          default: [hero, about, service_icon, service_icon, service_icon, gallery]
+          default:
+            [hero, about, service_icon, service_icon, service_icon, gallery]
 
     CoderPayload:
       type: object
       required: [briefing, texts, mockupHtml, assets, templateId]
       properties:
-        briefing:    { type: object }
-        texts:       { type: object }  # Output do Copywriter
-        mockupHtml:  { type: string }  # Output do Designer (HTML)
+        briefing: { type: object }
+        texts: { type: object } # Output do Copywriter
+        mockupHtml: { type: string } # Output do Designer (HTML)
         assets:
           type: array
           items:
             type: object
             properties:
-              type:        { type: string }
+              type: { type: string }
               storagePath: { type: string }
-              format:      { type: string }
-        templateId:  { type: string }
-        projectId:   { type: string }
+              format: { type: string }
+        templateId: { type: string }
+        projectId: { type: string }
 
     QAPayload:
       type: object
       required: [siteUrl, projectId]
       properties:
-        siteUrl:   { type: string, format: uri }  # URL do staging
+        siteUrl: { type: string, format: uri } # URL do staging
         projectId: { type: string }
-        codeRef:   { type: string }  # Referência ao código gerado
+        codeRef: { type: string } # Referência ao código gerado
 
     DeliveryPayload:
       type: object
@@ -195,48 +204,47 @@ components:
         project:
           type: object
           properties:
-            id:                { type: string }
-            deliverableUrl:    { type: string }
-            siteType:          { type: string }
-            deployPlatform:    { type: string }
-            lighthousePerf:    { type: integer }
-            lighthouseA11y:    { type: integer }
-            lighthouseSeo:     { type: integer }
-            owaspScanPassed:   { type: boolean }
+            id: { type: string }
+            deliverableUrl: { type: string }
+            siteType: { type: string }
+            deployPlatform: { type: string }
+            lighthousePerf: { type: integer }
+            lighthouseA11y: { type: integer }
+            lighthouseSeo: { type: integer }
+            owaspScanPassed: { type: boolean }
         client:
           type: object
           properties:
-            contactName:     { type: string }
-            businessName:    { type: string }
-            contactEmail:    { type: string }
+            contactName: { type: string }
+            businessName: { type: string }
+            contactEmail: { type: string }
             contactWhatsApp: { type: string }
-            preferredChannel:{ type: string }
+            preferredChannel: { type: string }
         operator:
           type: object
           properties:
-            name:  { type: string }
+            name: { type: string }
             email: { type: string }
             phone: { type: string }
 
 paths:
-
   /health:
     get:
       summary: Health check do runtime
       responses:
-        '200':
+        "200":
           description: Status do runtime
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/HealthStatus' }
-        '503':
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+        "503":
           description: Runtime degradado ou down
 
   /metrics:
     get:
       summary: Métricas Prometheus
       responses:
-        '200':
+        "200":
           description: Métricas em formato texto Prometheus
           content:
             text/plain:
@@ -254,25 +262,26 @@ paths:
           required: true
           schema:
             type: string
-            enum: [hunter, closer, briefing, builder, qa, delivery, orchestrator]
+            enum:
+              [hunter, closer, briefing, builder, qa, delivery, orchestrator]
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/AgentRunRequest' }
+            schema: { $ref: "#/components/schemas/AgentRunRequest" }
       responses:
-        '202':
+        "202":
           description: Job enfileirado
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  jobId:      { type: string }
+                  jobId: { type: string }
                   estimatedSeconds: { type: integer }
-        '400':
+        "400":
           description: Parâmetros inválidos
-        '422':
+        "422":
           description: Agente não configurado corretamente
 
   /agents/{persona}/jobs/{jobId}:
@@ -288,12 +297,12 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200':
+        "200":
           description: Status do job
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/JobStatus' }
-        '404':
+              schema: { $ref: "#/components/schemas/JobStatus" }
+        "404":
           description: Job não encontrado
 
   # ===========================================================================
@@ -308,17 +317,17 @@ paths:
           application/json:
             schema:
               allOf:
-                - { $ref: '#/components/schemas/SubAgentInput' }
+                - { $ref: "#/components/schemas/SubAgentInput" }
                 - properties:
-                    payload: { $ref: '#/components/schemas/ProspectorPayload' }
+                    payload: { $ref: "#/components/schemas/ProspectorPayload" }
       responses:
-        '200':
+        "200":
           description: Leads encontrados
           content:
             application/json:
               schema:
                 allOf:
-                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - { $ref: "#/components/schemas/SubAgentResult" }
                   - properties:
                       output:
                         type: object
@@ -328,13 +337,13 @@ paths:
                             items:
                               type: object
                               properties:
-                                id:          { type: string }
+                                id: { type: string }
                                 displayName: { type: string }
-                                address:     { type: string }
-                                phone:       { type: string, nullable: true }
-                                website:     { type: string, nullable: true }
-                                rating:      { type: number, nullable: true }
-                                reviewsCount:{ type: integer, nullable: true }
+                                address: { type: string }
+                                phone: { type: string, nullable: true }
+                                website: { type: string, nullable: true }
+                                rating: { type: number, nullable: true }
+                                reviewsCount: { type: integer, nullable: true }
                           fromCache: { type: boolean }
 
   /agents/hunter/sub-agents/data_enricher/run:
@@ -345,7 +354,7 @@ paths:
           application/json:
             schema:
               allOf:
-                - { $ref: '#/components/schemas/SubAgentInput' }
+                - { $ref: "#/components/schemas/SubAgentInput" }
                 - properties:
                     payload:
                       type: object
@@ -353,19 +362,19 @@ paths:
                         place: { type: object }
                         businessName: { type: string }
       responses:
-        '200':
+        "200":
           description: Dados enriquecidos
           content:
             application/json:
               schema:
                 allOf:
-                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - { $ref: "#/components/schemas/SubAgentResult" }
                   - properties:
                       output:
                         type: object
                         properties:
-                          cnpj:            { type: string, nullable: true }
-                          cnpjStatus:      { type: string, nullable: true }
+                          cnpj: { type: string, nullable: true }
+                          cnpjStatus: { type: string, nullable: true }
                           yearsInBusiness: { type: integer, nullable: true }
                           qualificationBonus: { type: integer }
 
@@ -377,17 +386,18 @@ paths:
           application/json:
             schema:
               allOf:
-                - { $ref: '#/components/schemas/SubAgentInput' }
+                - { $ref: "#/components/schemas/SubAgentInput" }
                 - properties:
-                    payload: { $ref: '#/components/schemas/OutreachWriterPayload' }
+                    payload:
+                      { $ref: "#/components/schemas/OutreachWriterPayload" }
       responses:
-        '200':
+        "200":
           description: Mensagem gerada
           content:
             application/json:
               schema:
                 allOf:
-                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - { $ref: "#/components/schemas/SubAgentResult" }
                   - properties:
                       output:
                         type: object
@@ -403,17 +413,17 @@ paths:
           application/json:
             schema:
               allOf:
-                - { $ref: '#/components/schemas/SubAgentInput' }
+                - { $ref: "#/components/schemas/SubAgentInput" }
                 - properties:
-                    payload: { $ref: '#/components/schemas/InterviewerPayload' }
+                    payload: { $ref: "#/components/schemas/InterviewerPayload" }
       responses:
-        '200':
+        "200":
           description: Entrevista iniciada (retorna primeiro conjunto de perguntas)
           content:
             application/json:
               schema:
                 allOf:
-                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - { $ref: "#/components/schemas/SubAgentResult" }
                   - properties:
                       output:
                         type: object
@@ -430,17 +440,18 @@ paths:
           application/json:
             schema:
               allOf:
-                - { $ref: '#/components/schemas/SubAgentInput' }
+                - { $ref: "#/components/schemas/SubAgentInput" }
                 - properties:
-                    payload: { $ref: '#/components/schemas/BriefingExtractorPayload' }
+                    payload:
+                      { $ref: "#/components/schemas/BriefingExtractorPayload" }
       responses:
-        '200':
+        "200":
           description: JSON estruturado gerado
           content:
             application/json:
               schema:
                 allOf:
-                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - { $ref: "#/components/schemas/SubAgentResult" }
                   - properties:
                       output:
                         type: object
@@ -454,17 +465,17 @@ paths:
           application/json:
             schema:
               allOf:
-                - { $ref: '#/components/schemas/SubAgentInput' }
+                - { $ref: "#/components/schemas/SubAgentInput" }
                 - properties:
-                    payload: { $ref: '#/components/schemas/CopywriterPayload' }
+                    payload: { $ref: "#/components/schemas/CopywriterPayload" }
       responses:
-        '200':
+        "200":
           description: Textos gerados
           content:
             application/json:
               schema:
                 allOf:
-                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - { $ref: "#/components/schemas/SubAgentResult" }
                   - properties:
                       output:
                         type: object
@@ -478,23 +489,23 @@ paths:
           application/json:
             schema:
               allOf:
-                - { $ref: '#/components/schemas/SubAgentInput' }
+                - { $ref: "#/components/schemas/SubAgentInput" }
                 - properties:
-                    payload: { $ref: '#/components/schemas/DesignerPayload' }
+                    payload: { $ref: "#/components/schemas/DesignerPayload" }
       responses:
-        '200':
+        "200":
           description: Mockup HTML gerado
           content:
             application/json:
               schema:
                 allOf:
-                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - { $ref: "#/components/schemas/SubAgentResult" }
                   - properties:
                       output:
                         type: object
                         properties:
                           mockupHtml: { type: string }
-                          mockupUrl:  { type: string, format: uri }
+                          mockupUrl: { type: string, format: uri }
                           # URL público para o operador revisar via HITL
 
   /agents/builder/sub-agents/imager/run:
@@ -505,17 +516,17 @@ paths:
           application/json:
             schema:
               allOf:
-                - { $ref: '#/components/schemas/SubAgentInput' }
+                - { $ref: "#/components/schemas/SubAgentInput" }
                 - properties:
-                    payload: { $ref: '#/components/schemas/ImagerPayload' }
+                    payload: { $ref: "#/components/schemas/ImagerPayload" }
       responses:
-        '200':
+        "200":
           description: Imagens geradas e validadas
           content:
             application/json:
               schema:
                 allOf:
-                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - { $ref: "#/components/schemas/SubAgentResult" }
                   - properties:
                       output:
                         type: object
@@ -525,12 +536,12 @@ paths:
                             items:
                               type: object
                               properties:
-                                type:               { type: string }
-                                storageUrl:         { type: string }
-                                provider:           { type: string }
-                                format:             { type: string }
-                                magicBytesValidated:{ type: boolean }
-                                synthIdPresent:     { type: boolean }
+                                type: { type: string }
+                                storageUrl: { type: string }
+                                provider: { type: string }
+                                format: { type: string }
+                                magicBytesValidated: { type: boolean }
+                                synthIdPresent: { type: boolean }
 
   /agents/builder/sub-agents/coder/run:
     post:
@@ -540,11 +551,11 @@ paths:
           application/json:
             schema:
               allOf:
-                - { $ref: '#/components/schemas/SubAgentInput' }
+                - { $ref: "#/components/schemas/SubAgentInput" }
                 - properties:
-                    payload: { $ref: '#/components/schemas/CoderPayload' }
+                    payload: { $ref: "#/components/schemas/CoderPayload" }
       responses:
-        '202':
+        "202":
           description: Geração de código iniciada (pode levar vários minutos)
           content:
             application/json:
@@ -561,39 +572,39 @@ paths:
           application/json:
             schema:
               allOf:
-                - { $ref: '#/components/schemas/SubAgentInput' }
+                - { $ref: "#/components/schemas/SubAgentInput" }
                 - properties:
-                    payload: { $ref: '#/components/schemas/QAPayload' }
+                    payload: { $ref: "#/components/schemas/QAPayload" }
       responses:
-        '200':
+        "200":
           description: Resultado do QA
           content:
             application/json:
               schema:
                 allOf:
-                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - { $ref: "#/components/schemas/SubAgentResult" }
                   - properties:
                       output:
                         type: object
                         properties:
                           approved: { type: boolean }
-                          reason:   { type: string, nullable: true }
+                          reason: { type: string, nullable: true }
                           scores:
                             type: object
                             properties:
-                              lighthousePerf:  { type: integer }
-                              lighthouseA11y:  { type: integer }
-                              lighthouseSeo:   { type: integer }
-                              owaspPassed:     { type: boolean }
-                              contentPassed:   { type: boolean }
+                              lighthousePerf: { type: integer }
+                              lighthouseA11y: { type: integer }
+                              lighthouseSeo: { type: integer }
+                              owaspPassed: { type: boolean }
+                              contentPassed: { type: boolean }
                           issues:
                             type: array
                             items:
                               type: object
                               properties:
-                                type:     { type: string }
+                                type: { type: string }
                                 severity: { type: string }
-                                message:  { type: string }
+                                message: { type: string }
 
   /agents/delivery/run:
     post:
@@ -603,23 +614,23 @@ paths:
           application/json:
             schema:
               allOf:
-                - { $ref: '#/components/schemas/SubAgentInput' }
+                - { $ref: "#/components/schemas/SubAgentInput" }
                 - properties:
-                    payload: { $ref: '#/components/schemas/DeliveryPayload' }
+                    payload: { $ref: "#/components/schemas/DeliveryPayload" }
       responses:
-        '200':
+        "200":
           description: Entrega realizada
           content:
             application/json:
               schema:
                 allOf:
-                  - { $ref: '#/components/schemas/SubAgentResult' }
+                  - { $ref: "#/components/schemas/SubAgentResult" }
                   - properties:
                       output:
                         type: object
                         properties:
                           tutorialUrl: { type: string, format: uri }
-                          docUrl:      { type: string, format: uri }
+                          docUrl: { type: string, format: uri }
                           sentChannels:
                             type: array
                             items: { type: string }
@@ -629,4 +640,4 @@ paths:
                               type: object
                               properties:
                                 daysAfter: { type: integer }
-                                jobId:     { type: string }
+                                jobId: { type: string }

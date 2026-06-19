@@ -9,7 +9,7 @@
 
 ## Contexto
 
-O AgentePro lida com:
+O Hefesto lida com:
 
 - Dados pessoais de leads (nome, telefone, email, empresa) — escopo LGPD
 - Credenciais de terceiros (API keys de LLMs, WhatsApp, Mercado Pago)
@@ -47,7 +47,7 @@ const JWT_CONFIG = {
   algorithm: "RS256",
   accessTokenExpiry: "1h",
   refreshTokenExpiry: "7d",
-  issuer: "agentepro.dominio.com",
+  issuer: "hefesto.dominio.com",
 } as const;
 ```
 

@@ -5,8 +5,8 @@ test.beforeEach(async ({ page }) => {
   // Establish domain context, then inject auth before navigating to dashboard
   await page.goto("/login");
   await page.evaluate(() => {
-    localStorage.setItem("agentepro_token", "mocked-jwt");
-    localStorage.setItem("agentepro_email", "operator@test.com");
+    localStorage.setItem("hefesto_token", "mocked-jwt");
+    localStorage.setItem("hefesto_email", "operator@test.com");
   });
   await page.route("**/api/v1/agents", (route) =>
     route.fulfill({ json: { data: [] } }),

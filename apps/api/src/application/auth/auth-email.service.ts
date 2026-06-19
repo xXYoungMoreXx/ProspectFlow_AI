@@ -13,7 +13,7 @@ export class AuthEmailService {
 
     const htmlContent = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Bem-vindo ao AgentePro, ${name}!</h2>
+        <h2>Bem-vindo ao Hefesto, ${name}!</h2>
         <p>Por favor, verifique seu endereço de e-mail clicando no link abaixo:</p>
         <p style="margin: 24px 0;">
           <a href="${link}" style="background-color: #0f172a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Verificar E-mail</a>
@@ -26,7 +26,7 @@ export class AuthEmailService {
 
     await this.queue.enqueueEmail(
       email,
-      "Verifique seu e-mail - AgentePro",
+      "Verifique seu e-mail - Hefesto",
       htmlContent,
     );
   }
@@ -41,7 +41,7 @@ export class AuthEmailService {
     const htmlContent = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Olá, ${name}!</h2>
-        <p>Recebemos uma solicitação para redefinir a senha da sua conta no AgentePro.</p>
+        <p>Recebemos uma solicitação para redefinir a senha da sua conta no Hefesto.</p>
         <p>Clique no link abaixo para criar uma nova senha:</p>
         <p style="margin: 24px 0;">
           <a href="${link}" style="background-color: #0f172a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Redefinir Senha</a>
@@ -54,7 +54,7 @@ export class AuthEmailService {
 
     await this.queue.enqueueEmail(
       email,
-      "Redefinição de senha - AgentePro",
+      "Redefinição de senha - Hefesto",
       htmlContent,
     );
   }

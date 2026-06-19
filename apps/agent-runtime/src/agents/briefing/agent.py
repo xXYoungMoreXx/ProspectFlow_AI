@@ -3,13 +3,13 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from src.agents.base import BaseAgentePro
+from src.agents.base import BaseHefesto
 from src.agents.schemas import AgentCommunication, AgentIdentity, AgentMission, AgentPersona
 
 logger = logging.getLogger(__name__)
 
 
-class BriefingInterviewerAgent(BaseAgentePro):
+class BriefingInterviewerAgent(BaseHefesto):
     """
     Briefing Interviewer — conducts adaptive client interview.
     Generates structured question batch tailored to the client's niche.
@@ -53,7 +53,7 @@ class BriefingInterviewerAgent(BaseAgentePro):
         return self.create_structured_agent(persona=persona, tools=[], agent_role="interviewer")
 
 
-class BriefingExtractorAgent(BaseAgentePro):
+class BriefingExtractorAgent(BaseHefesto):
     """
     Brief Extractor — converts raw interview transcript into ClientBriefingDTO JSON.
     Uses small/fast model since it's a structured extraction task.

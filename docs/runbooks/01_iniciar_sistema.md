@@ -1,4 +1,4 @@
-# Runbook: Iniciar o Sistema AgentePro
+# Runbook: Iniciar o Sistema Hefesto
 
 ## Pré-requisitos
 
@@ -17,7 +17,7 @@ docker compose -f infra/docker-compose.yml ps
 ## 2. Database Migrations
 
 ```bash
-npm run db:migrate -w @agentepro/api
+npm run db:migrate -w @hefesto/api
 ```
 
 ## 3. Seed RAG (primeira vez)

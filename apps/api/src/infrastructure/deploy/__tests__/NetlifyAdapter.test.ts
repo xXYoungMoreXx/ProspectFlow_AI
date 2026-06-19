@@ -31,7 +31,7 @@ describe("NetlifyAdapter", () => {
         ok: true,
         json: async () => ({
           id: "site_1",
-          ssl_url: "https://agentepro-proj-1.netlify.app",
+          ssl_url: "https://hefesto-proj-1.netlify.app",
         }),
       })
       // 2. create deploy (digest)
@@ -50,7 +50,7 @@ describe("NetlifyAdapter", () => {
 
     expect(result.isOk()).toBe(true);
     const deployment = result.unwrap();
-    expect(deployment.url).toBe("https://agentepro-proj-1.netlify.app");
+    expect(deployment.url).toBe("https://hefesto-proj-1.netlify.app");
     expect(deployment.provider).toBe("netlify");
     expect(deployment.deploymentId).toBe("deploy_1");
 
@@ -84,8 +84,8 @@ describe("NetlifyAdapter", () => {
         json: async () => [
           {
             id: "site_existing",
-            name: "agentepro-proj-1",
-            ssl_url: "https://agentepro-proj-1.netlify.app",
+            name: "hefesto-proj-1",
+            ssl_url: "https://hefesto-proj-1.netlify.app",
           },
         ],
       })

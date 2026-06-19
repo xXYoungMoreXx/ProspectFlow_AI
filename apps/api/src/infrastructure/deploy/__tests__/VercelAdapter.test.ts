@@ -30,7 +30,7 @@ describe("VercelAdapter", () => {
         ok: true,
         json: async () => ({
           id: "dpl_123",
-          url: "agentepro-proj-1-abc123.vercel.app",
+          url: "hefesto-proj-1-abc123.vercel.app",
           readyState: "QUEUED",
         }),
       });
@@ -43,7 +43,7 @@ describe("VercelAdapter", () => {
 
       expect(result.isOk()).toBe(true);
       const deployment = result.unwrap();
-      expect(deployment.url).toBe("https://agentepro-proj-1-abc123.vercel.app");
+      expect(deployment.url).toBe("https://hefesto-proj-1-abc123.vercel.app");
       expect(deployment.provider).toBe("vercel");
       expect(deployment.deploymentId).toBe("dpl_123");
 

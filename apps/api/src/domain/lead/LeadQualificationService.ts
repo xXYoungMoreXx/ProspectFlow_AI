@@ -1,4 +1,4 @@
-import type { ServiceType } from "@agentepro/shared-types";
+import type { ServiceType } from "@hefesto/shared-types";
 
 // WHY: Each service type has different value drivers. SITE_CREATION heavily
 // weights "no website" (35 pts) because that IS the sales hook. TRAFFIC_MANAGEMENT

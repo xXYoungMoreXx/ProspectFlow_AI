@@ -40,7 +40,7 @@ class SessionState(BaseModel):
 
 
 # ── Redis Key Prefix ─────────────────────────────────────────────────────────
-_SESSION_PREFIX = "agentepro:session:"
+_SESSION_PREFIX = "hefesto:session:"
 _SESSION_TTL_SECONDS = 86400  # 24 hours — sessions expire after inactivity
 
 

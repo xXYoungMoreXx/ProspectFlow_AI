@@ -9,7 +9,7 @@ async function seed() {
   // 1. Setup connection
   const dbUrl =
     process.env.DATABASE_URL ||
-    "postgres://agentepro:agentepro_dev@localhost:5432/agentepro";
+    "postgres://hefesto:hefesto_dev@localhost:5432/hefesto";
   const queryClient = postgres(dbUrl);
   const db = drizzle(queryClient, { schema });
 
@@ -30,7 +30,7 @@ async function seed() {
     const [admin] = await db
       .insert(schema.operators)
       .values({
-        email: "admin@agentepro.local",
+        email: "admin@hefesto.local",
         passwordHash: adminPasswordHash,
         name: "System Admin",
         isActive: true,

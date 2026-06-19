@@ -24,7 +24,7 @@ import type {
   AgentPersona,
   AgentStatus,
   LLMProvider,
-} from "@agentepro/shared-types";
+} from "@hefesto/shared-types";
 
 export class DrizzleAgentRepository implements AgentRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}

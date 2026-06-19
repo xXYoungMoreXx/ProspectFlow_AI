@@ -2,7 +2,7 @@ apiVersion: 1
 
 groups:
   - orgId: 1
-    name: "AgentePro Alerts"
+    name: "Hefesto Alerts"
     folder: "Production Alerts"
     interval: 1m
     rules:
@@ -13,7 +13,7 @@ groups:
           - refId: A
             datasourceUid: prometheus
             model:
-              expr: sum(agentepro_hitl_pending) > 10
+              expr: sum(hefesto_hitl_pending) > 10
               intervalMs: 1000
               maxDataPoints: 43200
         noDataState: OK
@@ -32,7 +32,7 @@ groups:
           - refId: A
             datasourceUid: prometheus
             model:
-              expr: rate(agentepro_auth_failures_total[1m]) * 60 > 10
+              expr: rate(hefesto_auth_failures_total[1m]) * 60 > 10
               intervalMs: 1000
               maxDataPoints: 43200
         noDataState: OK
@@ -51,7 +51,7 @@ groups:
           - refId: A
             datasourceUid: prometheus
             model:
-              expr: rate(agentepro_agent_sessions_total{status="failed"}[1m]) * 60 > 0.2
+              expr: rate(hefesto_agent_sessions_total{status="failed"}[1m]) * 60 > 0.2
               intervalMs: 1000
               maxDataPoints: 43200
         noDataState: OK

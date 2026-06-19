@@ -9,7 +9,7 @@
 
 ## Contexto
 
-O AgentePro precisa orquestrar múltiplos agentes especializados (Hunter, Closer, Builder, QA) em fluxos assíncronos de longa duração — uma sessão de geração de site pode levar 30–60 minutos de execução ativa. É necessário suporte a: loops de agente, execução de ferramentas, gerenciamento de estado entre etapas, recuperação de falhas, observabilidade e HITL (Human-in-the-Loop).
+O Hefesto precisa orquestrar múltiplos agentes especializados (Hunter, Closer, Builder, QA) em fluxos assíncronos de longa duração — uma sessão de geração de site pode levar 30–60 minutos de execução ativa. É necessário suporte a: loops de agente, execução de ferramentas, gerenciamento de estado entre etapas, recuperação de falhas, observabilidade e HITL (Human-in-the-Loop).
 
 Três abordagens foram avaliadas durante o design do sistema:
 
@@ -30,7 +30,7 @@ Três abordagens foram avaliadas durante o design do sistema:
 
 ## Decisão
 
-**Usar Claude Managed Agents para o MVP e v2 do AgentePro.**
+**Usar Claude Managed Agents para o MVP e v2 do Hefesto.**
 
 O coordenador de agentes é implementado como um Managed Agent com `multiagent` orchestration. Cada persona (Hunter, Closer, Builder, QA) é um agente filho registrado no coordenador. Sessions são disparadas via API com webhooks para notificação de eventos HITL.
 
@@ -108,13 +108,13 @@ Esta decisão deve ser reavaliada se:
 - [Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview)
 - [Pricing](https://platform.claude.com/docs/en/about-claude/pricing)
 - [Dreaming docs](https://platform.claude.com/docs/en/managed-agents/dreams)
-- Discussão de arquitetura: conversa de design do AgentePro (mai/2026)
+- Discussão de arquitetura: conversa de design do Hefesto (mai/2026)
 
 ---
 
 ## ⚠️ Nota de Implementação (2026-05-09)
 
 **Estado atual:** Esta decisão está marcada como **Proposto**, não Aceito.
-O runtime atual do AgentePro é **100% CrewAI + LiteLLM** (Python), implementado em `apps/agent-runtime/`.
+O runtime atual do Hefesto é **100% CrewAI + LiteLLM** (Python), implementado em `apps/agent-runtime/`.
 A migração para Claude Managed Agents será reavaliada quando o threshold de $500/mês em tokens for atingido.
 A Arquitetura Hexagonal (Ports and Adapters) já suporta essa troca futura via interface `AgentRuntime` sem impacto na API.

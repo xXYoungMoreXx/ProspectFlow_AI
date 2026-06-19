@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/shared-types/package.json ./packages/shared-types/
-RUN npm ci --workspace=@agentepro/web --workspace=@agentepro/shared-types --include-workspace-root
+RUN npm ci --workspace=@hefesto/web --workspace=@hefesto/shared-types --include-workspace-root
 
 # 2. Build shared-types + Next.js app
 FROM deps AS builder
@@ -18,7 +18,7 @@ COPY apps/web ./apps/web
 COPY turbo.json ./
 
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npx turbo run build --filter=@agentepro/web...
+RUN npx turbo run build --filter=@hefesto/web...
 
 # 3. Production runner
 FROM base AS runner

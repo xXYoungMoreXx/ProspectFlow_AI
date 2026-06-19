@@ -9,7 +9,7 @@
 
 ## Contexto
 
-O AgentePro opera em um contexto com múltiplas camadas de risco legal:
+O Hefesto opera em um contexto com múltiplas camadas de risco legal:
 
 1. **Prospecção ativa** — agentes contatam pessoas que não solicitaram o serviço
 2. **Coleta de dados pessoais** — nome, telefone, email, empresa de leads

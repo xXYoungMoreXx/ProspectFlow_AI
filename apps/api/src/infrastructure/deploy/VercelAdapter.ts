@@ -108,7 +108,7 @@ export class VercelAdapter implements DeploymentProvider {
   }
 
   private toProjectName(projectId: string): string {
-    const sanitized = `agentepro-${projectId}`
+    const sanitized = `hefesto-${projectId}`
       .toLowerCase()
       .replace(/[^a-z0-9-]/g, "-")
       .replace(/-{2,}/g, "-")

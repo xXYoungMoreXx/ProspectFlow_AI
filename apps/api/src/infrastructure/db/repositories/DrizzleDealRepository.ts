@@ -7,7 +7,7 @@ import type {
   DealFilters,
   DealListResult,
 } from "../../../domain/deal/DealRepository.js";
-import type { DealStatus, ServiceType } from "@agentepro/shared-types";
+import type { DealStatus, ServiceType } from "@hefesto/shared-types";
 
 export class DrizzleDealRepository implements DealRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}

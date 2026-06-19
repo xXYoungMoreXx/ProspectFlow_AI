@@ -9,7 +9,7 @@
 - Enum `ServiceType` para categorizar o serviço a ser ofertado ao lead
 - Fórmula de qualificação ajustada por `ServiceType` na prospecção
 - Catálogo de skills pré-carregadas no sistema (skills builtin)
-- Skills pré-carregadas espelham as capabilities usadas na construção do ProspectFlow:
+- Skills pré-carregadas espelham as capabilities usadas na construção do Hefesto:
   Caveman, ECC Code Quality, UI/UX Design Pro, Social Media Strategy,
   Traffic Manager, SEO Optimizer, HUASHU Analytics, Superpowers Workflow
 - Sistema de templates de prompts para cada skill

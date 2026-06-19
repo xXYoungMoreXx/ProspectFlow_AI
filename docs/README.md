@@ -1,6 +1,6 @@
-# AgentePro — Documentação Arquitetural
+# Hefesto — Documentação Arquitetural
 
-> Este diretório contém a documentação técnica e arquitetural do projeto AgentePro.
+> Este diretório contém a documentação técnica e arquitetural do projeto Hefesto.
 > Para a documentação de execução/setup, consulte o [`README.md` na raiz](../README.md).
 
 ---
@@ -25,13 +25,13 @@ incluindo contexto, alternativas consideradas e consequências esperadas.
 
 ### Status atual dos ADRs
 
-| Status              | ADRs                                       | Significado                                          |
-| ------------------- | ------------------------------------------ | ---------------------------------------------------- |
+| Status              | ADRs                                            | Significado                                          |
+| ------------------- | ----------------------------------------------- | ---------------------------------------------------- |
 | ✅ Aceito           | ADR-003, 004, 005, 006, 010, 012, 013, 014, 015 | Implementado no código atual                         |
-| ⚠️ Aceito (parcial) | ADR-002                                    | Conceito implementado, providers diferem do descrito |
-| ⏳ Proposto         | ADR-001                                    | Decisão futura — não implementado, em avaliação      |
-| 🗺️ Aceito (roadmap) | ADR-009                                    | Decisão válida para fase futura do produto           |
-| 📋 Planejado        | ADR-007, ADR-008, ADR-011                  | Aceito, implementação planejada nas Fases 10–13      |
+| ⚠️ Aceito (parcial) | ADR-002                                         | Conceito implementado, providers diferem do descrito |
+| ⏳ Proposto         | ADR-001                                         | Decisão futura — não implementado, em avaliação      |
+| 🗺️ Aceito (roadmap) | ADR-009                                         | Decisão válida para fase futura do produto           |
+| 📋 Planejado        | ADR-007, ADR-008, ADR-011                       | Aceito, implementação planejada nas Fases 10–13      |
 
 ---
 
@@ -74,7 +74,7 @@ incluindo contexto, alternativas consideradas e consequências esperadas.
 
 ## 🔗 Outros recursos
 
-- **PRD Central**: [`PRD_AgentePro.md`](PRD_AgentePro.md)
+- **PRD Central**: [`PRD_Hefesto.md`](PRD_Hefesto.md)
 - **Prompts dos Agentes**: [`agents/prompts/`](agents/prompts/)
 - **Segurança**: [`SECURITY.md`](../SECURITY.md)
 

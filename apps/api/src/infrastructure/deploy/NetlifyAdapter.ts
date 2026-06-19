@@ -177,7 +177,7 @@ export class NetlifyAdapter implements DeploymentProvider {
   }
 
   private toSiteName(projectId: string): string {
-    return `agentepro-${projectId}`
+    return `hefesto-${projectId}`
       .toLowerCase()
       .replace(/[^a-z0-9-]/g, "-")
       .replace(/-{2,}/g, "-")

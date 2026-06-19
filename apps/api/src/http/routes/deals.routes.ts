@@ -7,7 +7,7 @@ import {
   CancelDealHandler,
 } from "../../application/deal/deal.handlers.js";
 import { GenerateQuoteHandler } from "../../application/deal/GenerateQuoteHandler.js";
-import type { DealStatus } from "@agentepro/shared-types";
+import type { DealStatus } from "@hefesto/shared-types";
 import { CalComAdapter } from "../../infrastructure/integrations/CalComAdapter.js";
 import type { DomainError } from "../../domain/shared/Result.js";
 

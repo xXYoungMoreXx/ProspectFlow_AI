@@ -1,7 +1,7 @@
 import { AggregateRoot } from "../shared/AggregateRoot.js";
 import { createDomainEvent } from "../shared/DomainEvent.js";
 import { ValidationError, ok, err, type Result } from "../shared/Result.js";
-import type { LeadStatus, LeadSource } from "@agentepro/shared-types";
+import type { LeadStatus, LeadSource } from "@hefesto/shared-types";
 
 export interface ContactInfo {
   readonly name: string;

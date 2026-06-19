@@ -170,9 +170,9 @@ await db.insert(organization).values({
 **Variáveis de ambiente novas:**
 
 ```env
-BOOTSTRAP_ORG_ID=org_agentepro_mvp
-BOOTSTRAP_ORG_NAME=AgentePro
-BOOTSTRAP_ORG_SLUG=agentepro
+BOOTSTRAP_ORG_ID=org_hefesto_mvp
+BOOTSTRAP_ORG_NAME=Hefesto
+BOOTSTRAP_ORG_SLUG=hefesto
 ```
 
 ---
@@ -247,7 +247,7 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       await emailAdapter.send({
         to: user.email,
-        subject: "Redefinição de senha — AgentePro",
+        subject: "Redefinição de senha — Hefesto",
         template: "reset-password",
         variables: { url, name: user.name },
       });
@@ -260,7 +260,7 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }) => {
       await emailAdapter.send({
         to: user.email,
-        subject: "Confirme seu email — AgentePro",
+        subject: "Confirme seu email — Hefesto",
         template: "verify-email",
         variables: { url, name: user.name },
       });
@@ -305,7 +305,7 @@ export async function generateOperatorJWT(
     .setProtectedHeader({ alg: "RS256" })
     .setIssuedAt()
     .setExpirationTime("15m")
-    .setIssuer("agentepro")
+    .setIssuer("hefesto")
     .sign(privateKey);
 }
 ```
@@ -544,9 +544,9 @@ Se a migration falhar após step 0011 e antes de 0015:
 
 ```env
 # .env (adicionar ao .env.example)
-BOOTSTRAP_ORG_ID=org_agentepro_mvp
-BOOTSTRAP_ORG_NAME=AgentePro MVP
-BOOTSTRAP_ORG_SLUG=agentepro
+BOOTSTRAP_ORG_ID=org_hefesto_mvp
+BOOTSTRAP_ORG_NAME=Hefesto MVP
+BOOTSTRAP_ORG_SLUG=hefesto
 
 # Já existe — Better Auth usa a mesma chave RSA:
 JWT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n..."

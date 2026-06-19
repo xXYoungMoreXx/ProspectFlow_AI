@@ -1,4 +1,4 @@
-# Guia Completo de Configuração — AgentePro
+# Guia Completo de Configuração — Hefesto
 
 > Leia este arquivo antes do README. Aqui você encontra instruções passo a passo
 > para configurar **tudo** que o sistema precisa para funcionar, incluindo as
@@ -159,7 +159,7 @@ TELEGRAM_CHAT_ID=123456789
 
 ### WhatsApp via Evolution API
 
-O Evolution API conecta o AgentePro a um número de WhatsApp real.
+O Evolution API conecta o Hefesto a um número de WhatsApp real.
 
 O Evolution API já está incluído no Docker Compose. Após `npm run init`, acesse:
 
@@ -167,7 +167,7 @@ O Evolution API já está incluído no Docker Compose. Após `npm run init`, ace
 http://localhost:8080
 ```
 
-1. Crie uma instância com o nome `agentepro`
+1. Crie uma instância com o nome `hefesto`
 2. Clique em **Connect** → aparece um QR Code
 3. No WhatsApp do celular: **Configurações → Dispositivos Conectados → Conectar dispositivo**
 4. Escaneie o QR Code
@@ -175,7 +175,7 @@ http://localhost:8080
 ```dotenv
 EVOLUTION_API_URL=http://localhost:8080
 EVOLUTION_API_KEY=sua-chave-do-painel-evolution
-WPP_INSTANCE=agentepro
+WPP_INSTANCE=hefesto
 ```
 
 > A chave de API aparece nas configurações do painel Evolution API.
@@ -263,7 +263,7 @@ Adicione em: **GitHub → Settings → Secrets → Actions → New repository se
 PORT=3001
 HOST=0.0.0.0
 NODE_ENV=development
-DATABASE_URL=postgresql://agentepro:agentepro_dev@localhost:5432/agentepro
+DATABASE_URL=postgresql://hefesto:hefesto_dev@localhost:5432/hefesto
 REDIS_URL=redis://localhost:6379
 JWT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
 JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
@@ -281,7 +281,7 @@ TELEGRAM_CHAT_ID=
 # ── WhatsApp ──────────────────────────────────────────────────────────
 EVOLUTION_API_URL=http://localhost:8080
 EVOLUTION_API_KEY=
-WPP_INSTANCE=agentepro
+WPP_INSTANCE=hefesto
 
 # ── Google Maps ───────────────────────────────────────────────────────
 GOOGLE_MAPS_API_KEY=
@@ -312,7 +312,7 @@ INTERNAL_API_TOKEN=
 | --------------------------------- | ---------------------- | ------------------------------------------------------------------ |
 | "Docker não está rodando"         | Docker Desktop fechado | Abra o Docker Desktop e aguarde o ícone verde                      |
 | "JWT_PRIVATE_KEY inválida"        | Chave mal formatada    | Verifique se copiou o texto completo com `\n`                      |
-| "PostgreSQL não respondeu em 60s" | Porta 5432 em uso      | `docker logs agentepro-postgres` para detalhes                     |
+| "PostgreSQL não respondeu em 60s" | Porta 5432 em uso      | `docker logs hefesto-postgres` para detalhes                       |
 | "Nenhum LLM configurado"          | Chave não preenchida   | Preencha `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` ou `GEMINI_API_KEY` |
 | Agentes não enviam WhatsApp       | Sessão expirada        | Reescaneie o QR Code em `http://localhost:8080`                    |
 | E2E falha no GitHub               | Secrets ausentes       | Adicione `CI_JWT_PRIVATE_KEY` e `CI_JWT_PUBLIC_KEY` no GitHub      |

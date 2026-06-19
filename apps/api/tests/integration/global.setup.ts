@@ -40,7 +40,7 @@ import { beforeAll, afterAll } from "vitest";
 beforeAll(async () => {
   // ── PostgreSQL ─────────────────────────────────────────────────────────────
   const pgContainer = await new PostgreSqlContainer("postgres:16-alpine")
-    .withDatabase("agentepro_test")
+    .withDatabase("hefesto_test")
     .withUsername("test")
     .withPassword("test")
     .start();

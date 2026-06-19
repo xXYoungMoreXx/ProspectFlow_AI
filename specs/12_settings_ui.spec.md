@@ -6,7 +6,7 @@
 
 ## Overview
 
-O módulo **Settings** (`apps/web/src/app/(dashboard)/settings/`) é o painel centralizado de configuração da plataforma AgentePro. Ele expõe ao operador todos os parâmetros necessários para orquestrar os runtimes de agentes: credenciais de provedores LLM, configurações de mensageria, integrações externas (MCP Brasil, ChromaDB, Webhooks, MCPs customizados) e parâmetros de sistema (HITL, segurança, backup).
+O módulo **Settings** (`apps/web/src/app/(dashboard)/settings/`) é o painel centralizado de configuração da plataforma Hefesto. Ele expõe ao operador todos os parâmetros necessários para orquestrar os runtimes de agentes: credenciais de provedores LLM, configurações de mensageria, integrações externas (MCP Brasil, ChromaDB, Webhooks, MCPs customizados) e parâmetros de sistema (HITL, segurança, backup).
 
 A página opera em modo **optimistic-pending**: toda alteração é acumulada no `useSettingsStore` (Zustand) como um diff ainda não salvo, exibido em uma save-bar com contagem de mudanças pendentes. Ao clicar em "Salvar", o store serializa e envia o batch de `PendingUpdate[]` para `PATCH /api/v1/settings` via React Query. Conexões com serviços externos são testadas via `POST /api/v1/settings/test` (por categoria), e o resultado é exibido em badges inline.
 

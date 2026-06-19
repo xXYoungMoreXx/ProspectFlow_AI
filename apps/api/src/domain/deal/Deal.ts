@@ -1,7 +1,7 @@
 import { AggregateRoot } from "../shared/AggregateRoot.js";
 import { createDomainEvent } from "../shared/DomainEvent.js";
 import { ValidationError, ok, err, type Result } from "../shared/Result.js";
-import type { DealStatus, ServiceType } from "@agentepro/shared-types";
+import type { DealStatus, ServiceType } from "@hefesto/shared-types";
 
 export interface Addon {
   readonly name: string;

@@ -1,7 +1,7 @@
 import pino from "pino";
 import type { Job } from "bullmq";
 import type { Redis } from "ioredis";
-import type { DomainEventBase } from "@agentepro/shared-types";
+import type { DomainEventBase } from "@hefesto/shared-types";
 import type { DealRepository } from "../../domain/deal/DealRepository.js";
 import type { BriefingRepository } from "../../domain/briefing/BriefingRepository.js";
 import type { LeadRepository } from "../../domain/lead/LeadRepository.js";

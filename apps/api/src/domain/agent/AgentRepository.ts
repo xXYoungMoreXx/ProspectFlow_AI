@@ -3,7 +3,7 @@ import type {
   AgentStatus,
   AgentPersona,
   LLMProvider,
-} from "@agentepro/shared-types";
+} from "@hefesto/shared-types";
 
 // ── Sub-agent types ───────────────────────────────────────────────────────────
 

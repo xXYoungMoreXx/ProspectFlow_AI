@@ -1,6 +1,6 @@
 """
 Base Agent definitions for CrewAI orchestration.
-Provides standard wrappers and utility methods for all AgentePro personas.
+Provides standard wrappers and utility methods for all Hefesto personas.
 """
 
 from __future__ import annotations
@@ -19,9 +19,9 @@ from src.config.llm_routing import get_model
 logger = logging.getLogger(__name__)
 
 
-class BaseAgentePro:
+class BaseHefesto:
     """
-    Base wrapper for AgentePro CrewAI agents.
+    Base wrapper for Hefesto CrewAI agents.
     Provides standard LLM configuration and common behaviors.
     """
 
@@ -51,10 +51,10 @@ class BaseAgentePro:
         """
         llm = llm_override if llm_override is not None else self._get_llm(use_small_model)
 
-        # Inject standard AgentePro context into the backstory
+        # Inject standard Hefesto context into the backstory
         full_backstory = (
             f"{backstory}\n\n"
-            "You are operating within the AgentePro platform on behalf of"
+            "You are operating within the Hefesto platform on behalf of"
             f" Operator ID: {self.operator_id}."
         )
 

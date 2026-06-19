@@ -14,5 +14,5 @@ fi
 
 if echo "$changed" | grep -q "apps/api/src/infrastructure/db/migrations/"; then
   echo "⚠️  DB migration files changed between branches."
-  echo "   Run: npm run db:migrate -w @agentepro/api"
+  echo "   Run: npm run db:migrate -w @hefesto/api"
 fi

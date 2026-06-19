@@ -5,8 +5,8 @@ async function loginAndSetState(page: Page) {
   await page.goto("/login");
   // Inject state directly to bypass login screen quickly for these tests
   await page.evaluate(() => {
-    localStorage.setItem("agentepro_token", "mocked-jwt-token");
-    localStorage.setItem("agentepro_email", "operator@example.com");
+    localStorage.setItem("hefesto_token", "mocked-jwt-token");
+    localStorage.setItem("hefesto_email", "operator@example.com");
   });
 }
 

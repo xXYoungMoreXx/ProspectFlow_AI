@@ -1,5 +1,5 @@
 """
-Mapa de LLM por sub-agente — PRD AgentePro v2 §9.
+Mapa de LLM por sub-agente — PRD Hefesto v2 §9.
 Tier 0 ($0): Ollama local | Tier 1-2 (barato): Gemini Flash, Haiku
 Tier 3 (médio): Sonnet | Tier 4 (caro): Opus 4.7/4.8 | Tier 5: Imagen
 """

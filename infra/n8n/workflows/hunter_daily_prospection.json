@@ -20,13 +20,13 @@
       "type": "n8n-nodes-base.httpRequest",
       "parameters": {
         "method": "GET",
-        "url": "={{ $env.AGENTEPRO_API_URL }}/api/v1/agents?status=ACTIVE&persona=HUNTER",
+        "url": "={{ $env.HEFESTO_API_URL }}/api/v1/agents?status=ACTIVE&persona=HUNTER",
         "authentication": "headerAuth",
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer {{ $env.AGENTEPRO_SERVICE_TOKEN }}"
+              "value": "Bearer {{ $env.HEFESTO_SERVICE_TOKEN }}"
             }
           ]
         }
@@ -46,7 +46,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.AGENTEPRO_API_URL }}/api/v1/prospecting/search-maps",
+        "url": "={{ $env.HEFESTO_API_URL }}/api/v1/prospecting/search-maps",
         "authentication": "headerAuth",
         "body": { "mode": "json", "json": "={{ JSON.stringify($json) }}" }
       },

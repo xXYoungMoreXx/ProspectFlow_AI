@@ -70,7 +70,7 @@ export async function buildApp(opts = {}): Promise<FastifyInstance> {
     await app.register(swagger, {
       openapi: {
         info: {
-          title: "AgentePro API",
+          title: "Hefesto API",
           description:
             "REST API para plataforma de agentes de IA — prospecção e entrega de sites",
           version: "1.0.0",

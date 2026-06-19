@@ -34,7 +34,7 @@ curl http://localhost:8001/health
 cd apps/agent-runtime && python -m src.main
 
 # Verificar logs
-docker logs agentepro-runtime 2>&1 | tail -50
+docker logs hefesto-runtime 2>&1 | tail -50
 ```
 
 ## Incidente 4: Rate limit 429 em bulk operations

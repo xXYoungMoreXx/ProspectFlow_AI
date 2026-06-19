@@ -3,7 +3,7 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: "agentepro-api"
+  - job_name: "hefesto-api"
     metrics_path: /api/v1/metrics
     static_configs:
       # Use host.docker.internal to scrape the Node.js API running on the host machine

@@ -1,5 +1,5 @@
 """
-AgentePro Runtime Configuration — Pydantic Settings
+Hefesto Runtime Configuration — Pydantic Settings
 Validated on startup, fails fast on missing required values.
 """
 

@@ -9,7 +9,7 @@
 
 ## Contexto
 
-O AgentePro executa processos assíncronos de longa duração (sessões de agentes),
+O Hefesto executa processos assíncronos de longa duração (sessões de agentes),
 integra múltiplos serviços externos e processa dados financeiros e pessoais de clientes.
 Sem observabilidade adequada, é impossível:
 
@@ -61,30 +61,30 @@ Loki (self-hosted, gratuito) → Grafana para consulta.
 # Métricas obrigatórias no MVP
 
 # Pipeline de vendas
-agentepro_leads_created_total{source}                    # Counter
-agentepro_leads_qualified_total{score_bucket}            # Counter
-agentepro_deals_closed_total{service_type}               # Counter
-agentepro_deals_closed_value_brl_total                   # Counter (R$)
-agentepro_projects_delivered_total                       # Counter
-agentepro_funnel_conversion_rate{stage}                  # Gauge
+hefesto_leads_created_total{source}                    # Counter
+hefesto_leads_qualified_total{score_bucket}            # Counter
+hefesto_deals_closed_total{service_type}               # Counter
+hefesto_deals_closed_value_brl_total                   # Counter (R$)
+hefesto_projects_delivered_total                       # Counter
+hefesto_funnel_conversion_rate{stage}                  # Gauge
 
 # Agentes
-agentepro_agent_sessions_total{persona, status}          # Counter
-agentepro_agent_session_duration_seconds{persona}        # Histogram
-agentepro_agent_tokens_consumed_total{persona, provider} # Counter
-agentepro_agent_errors_total{persona, error_type}        # Counter
-agentepro_agent_budget_remaining{agent_id}               # Gauge
+hefesto_agent_sessions_total{persona, status}          # Counter
+hefesto_agent_session_duration_seconds{persona}        # Histogram
+hefesto_agent_tokens_consumed_total{persona, provider} # Counter
+hefesto_agent_errors_total{persona, error_type}        # Counter
+hefesto_agent_budget_remaining{agent_id}               # Gauge
 
 # HITL
-agentepro_hitl_pending{operator_id}                      # Gauge
-agentepro_hitl_decision_seconds{decision}                # Histogram
-agentepro_hitl_expired_total                             # Counter
+hefesto_hitl_pending{operator_id}                      # Gauge
+hefesto_hitl_decision_seconds{decision}                # Histogram
+hefesto_hitl_expired_total                             # Counter
 
 # Segurança
-agentepro_auth_failures_total{reason}                    # Counter
-agentepro_rate_limit_hits_total{endpoint}                # Counter
-agentepro_ssrf_blocked_total                             # Counter
-agentepro_invalid_upload_total{reason}                   # Counter
+hefesto_auth_failures_total{reason}                    # Counter
+hefesto_rate_limit_hits_total{endpoint}                # Counter
+hefesto_ssrf_blocked_total                             # Counter
+hefesto_invalid_upload_total{reason}                   # Counter
 
 # API
 http_requests_total{method, route, status_code}          # Counter
@@ -107,7 +107,7 @@ import { JaegerExporter } from "@opentelemetry/exporter-jaeger";
 const provider = new NodeTracerProvider({
   resource: Resource.default().merge(
     new Resource({
-      [SemanticResourceAttributes.SERVICE_NAME]: "agentepro-api",
+      [SemanticResourceAttributes.SERVICE_NAME]: "hefesto-api",
     }),
   ),
 });
@@ -154,27 +154,27 @@ sub-agente — complementa (não substitui) o tracing da API.
 ```yaml
 alerts:
   - name: HITLBacklog
-    expr: agentepro_hitl_pending > 10
+    expr: hefesto_hitl_pending > 10
     severity: warning
     message: "🔔 {count} aprovações HITL pendentes há mais de 1h"
 
   - name: AgentBudgetLow
-    expr: agentepro_agent_budget_remaining / agentepro_agent_budget_total < 0.1
+    expr: hefesto_agent_budget_remaining / hefesto_agent_budget_total < 0.1
     severity: warning
     message: "⚠️ Agente {agent_id} com menos de 10% do budget de tokens"
 
   - name: AgentHighErrorRate
-    expr: rate(agentepro_agent_errors_total[5m]) > 0.2
+    expr: rate(hefesto_agent_errors_total[5m]) > 0.2
     severity: critical
     message: "🚨 Taxa de erro alta no agente {persona}: {rate}/min"
 
   - name: SecurityBruteForce
-    expr: rate(agentepro_auth_failures_total[1m]) > 10
+    expr: rate(hefesto_auth_failures_total[1m]) > 10
     severity: critical
     message: "🚨 Possível brute force: {rate} falhas de login/min"
 
   - name: PriceCrawlerStale
-    expr: time() - agentepro_price_crawler_last_success > 7 * 24 * 3600
+    expr: time() - hefesto_price_crawler_last_success > 7 * 24 * 3600
     severity: warning
     message: "⚠️ PriceCrawler sem atualização há 7+ dias — custos podem estar desatualizados"
 ```

@@ -17,5 +17,5 @@ fi
 
 if echo "$changed" | grep -q "apps/api/src/infrastructure/db/migrations/"; then
   echo "⚠️  New DB migration detected."
-  echo "   Run: npm run db:migrate -w @agentepro/api"
+  echo "   Run: npm run db:migrate -w @hefesto/api"
 fi

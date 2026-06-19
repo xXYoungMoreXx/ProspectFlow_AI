@@ -11,7 +11,7 @@ import type {
   HITLFilters,
   HITLListResult,
 } from "../../../domain/hitl/HITLApprovalRepository.js";
-import type { HITLStatus } from "@agentepro/shared-types";
+import type { HITLStatus } from "@hefesto/shared-types";
 
 export class DrizzleHITLRepository implements HITLApprovalRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}
