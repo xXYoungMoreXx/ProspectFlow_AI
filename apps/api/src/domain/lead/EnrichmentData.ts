@@ -9,7 +9,7 @@
  *
  * SPEC-03 v2.1 adds Google Places extended fields.
  */
-import type { ServiceType } from "@agentepro/shared-types";
+import type { ServiceType } from "@hefesto/shared-types";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 

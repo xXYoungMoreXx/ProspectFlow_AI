@@ -1,6 +1,6 @@
 {
-  "title": "AgentePro — Agent Performance",
-  "uid": "agentepro-agents",
+  "title": "Hefesto — Agent Performance",
+  "uid": "hefesto-agents",
   "schemaVersion": 39,
   "version": 1,
   "refresh": "1m",

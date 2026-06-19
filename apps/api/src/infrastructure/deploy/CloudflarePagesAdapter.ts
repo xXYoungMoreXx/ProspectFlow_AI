@@ -234,7 +234,7 @@ export class CloudflarePagesAdapter implements DeploymentProvider {
   }
 
   private toProjectName(projectId: string): string {
-    return `agentepro-${projectId}`
+    return `hefesto-${projectId}`
       .toLowerCase()
       .replace(/[^a-z0-9-]/g, "-")
       .replace(/-{2,}/g, "-")

@@ -1,5 +1,5 @@
 name: Feature Request
-description: Suggest an idea for ProspectFlow AI
+description: Suggest an idea for Hefesto AI
 labels: ["enhancement"]
 body:
   - type: textarea
@@ -29,5 +29,5 @@ body:
     attributes:
       label: Impact
       options:
-        - label: This is a core feature for AgentePro architecture.
+        - label: This is a core feature for Hefesto architecture.
         - label: This improves Developer Experience (DX).

@@ -32,8 +32,8 @@ describe("Security Tests (Phase 6.3)", () => {
       .setProtectedHeader({ alg: "RS256", typ: "JWT" })
       .setIssuedAt()
       .setExpirationTime("1h")
-      .setIssuer("agentepro.local")
-      .setAudience("agentepro-api")
+      .setIssuer("hefesto.local")
+      .setAudience("hefesto-api")
       .setJti(ulid())
       .sign(validKey);
   });
@@ -52,8 +52,8 @@ describe("Security Tests (Phase 6.3)", () => {
         .setProtectedHeader({ alg: "RS256", typ: "JWT" })
         .setIssuedAt(Math.floor(Date.now() / 1000) - 7200) // 2 hours ago
         .setExpirationTime(Math.floor(Date.now() / 1000) - 3600) // 1 hour ago
-        .setIssuer("agentepro.local")
-        .setAudience("agentepro-api")
+        .setIssuer("hefesto.local")
+        .setAudience("hefesto-api")
         .sign(validKey);
 
       const response = await app.inject({
@@ -75,8 +75,8 @@ describe("Security Tests (Phase 6.3)", () => {
       const payload = Buffer.from(
         JSON.stringify({
           sub: "op-123",
-          iss: "agentepro.local",
-          aud: "agentepro-api",
+          iss: "hefesto.local",
+          aud: "hefesto-api",
           exp: Math.floor(Date.now() / 1000) + 3600,
         }),
       ).toString("base64url");
@@ -105,8 +105,8 @@ describe("Security Tests (Phase 6.3)", () => {
         .setProtectedHeader({ alg: "RS256", typ: "JWT" })
         .setIssuedAt()
         .setExpirationTime("1h")
-        .setIssuer("agentepro.local")
-        .setAudience("agentepro-api")
+        .setIssuer("hefesto.local")
+        .setAudience("hefesto-api")
         .sign(differentKey);
 
       const response = await app.inject({

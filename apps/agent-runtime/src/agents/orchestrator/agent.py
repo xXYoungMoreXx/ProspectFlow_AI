@@ -22,12 +22,12 @@ _REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
 
 logger = logging.getLogger(__name__)
 
-_PREFIX = "agentepro:orchestrator:"
+_PREFIX = "hefesto:orchestrator:"
 _TTL = 86400  # 24 h — matches AgentSessionManager TTL in state.py
 
 
 class PipelineState(StrEnum):
-    """Estados do pipeline — PRD AgentePro v2 §8 Agente 0."""
+    """Estados do pipeline — PRD Hefesto v2 §8 Agente 0."""
 
     IDLE = "IDLE"
     PROSPECTING = "PROSPECTING"

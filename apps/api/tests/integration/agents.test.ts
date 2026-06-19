@@ -1,4 +1,12 @@
-import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  beforeAll,
+} from "vitest";
 import { buildApp } from "../../src/app.js";
 import type { FastifyInstance } from "fastify";
 import { SignJWT, importPKCS8 } from "jose";
@@ -24,8 +32,8 @@ describe("Agents Endpoints Integration", () => {
       .setProtectedHeader({ alg: "RS256", typ: "JWT" })
       .setIssuedAt()
       .setExpirationTime("1h")
-      .setIssuer("agentepro.local")
-      .setAudience("agentepro-api")
+      .setIssuer("hefesto.local")
+      .setAudience("hefesto-api")
       .setJti(ulid())
       .sign(key);
   });

@@ -24,8 +24,8 @@ const envSchema = z.object({
   // JWT
   JWT_PRIVATE_KEY: z.string().min(1),
   JWT_PUBLIC_KEY: z.string().min(1),
-  JWT_ISSUER: z.string().default("agentepro.local"),
-  JWT_AUDIENCE: z.string().default("agentepro-api"),
+  JWT_ISSUER: z.string().default("hefesto.local"),
+  JWT_AUDIENCE: z.string().default("hefesto-api"),
   JWT_ACCESS_EXPIRY: z.string().default("1h"),
   JWT_REFRESH_EXPIRY: z.string().default("7d"),
 
@@ -53,8 +53,8 @@ const envSchema = z.object({
 
   // Messaging - Email (Brevo)
   BREVO_API_KEY: z.string().optional(),
-  EMAIL_FROM_ADDRESS: z.string().default("noreply@agentepro.com"),
-  EMAIL_FROM_NAME: z.string().default("AgentePro"),
+  EMAIL_FROM_ADDRESS: z.string().default("noreply@hefesto.com"),
+  EMAIL_FROM_NAME: z.string().default("Hefesto"),
 
   // Messaging - Telegram
   TELEGRAM_BOT_TOKEN: z.string().optional(),

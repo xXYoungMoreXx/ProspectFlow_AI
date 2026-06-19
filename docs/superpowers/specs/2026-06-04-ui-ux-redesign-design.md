@@ -1,7 +1,7 @@
 # Design Spec: UI/UX Redesign + Dark/Light Theme + i18n
 
 **Data:** 2026-06-04  
-**Projeto:** AgentePro (ProspectFlow_AI)  
+**Projeto:** Hefesto (ProspectFlow_AI)  
 **Status:** Aprovado  
 **Abordagem:** Big Bang — única feature branch, commits separados por frente
 

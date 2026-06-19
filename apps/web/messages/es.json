@@ -11,7 +11,7 @@
     "settings": "Configuración"
   },
   "auth": {
-    "brand": "AgentePro",
+    "brand": "Hefesto",
     "login": {
       "subtitle": "Inicia sesión para gestionar tus agentes de IA",
       "email": "Correo electrónico",

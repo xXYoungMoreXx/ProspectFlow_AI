@@ -19,7 +19,7 @@ type Phase = "checking" | "offline" | "setup" | "ready";
 // affects managed deployments or test environments.
 const ENABLED = process.env.NEXT_PUBLIC_APP_MODE === "local";
 const DEFAULT_ADMIN_EMAIL =
-  process.env.NEXT_PUBLIC_LOCAL_ADMIN_EMAIL ?? "admin@agentepro.local";
+  process.env.NEXT_PUBLIC_LOCAL_ADMIN_EMAIL ?? "admin@hefesto.local";
 
 async function probeBackend(): Promise<Exclude<Phase, "checking">> {
   // 1. Is the local backend reachable at all?
@@ -92,7 +92,7 @@ function BackendOffline({ onRetry }: { onRetry: () => void }) {
           Seu backend local não está rodando
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          O AgentePro roda na sua máquina. Suba os serviços locais e clique em
+          O Hefesto roda na sua máquina. Suba os serviços locais e clique em
           “Tentar de novo”.
         </p>
 

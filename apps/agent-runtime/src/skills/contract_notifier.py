@@ -26,7 +26,7 @@ class ContractNotifierTool(BaseTool):
             # 1. Gera token JWT temporário para o link do contrato (expira em 7 dias)
             secret = config.api_token
             if not secret:
-                return "Erro: AGENTEPRO_API_TOKEN não configurado."
+                return "Erro: HEFESTO_API_TOKEN não configurado."
             payload = {"dealId": deal_id, "amount": contract_value, "exp": int(time.time()) + 7 * 24 * 3600}
             token = jwt.encode(payload, secret, algorithm="HS256")
 

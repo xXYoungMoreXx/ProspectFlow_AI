@@ -1,7 +1,7 @@
 {
-  "title": "AgentePro — Pipeline Overview",
-  "uid": "agentepro-pipeline",
-  "tags": ["agentepro", "pipeline"],
+  "title": "Hefesto — Pipeline Overview",
+  "uid": "hefesto-pipeline",
+  "tags": ["hefesto", "pipeline"],
   "panels": [
     {
       "title": "Agent Tasks (last 24h)",
@@ -9,7 +9,7 @@
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
       "targets": [
         {
-          "expr": "sum(increase(agentepro_agent_tasks_total[24h]))",
+          "expr": "sum(increase(hefesto_agent_tasks_total[24h]))",
           "legendFormat": "Total Tasks"
         }
       ]
@@ -19,7 +19,7 @@
       "type": "gauge",
       "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
       "targets": [
-        { "expr": "sum(agentepro_hitl_pending)", "legendFormat": "Pending" }
+        { "expr": "sum(hefesto_hitl_pending)", "legendFormat": "Pending" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -39,7 +39,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
       "targets": [
         {
-          "expr": "rate(agentepro_agent_tasks_total[5m])",
+          "expr": "rate(hefesto_agent_tasks_total[5m])",
           "legendFormat": "{{persona}} {{status}}"
         }
       ]
@@ -50,7 +50,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
       "targets": [
         {
-          "expr": "rate(agentepro_auth_failures_total[5m])",
+          "expr": "rate(hefesto_auth_failures_total[5m])",
           "legendFormat": "{{reason}}"
         }
       ]

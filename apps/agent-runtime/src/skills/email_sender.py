@@ -15,7 +15,7 @@ class EmailSenderInput(BaseModel):
 
 class EmailSenderTool(BaseTool):
     name: str = "email_sender"
-    description: str = "Envia um email para um lead através da API central do AgentePro."
+    description: str = "Envia um email para um lead através da API central do Hefesto."
     args_schema: type[BaseModel] = EmailSenderInput
 
     def _run(self, to_email: str, subject: str, body: str) -> str:

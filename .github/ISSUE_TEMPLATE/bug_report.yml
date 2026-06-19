@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug to help us improve ProspectFlow AI
+description: Report a bug to help us improve Hefesto AI
 labels: ["bug", "triage"]
 body:
   - type: markdown

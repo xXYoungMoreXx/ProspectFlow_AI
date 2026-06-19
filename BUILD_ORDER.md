@@ -617,7 +617,7 @@ Critério: custo por site calculado corretamente; dashboard mostra breakdown.
 Depende de: 0.12
 
 Ordem:  infra/prometheus/prometheus.yml
-        infra/prometheus/rules/agentepro.yml
+        infra/prometheus/rules/hefesto.yml
         infra/grafana/dashboards/pipeline.json
         infra/grafana/dashboards/agents.json
         infra/grafana/dashboards/costs.json

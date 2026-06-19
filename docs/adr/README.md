@@ -1,4 +1,4 @@
-# ADRs — AgentePro: Índice de Decisões Arquiteturais
+# ADRs — Hefesto: Índice de Decisões Arquiteturais
 
 > Architecture Decision Records documentam as decisões técnicas e de produto significativas
 > tomadas no projeto, incluindo o contexto, as alternativas consideradas e as consequências.

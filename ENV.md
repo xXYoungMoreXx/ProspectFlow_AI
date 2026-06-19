@@ -55,16 +55,16 @@ export const env = EnvSchema.parse(process.env);
 
 #### `DATABASE_URL`
 
-| Campo                  | Valor                                                                      |
-| ---------------------- | -------------------------------------------------------------------------- |
-| **Tipo**               | PostgreSQL connection string                                               |
-| **Formato**            | `postgresql://user:password@host:port/database?sslmode=require`            |
-| **ValidaÃ§Ã£o**        | Zod URL + ping na inicializaÃ§Ã£o (SELECT 1)                               |
-| **Impacto se ausente** | Crash no startup                                                           |
-| **Usado em**           | DrizzleORM, BullMQ (para persistÃªncia de jobs)                            |
-| **Dev**                | `postgresql://agentepro:dev123@localhost:5432/agentepro`                   |
-| **Prod**               | `postgresql://agentepro:${SECRET}@postgres:5432/agentepro?sslmode=require` |
-| **Nota**               | Em produÃ§Ã£o SEMPRE com `?sslmode=require`                                |
+| Campo                  | Valor                                                                  |
+| ---------------------- | ---------------------------------------------------------------------- |
+| **Tipo**               | PostgreSQL connection string                                           |
+| **Formato**            | `postgresql://user:password@host:port/database?sslmode=require`        |
+| **ValidaÃ§Ã£o**        | Zod URL + ping na inicializaÃ§Ã£o (SELECT 1)                           |
+| **Impacto se ausente** | Crash no startup                                                       |
+| **Usado em**           | DrizzleORM, BullMQ (para persistÃªncia de jobs)                        |
+| **Dev**                | `postgresql://hefesto:dev123@localhost:5432/hefesto`                   |
+| **Prod**               | `postgresql://hefesto:${SECRET}@postgres:5432/hefesto?sslmode=require` |
+| **Nota**               | Em produÃ§Ã£o SEMPRE com `?sslmode=require`                            |
 
 ---
 
@@ -183,7 +183,7 @@ export const env = EnvSchema.parse(process.env);
 | Campo        | Valor                                                                     |
 | ------------ | ------------------------------------------------------------------------- |
 | **Tipo**     | `string` â€” nome da instÃ¢ncia WhatsApp                                  |
-| **Exemplo**  | `agentepro_prod`                                                          |
+| **Exemplo**  | `hefesto_prod`                                                            |
 | **Usado em** | Todos os endpoints da Evolution API (`/message/sendText/${WPP_INSTANCE}`) |
 
 ---
@@ -530,14 +530,14 @@ export const env = EnvSchema.parse(process.env);
 
 ```bash
 # ============================================================
-# AgentePro v2 â€” .env.example
+# Hefesto v2 â€” .env.example
 # Copie para .env e preencha os valores
 # NUNCA commitar .env no git
 # ============================================================
 
 # --- OBRIGATÃ“RIAS ---
 NODE_ENV=development
-DATABASE_URL=postgresql://agentepro:dev123@localhost:5432/agentepro
+DATABASE_URL=postgresql://hefesto:dev123@localhost:5432/hefesto
 REDIS_URL=redis://:dev123@localhost:6379/0
 JWT_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
 JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
@@ -551,7 +551,7 @@ GROQ_API_KEY=gsk_...            # Opcional â€” velocidade
 # --- MENSAGERIA ---
 EVOLUTION_API_URL=http://localhost:8082
 EVOLUTION_API_KEY=your-evolution-key
-WPP_INSTANCE=agentepro_dev
+WPP_INSTANCE=hefesto_dev
 TELEGRAM_HITL_BOT_TOKEN=123456:ABC-DEF1234...
 TELEGRAM_SALES_BOT_TOKEN=654321:XYZ-ABC5678...
 TELEGRAM_CHAT_ID=123456789

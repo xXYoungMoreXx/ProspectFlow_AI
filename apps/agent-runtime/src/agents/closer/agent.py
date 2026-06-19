@@ -3,13 +3,13 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from src.agents.base import BaseAgentePro
+from src.agents.base import BaseHefesto
 from src.agents.schemas import AgentCommunication, AgentIdentity, AgentMission, AgentPersona
 
 logger = logging.getLogger(__name__)
 
 
-class CloserAgent(BaseAgentePro):
+class CloserAgent(BaseHefesto):
     """
     Closer Agent (Vendedor/Negociador).
     Responsável por conduzir a conversa de vendas, apresentar propostas,
@@ -21,7 +21,7 @@ class CloserAgent(BaseAgentePro):
 
     def build(self):
         """Builds and returns the CrewAI Agent instance."""
-        brand_name = self.payload.get("brand_name", "AgentePro")
+        brand_name = self.payload.get("brand_name", "Hefesto")
 
         persona = AgentPersona(
             identity=AgentIdentity(

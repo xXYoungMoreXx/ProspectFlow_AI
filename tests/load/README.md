@@ -1,4 +1,4 @@
-# Load Tests — AgentePro
+# Load Tests — Hefesto
 
 k6 load tests para identificar breaking points antes do deploy em VPS.
 
@@ -47,14 +47,14 @@ k6 run tests/load/run-all.js
 | Variável             | Padrão                         | Descrição                                        |
 | -------------------- | ------------------------------ | ------------------------------------------------ |
 | `BASE_URL`           | `http://localhost:3001/api/v1` | URL base da API                                  |
-| `TEST_EMAIL`         | `admin@agentepro.local`        | Email do usuário de teste                        |
+| `TEST_EMAIL`         | `admin@hefesto.local`          | Email do usuário de teste                        |
 | `TEST_PASSWORD`      | `Admin@123456`                 | Senha do usuário de teste                        |
 | `LOAD_TEST_AGENT_ID` | (auto-detectado)               | ID de agente específico para o teste de activate |
 
 ```bash
 k6 run \
   --env BASE_URL=http://localhost:3001/api/v1 \
-  --env TEST_EMAIL=admin@agentepro.local \
+  --env TEST_EMAIL=admin@hefesto.local \
   --env TEST_PASSWORD=Admin@123456 \
   tests/load/run-all.js
 ```

@@ -11,7 +11,7 @@ import type {
   LeadFilters,
   LeadListResult,
 } from "../../../domain/lead/LeadRepository.js";
-import type { LeadStatus, LeadSource } from "@agentepro/shared-types";
+import type { LeadStatus, LeadSource } from "@hefesto/shared-types";
 
 export class DrizzleLeadRepository implements LeadRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}

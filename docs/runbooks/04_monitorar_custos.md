@@ -24,11 +24,11 @@ curl "http://localhost:3333/api/v1/agents/$AGENT_ID/token-usage" \
 
 Configurar no Grafana (`infra/grafana/provisioning/`):
 
-| Métrica                                              | Threshold   | Ação                                |
-| ---------------------------------------------------- | ----------- | ----------------------------------- |
-| `agentepro_llm_requests_total{provider="ANTHROPIC"}` | > 1000/dia  | Revisar prompts                     |
-| `agentepro_agent_tokens_consumed_total`              | > 5M/semana | Alertar operador                    |
-| `token_budget_remaining < 10%`                       | Auto-pausa  | Já implementado no Agent.activate() |
+| Métrica                                            | Threshold   | Ação                                |
+| -------------------------------------------------- | ----------- | ----------------------------------- |
+| `hefesto_llm_requests_total{provider="ANTHROPIC"}` | > 1000/dia  | Revisar prompts                     |
+| `hefesto_agent_tokens_consumed_total`              | > 5M/semana | Alertar operador                    |
+| `token_budget_remaining < 10%`                     | Auto-pausa  | Já implementado no Agent.activate() |
 
 ## Estimativas de Custo
 

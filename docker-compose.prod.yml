@@ -15,13 +15,13 @@ services:
     restart: unless-stopped
     env_file: .env.prod
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-agentepro}
-      POSTGRES_USER: ${POSTGRES_USER:-agentepro}
+      POSTGRES_DB: ${POSTGRES_DB:-hefesto}
+      POSTGRES_USER: ${POSTGRES_USER:-hefesto}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agentepro}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hefesto}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -53,7 +53,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: "3001"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-agentepro}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-agentepro}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-hefesto}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-hefesto}
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     depends_on:
       postgres:

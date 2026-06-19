@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { GetSkillCatalogHandler } from "../../application/agent/skill-catalog.handlers.js";
-import type { ServiceType } from "@agentepro/shared-types";
+import type { ServiceType } from "@hefesto/shared-types";
 
 export async function skillCatalogRoutes(app: FastifyInstance): Promise<void> {
   app.addHook("preHandler", authMiddleware);

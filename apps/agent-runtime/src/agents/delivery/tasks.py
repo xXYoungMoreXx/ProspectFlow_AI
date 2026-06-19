@@ -75,7 +75,7 @@ def build_delivery_report(data: DeliveryReportData) -> bytes:
     elements = []
 
     # Title
-    elements.append(Paragraph("📦 Relatório de Entrega — AgentePro", styles["Title"]))
+    elements.append(Paragraph("📦 Relatório de Entrega — Hefesto", styles["Title"]))
     elements.append(Spacer(1, 0.5 * cm))
     elements.append(Paragraph(f"Cliente: {data.business_name}", styles["Heading2"]))
     elements.append(Spacer(1, 0.3 * cm))

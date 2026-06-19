@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from src.agents.base import BaseAgentePro
+from src.agents.base import BaseHefesto
 from src.agents.schemas import AgentCommunication, AgentIdentity, AgentMission, AgentPersona
 from src.skills.cnpj_enricher import CNPJEnricherTool
 from src.skills.cnpj_lookup import CNPJLookupTool
@@ -12,7 +12,7 @@ from src.skills.places_search import GooglePlacesTool
 logger = logging.getLogger(__name__)
 
 
-class HunterAgent(BaseAgentePro):
+class HunterAgent(BaseHefesto):
     """
     Hunter Agent (BDR Automático).
     Responsável por varrer o Google Maps e consultar CNPJs (via BrasilAPI) para encontrar

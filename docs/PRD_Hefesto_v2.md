@@ -1,4 +1,4 @@
-# PRD — AgentePro: Plataforma de Agentes de IA para Prospecção e Entrega de Serviços
+# PRD — Hefesto: Plataforma de Agentes de IA para Prospecção e Entrega de Serviços
 
 **Versão:** 2.0.0  
 **Status:** Draft — Aprovação Pendente  
@@ -43,7 +43,7 @@
 
 ## 1. Visão Executiva
 
-O **AgentePro** é uma plataforma de agentes de IA que automatiza o ciclo completo de vendas e entrega de serviços digitais — da prospecção ao produto final entregue ao cliente — com mínima intervenção humana e máximo controle do operador.
+O **Hefesto** é uma plataforma de agentes de IA que automatiza o ciclo completo de vendas e entrega de serviços digitais — da prospecção ao produto final entregue ao cliente — com mínima intervenção humana e máximo controle do operador.
 
 No MVP v1 completo, a plataforma entrega um ciclo fechado e auditável: o Hunter prospecta leads via Google Maps + MCP Brasil, o Closer negocia via WhatsApp/Telegram/E-mail, o Briefing Agent coleta requisitos de forma conversacional, o Builder cria o site com design visual aprovado e imagens geradas por IA, o QA valida segurança e performance, e o Delivery entrega com tutorial em vídeo. O operador mantém controle total via HITL com notificações e aprovações inline pelo Telegram.
 
@@ -52,7 +52,7 @@ A arquitetura é construída para ser **extensível por design**: novos serviço
 ### Custo Operacional Estimado por Site Entregue
 
 | Etapa                                   | Custo USD  |
-|-----------------------------------------|------------|
+| --------------------------------------- | ---------- |
 | Prospecção (por lead qualificado, Maps) | ~$0.03     |
 | Outreach + follow-up (3 toques)         | ~$0.08     |
 | Proposta + negociação                   | ~$0.10     |
@@ -96,15 +96,15 @@ Agentes de IA especializados por função, orquestrados numa plataforma configur
 
 ### OKRs do MVP (90 dias pós-lançamento)
 
-| Objetivo                         | Key Result                                  | Meta                        |
-|----------------------------------|---------------------------------------------|-----------------------------|
-| Validar ciclo de vendas autônomo | Leads contatados por agente/semana          | ≥ 50                        |
-| Validar entrega automatizada     | Sites entregues sem intervenção técnica     | ≥ 80% do total              |
-| Validar confiança do operador    | Taxa de aprovação HITL sem override         | ≥ 70%                       |
-| Validar qualidade técnica        | Score Lighthouse mínimo                     | ≥ 85 perf, 100 a11y         |
-| Segurança                        | Vulnerabilidades críticas OWASP em produção | 0                           |
-| Custo por site                   | Custo total tokens LLM por site             | < $3.00 (≈ R$15)            |
-| Qualidade visual                 | Aprovação mockup sem edição na 1ª tentativa | ≥ 60%                       |
+| Objetivo                         | Key Result                                  | Meta                |
+| -------------------------------- | ------------------------------------------- | ------------------- |
+| Validar ciclo de vendas autônomo | Leads contatados por agente/semana          | ≥ 50                |
+| Validar entrega automatizada     | Sites entregues sem intervenção técnica     | ≥ 80% do total      |
+| Validar confiança do operador    | Taxa de aprovação HITL sem override         | ≥ 70%               |
+| Validar qualidade técnica        | Score Lighthouse mínimo                     | ≥ 85 perf, 100 a11y |
+| Segurança                        | Vulnerabilidades críticas OWASP em produção | 0                   |
+| Custo por site                   | Custo total tokens LLM por site             | < $3.00 (≈ R$15)    |
+| Qualidade visual                 | Aprovação mockup sem edição na 1ª tentativa | ≥ 60%               |
 
 ### KPIs de Produto
 
@@ -281,19 +281,22 @@ class Agent {
   // Enum v2: HUNTER | CLOSER | BRIEFING | BUILDER | QA | DELIVERY | ORCHESTRATOR
   name: AgentName;
   llmConfig: LLMConfiguration;
-  subAgents: SubAgentCollection;        // v2: coleção de sub-agentes
+  subAgents: SubAgentCollection; // v2: coleção de sub-agentes
   skills: SkillCollection;
   rules: RuleCollection;
   status: AgentStatus;
   ragConfig?: RAGConfiguration;
   mcpServers: MCPServerCollection;
-  parallelConfig: ParallelConfig;       // v2: configuração de paralelismo
-  tokenBudget: TokenBudget;             // v2: budget por modelo/provider
+  parallelConfig: ParallelConfig; // v2: configuração de paralelismo
+  tokenBudget: TokenBudget; // v2: budget por modelo/provider
 
   activate(): DomainEvent<AgentActivated>;
   pause(): DomainEvent<AgentPaused>;
   addSubAgent(sub: SubAgent): void;
-  dispatchToSubAgent(taskType: TaskType, payload: TaskPayload): Promise<TaskResult>;
+  dispatchToSubAgent(
+    taskType: TaskType,
+    payload: TaskPayload,
+  ): Promise<TaskResult>;
   canExecuteTask(taskType: TaskType): boolean;
 }
 ```
@@ -311,10 +314,10 @@ class SubAgent {
   // Builder: COPYWRITER | DESIGNER | IMAGER | CODER | SEO_OPTIMIZER | DEPLOYER
   // QA: SEC_AUDITOR | PERF_AUDITOR | CONTENT_CHECK
   // Delivery: TUTORIAL_GENERATOR | DOC_GENERATOR | NOTIFIER
-  llmConfig: LLMConfiguration;          // Pode diferir do agente pai
+  llmConfig: LLMConfiguration; // Pode diferir do agente pai
   skills: SkillCollection;
-  executionMode: 'sequential' | 'parallel';
-  parallelGroup?: number;               // Sub-agentes com mesmo grupo rodam juntos
+  executionMode: "sequential" | "parallel";
+  parallelGroup?: number; // Sub-agentes com mesmo grupo rodam juntos
   maxRetries: number;
   timeoutSeconds: number;
 
@@ -329,14 +332,14 @@ class SubAgent {
 class Lead {
   readonly id: LeadId;
   contact: ContactInfo;
-  source: LeadSource;                   // MANUAL | GOOGLE_MAPS | SCRAPED | REFERRAL | APOLLO
+  source: LeadSource; // MANUAL | GOOGLE_MAPS | SCRAPED | REFERRAL | APOLLO
   qualificationScore: QualificationScore;
-  status: LeadStatus;                   // NEW | CONTACTED | QUALIFIED | NEGOTIATING | CONVERTED | LOST
-  enrichmentData: EnrichmentData;       // v2: CNPJ, Maps, ratings
+  status: LeadStatus; // NEW | CONTACTED | QUALIFIED | NEGOTIATING | CONVERTED | LOST
+  enrichmentData: EnrichmentData; // v2: CNPJ, Maps, ratings
   conversationHistory: Message[];
-  preferredChannel: MessageChannel;     // v2: WHATSAPP | TELEGRAM | EMAIL
-  followUpSchedule: FollowUpSchedule;   // v2: cadência de follow-ups
-  scheduledMeetingId?: CalMeetingId;    // v2: Cal.com booking
+  preferredChannel: MessageChannel; // v2: WHATSAPP | TELEGRAM | EMAIL
+  followUpSchedule: FollowUpSchedule; // v2: cadência de follow-ups
+  scheduledMeetingId?: CalMeetingId; // v2: Cal.com booking
   hitlApprovals: HITLApproval[];
 
   qualify(score: QualificationScore): DomainEvent<LeadQualified>;
@@ -353,12 +356,12 @@ class Briefing {
   readonly id: BriefingId;
   readonly dealId: DealId;
   readonly leadId: LeadId;
-  interviewTranscript: string;          // Conversa bruta (vault — criptografado)
-  structured: ClientBriefingDTO;        // JSON limpo para o Builder
+  interviewTranscript: string; // Conversa bruta (vault — criptografado)
+  structured: ClientBriefingDTO; // JSON limpo para o Builder
   niche: BusinessNiche;
-  siteType: SiteType;                   // institutional | ecommerce | scheduling | portfolio | landing
-  uploadedAssets: UploadedAsset[];      // Fotos, logo do cliente
-  status: BriefingStatus;              // IN_PROGRESS | COMPLETED | APPROVED
+  siteType: SiteType; // institutional | ecommerce | scheduling | portfolio | landing
+  uploadedAssets: UploadedAsset[]; // Fotos, logo do cliente
+  status: BriefingStatus; // IN_PROGRESS | COMPLETED | APPROVED
 
   complete(structured: ClientBriefingDTO): DomainEvent<BriefingCompleted>;
   approve(): DomainEvent<BriefingApproved>;
@@ -372,14 +375,14 @@ interface ClientBriefingDTO {
   niche: string;
   targetAudience: string;
   siteType: SiteType;
-  pages: string[];                      // ['home','sobre','servicos','contato']
+  pages: string[]; // ['home','sobre','servicos','contato']
   colorPreferences: string[];
-  fontStyle?: 'modern' | 'classic' | 'bold' | 'minimal';
+  fontStyle?: "modern" | "classic" | "bold" | "minimal";
   differentials: string[];
   hasEcommerce: boolean;
   hasBlog: boolean;
   hasCustomForm: boolean;
-  hasScheduling: boolean;               // v2: integração Cal.com
+  hasScheduling: boolean; // v2: integração Cal.com
   hasWhatsAppButton: boolean;
   needsCopywriting: boolean;
   deliveryDays: number;
@@ -400,17 +403,17 @@ interface ClientBriefingDTO {
 class Project {
   readonly id: ProjectId;
   readonly dealId: DealId;
-  readonly briefingId: BriefingId;      // v2: ref ao Briefing separado
-  mockupUrl?: string;                   // v2: Claude Design output
+  readonly briefingId: BriefingId; // v2: ref ao Briefing separado
+  mockupUrl?: string; // v2: Claude Design output
   mockupApprovedAt?: Timestamp;
-  generatedAssets: GeneratedAsset[];    // v2: Nano Banana Pro images
-  deliveryTutorialUrl?: string;         // v2: HeyGen video
-  deliveryDocUrl?: string;              // v2: PDF de entrega
+  generatedAssets: GeneratedAsset[]; // v2: Nano Banana Pro images
+  deliveryTutorialUrl?: string; // v2: HeyGen video
+  deliveryDocUrl?: string; // v2: PDF de entrega
   status: ProjectStatus;
   // PLANNING | DESIGNING | BUILDING | QA | STAGING | DELIVERED | REVISION | CANCELLED
   qualityScore?: QualityScore;
-  qaCycleCount: number;                 // v2: ciclos QA antes de aprovação
-  deployPlatform?: string;              // v2: vercel|cloudflare_pages|render|hostinger
+  qaCycleCount: number; // v2: ciclos QA antes de aprovação
+  deployPlatform?: string; // v2: vercel|cloudflare_pages|render|hostinger
 
   approveMockup(): DomainEvent<MockupApproved>;
   deliver(deliverable: Deliverable): DomainEvent<ProjectDelivered>;
@@ -434,22 +437,26 @@ class LLMConfiguration {
   readonly apiKeyRef: SecretRef;
   readonly temperature: Temperature;
   readonly maxTokens: MaxTokens;
-  readonly systemPrompt: SystemPrompt;  // v2: até 32.000 chars (era 8.000)
+  readonly systemPrompt: SystemPrompt; // v2: até 32.000 chars (era 8.000)
 
   estimatedCostPerToken(): number;
-  toSafeLog(): object;                  // Sem apiKeyRef
+  toSafeLog(): object; // Sem apiKeyRef
 }
 
 // EnrichmentData — v2
 class EnrichmentData {
   readonly cnpj?: string;
-  readonly cnpjStatus?: 'ATIVA' | 'SUSPENSA' | 'INAPTA' | 'BAIXADA';
+  readonly cnpjStatus?: "ATIVA" | "SUSPENSA" | "INAPTA" | "BAIXADA";
   readonly yearsInBusiness?: number;
   readonly googleMapsPlaceId?: string;
   readonly googleRating?: number;
   readonly googleReviewsCount?: number;
   readonly hasWebsite: boolean;
-  readonly websiteQualityHint?: 'modern' | 'outdated' | 'mobile_broken' | 'none';
+  readonly websiteQualityHint?:
+    | "modern"
+    | "outdated"
+    | "mobile_broken"
+    | "none";
   readonly neighborhood?: string;
   readonly city?: string;
   readonly state?: string;
@@ -459,7 +466,7 @@ class EnrichmentData {
 
 // FollowUpSchedule — v2
 class FollowUpSchedule {
-  readonly cadenceDays: number[];       // [3, 7, 14]
+  readonly cadenceDays: number[]; // [3, 7, 14]
   readonly maxAttempts: number;
   readonly currentAttempt: number;
   readonly nextFollowUpAt?: Timestamp;
@@ -473,7 +480,7 @@ class Pricing {
   readonly basePrice: Money;
   readonly addons: PricingAddon[];
   readonly discountPct: Percentage;
-  readonly breakdown: PricingBreakdownItem[];  // v2
+  readonly breakdown: PricingBreakdownItem[]; // v2
 
   get total(): Money;
   isValid(): boolean;
@@ -484,48 +491,88 @@ class Pricing {
 
 ```typescript
 type DomainEvent<T> = {
-  eventId: UUID; eventType: string; aggregateId: string;
-  aggregateType: string; occurredAt: Timestamp;
-  correlationId: UUID; causationId?: UUID; payload: T;
+  eventId: UUID;
+  eventType: string;
+  aggregateId: string;
+  aggregateType: string;
+  occurredAt: Timestamp;
+  correlationId: UUID;
+  causationId?: UUID;
+  payload: T;
 };
 
 // IAM
-OperatorLoggedIn; OperatorLoggedOut;
+OperatorLoggedIn;
+OperatorLoggedOut;
 
 // Lead & Prospecting
-LeadCreated; LeadEnriched; LeadQualified; LeadConverted; LeadLost;
-LeadProspectedFromMaps; LeadCNPJValidated;
+LeadCreated;
+LeadEnriched;
+LeadQualified;
+LeadConverted;
+LeadLost;
+LeadProspectedFromMaps;
+LeadCNPJValidated;
 
 // Sales
-DealProposed; DealClosed; DealCancelled;
-FollowUpScheduled; FollowUpSent; FollowUpExhausted;
+DealProposed;
+DealClosed;
+DealCancelled;
+FollowUpScheduled;
+FollowUpSent;
+FollowUpExhausted;
 MeetingScheduled;
 
 // Briefing (v2)
-BriefingStarted; BriefingCompleted; BriefingApproved; BriefingAssetUploaded;
+BriefingStarted;
+BriefingCompleted;
+BriefingApproved;
+BriefingAssetUploaded;
 
 // Builder & Media (v2)
-ProjectStarted; MockupGenerated; MockupApproved;
-AssetGenerationStarted; AssetGenerated; AssetGenerationFailed;
-CodeGenerationStarted; CodeGenerationCompleted;
-ProjectReadyForReview; ProjectDelivered; RevisionRequested;
+ProjectStarted;
+MockupGenerated;
+MockupApproved;
+AssetGenerationStarted;
+AssetGenerated;
+AssetGenerationFailed;
+CodeGenerationStarted;
+CodeGenerationCompleted;
+ProjectReadyForReview;
+ProjectDelivered;
+RevisionRequested;
 
 // QA
-QAStarted; QACheckPassed; QACheckFailed; QAApproved; QARejected;
+QAStarted;
+QACheckPassed;
+QACheckFailed;
+QAApproved;
+QARejected;
 
 // Delivery (v2)
-DeliveryTutorialGenerated; SiteDeliveredToClient; DeliveryFollowUpScheduled;
+DeliveryTutorialGenerated;
+SiteDeliveredToClient;
+DeliveryFollowUpScheduled;
 
 // Agents
-AgentActivated; AgentPaused; AgentTaskCompleted; AgentTaskFailed;
-SubAgentDispatched; SubAgentCompleted; SubAgentFailed;
+AgentActivated;
+AgentPaused;
+AgentTaskCompleted;
+AgentTaskFailed;
+SubAgentDispatched;
+SubAgentCompleted;
+SubAgentFailed;
 
 // HITL
-HITLApprovalRequested; HITLApprovalDecided; HITLExpired;
+HITLApprovalRequested;
+HITLApprovalDecided;
+HITLExpired;
 
 // Messaging
-MessageSent; MessageReceived;
-TelegramMessageSent; TelegramMessageReceived; // v2
+MessageSent;
+MessageReceived;
+TelegramMessageSent;
+TelegramMessageReceived; // v2
 ```
 
 ---
@@ -559,7 +606,7 @@ agent:
         model: string
         api_key_ref: string
       execution_mode: sequential | parallel
-      parallel_group: int?              # Mesmo grupo = execução simultânea
+      parallel_group: int? # Mesmo grupo = execução simultânea
       max_retries: 3
       timeout_seconds: 120
 
@@ -567,14 +614,14 @@ agent:
     - id: uuid
       name: string
       type: web_search | scraping | email | whatsapp | telegram | file_gen |
-            deploy | code_gen | rag_query | external_database | image_gen |
-            design_gen | scheduling
+        deploy | code_gen | rag_query | external_database | image_gen |
+        design_gen | scheduling
       # v2: external_database, image_gen, design_gen, scheduling, telegram adicionados
       config: {}
       enabled: boolean
 
   rules:
-    - condition: string               # CEL expression
+    - condition: string # CEL expression
       action: BLOCK | WARN | LOG | ESCALATE_HITL
       priority: int
 
@@ -582,16 +629,16 @@ agent:
     - name: string
       url: string
       auth_ref: string?
-      allowed_tools: [string]         # v2: whitelist de tools por MCP
+      allowed_tools: [string] # v2: whitelist de tools por MCP
 
   hitl:
     require_approval_for:
       - SEND_EXTERNAL_MESSAGE
       - SEND_PROPOSAL
-      - APPROVE_MOCKUP               # v2
+      - APPROVE_MOCKUP # v2
       - DEPLOY_SITE
     approval_timeout_minutes: 60
-    notify_channel: telegram          # v2: telegram como default (botões inline)
+    notify_channel: telegram # v2: telegram como default (botões inline)
 
   parallel_execution:
     enabled: boolean
@@ -606,19 +653,64 @@ agent:
 
 ```typescript
 const PIPELINE_TRANSITIONS = [
-  { from: 'IDLE',          event: 'ScheduleTrigger',   to: 'PROSPECTING',   agent: 'HUNTER'   },
-  { from: 'PROSPECTING',   event: 'LeadsQualified',    to: 'OUTREACH',      agent: 'CLOSER'   },
-  { from: 'OUTREACH',      event: 'LeadResponded',     to: 'NEGOTIATING',   agent: 'CLOSER'   },
-  { from: 'NEGOTIATING',   event: 'SaleClosed',        to: 'BRIEFING',      agent: 'BRIEFING' },
-  { from: 'BRIEFING',      event: 'BriefingCompleted', to: 'DESIGNING',     agent: 'BUILDER'  },
-  { from: 'DESIGNING',     event: 'MockupGenerated',   to: 'MOCKUP_REVIEW', agent: null       }, // HITL
-  { from: 'MOCKUP_REVIEW', event: 'MockupApproved',    to: 'BUILDING',      agent: 'BUILDER'  },
-  { from: 'MOCKUP_REVIEW', event: 'MockupRejected',    to: 'DESIGNING',     agent: 'BUILDER'  }, // retry
-  { from: 'BUILDING',      event: 'SiteBuilt',         to: 'QA',            agent: 'QA'       },
-  { from: 'QA',            event: 'QAApproved',        to: 'DELIVERING',    agent: 'DELIVERY' },
-  { from: 'QA',            event: 'QAFailed',          to: 'BUILDING',      agent: 'BUILDER'  }, // max 3x
-  { from: 'DELIVERING',    event: 'SiteDelivered',     to: 'DONE',          agent: null       },
-  { from: 'NEGOTIATING',   event: 'FollowUpDue',       to: 'NEGOTIATING',   agent: 'CLOSER'   },
+  {
+    from: "IDLE",
+    event: "ScheduleTrigger",
+    to: "PROSPECTING",
+    agent: "HUNTER",
+  },
+  {
+    from: "PROSPECTING",
+    event: "LeadsQualified",
+    to: "OUTREACH",
+    agent: "CLOSER",
+  },
+  {
+    from: "OUTREACH",
+    event: "LeadResponded",
+    to: "NEGOTIATING",
+    agent: "CLOSER",
+  },
+  {
+    from: "NEGOTIATING",
+    event: "SaleClosed",
+    to: "BRIEFING",
+    agent: "BRIEFING",
+  },
+  {
+    from: "BRIEFING",
+    event: "BriefingCompleted",
+    to: "DESIGNING",
+    agent: "BUILDER",
+  },
+  {
+    from: "DESIGNING",
+    event: "MockupGenerated",
+    to: "MOCKUP_REVIEW",
+    agent: null,
+  }, // HITL
+  {
+    from: "MOCKUP_REVIEW",
+    event: "MockupApproved",
+    to: "BUILDING",
+    agent: "BUILDER",
+  },
+  {
+    from: "MOCKUP_REVIEW",
+    event: "MockupRejected",
+    to: "DESIGNING",
+    agent: "BUILDER",
+  }, // retry
+  { from: "BUILDING", event: "SiteBuilt", to: "QA", agent: "QA" },
+  { from: "QA", event: "QAApproved", to: "DELIVERING", agent: "DELIVERY" },
+  { from: "QA", event: "QAFailed", to: "BUILDING", agent: "BUILDER" }, // max 3x
+  { from: "DELIVERING", event: "SiteDelivered", to: "DONE", agent: null },
+  {
+    from: "NEGOTIATING",
+    event: "FollowUpDue",
+    to: "NEGOTIATING",
+    agent: "CLOSER",
+  },
 ];
 
 const RETRY_LIMITS = { BUILDING: 3, DESIGNING: 2, QA: 3 };
@@ -629,6 +721,7 @@ const RETRY_LIMITS = { BUILDING: 3, DESIGNING: 2, QA: 3 };
 ### Agente 1 — Hunter (Prospector)
 
 **System Prompt Base:**
+
 ```
 Você é um especialista em prospecção digital B2B/B2C para agências de serviços web.
 Identifique negócios que se beneficiariam de um site profissional.
@@ -650,12 +743,12 @@ sub_agents:
     llm: { provider: gemini, model: gemini/gemini-3.5-flash, temperature: 0.1 }
     skills_refs: [site_analyzer, web_search]
     execution_mode: parallel
-    parallel_group: 1              # Mesmo grupo = roda com PROSPECTOR
+    parallel_group: 1 # Mesmo grupo = roda com PROSPECTOR
 
   - role: DATA_ENRICHER
     llm: { provider: ollama, model: llama3.2:3b, temperature: 0.0 }
     skills_refs: [mcp_brasil]
-    execution_mode: sequential     # Depende da lista do PROSPECTOR
+    execution_mode: sequential # Depende da lista do PROSPECTOR
 ```
 
 **Skills:**
@@ -674,11 +767,28 @@ skills:
         - { field: rating, operator: gte, value: 3.5 }
         - { field: user_ratings_total, operator: gte, value: 10 }
       enrichment_fields:
-        [displayName, formattedAddress, nationalPhoneNumber, websiteUri,
-         rating, userRatingCount, regularOpeningHours, primaryTypeDisplayName]
+        [
+          displayName,
+          formattedAddress,
+          nationalPhoneNumber,
+          websiteUri,
+          rating,
+          userRatingCount,
+          regularOpeningHours,
+          primaryTypeDisplayName,
+        ]
       configurable_categories:
-        [restaurant, beauty_salon, dentist, gym, lawyer, real_estate_agency,
-         auto_repair, accounting, veterinary_care]
+        [
+          restaurant,
+          beauty_salon,
+          dentist,
+          gym,
+          lawyer,
+          real_estate_agency,
+          auto_repair,
+          accounting,
+          veterinary_care,
+        ]
       rate_limit_per_day: 2000
       cache_results_ttl_hours: 24
 
@@ -686,9 +796,17 @@ skills:
     type: scraping
     config:
       timeout_ms: 5000
-      extract: [title, description, has_contact, has_mobile, has_ssl,
-                performance_hint, tech_stack_hints]
-      user_agent: "AgentePro-Crawler/1.0 (+https://seudominio.com/bot)"
+      extract:
+        [
+          title,
+          description,
+          has_contact,
+          has_mobile,
+          has_ssl,
+          performance_hint,
+          tech_stack_hints,
+        ]
+      user_agent: "Hefesto-Crawler/1.0 (+https://seudominio.com/bot)"
       respect_robots_txt: true
       rate_limit_per_minute: 30
 
@@ -748,6 +866,7 @@ rules:
 ```
 
 **Workflow Principal (n8n):**
+
 ```
 Trigger: Schedule (09:00 diário) ou Manual
 → PROSPECTOR (parallel com SITE_INSPECTOR):
@@ -767,6 +886,7 @@ Trigger: Schedule (09:00 diário) ou Manual
 ### Agente 2 — Closer (Vendas)
 
 **System Prompt Base:**
+
 ```
 Você é um consultor de vendas especializado em serviços digitais para pequenos negócios.
 Estilo consultivo, empático e direto. Use dados de enriquecimento (avaliações Google,
@@ -786,7 +906,8 @@ sub_agents:
 
   - role: CONV_HANDLER
     llm: { provider: anthropic, model: claude-sonnet-4-6, temperature: 0.6 }
-    skills_refs: [whatsapp_sender, telegram_sender, email_sender, pricing_calculator]
+    skills_refs:
+      [whatsapp_sender, telegram_sender, email_sender, pricing_calculator]
     execution_mode: sequential
 
   - role: PROPOSAL_WRITER
@@ -798,7 +919,7 @@ sub_agents:
     llm: { provider: ollama, model: llama3.2:3b, temperature: 0.0 }
     skills_refs: [whatsapp_sender, telegram_sender, email_sender]
     execution_mode: sequential
-    schedule: "0 9 * * *"             # Cron diário às 9h
+    schedule: "0 9 * * *" # Cron diário às 9h
 ```
 
 **Skills:**
@@ -815,7 +936,7 @@ skills:
       max_messages_per_day: 50
 
   - name: telegram_sender
-    type: telegram                     # v2: canal de vendas
+    type: telegram # v2: canal de vendas
     config:
       bot_token_ref: "secrets/telegram_sales_bot_token"
       require_hitl: true
@@ -826,7 +947,7 @@ skills:
     config:
       smtp_ref: "secrets/smtp_config"
       from_name: "${OPERATOR_NAME}"
-      provider: brevo                  # 300 e-mails/dia grátis
+      provider: brevo # 300 e-mails/dia grátis
 
   - name: proposal_generator
     type: rag_query
@@ -842,7 +963,7 @@ skills:
       script: pricing_rules_v2.js
 
   - name: calendar_scheduler
-    type: scheduling                   # v2
+    type: scheduling # v2
     config:
       provider: cal_com
       base_url: "${CAL_BASE_URL}"
@@ -860,30 +981,56 @@ export function calculatePrice(briefing) {
   const breakdown = [];
 
   const siteTypeMultiplier = {
-    landing: 0.8, institutional: 1.0, scheduling: 1.3,
-    portfolio: 1.1, ecommerce: 2.0,
+    landing: 0.8,
+    institutional: 1.0,
+    scheduling: 1.3,
+    portfolio: 1.1,
+    ecommerce: 2.0,
   };
-  price *= (siteTypeMultiplier[briefing.siteType] ?? 1.0);
+  price *= siteTypeMultiplier[briefing.siteType] ?? 1.0;
   breakdown.push({ item: `Tipo: ${briefing.siteType}`, value: price });
 
   if (briefing.pages > 5) {
     const extra = (briefing.pages - 5) * 120;
     price += extra;
-    breakdown.push({ item: `Páginas extras (${briefing.pages - 5})`, value: extra });
+    breakdown.push({
+      item: `Páginas extras (${briefing.pages - 5})`,
+      value: extra,
+    });
   }
-  if (briefing.hasEcommerce)   { price += 600; breakdown.push({ item: 'E-commerce', value: 600 }); }
-  if (briefing.hasBlog)        { price += 200; breakdown.push({ item: 'Blog', value: 200 }); }
-  if (briefing.hasCustomForm)  { price += 150; breakdown.push({ item: 'Formulário', value: 150 }); }
-  if (briefing.hasScheduling)  { price += 250; breakdown.push({ item: 'Cal.com agendamento', value: 250 }); }
-  if (briefing.needsCopywriting){ price += 300; breakdown.push({ item: 'Copywriting', value: 300 }); }
-  if (briefing.deliveryDays < 3) { price *= 1.4; breakdown.push({ item: 'Urgência', value: '40%' }); }
+  if (briefing.hasEcommerce) {
+    price += 600;
+    breakdown.push({ item: "E-commerce", value: 600 });
+  }
+  if (briefing.hasBlog) {
+    price += 200;
+    breakdown.push({ item: "Blog", value: 200 });
+  }
+  if (briefing.hasCustomForm) {
+    price += 150;
+    breakdown.push({ item: "Formulário", value: 150 });
+  }
+  if (briefing.hasScheduling) {
+    price += 250;
+    breakdown.push({ item: "Cal.com agendamento", value: 250 });
+  }
+  if (briefing.needsCopywriting) {
+    price += 300;
+    breakdown.push({ item: "Copywriting", value: 300 });
+  }
+  if (briefing.deliveryDays < 3) {
+    price *= 1.4;
+    breakdown.push({ item: "Urgência", value: "40%" });
+  }
 
-  if (price > 5000) return { price, requiresHITL: true, reason: 'above_threshold', breakdown };
+  if (price > 5000)
+    return { price, requiresHITL: true, reason: "above_threshold", breakdown };
   return { price, requiresHITL: false, breakdown };
 }
 ```
 
 **Workflow Principal:**
+
 ```
 Trigger: DomainEvent[LeadApprovedForContact]
 → OUTREACH_WRITER: gera mensagem personalizada usando enrichmentData
@@ -912,6 +1059,7 @@ Loop de Negociação (até 5 rodadas):
 **Objetivo:** Coletar requisitos completos do site de forma conversacional após o DealClosed, separando essa responsabilidade do Closer.
 
 **System Prompt Base:**
+
 ```
 Você é um especialista em discovery de projetos web. Colete todas as informações
 necessárias para criar um site perfeito. Faça perguntas abertas e amigáveis.
@@ -925,13 +1073,14 @@ Não use jargão técnico. Ao finalizar, gere JSON válido conforme ClientBriefi
 sub_agents:
   - role: INTERVIEWER
     llm: { provider: anthropic, model: claude-sonnet-4-6, temperature: 0.7 }
-    skills_refs: [whatsapp_sender, telegram_sender, briefing_rag, asset_receiver]
+    skills_refs:
+      [whatsapp_sender, telegram_sender, briefing_rag, asset_receiver]
     execution_mode: sequential
 
   - role: BRIEF_EXTRACTOR
     llm: { provider: anthropic, model: claude-haiku-4-5, temperature: 0.0 }
     skills_refs: [file_gen]
-    execution_mode: sequential         # Depende do INTERVIEWER
+    execution_mode: sequential # Depende do INTERVIEWER
     max_retries: 3
 ```
 
@@ -956,10 +1105,11 @@ skills:
       accept_from_telegram: true
       allowed_mime_types: [image/jpeg, image/png, image/webp, image/svg+xml]
       max_size_mb: 10
-      validate_magic_bytes: true       # OBRIGATÓRIO
+      validate_magic_bytes: true # OBRIGATÓRIO
 ```
 
 **Workflow:**
+
 ```
 Trigger: DomainEvent[DealClosed]
 → INTERVIEWER: carrega template de perguntas por nicho (briefing_rag)
@@ -979,6 +1129,7 @@ Trigger: DomainEvent[DealClosed]
 ### Agente 4 — Builder (Desenvolvedor)
 
 **System Prompt Base:**
+
 ```
 Você é um desenvolvedor web sênior e designer especializado em sites profissionais,
 performáticos e acessíveis. Siga: WCAG 2.1 AA, OWASP Top 10, Core Web Vitals.
@@ -1036,7 +1187,7 @@ sub_agents:
 ```yaml
 skills:
   - name: design_gen
-    type: design_gen                   # v2: Claude Design
+    type: design_gen # v2: Claude Design
     config:
       model: claude-opus-4-7
       api_key_ref: "secrets/anthropic_key"
@@ -1044,7 +1195,7 @@ skills:
       hitl_required: true
 
   - name: image_gen
-    type: image_gen                    # v2: Nano Banana Pro
+    type: image_gen # v2: Nano Banana Pro
     config:
       providers:
         - id: nano_banana_pro
@@ -1053,18 +1204,18 @@ skills:
           api_key_ref: "secrets/gemini_key"
           resolution: "2K"
           features: [text_rendering, multi_image_consistency, context_aware]
-        - id: dalle3                   # FALLBACK
+        - id: dalle3 # FALLBACK
           provider: openai
           model: dall-e-3
           api_key_ref: "secrets/openai_key"
           resolution: "1792x1024"
-        - id: ollama_local             # FALLBACK DEV
+        - id: ollama_local # FALLBACK DEV
           provider: ollama
           model: llava
           base_url: "${OLLAMA_BASE_URL}"
       fallback_chain: [nano_banana_pro, dalle3, ollama_local]
       synthid_watermark: true
-      validate_magic_bytes: true       # OBRIGATÓRIO — mesmo para IA gerando
+      validate_magic_bytes: true # OBRIGATÓRIO — mesmo para IA gerando
       images_per_site:
         hero: 1
         about: 1
@@ -1085,9 +1236,17 @@ skills:
       output_validation: true
       owasp_check: true
       required_files:
-        [pages/index.tsx, pages/sobre.tsx, pages/servicos.tsx,
-         pages/contato.tsx, components/Header.tsx, components/Footer.tsx,
-         components/WhatsAppButton.tsx, public/robots.txt, public/sitemap.xml]
+        [
+          pages/index.tsx,
+          pages/sobre.tsx,
+          pages/servicos.tsx,
+          pages/contato.tsx,
+          components/Header.tsx,
+          components/Footer.tsx,
+          components/WhatsAppButton.tsx,
+          public/robots.txt,
+          public/sitemap.xml,
+        ]
 
   - name: asset_handler
     type: file_gen
@@ -1101,8 +1260,7 @@ skills:
   - name: deployer
     type: deploy
     config:
-      platforms:
-        [vercel, cloudflare_pages, render, hostinger, netlify]
+      platforms: [vercel, cloudflare_pages, render, hostinger, netlify]
       default_platform: vercel
       fallback_platform: cloudflare_pages
       require_hitl: true
@@ -1112,6 +1270,7 @@ skills:
 ```
 
 **Templates do Catálogo:**
+
 ```
 INSTITUCIONAL:
   template_01: Landing Page One-Page (Next.js 15, Tailwind 4, TypeScript)
@@ -1141,6 +1300,7 @@ Todos incluem:
 ```
 
 **Workflow com paralelismo:**
+
 ```
 Trigger: DomainEvent[BriefingApproved]
 → Selecionar template (template_selector RAG)
@@ -1198,15 +1358,23 @@ skills:
   - name: owasp_scanner
     type: code_gen
     config:
-      checks: [xss, sqli, csp_headers, open_redirect, path_traversal,
-               sensitive_data_exposure, missing_security_headers]
+      checks:
+        [
+          xss,
+          sqli,
+          csp_headers,
+          open_redirect,
+          path_traversal,
+          sensitive_data_exposure,
+          missing_security_headers,
+        ]
 
   - name: lighthouse_runner
     type: code_gen
     config:
       engine: puppeteer
       thresholds:
-        performance: 85               # v2: elevado de 80 para 85
+        performance: 85 # v2: elevado de 80 para 85
         accessibility: 100
         best_practices: 90
         seo: 90
@@ -1221,6 +1389,7 @@ skills:
 ```
 
 **Workflow:**
+
 ```
 Trigger: DomainEvent[ProjectBuilt]
 → PARALELO (~3 min):
@@ -1258,7 +1427,7 @@ sub_agents:
   - role: NOTIFIER
     llm: { provider: anthropic, model: claude-haiku-4-5, temperature: 0.5 }
     skills_refs: [whatsapp_sender, telegram_sender, email_sender]
-    execution_mode: sequential         # Depende de TUTORIAL e DOC
+    execution_mode: sequential # Depende de TUTORIAL e DOC
 ```
 
 **Skills:**
@@ -1281,6 +1450,7 @@ skills:
 ```
 
 **Workflow:**
+
 ```
 Trigger: DomainEvent[QAApproved]
 
@@ -1305,15 +1475,15 @@ Trigger: DomainEvent[QAApproved]
 
 ### Princípio: complexidade da tarefa determina o modelo, não a importância do agente
 
-| Tier | Custo/1k | Modelo                   | Sub-agentes                                                             |
-|------|----------|--------------------------|-------------------------------------------------------------------------|
-| 0    | $0.00    | Ollama Llama 3.2 3B      | Orchestrator, DATA_ENRICHER, DEAL_TRACKER                               |
-| 1    | ~$0.01   | Gemini 3.5 Flash         | PROSPECTOR, SITE_INSPECTOR                                              |
-| 2    | ~$0.003  | Claude Haiku 4.5         | BRIEF_EXTRACTOR, SEO_OPTIMIZER, DEPLOYER, PERF_AUDITOR, CONTENT_CHECK, TUTORIAL_GENERATOR, DOC_GENERATOR, NOTIFIER |
-| 3    | ~$0.015  | Claude Sonnet 4.6        | OUTREACH_WRITER, CONV_HANDLER, PROPOSAL_WRITER, COPYWRITER, INTERVIEWER |
-| 4a   | ~$0.025  | Claude Opus 4.8          | CODER, SEC_AUDITOR                                                      |
-| 4b   | ~$0.025  | Claude Opus 4.7 (Design) | DESIGNER                                                                |
-| 5    | ~$0.04/img | Nano Banana Pro        | IMAGER                                                                  |
+| Tier | Custo/1k   | Modelo                   | Sub-agentes                                                                                                        |
+| ---- | ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| 0    | $0.00      | Ollama Llama 3.2 3B      | Orchestrator, DATA_ENRICHER, DEAL_TRACKER                                                                          |
+| 1    | ~$0.01     | Gemini 3.5 Flash         | PROSPECTOR, SITE_INSPECTOR                                                                                         |
+| 2    | ~$0.003    | Claude Haiku 4.5         | BRIEF_EXTRACTOR, SEO_OPTIMIZER, DEPLOYER, PERF_AUDITOR, CONTENT_CHECK, TUTORIAL_GENERATOR, DOC_GENERATOR, NOTIFIER |
+| 3    | ~$0.015    | Claude Sonnet 4.6        | OUTREACH_WRITER, CONV_HANDLER, PROPOSAL_WRITER, COPYWRITER, INTERVIEWER                                            |
+| 4a   | ~$0.025    | Claude Opus 4.8          | CODER, SEC_AUDITOR                                                                                                 |
+| 4b   | ~$0.025    | Claude Opus 4.7 (Design) | DESIGNER                                                                                                           |
+| 5    | ~$0.04/img | Nano Banana Pro          | IMAGER                                                                                                             |
 
 ### LiteLLM Config (Python)
 
@@ -1425,7 +1595,10 @@ class BuilderCrew:
 ```typescript
 // domain/media/MediaGenerationPort.ts
 interface MediaGenerationPort {
-  generateImage(prompt: ImagePrompt, options: ImageOptions): Promise<GeneratedAsset>;
+  generateImage(
+    prompt: ImagePrompt,
+    options: ImageOptions,
+  ): Promise<GeneratedAsset>;
   generateHeroSection(briefing: ClientBriefingDTO): Promise<HeroAssets>;
   editImage(original: Asset, instructions: string): Promise<GeneratedAsset>;
   optimizeAsset(asset: RawAsset): Promise<OptimizedAsset>;
@@ -1434,21 +1607,21 @@ interface MediaGenerationPort {
 
 interface ImagePrompt {
   description: string;
-  style: 'photorealistic' | 'illustration' | 'minimal' | 'bold';
+  style: "photorealistic" | "illustration" | "minimal" | "bold";
   businessContext: string;
   niche: string;
   colorScheme: string[];
-  textToInclude?: string;    // Nano Banana Pro tem text rendering excelente
+  textToInclude?: string; // Nano Banana Pro tem text rendering excelente
 }
 
 interface GeneratedAsset {
   id: AssetId;
   url: string;
-  provider: 'nano_banana_pro' | 'dalle3' | 'ollama';
+  provider: "nano_banana_pro" | "dalle3" | "ollama";
   resolution: string;
-  format: 'webp' | 'jpeg' | 'png';
+  format: "webp" | "jpeg" | "png";
   promptUsed: string;
-  synthIdPresent: boolean;   // SynthID automático no Nano Banana Pro
+  synthIdPresent: boolean; // SynthID automático no Nano Banana Pro
   magicBytesValidated: boolean;
   generatedAt: Timestamp;
 }
@@ -1459,9 +1632,12 @@ interface GeneratedAsset {
 ```typescript
 // infrastructure/media/NanaBananaAdapter.ts
 class NanaBananaAdapter implements MediaGenerationPort {
-  async generateImage(prompt: ImagePrompt, options: ImageOptions): Promise<GeneratedAsset> {
+  async generateImage(
+    prompt: ImagePrompt,
+    options: ImageOptions,
+  ): Promise<GeneratedAsset> {
     const model = this.client.getGenerativeModel({
-      model: "imagen-3.0-generate-001",   // Nano Banana Pro via Gemini API
+      model: "imagen-3.0-generate-001", // Nano Banana Pro via Gemini API
     });
     const result = await model.generateImages({
       prompt: this.buildPrompt(prompt),
@@ -1476,8 +1652,8 @@ class NanaBananaAdapter implements MediaGenerationPort {
     await this.validateMagicBytes(imageData.imageBytes);
 
     return {
-      provider: 'nano_banana_pro',
-      synthIdPresent: true,       // Sempre presente no Nano Banana Pro
+      provider: "nano_banana_pro",
+      synthIdPresent: true, // Sempre presente no Nano Banana Pro
       magicBytesValidated: true,
       // ...
     };
@@ -1485,8 +1661,8 @@ class NanaBananaAdapter implements MediaGenerationPort {
 
   private buildPrompt(p: ImagePrompt): string {
     return `${p.description}. Style: ${p.style}. Business: ${p.businessContext} (${p.niche}).
-Colors: ${p.colorScheme.join(', ')}. Professional, suitable for business website.
-${p.textToInclude ? `Include readable text: "${p.textToInclude}"` : ''}
+Colors: ${p.colorScheme.join(", ")}. Professional, suitable for business website.
+${p.textToInclude ? `Include readable text: "${p.textToInclude}"` : ""}
 High resolution, photographic quality.`;
   }
 }
@@ -1499,7 +1675,10 @@ High resolution, photographic quality.`;
 class MediaGenerationRouter implements MediaGenerationPort {
   private chain = [this.nanaBanana, this.dalle, this.ollamaLocal];
 
-  async generateImage(prompt: ImagePrompt, options: ImageOptions): Promise<GeneratedAsset> {
+  async generateImage(
+    prompt: ImagePrompt,
+    options: ImageOptions,
+  ): Promise<GeneratedAsset> {
     for (const provider of this.chain) {
       try {
         return await provider.generateImage(prompt, options);
@@ -1507,7 +1686,7 @@ class MediaGenerationRouter implements MediaGenerationPort {
         this.logger.warn(`Provider failed: ${provider.name}`, { error });
       }
     }
-    throw new MediaGenerationError('All providers failed');
+    throw new MediaGenerationError("All providers failed");
   }
 }
 ```
@@ -1541,28 +1720,35 @@ ui_mockup:   # Para DESIGNER sub-agent
 ```typescript
 // infrastructure/maps/GoogleMapsAdapter.ts
 class GoogleMapsAdapterImpl implements GoogleMapsAdapter {
-  private readonly BASE_URL = 'https://places.googleapis.com/v1/places:searchText';
+  private readonly BASE_URL =
+    "https://places.googleapis.com/v1/places:searchText";
 
   async searchLeads(params: LeadSearchParams): Promise<GooglePlace[]> {
     const response = await fetch(this.BASE_URL, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': await this.secrets.get('secrets/google_maps_key'),
-        'X-Goog-FieldMask': [
-          'places.id', 'places.displayName', 'places.formattedAddress',
-          'places.nationalPhoneNumber', 'places.websiteUri',  // NULL = lead quente!
-          'places.rating', 'places.userRatingCount',
-          'places.primaryTypeDisplayName', 'places.regularOpeningHours',
-        ].join(','),
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": await this.secrets.get("secrets/google_maps_key"),
+        "X-Goog-FieldMask": [
+          "places.id",
+          "places.displayName",
+          "places.formattedAddress",
+          "places.nationalPhoneNumber",
+          "places.websiteUri", // NULL = lead quente!
+          "places.rating",
+          "places.userRatingCount",
+          "places.primaryTypeDisplayName",
+          "places.regularOpeningHours",
+        ].join(","),
       },
       body: JSON.stringify(params),
     });
 
-    return (await response.json()).places.filter((p: GooglePlace) =>
-      !p.websiteUri &&                   // Sem site = lead principal
-      p.userRatingCount >= 10 &&
-      p.rating >= 3.5
+    return (await response.json()).places.filter(
+      (p: GooglePlace) =>
+        !p.websiteUri && // Sem site = lead principal
+        p.userRatingCount >= 10 &&
+        p.rating >= 3.5,
     );
   }
 }
@@ -1579,8 +1765,8 @@ mcp-brasil:
   command: fastmcp run mcp_brasil.server:mcp --transport http --port 8000
   environment:
     MCP_BRASIL_TOOL_SEARCH: bm25
-    TRANSPARENCIA_API_KEY: ""           # 66 APIs gratuitas sem chave
-  networks: [agentepro-network]
+    TRANSPARENCIA_API_KEY: "" # 66 APIs gratuitas sem chave
+  networks: [hefesto-network]
   restart: unless-stopped
   healthcheck:
     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -1594,10 +1780,13 @@ mcp-brasil:
 // infrastructure/mcp/MCPBrasilAdapter.ts
 class MCPBrasilAdapter {
   async consultarCNPJ(cnpj: string): Promise<CNPJData> {
-    const response = await fetch(`${this.baseUrl}/tools/brasilapi_consultar_cnpj`, {
-      method: 'POST',
-      body: JSON.stringify({ cnpj }),
-    });
+    const response = await fetch(
+      `${this.baseUrl}/tools/brasilapi_consultar_cnpj`,
+      {
+        method: "POST",
+        body: JSON.stringify({ cnpj }),
+      },
+    );
     return response.json();
   }
 }
@@ -1612,15 +1801,21 @@ class DataEnricherService {
 
     // Score bonus
     let bonus = 0;
-    if (cnpjData?.situacaoCadastral === 'ATIVA') bonus += 20;
+    if (cnpjData?.situacaoCadastral === "ATIVA") bonus += 20;
     if (yearsInBusiness >= 2) bonus += 10;
     if (place.rating >= 4.0) bonus += 15;
     if (place.userRatingCount >= 50) bonus += 10;
 
-    return new EnrichmentData({ cnpj: cnpjData?.cnpj, cnpjStatus: cnpjData?.situacaoCadastral,
-      yearsInBusiness, googleMapsPlaceId: place.id, googleRating: place.rating,
-      googleReviewsCount: place.userRatingCount, hasWebsite: !!place.websiteUri,
-      qualificationBonus: bonus });
+    return new EnrichmentData({
+      cnpj: cnpjData?.cnpj,
+      cnpjStatus: cnpjData?.situacaoCadastral,
+      yearsInBusiness,
+      googleMapsPlaceId: place.id,
+      googleRating: place.rating,
+      googleReviewsCount: place.userRatingCount,
+      hasWebsite: !!place.websiteUri,
+      qualificationBonus: bonus,
+    });
   }
 }
 ```
@@ -1629,16 +1824,19 @@ class DataEnricherService {
 
 ```typescript
 class LeadQualificationService {
-  calculateScore(place: GooglePlace, enrichment: EnrichmentData): QualificationScore {
+  calculateScore(
+    place: GooglePlace,
+    enrichment: EnrichmentData,
+  ): QualificationScore {
     let score = 0;
 
     // Presença digital (30 pts)
     if (!enrichment.hasWebsite) score += 30;
-    else if (enrichment.websiteQualityHint === 'outdated') score += 20;
-    else if (enrichment.websiteQualityHint === 'mobile_broken') score += 15;
+    else if (enrichment.websiteQualityHint === "outdated") score += 20;
+    else if (enrichment.websiteQualityHint === "mobile_broken") score += 15;
 
     // Saúde do negócio (30 pts)
-    if (enrichment.cnpjStatus === 'ATIVA') score += 20;
+    if (enrichment.cnpjStatus === "ATIVA") score += 20;
     if (enrichment.yearsInBusiness >= 2) score += 10;
 
     // Reputação Maps (25 pts)
@@ -1662,12 +1860,12 @@ class LeadQualificationService {
 
 ### Papéis por canal
 
-| Canal              | Papel no AgentePro                                     |
-|--------------------|--------------------------------------------------------|
-| WhatsApp           | Canal primário de vendas · entrega ao cliente          |
-| Telegram (Bot 1)   | HITL: notificações + aprovação inline ao operador      |
-| Telegram (Bot 2)   | Canal de vendas alternativo ao WhatsApp                |
-| E-mail (Brevo)     | Propostas formais · entrega PDF · follow-ups longos    |
+| Canal            | Papel no Hefesto                                    |
+| ---------------- | --------------------------------------------------- |
+| WhatsApp         | Canal primário de vendas · entrega ao cliente       |
+| Telegram (Bot 1) | HITL: notificações + aprovação inline ao operador   |
+| Telegram (Bot 2) | Canal de vendas alternativo ao WhatsApp             |
+| E-mail (Brevo)   | Propostas formais · entrega PDF · follow-ups longos |
 
 ### WhatsAppAdapter
 
@@ -1675,19 +1873,22 @@ class LeadQualificationService {
 // infrastructure/messaging/WhatsAppAdapter.ts
 class WhatsAppEvolutionAdapter implements MessagingPort {
   async sendText(to: string, text: string): Promise<MessageId> {
-    await this.rateLimiter.consume('whatsapp_daily', 1); // max 50/dia
-    await this.humanDelay();  // 1.5s–4s delay humanizado
+    await this.rateLimiter.consume("whatsapp_daily", 1); // max 50/dia
+    await this.humanDelay(); // 1.5s–4s delay humanizado
 
     const response = await fetch(
       `${this.baseUrl}/message/sendText/${this.instanceName}`,
-      { method: 'POST', headers: { apikey: this.apiKey },
-        body: JSON.stringify({ number: to, text }) }
+      {
+        method: "POST",
+        headers: { apikey: this.apiKey },
+        body: JSON.stringify({ number: to, text }),
+      },
     );
     return new MessageId((await response.json()).key.id);
   }
 
   private async humanDelay(): Promise<void> {
-    await new Promise(r => setTimeout(r, 1500 + Math.random() * 2500));
+    await new Promise((r) => setTimeout(r, 1500 + Math.random() * 2500));
   }
 }
 ```
@@ -1703,13 +1904,15 @@ class TelegramHITLBot {
     await this.telegram.sendMessage({
       chat_id: process.env.TELEGRAM_OPERATOR_CHAT_ID,
       text: this.formatApprovalMessage(approval),
-      parse_mode: 'Markdown',
+      parse_mode: "Markdown",
       reply_markup: {
-        inline_keyboard: [[
-          { text: '✅ APROVAR',  callback_data: `approve:${approval.id}` },
-          { text: '❌ REJEITAR', callback_data: `reject:${approval.id}` },
-          { text: '✏️ EDITAR',   callback_data: `edit:${approval.id}` },
-        ]],
+        inline_keyboard: [
+          [
+            { text: "✅ APROVAR", callback_data: `approve:${approval.id}` },
+            { text: "❌ REJEITAR", callback_data: `reject:${approval.id}` },
+            { text: "✏️ EDITAR", callback_data: `edit:${approval.id}` },
+          ],
+        ],
       },
     });
   }
@@ -1718,7 +1921,11 @@ class TelegramHITLBot {
 // BOT 2: SALES — canal de vendas com leads
 class TelegramSalesBot implements MessagingPort {
   async sendText(chatId: string, text: string): Promise<MessageId>;
-  async sendDocument(chatId: string, file: Buffer, filename: string): Promise<MessageId>;
+  async sendDocument(
+    chatId: string,
+    file: Buffer,
+    filename: string,
+  ): Promise<MessageId>;
   listenWebhook(handler: MessageHandler): void;
 }
 
@@ -1726,10 +1933,14 @@ class TelegramSalesBot implements MessagingPort {
 class MessagingRouter {
   route(lead: Lead): MessagingPort {
     switch (lead.preferredChannel) {
-      case 'WHATSAPP': return this.whatsapp;
-      case 'TELEGRAM': return this.telegramSales;
-      case 'EMAIL':    return this.email;
-      default:         return this.whatsapp;
+      case "WHATSAPP":
+        return this.whatsapp;
+      case "TELEGRAM":
+        return this.telegramSales;
+      case "EMAIL":
+        return this.email;
+      default:
+        return this.whatsapp;
     }
   }
 }
@@ -1764,7 +1975,7 @@ cal_com:
     NEXTAUTH_SECRET: "${CAL_AUTH_SECRET}"
     NEXTAUTH_URL: "http://cal-com:3000"
   ports: ["3100:3000"]
-  networks: [agentepro-network]
+  networks: [hefesto-network]
 ```
 
 ### CalComAdapter
@@ -1781,12 +1992,12 @@ interface SchedulingPort {
 class CalComAdapter implements SchedulingPort {
   async createBookingLink(options: BookingOptions): Promise<BookingLink> {
     const response = await fetch(`${this.baseUrl}/api/v1/bookings`, {
-      method: 'POST',
+      method: "POST",
       headers: { Authorization: `Bearer ${this.apiKey}` },
       body: JSON.stringify({
         eventTypeId: parseInt(options.eventTypeId),
         responses: { name: options.attendeeName, email: options.attendeeEmail },
-        metadata: options.metadata,     // { leadId, dealId }
+        metadata: options.metadata, // { leadId, dealId }
       }),
     });
     const data = await response.json();
@@ -1806,12 +2017,14 @@ const CAL_EVENT_TYPES = {
 ## 15. Requisitos Funcionais
 
 ### RF-001: Autenticação
+
 - Login e-mail + senha (Argon2id memoryCost≥65536, timeCost≥3, parallelism≥4)
 - JWT RS256, 1h + refresh rotativo 7 dias
 - Rate limit: 5 tentativas/IP/15min
 - Resposta genérica em falha (anti-enumeração + anti-timing attack)
 
 ### RF-002: Gestão de Agentes e Sub-agentes
+
 - CRUD agentes primários + sub-agentes via UI
 - Personas: HUNTER, CLOSER, BRIEFING, BUILDER, QA, DELIVERY, ORCHESTRATOR
 - LLM por sub-agente com provider/modelo/temperatura configuráveis
@@ -1821,6 +2034,7 @@ const CAL_EVENT_TYPES = {
 - Audit log de alterações
 
 ### RF-003: HITL
+
 - Pontos obrigatórios: mensagem externa, proposta, mockup, deploy, entrega
 - Interface: preview + payload + contexto do lead
 - Botões: APROVAR / REJEITAR / EDITAR E APROVAR
@@ -1830,6 +2044,7 @@ const CAL_EVENT_TYPES = {
 - Audit log de todas as decisões HITL
 
 ### RF-004: CRM com Funil Visual
+
 - Funil: PROSPECTING→OUTREACH→NEGOTIATING→BRIEFING→BUILDING→QA→DELIVERED
 - Filtros: status, canal, agente, data, valor
 - Perfil: contato, enrichmentData, conversas, deals, projetos, timeline
@@ -1838,6 +2053,7 @@ const CAL_EVENT_TYPES = {
 - Exportação CSV (LGPD: apenas operador autenticado)
 
 ### RF-005: Prospecção Google Maps
+
 - Configuração de categorias por nicho via UI
 - Configuração de região (cidade/bairro/raio km)
 - Score mínimo configurável (padrão: 40)
@@ -1846,12 +2062,14 @@ const CAL_EVENT_TYPES = {
 - Preview da lista antes do HITL de aprovação
 
 ### RF-006: Briefing Conversacional
+
 - Roteiro adaptativo por nicho via RAG
 - Recebimento de fotos/logo (WhatsApp/Telegram) com validação magic bytes
 - JSON estruturado (ClientBriefingDTO) exportável
 - Preview pelo operador antes de passar ao Builder
 
 ### RF-007: Geração Visual
+
 - Mockup via Claude Design (Opus 4.7) antes do código
 - HITL obrigatório para aprovação do mockup
 - 6–8 imagens via Nano Banana Pro por site
@@ -1861,6 +2079,7 @@ const CAL_EVENT_TYPES = {
 - Preview de imagens antes do deploy
 
 ### RF-008: Entrega de Sites
+
 - Templates por tipo: institucional, e-commerce, agendamento, portfólio, landing
 - Deploy: Vercel, Cloudflare Pages, Render, Hostinger, Netlify
 - Preview staging antes de produção
@@ -1870,6 +2089,7 @@ const CAL_EVENT_TYPES = {
 - Follow-up automático 7 e 30 dias pós-entrega
 
 ### RF-009: RAG por Agente
+
 - Upload PDF/MD/TXT com validação MIME + magic bytes
 - Chunking + embedding assíncrono
 - Collections: lead_qualification_criteria, briefing_templates_by_niche,
@@ -1877,6 +2097,7 @@ const CAL_EVENT_TYPES = {
 - Teste de query inline no painel
 
 ### RF-010: Canais de Mensageria
+
 - WhatsApp via Evolution API (anti-spam, delay humanizado)
 - Telegram Vendas (Bot 2 — canal alternativo com leads)
 - Telegram HITL (Bot 1 — aprovações inline para operador)
@@ -1884,12 +2105,14 @@ const CAL_EVENT_TYPES = {
 - Roteamento automático por canal preferido do lead
 
 ### RF-011: Agendamento (Cal.com)
+
 - Geração de link de agendamento personalizado pelo Closer
 - Tipos de evento: briefing 30min, revisão 15min
 - Sincronização com Google Calendar do operador
 - Notificação automática ao operador quando reunião é agendada (Telegram)
 
 ### RF-012: Cost Dashboard
+
 - Custo real em USD/BRL por site entregue
 - Custo por agente, sub-agente, provider, período
 - Alerta quando custo por site exceder threshold configurado
@@ -1900,6 +2123,7 @@ const CAL_EVENT_TYPES = {
 ## 16. Requisitos Não-Funcionais
 
 ### Performance
+
 - API: p95 < 500ms endpoints síncronos
 - Criação do site (após briefing): < 30 min total (IA + HITL)
 - Tempo IA pura: < 15 min
@@ -1907,6 +2131,7 @@ const CAL_EVENT_TYPES = {
 - Sites entregues: Lighthouse Performance ≥ 85
 
 ### Escalabilidade
+
 - API stateless (horizontal scaling)
 - BullMQ + Redis para sub-agentes assíncronos
 - Sub-agentes executados como workers BullMQ separados
@@ -1914,11 +2139,13 @@ const CAL_EVENT_TYPES = {
 - Zero vendor lock-in em LLM via LiteLLM + adapters
 
 ### Disponibilidade
+
 - Uptime: 99.5%
 - Health check: `GET /health` com status de todas as deps
 - Graceful shutdown com drain de filas
 
 ### Custo Operacional
+
 - Token budget por agente com bloqueio automático
 - Preferência por Ollama local para tarefas simples ($0.00)
 - Cost dashboard em tempo real
@@ -1932,18 +2159,18 @@ const CAL_EVENT_TYPES = {
 ```typescript
 const ARGON2_CONFIG = {
   type: argon2.argon2id,
-  memoryCost: 2 ** 16,   // 64 MB
+  memoryCost: 2 ** 16, // 64 MB
   timeCost: 3,
   parallelism: 4,
   hashLength: 32,
 } as const;
 
 const JWT_CONFIG = {
-  algorithm: 'RS256',    // NUNCA HS256
-  accessTokenExpiry: '1h',
-  refreshTokenExpiry: '7d',
-  issuer: 'agentepro.yourdomain.com',
-  audience: 'agentepro-api',
+  algorithm: "RS256", // NUNCA HS256
+  accessTokenExpiry: "1h",
+  refreshTokenExpiry: "7d",
+  issuer: "hefesto.yourdomain.com",
+  audience: "hefesto-api",
 } as const;
 ```
 
@@ -1952,10 +2179,10 @@ const JWT_CONFIG = {
 ```typescript
 async function login(email: string, password: string): Promise<AuthResult> {
   const user = await userRepository.findByEmail(email);
-  const dummyHash = '$argon2id$v=19$m=65536,t=3,p=4$...';
+  const dummyHash = "$argon2id$v=19$m=65536,t=3,p=4$...";
   const hashToCompare = user?.passwordHash ?? dummyHash;
   const isValid = await argon2.verify(hashToCompare, password);
-  if (!user || !isValid) throw new AuthenticationError('Credenciais inválidas');
+  if (!user || !isValid) throw new AuthenticationError("Credenciais inválidas");
   return generateTokens(user);
 }
 ```
@@ -1964,21 +2191,24 @@ async function login(email: string, password: string): Promise<AuthResult> {
 
 ```typescript
 async function validateUpload(file: Express.Multer.File): Promise<void> {
-  if (file.size > MAX_FILE_SIZE) throw new ValidationError('File too large');
+  if (file.size > MAX_FILE_SIZE) throw new ValidationError("File too large");
   const detectedType = await fileTypeFromBuffer(file.buffer.slice(0, 12));
-  const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+  const ALLOWED = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
   if (!detectedType || !ALLOWED.includes(detectedType.mime))
-    throw new ValidationError('Tipo de arquivo não permitido');
+    throw new ValidationError("Tipo de arquivo não permitido");
 }
 
 // OBRIGATÓRIO também para imagens geradas pela IA
 async function validateGeneratedImage(imageBytes: Buffer): Promise<void> {
   const detected = await fileTypeFromBuffer(imageBytes.slice(0, 12));
-  if (!detected || !['image/jpeg','image/png','image/webp'].includes(detected.mime))
-    throw new SecurityError('Imagem gerada com formato inválido — rejeitada');
-  const preview = imageBytes.slice(0, 100).toString('utf-8');
-  if (preview.includes('<script') || preview.includes('<?php'))
-    throw new SecurityError('Arquivo suspeito — rejeitado');
+  if (
+    !detected ||
+    !["image/jpeg", "image/png", "image/webp"].includes(detected.mime)
+  )
+    throw new SecurityError("Imagem gerada com formato inválido — rejeitada");
+  const preview = imageBytes.slice(0, 100).toString("utf-8");
+  if (preview.includes("<script") || preview.includes("<?php"))
+    throw new SecurityError("Arquivo suspeito — rejeitado");
 }
 ```
 
@@ -1986,14 +2216,21 @@ async function validateGeneratedImage(imageBytes: Buffer): Promise<void> {
 
 ```typescript
 const SSRF_BLOCKLIST = [
-  /^localhost/i, /^127\./, /^10\./, /^172\.(1[6-9]|2\d|3[01])\./,
-  /^192\.168\./, /^169\.254\./, /^::1$/, /^fc00:/, /^fe80:/,
+  /^localhost/i,
+  /^127\./,
+  /^10\./,
+  /^172\.(1[6-9]|2\d|3[01])\./,
+  /^192\.168\./,
+  /^169\.254\./,
+  /^::1$/,
+  /^fc00:/,
+  /^fe80:/,
 ];
 
 function validateExternalUrl(url: string): void {
   const parsed = new URL(url);
-  if (SSRF_BLOCKLIST.some(p => p.test(parsed.hostname)))
-    throw new SecurityError('URL interna não permitida');
+  if (SSRF_BLOCKLIST.some((p) => p.test(parsed.hostname)))
+    throw new SecurityError("URL interna não permitida");
 }
 ```
 
@@ -2001,13 +2238,13 @@ function validateExternalUrl(url: string): void {
 
 ```typescript
 const rateLimits = {
-  login:         { windowMs: 15 * 60 * 1000, max: 5   },
-  api_general:   { windowMs: 60 * 1000,       max: 100 },
-  agent_execute: { windowMs: 60 * 1000,       max: 10  },
-  file_upload:   { windowMs: 60 * 1000,       max: 5   },
-  hitl_decision: { windowMs: 5 * 1000,        max: 3   },
-  image_gen:     { windowMs: 60 * 1000,       max: 20  },
-  maps_search:   { windowMs: 86400 * 1000,    max: 2000 },
+  login: { windowMs: 15 * 60 * 1000, max: 5 },
+  api_general: { windowMs: 60 * 1000, max: 100 },
+  agent_execute: { windowMs: 60 * 1000, max: 10 },
+  file_upload: { windowMs: 60 * 1000, max: 5 },
+  hitl_decision: { windowMs: 5 * 1000, max: 3 },
+  image_gen: { windowMs: 60 * 1000, max: 20 },
+  maps_search: { windowMs: 86400 * 1000, max: 2000 },
 };
 ```
 
@@ -2015,12 +2252,22 @@ const rateLimits = {
 
 ```typescript
 const SECURITY_HEADERS = [
-  { key: 'X-Content-Type-Options',    value: 'nosniff' },
-  { key: 'X-Frame-Options',           value: 'DENY' },
-  { key: 'Referrer-Policy',           value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy',        value: 'camera=(), microphone=(), geolocation=()' },
-  { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
-  { key: 'Content-Security-Policy',   value: "default-src 'self'; script-src 'self' 'nonce-{NONCE}'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; frame-ancestors 'none'" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()",
+  },
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=31536000; includeSubDomains; preload",
+  },
+  {
+    key: "Content-Security-Policy",
+    value:
+      "default-src 'self'; script-src 'self' 'nonce-{NONCE}'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; frame-ancestors 'none'",
+  },
 ];
 ```
 
@@ -2028,14 +2275,14 @@ const SECURITY_HEADERS = [
 
 ```typescript
 interface AuditEntry {
-  id: string;                  // ULID
+  id: string; // ULID
   timestamp: Timestamp;
-  actor: 'OPERATOR' | AgentPersona;
+  actor: "OPERATOR" | AgentPersona;
   actorId: string;
   action: string;
   resourceType: string;
   resourceId: string;
-  payload: Record<string, unknown>;  // PII removido/mascarado
+  payload: Record<string, unknown>; // PII removido/mascarado
   ipAddress?: string;
   correlationId: UUID;
   causationId?: UUID;
@@ -2057,6 +2304,7 @@ Injeção:    sempre via constructor DI com interface SecretsProvider
 ## 18. API Design
 
 ### Princípios
+
 - REST, recursos no plural, versionamento `/api/v1/`
 - CQRS: GET=queries, POST/PATCH/DELETE=commands
 - Envelope: `{ data, meta, errors }`
@@ -2173,7 +2421,7 @@ SYSTEM
 
 ```sql
 -- ============================================================
--- SCHEMA: agentepro v2
+-- SCHEMA: hefesto v2
 -- PostgreSQL 16 · RLS ativado · Append-only em audit e messages
 -- ============================================================
 
@@ -2643,38 +2891,44 @@ Feature: Ciclo completo de entrega
 // Todos obrigatórios — CI bloqueia se falharem
 
 // Auth anti-timing
-it('timing similar para e-mail inexistente e senha errada', async () => {
+it("timing similar para e-mail inexistente e senha errada", async () => {
   const t1 = Date.now();
-  await login('noexist@test.com', 'wrong');
+  await login("noexist@test.com", "wrong");
   const d1 = Date.now() - t1;
   const t2 = Date.now();
-  await login('real@test.com', 'wrong');
+  await login("real@test.com", "wrong");
   const d2 = Date.now() - t2;
   expect(Math.abs(d1 - d2)).toBeLessThan(200);
 });
 
 // Magic bytes em imagens geradas por IA
-it('deve rejeitar imagem IA com magic bytes de EXE', async () => {
-  const fakeImage = Buffer.from('MZ...', 'binary');
-  const res = await request.post('/api/v1/media/validate')
-    .attach('file', fakeImage, { filename: 'hero.jpg', contentType: 'image/jpeg' });
+it("deve rejeitar imagem IA com magic bytes de EXE", async () => {
+  const fakeImage = Buffer.from("MZ...", "binary");
+  const res = await request
+    .post("/api/v1/media/validate")
+    .attach("file", fakeImage, {
+      filename: "hero.jpg",
+      contentType: "image/jpeg",
+    });
   expect(res.status).toBe(400);
-  expect(res.body.errors[0].code).toBe('INVALID_FILE_TYPE');
+  expect(res.body.errors[0].code).toBe("INVALID_FILE_TYPE");
 });
 
 // SSRF
-it('deve bloquear URL localhost no Maps config', async () => {
-  const res = await request.post('/api/v1/prospecting/search-maps')
-    .send({ endpoint: 'http://localhost:8080/internal' });
+it("deve bloquear URL localhost no Maps config", async () => {
+  const res = await request
+    .post("/api/v1/prospecting/search-maps")
+    .send({ endpoint: "http://localhost:8080/internal" });
   expect(res.status).toBe(400);
 });
 
 // HITL obrigatório
-it('deve bloquear mensagem externa sem HITL', async () => {
-  const res = await request.post('/api/v1/agents/:id/execute')
-    .send({ task: 'SEND_WHATSAPP', to: '+5511999999999', message: 'Olá!' });
+it("deve bloquear mensagem externa sem HITL", async () => {
+  const res = await request
+    .post("/api/v1/agents/:id/execute")
+    .send({ task: "SEND_WHATSAPP", to: "+5511999999999", message: "Olá!" });
   expect(res.status).toBe(403);
-  expect(res.body.errors[0].code).toBe('HITL_REQUIRED');
+  expect(res.body.errors[0].code).toBe("HITL_REQUIRED");
 });
 ```
 
@@ -2686,7 +2940,7 @@ coverage:
   branches: 75%
   functions: 80%
   lines: 80%
-  security_tests: 100%   # CI bloqueia qualquer falha de segurança
+  security_tests: 100% # CI bloqueia qualquer falha de segurança
 ```
 
 ---
@@ -2697,18 +2951,18 @@ coverage:
 
 ```typescript
 interface StructuredLog {
-  level: 'debug' | 'info' | 'warn' | 'error' | 'fatal';
-  timestamp: string;            // ISO 8601
+  level: "debug" | "info" | "warn" | "error" | "fatal";
+  timestamp: string; // ISO 8601
   service: string;
   traceId: string;
   spanId: string;
   correlationId: string;
   agentId?: string;
-  subAgentId?: string;          // v2
+  subAgentId?: string; // v2
   action?: string;
   duration_ms?: number;
-  cost_usd?: number;            // v2: custo do token usage
-  provider?: string;            // v2: qual LLM foi usado
+  cost_usd?: number; // v2: custo do token usage
+  provider?: string; // v2: qual LLM foi usado
   message: string;
   error?: { message: string; stack?: string; code?: string };
   // Sem PII (email, telefone, mensagens brutas)
@@ -2765,12 +3019,42 @@ http_request_duration_seconds{method, route}
 
 ```yaml
 alerts:
-  - { name: HITLQueueBacklog,      condition: "hitl_approvals_pending > 10",                    severity: warning,  notify: telegram }
-  - { name: AgentHighErrorRate,    condition: "rate(agent_llm_errors_total[5m]) > 0.1",          severity: critical, notify: email }
-  - { name: CostThresholdExceeded, condition: "agent_token_cost_usd_total > 50",                 severity: warning,  notify: telegram }
-  - { name: MediaGenFailed,        condition: "rate(media_generation_total{status=failed}[5m]) > 0.2", severity: warning, notify: email }
-  - { name: MapsQuotaLow,          condition: "maps_requests_remaining < 200",                   severity: warning,  notify: telegram }
-  - { name: SecurityBruteForce,    condition: "rate(auth_failed_attempts[1m]) > 10",              severity: critical, notify: [email, telegram] }
+  - {
+      name: HITLQueueBacklog,
+      condition: "hitl_approvals_pending > 10",
+      severity: warning,
+      notify: telegram,
+    }
+  - {
+      name: AgentHighErrorRate,
+      condition: "rate(agent_llm_errors_total[5m]) > 0.1",
+      severity: critical,
+      notify: email,
+    }
+  - {
+      name: CostThresholdExceeded,
+      condition: "agent_token_cost_usd_total > 50",
+      severity: warning,
+      notify: telegram,
+    }
+  - {
+      name: MediaGenFailed,
+      condition: "rate(media_generation_total{status=failed}[5m]) > 0.2",
+      severity: warning,
+      notify: email,
+    }
+  - {
+      name: MapsQuotaLow,
+      condition: "maps_requests_remaining < 200",
+      severity: warning,
+      notify: telegram,
+    }
+  - {
+      name: SecurityBruteForce,
+      condition: "rate(auth_failed_attempts[1m]) > 10",
+      severity: critical,
+      notify: [email, telegram],
+    }
 ```
 
 ---
@@ -2780,7 +3064,7 @@ alerts:
 ### Backend
 
 | Componente    | Tecnologia            | Justificativa                                 |
-|---------------|-----------------------|-----------------------------------------------|
+| ------------- | --------------------- | --------------------------------------------- |
 | Runtime       | Node.js 22 LTS        | TypeScript nativo, ecosystem excelente        |
 | Framework API | Fastify 5             | Performance superior ao Express, schema-first |
 | ORM           | Drizzle ORM           | Type-safe, sem overhead                       |
@@ -2795,7 +3079,7 @@ alerts:
 ### Frontend
 
 | Componente    | Tecnologia              | Justificativa                       |
-|---------------|-------------------------|-------------------------------------|
+| ------------- | ----------------------- | ----------------------------------- |
 | Framework     | Next.js 15 (App Router) | SSR/SSG, TypeScript                 |
 | UI Components | shadcn/ui               | Sem vendor lock, acessível          |
 | Styling       | Tailwind CSS 4          | Utility-first, performance          |
@@ -2806,7 +3090,7 @@ alerts:
 ### Agent Orchestration (Python)
 
 | Componente  | Tecnologia                        | Justificativa                               |
-|-------------|-----------------------------------|---------------------------------------------|
+| ----------- | --------------------------------- | ------------------------------------------- |
 | Framework   | CrewAI (Python 3.12)              | Multi-agent, sub-agents, parallelism nativo |
 | LLM Routing | LiteLLM                           | Abstração única: OpenAI/Anthropic/Gemini    |
 | RAG         | LangChain + ChromaDB              | Conectores prontos, maturidade              |
@@ -2817,36 +3101,36 @@ alerts:
 
 ### Infraestrutura
 
-| Componente       | Tecnologia                               | Custo          |
-|------------------|------------------------------------------|----------------|
-| Database         | PostgreSQL 16 (Supabase free/self-hosted)| Grátis         |
-| Vetorial (RAG)   | ChromaDB (Docker)                        | Grátis         |
-| Queue/Cache      | Redis 7 (Docker)                         | Grátis         |
-| LLM Local        | Ollama + Llama 3.2 3B + CodeLlama + LLaVA| Grátis        |
-| Workflow         | n8n (Docker)                             | Grátis         |
-| Secrets          | Infisical (self-hosted)                  | Grátis         |
-| Hospedagem API   | Hetzner VPS / Railway                    | ~$5/mês        |
-| Observabilidade  | Prometheus + Grafana + Jaeger            | Grátis         |
-| Deploy Sites     | Vercel + Cloudflare Pages + Render       | Grátis         |
-| WhatsApp         | Evolution API (Docker)                   | Grátis         |
-| Telegram         | Bot API (2 bots)                         | Grátis         |
-| Busca RAG        | SearXNG (Docker)                         | Grátis         |
-| Prospecção       | Google Maps Places API                   | Grátis até 2.5k/dia |
-| Dados BR         | MCP Brasil (Docker)                      | Grátis         |
-| Agendamento      | Cal.com (Docker)                         | Grátis         |
-| Imagens IA       | Nano Banana Pro (Gemini Image)           | ~$0.04/img     |
-| LLM Sonnet       | Claude Sonnet 4.6 (Anthropic)           | ~$0.015/1k     |
-| LLM Opus         | Claude Opus 4.8 / 4.7 (Anthropic)       | ~$0.025/1k     |
-| Gemini Flash     | Gemini 3.5 Flash                         | ~$0.01/1k      |
-| Tutorial Vídeo   | HeyGen API                               | ~$0.50/vídeo   |
-| CI/CD            | GitHub Actions                           | Grátis         |
+| Componente      | Tecnologia                                | Custo               |
+| --------------- | ----------------------------------------- | ------------------- |
+| Database        | PostgreSQL 16 (Supabase free/self-hosted) | Grátis              |
+| Vetorial (RAG)  | ChromaDB (Docker)                         | Grátis              |
+| Queue/Cache     | Redis 7 (Docker)                          | Grátis              |
+| LLM Local       | Ollama + Llama 3.2 3B + CodeLlama + LLaVA | Grátis              |
+| Workflow        | n8n (Docker)                              | Grátis              |
+| Secrets         | Infisical (self-hosted)                   | Grátis              |
+| Hospedagem API  | Hetzner VPS / Railway                     | ~$5/mês             |
+| Observabilidade | Prometheus + Grafana + Jaeger             | Grátis              |
+| Deploy Sites    | Vercel + Cloudflare Pages + Render        | Grátis              |
+| WhatsApp        | Evolution API (Docker)                    | Grátis              |
+| Telegram        | Bot API (2 bots)                          | Grátis              |
+| Busca RAG       | SearXNG (Docker)                          | Grátis              |
+| Prospecção      | Google Maps Places API                    | Grátis até 2.5k/dia |
+| Dados BR        | MCP Brasil (Docker)                       | Grátis              |
+| Agendamento     | Cal.com (Docker)                          | Grátis              |
+| Imagens IA      | Nano Banana Pro (Gemini Image)            | ~$0.04/img          |
+| LLM Sonnet      | Claude Sonnet 4.6 (Anthropic)             | ~$0.015/1k          |
+| LLM Opus        | Claude Opus 4.8 / 4.7 (Anthropic)         | ~$0.025/1k          |
+| Gemini Flash    | Gemini 3.5 Flash                          | ~$0.01/1k           |
+| Tutorial Vídeo  | HeyGen API                                | ~$0.50/vídeo        |
+| CI/CD           | GitHub Actions                            | Grátis              |
 
 ---
 
 ## 23. Estrutura de Diretórios
 
 ```
-agentepro/
+hefesto/
 ├── .github/workflows/
 │   ├── ci.yml                  # Lint, test, build
 │   ├── security.yml            # OWASP ZAP, Snyk
@@ -3103,7 +3387,7 @@ INFISICAL_TOKEN=
 INFISICAL_PROJECT_ID=
 
 # Database
-DATABASE_URL=postgresql://user:pass@localhost:5432/agentepro
+DATABASE_URL=postgresql://user:pass@localhost:5432/hefesto
 
 # Ollama (local — Tier 0, grátis)
 OLLAMA_BASE_URL=http://localhost:11434
@@ -3111,7 +3395,7 @@ OLLAMA_BASE_URL=http://localhost:11434
 # WhatsApp
 EVOLUTION_API_URL=http://localhost:8080
 EVOLUTION_API_KEY=
-WPP_INSTANCE=agentepro_prod
+WPP_INSTANCE=hefesto_prod
 
 # Telegram (dois bots)
 TELEGRAM_HITL_BOT_TOKEN=          # Bot 1: aprovações HITL inline
@@ -3217,63 +3501,63 @@ OPERATOR_EMAIL=
 
 ## 26. Riscos e Mitigações
 
-| Risco                                         | Prob.  | Impacto | Mitigação                                                                        |
-|-----------------------------------------------|--------|---------|----------------------------------------------------------------------------------|
-| Agente envia mensagem inadequada              | Média  | Alto    | HITL obrigatório antes de todo contato externo                                   |
-| LGPD: armazenamento de dados de leads         | Média  | Alto    | Minimização; vault para transcrições; consentimento no 1º contato               |
-| LLM gera código com vulnerabilidades          | Alta   | Alto    | SEC_AUDITOR (OWASP) antes de qualquer deploy                                     |
-| Custo de tokens além do planejado             | Média  | Médio   | Budget por agente; bloqueio automático; Ollama local para tarefas simples        |
-| WhatsApp bane o número                        | Alta   | Alto    | Rate limit; delay humanizado; max 50 msg/dia; fallback Telegram + e-mail         |
-| Quebra de contrato da Evolution API           | Média  | Alto    | Adapter isolado; Baileys como fallback                                           |
-| Google Maps quota excedida (2500/dia free)    | Baixa  | Médio   | Cache 24h; alerta em 200 req restantes; upgrade $200/mês se necessário          |
-| Nano Banana Pro falha ou sai do ar            | Baixa  | Médio   | Fallback automático: DALL-E 3 → Ollama via MediaGenerationRouter                 |
-| SynthID watermark visível nas imagens         | Baixa  | Baixo   | Documentar para cliente; Gemini Ultra remove marca d'água                        |
-| Complexidade polyglot Node.js + Python        | Alta   | Médio   | Contratos HTTP claros; considerar LangChain.js se crescer demais                 |
-| Timeout HITL com operador offline             | Média  | Médio   | Botões Telegram inline; fallback e-mail; timeout configurável                    |
-| MCP Brasil sem manutenção (projeto comunitário)| Baixa | Baixo   | Monitorar repo; contribuir se necessário; fallback manual de CNPJ               |
-| Rate limit Cal.com API                        | Baixa  | Baixo   | Self-hosted: sem limite de API                                                   |
-| Claude Design em research preview             | Baixa  | Médio   | Fallback GPT-4o Vision para mockup; runbook documentado                          |
-| Vibe coding gerar dívida técnica              | Alta   | Médio   | PRD detalhado; GSD; TDD obrigatório; CI bloqueia cobertura < 80%                |
+| Risco                                           | Prob. | Impacto | Mitigação                                                                 |
+| ----------------------------------------------- | ----- | ------- | ------------------------------------------------------------------------- |
+| Agente envia mensagem inadequada                | Média | Alto    | HITL obrigatório antes de todo contato externo                            |
+| LGPD: armazenamento de dados de leads           | Média | Alto    | Minimização; vault para transcrições; consentimento no 1º contato         |
+| LLM gera código com vulnerabilidades            | Alta  | Alto    | SEC_AUDITOR (OWASP) antes de qualquer deploy                              |
+| Custo de tokens além do planejado               | Média | Médio   | Budget por agente; bloqueio automático; Ollama local para tarefas simples |
+| WhatsApp bane o número                          | Alta  | Alto    | Rate limit; delay humanizado; max 50 msg/dia; fallback Telegram + e-mail  |
+| Quebra de contrato da Evolution API             | Média | Alto    | Adapter isolado; Baileys como fallback                                    |
+| Google Maps quota excedida (2500/dia free)      | Baixa | Médio   | Cache 24h; alerta em 200 req restantes; upgrade $200/mês se necessário    |
+| Nano Banana Pro falha ou sai do ar              | Baixa | Médio   | Fallback automático: DALL-E 3 → Ollama via MediaGenerationRouter          |
+| SynthID watermark visível nas imagens           | Baixa | Baixo   | Documentar para cliente; Gemini Ultra remove marca d'água                 |
+| Complexidade polyglot Node.js + Python          | Alta  | Médio   | Contratos HTTP claros; considerar LangChain.js se crescer demais          |
+| Timeout HITL com operador offline               | Média | Médio   | Botões Telegram inline; fallback e-mail; timeout configurável             |
+| MCP Brasil sem manutenção (projeto comunitário) | Baixa | Baixo   | Monitorar repo; contribuir se necessário; fallback manual de CNPJ         |
+| Rate limit Cal.com API                          | Baixa | Baixo   | Self-hosted: sem limite de API                                            |
+| Claude Design em research preview               | Baixa | Médio   | Fallback GPT-4o Vision para mockup; runbook documentado                   |
+| Vibe coding gerar dívida técnica                | Alta  | Médio   | PRD detalhado; GSD; TDD obrigatório; CI bloqueia cobertura < 80%          |
 
 ---
 
 ## 27. Glossário
 
-| Termo               | Definição                                                                                              |
-|---------------------|--------------------------------------------------------------------------------------------------------|
-| HITL                | Human-in-the-Loop: aprovação humana obrigatória antes de ações externas                               |
-| Persona             | Papel funcional fixo: HUNTER, CLOSER, BRIEFING, BUILDER, QA, DELIVERY, ORCHESTRATOR                   |
-| Sub-agente          | Especialista vinculado a um agente primário, com LLM e contexto próprios, foco em tarefa específica   |
-| Parallel Group      | Grupo de sub-agentes que executam simultaneamente sem dependência entre si                             |
-| Skill               | Ferramenta/capacidade configurada num agente ou sub-agente                                             |
-| Rule                | Condição CEL + ação avaliada em runtime antes de executar uma tarefa                                   |
-| RAG                 | Retrieval-Augmented Generation: enriquecer prompts com documentos relevantes via ChromaDB             |
-| ACL                 | Anti-Corruption Layer: isola domínio de SDKs e APIs externas via adapter                              |
-| CQRS                | Command Query Responsibility Segregation: separação de leitura e escrita                              |
-| Aggregate           | Cluster de entidades de domínio tratadas como unidade transacional                                    |
-| Bounded Context     | Limite de responsabilidade de um subdomínio no DDD                                                    |
-| GSD                 | Get Shit Done: metodologia iterativa de desenvolvimento focado em entrega                             |
-| Magic Bytes         | Assinatura binária nos primeiros bytes de arquivo que identifica seu tipo real                        |
-| SSRF                | Server-Side Request Forgery: ataque que força requisições internas via servidor                       |
-| Argon2id            | Algoritmo de hashing de senhas resistente a GPU e ataques de memória                                  |
-| ULID                | Universally Unique Lexicographically Sortable Identifier: UUID com ordenação temporal                 |
-| LiteLLM             | Biblioteca Python que abstrai múltiplos providers de LLM com interface unificada                      |
-| CrewAI              | Framework Python para orquestração de agentes com suporte a paralelismo via async_execution           |
-| Nano Banana Pro     | Modelo Google (base Gemini 3 Pro Image) para geração de imagens 2K/4K via API Gemini                 |
-| Claude Design       | Produto Anthropic (Opus 4.7) para geração de mockups, wireframes e designs interativos               |
-| Evolution API       | API self-hosted para integração com WhatsApp Web                                                       |
-| SynthID             | Marca d'água digital da Google em imagens geradas pelo Nano Banana Pro                               |
-| MCP Brasil          | MCP Server open-source: 533 tools para 70 fontes de dados públicos brasileiros, 66 sem chave de API  |
-| Cal.com             | Plataforma open-source de agendamento, self-hostable, gratuita                                        |
-| Cloudflare Pages    | Deploy estático: gratuito, CDN edge global em 200+ cidades, sem spin-down                            |
-| Render              | Plataforma de deploy: static sites gratuitos, alternativa ao Netlify                                  |
-| EnrichmentData      | Dados coletados pelo DATA_ENRICHER: CNPJ, Google Maps, CEP, anos no mercado                          |
-| ClientBriefingDTO   | JSON estruturado com todos os requisitos do site, gerado pelo BRIEF_EXTRACTOR                         |
-| HeyGen              | Plataforma de vídeos com avatar IA, usada pelo TUTORIAL_GENERATOR para tutoriais personalizados       |
-| Deal Tracker        | Sub-agente do Closer que monitora negociações e dispara follow-ups por cadência configurável          |
-| Token Budget        | Limite configurável de tokens por agente, com bloqueio automático ao esgotar                         |
-| Polyglot File       | Arquivo válido em dois formatos simultaneamente, usado em ataques de upload                           |
-| MediaGenerationRouter | ACL com fallback chain: NanaBanana → DALL-E → Ollama, garante disponibilidade do serviço           |
+| Termo                 | Definição                                                                                           |
+| --------------------- | --------------------------------------------------------------------------------------------------- |
+| HITL                  | Human-in-the-Loop: aprovação humana obrigatória antes de ações externas                             |
+| Persona               | Papel funcional fixo: HUNTER, CLOSER, BRIEFING, BUILDER, QA, DELIVERY, ORCHESTRATOR                 |
+| Sub-agente            | Especialista vinculado a um agente primário, com LLM e contexto próprios, foco em tarefa específica |
+| Parallel Group        | Grupo de sub-agentes que executam simultaneamente sem dependência entre si                          |
+| Skill                 | Ferramenta/capacidade configurada num agente ou sub-agente                                          |
+| Rule                  | Condição CEL + ação avaliada em runtime antes de executar uma tarefa                                |
+| RAG                   | Retrieval-Augmented Generation: enriquecer prompts com documentos relevantes via ChromaDB           |
+| ACL                   | Anti-Corruption Layer: isola domínio de SDKs e APIs externas via adapter                            |
+| CQRS                  | Command Query Responsibility Segregation: separação de leitura e escrita                            |
+| Aggregate             | Cluster de entidades de domínio tratadas como unidade transacional                                  |
+| Bounded Context       | Limite de responsabilidade de um subdomínio no DDD                                                  |
+| GSD                   | Get Shit Done: metodologia iterativa de desenvolvimento focado em entrega                           |
+| Magic Bytes           | Assinatura binária nos primeiros bytes de arquivo que identifica seu tipo real                      |
+| SSRF                  | Server-Side Request Forgery: ataque que força requisições internas via servidor                     |
+| Argon2id              | Algoritmo de hashing de senhas resistente a GPU e ataques de memória                                |
+| ULID                  | Universally Unique Lexicographically Sortable Identifier: UUID com ordenação temporal               |
+| LiteLLM               | Biblioteca Python que abstrai múltiplos providers de LLM com interface unificada                    |
+| CrewAI                | Framework Python para orquestração de agentes com suporte a paralelismo via async_execution         |
+| Nano Banana Pro       | Modelo Google (base Gemini 3 Pro Image) para geração de imagens 2K/4K via API Gemini                |
+| Claude Design         | Produto Anthropic (Opus 4.7) para geração de mockups, wireframes e designs interativos              |
+| Evolution API         | API self-hosted para integração com WhatsApp Web                                                    |
+| SynthID               | Marca d'água digital da Google em imagens geradas pelo Nano Banana Pro                              |
+| MCP Brasil            | MCP Server open-source: 533 tools para 70 fontes de dados públicos brasileiros, 66 sem chave de API |
+| Cal.com               | Plataforma open-source de agendamento, self-hostable, gratuita                                      |
+| Cloudflare Pages      | Deploy estático: gratuito, CDN edge global em 200+ cidades, sem spin-down                           |
+| Render                | Plataforma de deploy: static sites gratuitos, alternativa ao Netlify                                |
+| EnrichmentData        | Dados coletados pelo DATA_ENRICHER: CNPJ, Google Maps, CEP, anos no mercado                         |
+| ClientBriefingDTO     | JSON estruturado com todos os requisitos do site, gerado pelo BRIEF_EXTRACTOR                       |
+| HeyGen                | Plataforma de vídeos com avatar IA, usada pelo TUTORIAL_GENERATOR para tutoriais personalizados     |
+| Deal Tracker          | Sub-agente do Closer que monitora negociações e dispara follow-ups por cadência configurável        |
+| Token Budget          | Limite configurável de tokens por agente, com bloqueio automático ao esgotar                        |
+| Polyglot File         | Arquivo válido em dois formatos simultaneamente, usado em ataques de upload                         |
+| MediaGenerationRouter | ACL com fallback chain: NanaBanana → DALL-E → Ollama, garante disponibilidade do serviço            |
 
 ---
 
@@ -3287,7 +3571,6 @@ _Incorpora decisões do ciclo de refinamento arquitetural: Briefing Agent, Deliv
 3. Setup monorepo com estrutura de diretórios v2 (Fase 0, Semana 1)
 4. Configurar Docker Compose com todos os serviços (postgres, redis, chromadb, n8n, ollama, evolution-api, searxng, cal-com, mcp-brasil)
 5. Primeira sprint GSD: Fundação + Autenticação + Hunter básico (Google Maps + MCP Brasil)
-
 
 ---
 
@@ -3481,7 +3764,10 @@ O n8n Ã© o orquestrador de workflows que conecta os eventos de domÃ­nio aos 
           "url": "{{$env.AGENT_RUNTIME_URL}}/agents/builder/sub-agents/imager/run"
         }
       ],
-      "input": { "briefing": "{{$node.load_briefing.json}}", "template": "{{$node.select_template.json}}" }
+      "input": {
+        "briefing": "{{$node.load_briefing.json}}",
+        "template": "{{$node.select_template.json}}"
+      }
     },
     {
       "id": "hitl_mockup",
@@ -3491,7 +3777,9 @@ O n8n Ã© o orquestrador de workflows que conecta os eventos de domÃ­nio aos 
       "body": {
         "actionType": "APPROVE_MOCKUP",
         "contextType": "PROJECT",
-        "payloadPreview": { "mockup_url": "{{$node.parallel_group_1.run_designer.json.mockupUrl}}" }
+        "payloadPreview": {
+          "mockup_url": "{{$node.parallel_group_1.run_designer.json.mockupUrl}}"
+        }
       }
     },
     {
@@ -3516,8 +3804,14 @@ O n8n Ã© o orquestrador de workflows que conecta os eventos de domÃ­nio aos 
       "type": "Execute Workflows",
       "mode": "parallel",
       "workflows": [
-        { "id": "run_seo", "url": "{{$env.AGENT_RUNTIME_URL}}/agents/builder/sub-agents/seo_optimizer/run" },
-        { "id": "run_deployer_staging", "url": "{{$env.AGENT_RUNTIME_URL}}/agents/builder/sub-agents/deployer/run" }
+        {
+          "id": "run_seo",
+          "url": "{{$env.AGENT_RUNTIME_URL}}/agents/builder/sub-agents/seo_optimizer/run"
+        },
+        {
+          "id": "run_deployer_staging",
+          "url": "{{$env.AGENT_RUNTIME_URL}}/agents/builder/sub-agents/deployer/run"
+        }
       ],
       "input": { "codeOutput": "{{$node.run_coder.json}}", "target": "staging" }
     },
@@ -3528,7 +3822,9 @@ O n8n Ã© o orquestrador de workflows que conecta os eventos de domÃ­nio aos 
       "method": "POST",
       "body": {
         "actionType": "APPROVE_STAGING",
-        "payloadPreview": { "staging_url": "{{$node.parallel_group_3.run_deployer_staging.json.stagingUrl}}" }
+        "payloadPreview": {
+          "staging_url": "{{$node.parallel_group_3.run_deployer_staging.json.stagingUrl}}"
+        }
       }
     },
     {
@@ -3541,14 +3837,20 @@ O n8n Ã© o orquestrador de workflows que conecta os eventos de domÃ­nio aos 
       "id": "deploy_production",
       "type": "HTTP Request",
       "url": "{{$env.AGENT_RUNTIME_URL}}/agents/builder/sub-agents/deployer/run",
-      "body": { "codeOutput": "{{$node.run_coder.json}}", "target": "production" }
+      "body": {
+        "codeOutput": "{{$node.run_coder.json}}",
+        "target": "production"
+      }
     },
     {
       "id": "emit_project_built",
       "type": "HTTP Request",
       "url": "{{$env.API_URL}}/api/v1/events",
       "method": "POST",
-      "body": { "type": "ProjectBuilt", "projectId": "{{$trigger.json.projectId}}" }
+      "body": {
+        "type": "ProjectBuilt",
+        "projectId": "{{$trigger.json.projectId}}"
+      }
     }
   ]
 }
@@ -3564,15 +3866,18 @@ O n8n Ã© o orquestrador de workflows que conecta os eventos de domÃ­nio aos 
 // infrastructure/skills/ExternalDatabaseSkill.ts
 
 class ExternalDatabaseSkill implements Skill {
-  readonly type = 'external_database';
+  readonly type = "external_database";
 
-  async execute(config: ExternalDatabaseConfig, input: SkillInput): Promise<SkillOutput> {
+  async execute(
+    config: ExternalDatabaseConfig,
+    input: SkillInput,
+  ): Promise<SkillOutput> {
     switch (config.provider) {
-      case 'google_maps':
+      case "google_maps":
         return this.executeGoogleMaps(config, input);
-      case 'mcp_brasil':
+      case "mcp_brasil":
         return this.executeMCPBrasil(config, input);
-      case 'apollo_io':
+      case "apollo_io":
         return this.executeApollo(config, input);
       default:
         throw new SkillError(`Provider desconhecido: ${config.provider}`);
@@ -3581,8 +3886,12 @@ class ExternalDatabaseSkill implements Skill {
 
   private async executeGoogleMaps(config: GoogleMapsConfig, input: SkillInput) {
     // Verificar quota antes de executar
-    const quotaOk = await this.rateLimiter.check('maps_daily', config.rate_limit_per_day);
-    if (!quotaOk) throw new QuotaExceededError('Google Maps quota diÃ¡ria excedida');
+    const quotaOk = await this.rateLimiter.check(
+      "maps_daily",
+      config.rate_limit_per_day,
+    );
+    if (!quotaOk)
+      throw new QuotaExceededError("Google Maps quota diÃ¡ria excedida");
 
     // Verificar cache (TTL configurÃ¡vel)
     const cacheKey = `maps:${JSON.stringify(input.query)}`;
@@ -3593,7 +3902,11 @@ class ExternalDatabaseSkill implements Skill {
     const result = await this.mapsAdapter.searchLeads(input.query);
 
     // Cachear resultado
-    await this.cache.set(cacheKey, JSON.stringify(result), config.cache_results_ttl_hours * 3600);
+    await this.cache.set(
+      cacheKey,
+      JSON.stringify(result),
+      config.cache_results_ttl_hours * 3600,
+    );
 
     return result;
   }
@@ -3606,25 +3919,30 @@ class ExternalDatabaseSkill implements Skill {
 // infrastructure/skills/DesignGenSkill.ts
 
 class DesignGenSkill implements Skill {
-  readonly type = 'design_gen';
+  readonly type = "design_gen";
 
-  async execute(config: DesignGenConfig, input: SkillInput): Promise<SkillOutput> {
+  async execute(
+    config: DesignGenConfig,
+    input: SkillInput,
+  ): Promise<SkillOutput> {
     // Claude Design via Opus 4.7 â nÃ£o Ã© endpoint separado,
     // Ã© o modelo Opus 4.7 com prompt especializado em design
 
     const designPrompt = this.buildDesignPrompt(input.briefing);
 
     const response = await this.llm.complete({
-      model: 'claude-opus-4-7',
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: designPrompt,
-          }
-        ]
-      }],
+      model: "claude-opus-4-7",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: designPrompt,
+            },
+          ],
+        },
+      ],
       max_tokens: 4096,
     });
 
@@ -3632,7 +3950,7 @@ class DesignGenSkill implements Skill {
     const mockupHtml = this.extractMockup(response.content);
 
     // Salvar em storage e retornar URL
-    const mockupUrl = await this.storage.save(mockupHtml, 'mockup.html');
+    const mockupUrl = await this.storage.save(mockupHtml, "mockup.html");
 
     return { mockupUrl, rawDesign: mockupHtml };
   }
@@ -3643,10 +3961,10 @@ class DesignGenSkill implements Skill {
 NEGÃCIO: ${briefing.businessName}
 SEGMENTO: ${briefing.niche}
 TIPO DE SITE: ${briefing.siteType}
-PGINAS: ${briefing.pages.join(', ')}
-CORES PREFERIDAS: ${briefing.colorPreferences.join(', ')}
-ESTILO DE FONTE: ${briefing.fontStyle || 'modern'}
-DIFERENCIAIS: ${briefing.differentials.join(', ')}
+PGINAS: ${briefing.pages.join(", ")}
+CORES PREFERIDAS: ${briefing.colorPreferences.join(", ")}
+ESTILO DE FONTE: ${briefing.fontStyle || "modern"}
+DIFERENCIAIS: ${briefing.differentials.join(", ")}
 PBLICO-ALVO: ${briefing.targetAudience}
 
 Gere um mockup em HTML/CSS representando:
@@ -3658,8 +3976,8 @@ Gere um mockup em HTML/CSS representando:
 6. Footer com contato e redes sociais
 7. BotÃ£o flutuante do WhatsApp
 
-Use as cores ${briefing.colorPreferences.join(' e ')} como paleta principal.
-Aplique tipografia ${briefing.fontStyle || 'moderna'} e design limpo.
+Use as cores ${briefing.colorPreferences.join(" e ")} como paleta principal.
+Aplique tipografia ${briefing.fontStyle || "moderna"} e design limpo.
 O resultado deve ser um HTML completo e autocontido que represente o visual final do site.`;
   }
 }
@@ -3671,15 +3989,18 @@ O resultado deve ser um HTML completo e autocontido que represente o visual fina
 // infrastructure/skills/SchedulingSkill.ts
 
 class SchedulingSkill implements Skill {
-  readonly type = 'scheduling';
+  readonly type = "scheduling";
 
-  async execute(config: SchedulingConfig, input: SkillInput): Promise<SkillOutput> {
+  async execute(
+    config: SchedulingConfig,
+    input: SkillInput,
+  ): Promise<SkillOutput> {
     switch (input.action) {
-      case 'create_link':
+      case "create_link":
         return this.createBookingLink(config, input);
-      case 'get_availability':
+      case "get_availability":
         return this.getAvailability(config, input);
-      case 'cancel':
+      case "cancel":
         return this.cancelBooking(config, input);
       default:
         throw new SkillError(`AÃ§Ã£o desconhecida: ${input.action}`);
@@ -3695,7 +4016,7 @@ class SchedulingSkill implements Skill {
     });
 
     // Registrar agendamento no banco
-    await this.api.post('/api/v1/scheduling/booking-link', {
+    await this.api.post("/api/v1/scheduling/booking-link", {
       leadId: input.lead.id,
       dealId: input.dealId,
       bookingLink: link.url,
@@ -3712,54 +4033,71 @@ class SchedulingSkill implements Skill {
 // infrastructure/skills/ImageGenSkill.ts
 
 class ImageGenSkill implements Skill {
-  readonly type = 'image_gen';
+  readonly type = "image_gen";
 
   // Mapa de prompts por tipo de imagem e nicho
   private readonly PROMPT_TEMPLATES: Record<string, Record<string, string>> = {
     hero: {
-      restaurant: "Professional hero image for a restaurant called {name}. Warm lighting, food photography style. Colors: {colors}. Inviting atmosphere.",
-      clinic: "Professional hero image for a medical clinic called {name}. Clean, modern, trustworthy. Colors: {colors}. Healthcare setting.",
-      salon: "Professional hero image for a beauty salon called {name}. Elegant, stylish. Colors: {colors}. Beauty and wellness.",
+      restaurant:
+        "Professional hero image for a restaurant called {name}. Warm lighting, food photography style. Colors: {colors}. Inviting atmosphere.",
+      clinic:
+        "Professional hero image for a medical clinic called {name}. Clean, modern, trustworthy. Colors: {colors}. Healthcare setting.",
+      salon:
+        "Professional hero image for a beauty salon called {name}. Elegant, stylish. Colors: {colors}. Beauty and wellness.",
       gym: "Professional hero image for a gym called {name}. Energetic, motivational. Colors: {colors}. Fitness equipment visible.",
-      lawyer: "Professional hero image for a law firm called {name}. Formal, trustworthy. Colors: {colors}. Office setting.",
-      default: "Professional hero image for {niche} business {name}. Colors: {colors}. Modern, clean, professional.",
+      lawyer:
+        "Professional hero image for a law firm called {name}. Formal, trustworthy. Colors: {colors}. Office setting.",
+      default:
+        "Professional hero image for {niche} business {name}. Colors: {colors}. Modern, clean, professional.",
     },
     about: {
-      restaurant: "Warm team photo in a restaurant kitchen. Chef and staff smiling. Professional.",
-      clinic: "Medical professionals in a clinic setting. Approachable, competent.",
-      salon: "Beauty professional working with client. Salon environment. Elegant.",
-      default: "Professional team photo for a {niche} business. Warm, approachable.",
+      restaurant:
+        "Warm team photo in a restaurant kitchen. Chef and staff smiling. Professional.",
+      clinic:
+        "Medical professionals in a clinic setting. Approachable, competent.",
+      salon:
+        "Beauty professional working with client. Salon environment. Elegant.",
+      default:
+        "Professional team photo for a {niche} business. Warm, approachable.",
     },
     service_icon: {
-      default: "Minimal flat icon representing '{service}' for a {niche}. Primary color: {color}. Simple, modern.",
+      default:
+        "Minimal flat icon representing '{service}' for a {niche}. Primary color: {color}. Simple, modern.",
     },
   };
 
-  async execute(config: ImageGenConfig, input: SkillInput): Promise<SkillOutput> {
+  async execute(
+    config: ImageGenConfig,
+    input: SkillInput,
+  ): Promise<SkillOutput> {
     const { briefing, imageType, serviceIndex } = input;
 
     // Selecionar template de prompt
-    const template = this.PROMPT_TEMPLATES[imageType]?.[briefing.niche]
-      || this.PROMPT_TEMPLATES[imageType]?.default
-      || this.PROMPT_TEMPLATES.hero.default;
+    const template =
+      this.PROMPT_TEMPLATES[imageType]?.[briefing.niche] ||
+      this.PROMPT_TEMPLATES[imageType]?.default ||
+      this.PROMPT_TEMPLATES.hero.default;
 
     // Construir prompt final
     const prompt = this.fillTemplate(template, {
       name: briefing.businessName,
       niche: briefing.niche,
-      colors: briefing.colorPreferences.join(', '),
-      service: briefing.pages[serviceIndex] || 'servico',
-      color: briefing.colorPreferences[0] || 'azul',
+      colors: briefing.colorPreferences.join(", "),
+      service: briefing.pages[serviceIndex] || "servico",
+      color: briefing.colorPreferences[0] || "azul",
     });
 
     // Tentar providers em sequÃªncia (fallback chain)
     const options: ImageOptions = {
-      resolution: '2K',
-      aspectRatio: imageType === 'service_icon' ? '1:1' : '16:9',
-      format: 'webp',
+      resolution: "2K",
+      aspectRatio: imageType === "service_icon" ? "1:1" : "16:9",
+      format: "webp",
     };
 
-    const asset = await this.mediaRouter.generateImage({ description: prompt, ...briefing }, options);
+    const asset = await this.mediaRouter.generateImage(
+      { description: prompt, ...briefing },
+      options,
+    );
 
     return { assetUrl: asset.url, assetId: asset.id, provider: asset.provider };
   }
@@ -3772,10 +4110,10 @@ class ImageGenSkill implements Skill {
 
 ```yaml
 # infra/docker-compose.yml (v2 â completo)
-version: '3.9'
+version: "3.9"
 
 networks:
-  agentepro-network:
+  hefesto-network:
     driver: bridge
 
 volumes:
@@ -3793,17 +4131,17 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: agentepro
-      POSTGRES_USER: agentepro
+      POSTGRES_DB: hefesto
+      POSTGRES_USER: hefesto
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infra/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
-    networks: [agentepro-network]
+    networks: [hefesto-network]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U agentepro"]
+      test: ["CMD-SHELL", "pg_isready -U hefesto"]
       interval: 10s
       retries: 5
 
@@ -3817,7 +4155,7 @@ services:
       - redis_data:/data
     ports:
       - "6379:6379"
-    networks: [agentepro-network]
+    networks: [hefesto-network]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -3835,7 +4173,7 @@ services:
       - chromadb_data:/chroma/chroma
     ports:
       - "8001:8000"
-    networks: [agentepro-network]
+    networks: [hefesto-network]
 
   # ============================================================
   # WORKFLOW ORCHESTRATION
@@ -3849,7 +4187,7 @@ services:
       DB_TYPE: postgresdb
       DB_POSTGRESDB_HOST: postgres
       DB_POSTGRESDB_DATABASE: n8n
-      DB_POSTGRESDB_USER: agentepro
+      DB_POSTGRESDB_USER: hefesto
       DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
       WEBHOOK_URL: ${N8N_WEBHOOK_URL}
       EXECUTIONS_PROCESS: main
@@ -3859,7 +4197,7 @@ services:
     ports:
       - "5678:5678"
     depends_on: [postgres, redis]
-    networks: [agentepro-network]
+    networks: [hefesto-network]
 
   # ============================================================
   # LLM LOCAL
@@ -3870,7 +4208,7 @@ services:
       - ollama_data:/root/.ollama
     ports:
       - "11434:11434"
-    networks: [agentepro-network]
+    networks: [hefesto-network]
     deploy:
       resources:
         reservations:
@@ -3892,7 +4230,7 @@ services:
           ollama pull llava"
     environment:
       OLLAMA_HOST: http://ollama:11434
-    networks: [agentepro-network]
+    networks: [hefesto-network]
     restart: no
 
   # ============================================================
@@ -3906,7 +4244,7 @@ services:
       - ./infra/searxng/settings.yml:/etc/searxng/settings.yml:ro
     ports:
       - "8080:8080"
-    networks: [agentepro-network]
+    networks: [hefesto-network]
 
   # ============================================================
   # WHATSAPP
@@ -3918,14 +4256,14 @@ services:
       AUTHENTICATION_TYPE: apikey
       AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
       DATABASE_PROVIDER: postgresql
-      DATABASE_CONNECTION_URI: postgresql://agentepro:${POSTGRES_PASSWORD}@postgres:5432/evolution
+      DATABASE_CONNECTION_URI: postgresql://hefesto:${POSTGRES_PASSWORD}@postgres:5432/evolution
       CACHE_REDIS_URI: redis://:${REDIS_PASSWORD}@redis:6379/1
       WEBHOOK_GLOBAL_ENABLED: true
       WEBHOOK_GLOBAL_URL: ${API_WEBHOOK_URL}/webhooks/whatsapp
     ports:
       - "8082:8080"
     depends_on: [postgres, redis]
-    networks: [agentepro-network]
+    networks: [hefesto-network]
 
   # ============================================================
   # AGENDAMENTO
@@ -3933,7 +4271,7 @@ services:
   cal-com:
     image: calcom/cal.com:latest
     environment:
-      DATABASE_URL: postgresql://agentepro:${POSTGRES_PASSWORD}@postgres:5432/calcom
+      DATABASE_URL: postgresql://hefesto:${POSTGRES_PASSWORD}@postgres:5432/calcom
       NEXTAUTH_SECRET: ${CAL_NEXTAUTH_SECRET}
       NEXTAUTH_URL: http://cal-com:3000
       NEXT_PUBLIC_WEBAPP_URL: ${CAL_PUBLIC_URL}
@@ -3945,7 +4283,7 @@ services:
     ports:
       - "3100:3000"
     depends_on: [postgres]
-    networks: [agentepro-network]
+    networks: [hefesto-network]
 
   # ============================================================
   # MCP BRASIL
@@ -3958,7 +4296,7 @@ services:
       TRANSPARENCIA_API_KEY: "${TRANSPARENCIA_API_KEY:-}"
     ports:
       - "8003:8000"
-    networks: [agentepro-network]
+    networks: [hefesto-network]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -3978,7 +4316,7 @@ services:
     ports:
       - "8004:8080"
     depends_on: [infisical-mongo]
-    networks: [agentepro-network]
+    networks: [hefesto-network]
     volumes:
       - infisical_data:/app/data
 
@@ -3986,7 +4324,7 @@ services:
     image: mongo:6-alpine
     volumes:
       - ./infra/volumes/infisical_mongo:/data/db
-    networks: [agentepro-network]
+    networks: [hefesto-network]
 
   # ============================================================
   # OBSERVABILIDADE
@@ -3997,7 +4335,7 @@ services:
       - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
       - "9090:9090"
-    networks: [agentepro-network]
+    networks: [hefesto-network]
 
   grafana:
     image: grafana/grafana:latest
@@ -4009,24 +4347,24 @@ services:
     ports:
       - "3200:3000"
     depends_on: [prometheus]
-    networks: [agentepro-network]
+    networks: [hefesto-network]
 
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
-      - "16686:16686"   # Jaeger UI
-      - "4318:4318"     # OTLP HTTP
-    networks: [agentepro-network]
+      - "16686:16686" # Jaeger UI
+      - "4318:4318" # OTLP HTTP
+    networks: [hefesto-network]
 
   # ============================================================
-  # APLICAÃÃES AGENTEPRO
+  # APLICAÃÃES HEFESTO
   # ============================================================
   api:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
     environment:
-      DATABASE_URL: postgresql://agentepro:${POSTGRES_PASSWORD}@postgres:5432/agentepro
+      DATABASE_URL: postgresql://hefesto:${POSTGRES_PASSWORD}@postgres:5432/hefesto
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
       CHROMA_URL: http://chromadb:8000
       AGENT_RUNTIME_URL: http://agent-runtime:8000
@@ -4040,7 +4378,7 @@ services:
     ports:
       - "3001:3001"
     depends_on: [postgres, redis, chromadb, agent-runtime]
-    networks: [agentepro-network]
+    networks: [hefesto-network]
 
   agent-runtime:
     build:
@@ -4054,7 +4392,7 @@ services:
     ports:
       - "8000:8000"
     depends_on: [ollama, chromadb, redis]
-    networks: [agentepro-network]
+    networks: [hefesto-network]
 
   web:
     build:
@@ -4065,7 +4403,7 @@ services:
     ports:
       - "3000:3000"
     depends_on: [api]
-    networks: [agentepro-network]
+    networks: [hefesto-network]
 ```
 
 ---
@@ -4080,6 +4418,7 @@ Esta coleÃ§Ã£o contÃ©m os roteiros de perguntas por nicho para o sub-agent
 # Template: Restaurant (Restaurante/Pizzaria/Lanchonete)
 
 ## Perguntas ObrigatÃ³rias
+
 1. "Qual o nome completo do restaurante e que tipo de culinÃ¡ria vocÃªs oferecem?"
 2. "VocÃªs fazem delivery? Se sim, por qual plataforma (iFood, Rappi) ou diretamente?"
 3. "Qual o endereÃ§o completo e horÃ¡rio de funcionamento?"
@@ -4088,20 +4427,22 @@ Esta coleÃ§Ã£o contÃ©m os roteiros de perguntas por nicho para o sub-agent
 6. "Pode me enviar o logotipo e algumas fotos dos pratos para colocar no site?"
 
 ## Perguntas Complementares
+
 - "Tem estacionamento prÃ³prio?"
 - "Aceitam reservas? Se sim, como Ã© feito hoje?"
 - "TÃªm Ã¡rea para eventos ou festas?"
 - "Quais meios de pagamento aceitam?"
 
 ## JSON Output Esperado
+
 {
-  "businessName": "[nome do restaurante]",
-  "niche": "restaurant",
-  "siteType": "institutional",
-  "pages": ["home", "cardapio", "sobre", "contato"],
-  "hasWhatsAppButton": true,
-  "hasScheduling": false,
-  "deliveryInfo": "[plataformas se aplicÃ¡vel]"
+"businessName": "[nome do restaurante]",
+"niche": "restaurant",
+"siteType": "institutional",
+"pages": ["home", "cardapio", "sobre", "contato"],
+"hasWhatsAppButton": true,
+"hasScheduling": false,
+"deliveryInfo": "[plataformas se aplicÃ¡vel]"
 }
 ```
 
@@ -4109,6 +4450,7 @@ Esta coleÃ§Ã£o contÃ©m os roteiros de perguntas por nicho para o sub-agent
 # Template: Clinic (ClÃ­nica MÃ©dica/OdontolÃ³gica/Psicologia)
 
 ## Perguntas ObrigatÃ³rias
+
 1. "Qual o nome da clÃ­nica e quais especialidades sÃ£o atendidas?"
 2. "Atendem por convÃªnio ou particular? Quais convÃªnios?"
 3. "Gostaria de um sistema de agendamento online integrado ao site?"
@@ -4117,16 +4459,18 @@ Esta coleÃ§Ã£o contÃ©m os roteiros de perguntas por nicho para o sub-agent
 6. "Pode me enviar o logotipo e fotos da recepÃ§Ã£o/consultÃ³rio?"
 
 ## Perguntas Complementares
+
 - "Tem CRM de pacientes integrado?"
 - "Precisa de seÃ§Ã£o de artigos ou blog de saÃºde?"
 - "Tem telemedicina/teleconsulta?"
 
 ## JSON Output Esperado
+
 {
-  "niche": "clinic",
-  "siteType": "scheduling",
-  "hasScheduling": true,
-  "pages": ["home", "especialidades", "equipe", "convenios", "contato"]
+"niche": "clinic",
+"siteType": "scheduling",
+"hasScheduling": true,
+"pages": ["home", "especialidades", "equipe", "convenios", "contato"]
 }
 ```
 
@@ -4134,6 +4478,7 @@ Esta coleÃ§Ã£o contÃ©m os roteiros de perguntas por nicho para o sub-agent
 # Template: Salon (SalÃ£o de Beleza/Barbearia/EstÃ©tica)
 
 ## Perguntas ObrigatÃ³rias
+
 1. "Qual o nome do salÃ£o e os principais serviÃ§os oferecidos?"
 2. "Gostaria de agenda online para os clientes marcarem horÃ¡rio diretamente?"
 3. "Qual o diferencial do seu salÃ£o?"
@@ -4141,11 +4486,12 @@ Esta coleÃ§Ã£o contÃ©m os roteiros de perguntas por nicho para o sub-agent
 5. "Qual o horÃ¡rio de funcionamento e endereÃ§o completo?"
 
 ## JSON Output Esperado
+
 {
-  "niche": "salon",
-  "siteType": "scheduling",
-  "hasScheduling": true,
-  "pages": ["home", "servicos", "galeria", "agendamento", "contato"]
+"niche": "salon",
+"siteType": "scheduling",
+"hasScheduling": true,
+"pages": ["home", "servicos", "galeria", "agendamento", "contato"]
 }
 ```
 
@@ -4157,6 +4503,7 @@ CritÃ©rios de qualificaÃ§Ã£o baseados em casos reais de conversÃ£o.
 # CritÃ©rios de Alta Probabilidade de ConversÃ£o
 
 ## Score 80-100: Lead Premium
+
 - CNPJ ativo hÃ¡ mais de 3 anos
 - Sem site ou site antes de 2019
 - Rating Google â¥ 4.5 com mais de 100 avaliaÃ§Ãµes
@@ -4165,6 +4512,7 @@ CritÃ©rios de qualificaÃ§Ã£o baseados em casos reais de conversÃ£o.
 - Responde em atÃ© 2 horas
 
 ## Score 60-79: Lead Qualificado
+
 - CNPJ ativo hÃ¡ 1-3 anos
 - Sem site ou site sem mobile
 - Rating Google 4.0-4.4
@@ -4172,12 +4520,14 @@ CritÃ©rios de qualificaÃ§Ã£o baseados em casos reais de conversÃ£o.
 - Qualquer segmento ativo
 
 ## Score 40-59: Lead Morno
+
 - NegÃ³cio com 6 meses a 1 ano
 - Site desatualizado (2019-2021)
 - Rating 3.5-3.9
 - Menos de 20 avaliaÃ§Ãµes
 
 ## Bloqueios AutomÃ¡ticos
+
 - CNPJ suspenso, inapto ou baixado
 - Rating < 3.5 com mais de 50 avaliaÃ§Ãµes (reputaÃ§Ã£o problemÃ¡tica)
 - Setor governamental
@@ -4190,9 +4540,11 @@ CritÃ©rios de qualificaÃ§Ã£o baseados em casos reais de conversÃ£o.
 # Template de Proposta: Site Institucional â Pequeno NegÃ³cio
 
 ## ApresentaÃ§Ã£o
+
 "OlÃ¡, [NOME]! ApÃ³s nossa conversa, preparei uma proposta personalizada para [EMPRESA]."
 
 ## O que estÃ¡ incluÃ­do:
+
 â Site profissional responsivo (abre perfeitamente no celular)
 â AtÃ© [N] pÃ¡ginas: [LISTA DE PÃGINAS]
 â Textos profissionais criados para o seu negÃ³cio
@@ -4206,9 +4558,11 @@ CritÃ©rios de qualificaÃ§Ã£o baseados em casos reais de conversÃ£o.
 ## Prazo: [N] dias Ãºteis apÃ³s aprovaÃ§Ã£o
 
 ## Investimento: R$ [VALOR]
-*Parcelamento disponÃ­vel mediante consulta*
+
+_Parcelamento disponÃ­vel mediante consulta_
 
 ## Por que [EMPRESA] precisa de um site?
+
 Seus [N] clientes satisfeitos no Google (nota [RATING]) merecem te encontrar online.
 [PORCENTAGEM]% das pessoas pesquisam no Google antes de contratar um serviÃ§o como o seu.
 
@@ -4217,10 +4571,11 @@ Seus [N] clientes satisfeitos no Google (nota [RATING]) merecem te encontrar onl
 
 ### 31.4 Collection: site_templates
 
-```markdown
+````markdown
 # Template 06: Site Institucional + Cal.com (Agendamento)
 
 ## Stack
+
 - Next.js 15 (App Router)
 - Tailwind CSS 4
 - TypeScript 5.5
@@ -4229,6 +4584,7 @@ Seus [N] clientes satisfeitos no Google (nota [RATING]) merecem te encontrar onl
 - Google Analytics 4
 
 ## PÃ¡ginas IncluÃ­das
+
 - `/` â Home com hero, serviÃ§os e CTA de agendamento
 - `/sobre` â Sobre a empresa/profissional
 - `/servicos` â Listagem de serviÃ§os com preÃ§os (opcional)
@@ -4236,6 +4592,7 @@ Seus [N] clientes satisfeitos no Google (nota [RATING]) merecem te encontrar onl
 - `/contato` â FormulÃ¡rio + mapa + informaÃ§Ãµes
 
 ## Componentes ObrigatÃ³rios
+
 - `<Header />` â Logo, navegaÃ§Ã£o, CTA
 - `<Hero />` â Headline, subheadline, botÃ£o agendar
 - `<Services />` â Grid de cards de serviÃ§os
@@ -4246,23 +4603,30 @@ Seus [N] clientes satisfeitos no Google (nota [RATING]) merecem te encontrar onl
 - `<Footer />` â Links, redes sociais, CNPJ
 
 ## Lighthouse Baseline (antes da customizaÃ§Ã£o)
+
 - Performance: 96
 - Accessibility: 100
 - Best Practices: 100
 - SEO: 100
 
 ## Security Headers (next.config.js)
+
 ```typescript
 const securityHeaders = [
-  { key: 'X-DNS-Prefetch-Control', value: 'on' },
-  { key: 'X-XSS-Protection', value: '0' },
-  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-  { key: 'X-Content-Type-Options', value: 'nosniff' },
-  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  { key: "X-DNS-Prefetch-Control", value: "on" },
+  { key: "X-XSS-Protection", value: "0" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()",
+  },
 ];
 ```
-```
+````
+
+````
 
 ---
 
@@ -4283,22 +4647,26 @@ const securityHeaders = [
 2. Ativar fallback automÃ¡tico no MessagingRouter:
    ```bash
    curl -X PATCH $API_URL/api/v1/agents/$CLOSER_ID      -H "Authorization: Bearer $TOKEN"      -d '{"defaultChannel": "EMAIL"}'
-   ```
+````
+
 3. Verificar fila de mensagens pendentes no BullMQ
 4. Notificar operador via Telegram (Bot 1 HITL)
 
 ## RecuperaÃ§Ã£o (1-7 dias)
+
 1. NÃ£o usar o nÃºmero banido por 24-72h
 2. Se banimento permanente: configurar novo nÃºmero no Evolution API
 3. Aquecer novo nÃºmero (warm-up): 5 msg/dia semana 1, 15/dia semana 2, 30/dia semana 3
 4. Nunca ultrapassar 50 msg/dia nos primeiros 30 dias
 
 ## PrevenÃ§Ã£o
+
 - max_messages_per_day: 50 (configurado)
 - anti_spam_delay_ms: 1500-4000 (configurado)
 - typing_indicator: true (humanizaÃ§Ã£o)
 - NÃ£o enviar links nas primeiras 3 mensagens com um contato novo
-```
+
+````
 
 ### 32.2 Runbook: Google Maps Quota Exceeded
 
@@ -4313,23 +4681,28 @@ const securityHeaders = [
 1. Verificar consumo atual:
    ```bash
    curl "https://maps.googleapis.com/maps/api/quota"      -H "X-Goog-Api-Key: $GOOGLE_MAPS_KEY"
-   ```
+````
+
 2. Se cota < 200: pausar Hunter atÃ© meia-noite (reset diÃ¡rio)
 3. Se crÃ­tico: ativar modo batch (processar leads do cache)
 
 ## Aumento de Quota
+
 - Upgrade para $200/mÃªs habilita 100.000 requests/mÃªs
 - ROI calculado: $200 = ~48 sites, receita ~R$24.000-72.000
 
 ## Cache de Leads
+
 - TTL configurado: 24h
 - Cache key: `maps:${categoria}:${regiÃ£o}:${data}`
 - Leads cacheados nÃ£o consomem quota
 
 ## Fontes Alternativas (backup)
+
 - SearXNG: busca web por "pizzaria Salvador sem site"
 - Apollo.io: filtro por domÃ­nio vazio (free tier: 50 contatos/mÃªs)
-```
+
+````
 
 ### 32.3 Runbook: LLM Provider Fallback
 
@@ -4365,8 +4738,9 @@ const securityHeaders = [
 ```bash
 # Trocar provider do sub-agente CODER para GPT-4o
 curl -X PATCH $API_URL/api/v1/agents/$BUILDER_ID/sub-agents/$CODER_ID   -H "Authorization: Bearer $TOKEN"   -d '{"llm_provider": "OPENAI", "llm_model": "gpt-4o"}'
-```
-```
+````
+
+````
 
 ### 32.4 Runbook: Nano Banana Pro Fallback
 
@@ -4385,14 +4759,16 @@ curl -X PATCH $API_URL/api/v1/agents/$BUILDER_ID/sub-agents/$CODER_ID   -H "Auth
 ```bash
 # Testar Nano Banana Pro diretamente
 curl -X POST https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:generateImages   -H "x-goog-api-key: $GEMINI_API_KEY"   -d '{"prompt": "test image", "number_of_images": 1}'
-```
+````
 
 ## Notas sobre SynthID
+
 - Nano Banana Pro: SynthID sempre presente (watermark digital invisÃ­vel)
 - DALL-E 3: Content-Credentials metadata (C2PA)
 - Ollama LLaVA: sem watermark
 - Documentar ao cliente qual provider foi usado se necessÃ¡rio
-```
+
+````
 
 ---
 
@@ -4443,12 +4819,13 @@ Cada feature implementada deve passar por todos os critÃ©rios antes de ser con
 - [ ] PR com descriÃ§Ã£o clara do que foi feito
 - [ ] Self-review antes de submeter
 - [ ] CI passou (todos os checks verdes)
-```
+````
 
 ### DoD EspecÃ­fico: IntegraÃ§Ã£o com ServiÃ§o Externo
 
 ```markdown
 ## Adicional para adapters (Maps, MCP Brasil, HeyGen, etc.)
+
 - [ ] Interface de domÃ­nio (Port) definida antes do adapter
 - [ ] Adapter implementa apenas a interface â sem lÃ³gica de domÃ­nio
 - [ ] SSRF prevention no adapter (se URL configurÃ¡vel)
@@ -4464,6 +4841,7 @@ Cada feature implementada deve passar por todos os critÃ©rios antes de ser con
 
 ```markdown
 ## Adicional para cada sub-agente
+
 - [ ] Role definido no enum SubAgentRole
 - [ ] LLM tier justificado (ver tabela seÃ§Ã£o 9)
 - [ ] execution_mode e parallel_group definidos
@@ -4605,7 +4983,7 @@ interface BaseDomainEvent {
   aggregateType: 'Project',
   payload: {
     projectId: 'uuid',
-    mockupUrl: 'https://storage.agentepro.com/mockups/uuid/mockup.html',
+    mockupUrl: 'https://storage.hefesto.com/mockups/uuid/mockup.html',
     approvedBy: 'operator_uuid',
     approvedAt: '2026-05-29T10:30:00Z',
     hitlApprovalId: 'uuid',
@@ -4622,7 +5000,7 @@ interface BaseDomainEvent {
     assetId: 'uuid',
     assetType: 'hero',
     provider: 'nano_banana_pro',
-    storageUrl: 'https://storage.agentepro.com/assets/uuid/hero.webp',
+    storageUrl: 'https://storage.hefesto.com/assets/uuid/hero.webp',
     resolution: '2K',
     format: 'webp',
     synthIdPresent: true,
@@ -4641,7 +5019,7 @@ interface BaseDomainEvent {
     deliverableUrl: 'https://bellanapoli.com.br',
     deployPlatform: 'vercel',
     deliveryTutorialUrl: 'https://heygen.com/share/abc123',
-    deliveryDocUrl: 'https://storage.agentepro.com/docs/uuid/entrega.pdf',
+    deliveryDocUrl: 'https://storage.hefesto.com/docs/uuid/entrega.pdf',
     lighthouseScores: {
       performance: 96,
       accessibility: 100,
@@ -4662,15 +5040,15 @@ interface BaseDomainEvent {
 
 ### 36.1 Dados Coletados e Base Legal
 
-| Dado                    | Finalidade                          | Base Legal LGPD          | RetenÃ§Ã£o       |
-|-------------------------|-------------------------------------|--------------------------|----------------|
-| Nome e telefone do lead | ProspecÃ§Ã£o e comunicaÃ§Ã£o            | LegÃ­timo interesse       | 180 dias       |
-| E-mail do lead          | ComunicaÃ§Ã£o e proposta              | Consentimento (opt-in)   | 180 dias       |
-| CNPJ                    | QualificaÃ§Ã£o do lead                | LegÃ­timo interesse       | 180 dias       |
-| TranscriÃ§Ã£o de briefing | ExecuÃ§Ã£o do serviÃ§o contratado      | ExecuÃ§Ã£o de contrato     | DuraÃ§Ã£o + 30 dias |
-| Dados do site criado    | Entrega do produto                  | ExecuÃ§Ã£o de contrato     | 1 ano          |
-| Logs de auditoria       | Compliance e seguranÃ§a              | ObrigaÃ§Ã£o legal          | 5 anos         |
-| Token usage             | Billing e otimizaÃ§Ã£o                | LegÃ­timo interesse       | 1 ano          |
+| Dado                      | Finalidade                        | Base Legal LGPD        | RetenÃ§Ã£o          |
+| ------------------------- | --------------------------------- | ---------------------- | ------------------- |
+| Nome e telefone do lead   | ProspecÃ§Ã£o e comunicaÃ§Ã£o      | LegÃ­timo interesse    | 180 dias            |
+| E-mail do lead            | ComunicaÃ§Ã£o e proposta          | Consentimento (opt-in) | 180 dias            |
+| CNPJ                      | QualificaÃ§Ã£o do lead            | LegÃ­timo interesse    | 180 dias            |
+| TranscriÃ§Ã£o de briefing | ExecuÃ§Ã£o do serviÃ§o contratado | ExecuÃ§Ã£o de contrato | DuraÃ§Ã£o + 30 dias |
+| Dados do site criado      | Entrega do produto                | ExecuÃ§Ã£o de contrato | 1 ano               |
+| Logs de auditoria         | Compliance e seguranÃ§a           | ObrigaÃ§Ã£o legal      | 5 anos              |
+| Token usage               | Billing e otimizaÃ§Ã£o            | LegÃ­timo interesse    | 1 ano               |
 
 ### 36.2 Direitos do Titular
 
@@ -4692,12 +5070,12 @@ class PrivacyUseCase {
   // Direito de eliminaÃ§Ã£o (Art. 18, VI)
   async anonymizeLead(leadId: string): Promise<void> {
     await this.leadRepo.anonymize(leadId, {
-      contactName: 'ANONIMIZADO',
+      contactName: "ANONIMIZADO",
       contactEmail: null,
       contactPhone: null,
       // Manter: score, status, datas â para analytics anonimizados
     });
-    await this.auditLog.record('LEAD_ANONYMIZED', leadId);
+    await this.auditLog.record("LEAD_ANONYMIZED", leadId);
   }
 
   // Direito de portabilidade (Art. 18, V)
@@ -4728,8 +5106,8 @@ E o sistema deve processar automaticamente respostas com "PARAR", "STOP", "NÃ
 // No Conv. Handler sub-agent
 const OPT_OUT_PATTERNS = [/parar/i, /stop/i, /nÃ£o quero/i, /remover/i];
 
-if (OPT_OUT_PATTERNS.some(p => p.test(message.content))) {
-  await this.leadRepo.updateStatus(lead.id, 'OPTED_OUT');
+if (OPT_OUT_PATTERNS.some((p) => p.test(message.content))) {
+  await this.leadRepo.updateStatus(lead.id, "OPTED_OUT");
   await this.blocklist.add(lead.contactPhone);
   // Nunca mais contatar este nÃºmero
 }
@@ -4743,48 +5121,51 @@ if (OPT_OUT_PATTERNS.some(p => p.test(message.content))) {
 
 ```typescript
 // tests/e2e/full_cycle_institutional.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('Fluxo Completo: Site Institucional', () => {
-  test('lead sem site â site entregue em < 30min IA', async ({ page, request }) => {
+test.describe("Fluxo Completo: Site Institucional", () => {
+  test("lead sem site â site entregue em < 30min IA", async ({
+    page,
+    request,
+  }) => {
     // 1. Simular lead qualificado do Google Maps
-    const leadResp = await request.post('/api/v1/leads', {
+    const leadResp = await request.post("/api/v1/leads", {
       data: {
-        contactName: 'JoÃ£o Silva',
-        businessName: 'Bella Napoli',
-        contactPhone: '+5571999999999',
-        source: 'GOOGLE_MAPS',
+        contactName: "JoÃ£o Silva",
+        businessName: "Bella Napoli",
+        contactPhone: "+5571999999999",
+        source: "GOOGLE_MAPS",
         enrichmentData: {
-          cnpjStatus: 'ATIVA',
+          cnpjStatus: "ATIVA",
           yearsInBusiness: 4,
           googleRating: 4.8,
           hasWebsite: false,
-        }
-      }
+        },
+      },
     });
     const { id: leadId } = await leadResp.json();
     expect(leadResp.status()).toBe(201);
 
     // 2. Simular HITL de aprovaÃ§Ã£o do lead
     const hitlResp = await page.waitForResponse(
-      r => r.url().includes('/api/v1/hitl') && r.status() === 201,
-      { timeout: 30000 }
+      (r) => r.url().includes("/api/v1/hitl") && r.status() === 201,
+      { timeout: 30000 },
     );
     const { id: hitlId } = await hitlResp.json();
 
     await request.post(`/api/v1/hitl/${hitlId}/approve`, {
-      data: { note: 'Aprovado para contato' }
+      data: { note: "Aprovado para contato" },
     });
 
     // 3. Aguardar deal fechado (simulado)
     await request.post(`/api/v1/deals`, {
-      data: { leadId, serviceType: 'WEBSITE', status: 'CLOSED' }
+      data: { leadId, serviceType: "WEBSITE", status: "CLOSED" },
     });
 
     // 4. Aguardar briefing completado
     const briefingEvent = await page.waitForResponse(
-      r => r.url().includes('/api/v1/briefings') && r.status() === 201,
-      { timeout: 60000 }
+      (r) => r.url().includes("/api/v1/briefings") && r.status() === 201,
+      { timeout: 60000 },
     );
 
     // 5. Aprovar briefing
@@ -4793,22 +5174,28 @@ test.describe('Fluxo Completo: Site Institucional', () => {
 
     // 6. Aguardar mockup gerado (HITL)
     const mockupHitl = await page.waitForResponse(
-      r => r.url().includes('/api/v1/hitl') && r.request().postDataJSON()?.actionType === 'APPROVE_MOCKUP',
-      { timeout: 300000 } // 5 min para geraÃ§Ã£o
+      (r) =>
+        r.url().includes("/api/v1/hitl") &&
+        r.request().postDataJSON()?.actionType === "APPROVE_MOCKUP",
+      { timeout: 300000 }, // 5 min para geraÃ§Ã£o
     );
     const { id: mockupHitlId } = await mockupHitl.json();
     await request.post(`/api/v1/hitl/${mockupHitlId}/approve`);
 
     // 7. Aguardar staging deploy (HITL)
     const stagingHitl = await page.waitForResponse(
-      r => r.url().includes('/api/v1/hitl') && r.request().postDataJSON()?.actionType === 'APPROVE_STAGING',
-      { timeout: 600000 } // 10 min para build + deploy staging
+      (r) =>
+        r.url().includes("/api/v1/hitl") &&
+        r.request().postDataJSON()?.actionType === "APPROVE_STAGING",
+      { timeout: 600000 }, // 10 min para build + deploy staging
     );
     const { id: stagingHitlId } = await stagingHitl.json();
     const stagingData = await stagingHitl.json();
 
     // 8. Verificar scores do staging
-    expect(stagingData.payloadPreview.lighthouseScores.performance).toBeGreaterThanOrEqual(85);
+    expect(
+      stagingData.payloadPreview.lighthouseScores.performance,
+    ).toBeGreaterThanOrEqual(85);
     expect(stagingData.payloadPreview.lighthouseScores.accessibility).toBe(100);
     expect(stagingData.payloadPreview.owaspPassed).toBe(true);
 
@@ -4817,15 +5204,19 @@ test.describe('Fluxo Completo: Site Institucional', () => {
 
     // 10. Verificar entrega final
     const deliveryEvent = await page.waitForResponse(
-      r => r.url().includes('/api/v1/events') && r.request().postDataJSON()?.type === 'SiteDeliveredToClient',
-      { timeout: 120000 }
+      (r) =>
+        r.url().includes("/api/v1/events") &&
+        r.request().postDataJSON()?.type === "SiteDeliveredToClient",
+      { timeout: 120000 },
     );
     const delivery = await deliveryEvent.json();
 
     expect(delivery.payload.deliverableUrl).toMatch(/^https:\/\//);
     expect(delivery.payload.deliveryTutorialUrl).toBeTruthy();
     expect(delivery.payload.deliveryDocUrl).toBeTruthy();
-    expect(delivery.payload.lighthouseScores.performance).toBeGreaterThanOrEqual(85);
+    expect(
+      delivery.payload.lighthouseScores.performance,
+    ).toBeGreaterThanOrEqual(85);
   });
 });
 ```
@@ -4844,41 +5235,41 @@ global:
 alerting:
   alertmanagers:
     - static_configs:
-        - targets: ['alertmanager:9093']
+        - targets: ["alertmanager:9093"]
 
 rule_files:
   - /etc/prometheus/rules/*.yml
 
 scrape_configs:
-  - job_name: 'agentepro-api'
+  - job_name: "hefesto-api"
     static_configs:
-      - targets: ['api:3001']
+      - targets: ["api:3001"]
     metrics_path: /api/v1/metrics
 
-  - job_name: 'agentepro-agent-runtime'
+  - job_name: "hefesto-agent-runtime"
     static_configs:
-      - targets: ['agent-runtime:8000']
+      - targets: ["agent-runtime:8000"]
     metrics_path: /metrics
 
-  - job_name: 'postgres'
+  - job_name: "postgres"
     static_configs:
-      - targets: ['postgres-exporter:9187']
+      - targets: ["postgres-exporter:9187"]
 
-  - job_name: 'redis'
+  - job_name: "redis"
     static_configs:
-      - targets: ['redis-exporter:9121']
+      - targets: ["redis-exporter:9121"]
 
-  - job_name: 'n8n'
+  - job_name: "n8n"
     static_configs:
-      - targets: ['n8n:5678']
+      - targets: ["n8n:5678"]
     metrics_path: /metrics
 ```
 
 ```yaml
-# infra/prometheus/rules/agentepro.yml
+# infra/prometheus/rules/hefesto.yml
 
 groups:
-  - name: agentepro_alerts
+  - name: hefesto_alerts
     rules:
       - alert: HITLQueueBacklog
         expr: hitl_approvals_pending > 10
@@ -4933,7 +5324,7 @@ groups:
 
 ---
 
-_Fim do PRD AgentePro v2.0.0_
+_Fim do PRD Hefesto v2.0.0_
 _Total de seÃ§Ãµes: 38_
 _Documento aprovado para inÃ­cio da implementaÃ§Ã£o apÃ³s revisÃ£o dos stakeholders._
 
@@ -4988,7 +5379,7 @@ class RefreshTokenUseCase {
     const newTokens = await this.generateTokens(stored.operatorId);
 
     // 5. Auditoria
-    await this.auditLog.record('TOKEN_REFRESHED', stored.operatorId);
+    await this.auditLog.record("TOKEN_REFRESHED", stored.operatorId);
 
     return newTokens;
   }
@@ -5002,8 +5393,8 @@ class RefreshTokenUseCase {
 
 const authMiddleware = async (req: FastifyRequest, reply: FastifyReply) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
-    return reply.status(401).send({ errors: [{ code: 'UNAUTHORIZED' }] });
+  if (!authHeader?.startsWith("Bearer ")) {
+    return reply.status(401).send({ errors: [{ code: "UNAUTHORIZED" }] });
   }
 
   const token = authHeader.slice(7);
@@ -5020,12 +5411,11 @@ const authMiddleware = async (req: FastifyRequest, reply: FastifyReply) => {
       id: payload.sub as string,
       email: payload.email as string,
     };
-
   } catch (error) {
     if (error instanceof errors.JWTExpired) {
-      return reply.status(401).send({ errors: [{ code: 'TOKEN_EXPIRED' }] });
+      return reply.status(401).send({ errors: [{ code: "TOKEN_EXPIRED" }] });
     }
-    return reply.status(401).send({ errors: [{ code: 'INVALID_TOKEN' }] });
+    return reply.status(401).send({ errors: [{ code: "INVALID_TOKEN" }] });
   }
 };
 ```
@@ -5080,98 +5470,160 @@ COMMIT;
 ```typescript
 // infrastructure/db/schema.ts — extensoes v2
 
-import { pgEnum, pgTable, uuid, text, integer, boolean,
-         numeric, timestamp, jsonb, bigint, inet } from 'drizzle-orm/pg-core';
+import {
+  pgEnum,
+  pgTable,
+  uuid,
+  text,
+  integer,
+  boolean,
+  numeric,
+  timestamp,
+  jsonb,
+  bigint,
+  inet,
+} from "drizzle-orm/pg-core";
 
 // Enums atualizados
-export const agentPersonaEnum = pgEnum('agent_persona', [
-  'HUNTER', 'CLOSER', 'BRIEFING', 'BUILDER', 'QA', 'DELIVERY', 'ORCHESTRATOR'
+export const agentPersonaEnum = pgEnum("agent_persona", [
+  "HUNTER",
+  "CLOSER",
+  "BRIEFING",
+  "BUILDER",
+  "QA",
+  "DELIVERY",
+  "ORCHESTRATOR",
 ]);
 
-export const llmProviderEnum = pgEnum('llm_provider', [
-  'OLLAMA', 'OPENAI', 'ANTHROPIC', 'GROQ', 'GEMINI', 'CUSTOM'
+export const llmProviderEnum = pgEnum("llm_provider", [
+  "OLLAMA",
+  "OPENAI",
+  "ANTHROPIC",
+  "GROQ",
+  "GEMINI",
+  "CUSTOM",
 ]);
 
-export const messageChannelEnum = pgEnum('message_channel', [
-  'WHATSAPP', 'TELEGRAM', 'EMAIL', 'INTERNAL'
+export const messageChannelEnum = pgEnum("message_channel", [
+  "WHATSAPP",
+  "TELEGRAM",
+  "EMAIL",
+  "INTERNAL",
 ]);
 
-export const projectStatusEnum = pgEnum('project_status', [
-  'PLANNING', 'DESIGNING', 'BUILDING', 'QA', 'STAGING', 'DELIVERED', 'REVISION', 'CANCELLED'
+export const projectStatusEnum = pgEnum("project_status", [
+  "PLANNING",
+  "DESIGNING",
+  "BUILDING",
+  "QA",
+  "STAGING",
+  "DELIVERED",
+  "REVISION",
+  "CANCELLED",
 ]);
 
-export const siteTypeEnum = pgEnum('site_type', [
-  'institutional', 'ecommerce', 'scheduling', 'portfolio', 'landing'
+export const siteTypeEnum = pgEnum("site_type", [
+  "institutional",
+  "ecommerce",
+  "scheduling",
+  "portfolio",
+  "landing",
 ]);
 
 // Sub-agentes (v2)
-export const subAgents = pgTable('sub_agents', {
-  id:             uuid('id').primaryKey().defaultRandom(),
-  agentId:        uuid('agent_id').references(() => agents.id, { onDelete: 'cascade' }).notNull(),
-  role:           text('role').notNull(),
-  llmProvider:    llmProviderEnum('llm_provider').notNull(),
-  llmModel:       text('llm_model').notNull(),
-  llmApiKeyRef:   text('llm_api_key_ref'),
-  llmTemperature: numeric('llm_temperature', { precision: 3, scale: 2 }).default('0.5').notNull(),
-  llmMaxTokens:   integer('llm_max_tokens').default(4096).notNull(),
-  executionMode:  text('execution_mode').default('sequential').notNull(),
-  parallelGroup:  integer('parallel_group'),
-  maxRetries:     integer('max_retries').default(2).notNull(),
-  timeoutSeconds: integer('timeout_seconds').default(120).notNull(),
-  isEnabled:      boolean('is_enabled').default(true).notNull(),
-  createdAt:      timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+export const subAgents = pgTable("sub_agents", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  agentId: uuid("agent_id")
+    .references(() => agents.id, { onDelete: "cascade" })
+    .notNull(),
+  role: text("role").notNull(),
+  llmProvider: llmProviderEnum("llm_provider").notNull(),
+  llmModel: text("llm_model").notNull(),
+  llmApiKeyRef: text("llm_api_key_ref"),
+  llmTemperature: numeric("llm_temperature", { precision: 3, scale: 2 })
+    .default("0.5")
+    .notNull(),
+  llmMaxTokens: integer("llm_max_tokens").default(4096).notNull(),
+  executionMode: text("execution_mode").default("sequential").notNull(),
+  parallelGroup: integer("parallel_group"),
+  maxRetries: integer("max_retries").default(2).notNull(),
+  timeoutSeconds: integer("timeout_seconds").default(120).notNull(),
+  isEnabled: boolean("is_enabled").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 // Briefings (v2)
-export const briefings = pgTable('briefings', {
-  id:                  uuid('id').primaryKey().defaultRandom(),
-  dealId:              uuid('deal_id').references(() => deals.id).notNull(),
-  leadId:              uuid('lead_id').references(() => leads.id).notNull(),
-  operatorId:          uuid('operator_id').references(() => operators.id).notNull(),
-  agentId:             uuid('agent_id').references(() => agents.id),
-  status:              text('status').default('IN_PROGRESS').notNull(),
-  niche:               text('niche'),
-  siteType:            siteTypeEnum('site_type'),
-  structuredBrief:     jsonb('structured_brief').default({}).notNull(),
-  transcriptVaultRef:  text('transcript_vault_ref'),
-  uploadedAssets:      jsonb('uploaded_assets').default([]).notNull(),
-  completedAt:         timestamp('completed_at', { withTimezone: true }),
-  approvedAt:          timestamp('approved_at', { withTimezone: true }),
-  createdAt:           timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt:           timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+export const briefings = pgTable("briefings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  dealId: uuid("deal_id")
+    .references(() => deals.id)
+    .notNull(),
+  leadId: uuid("lead_id")
+    .references(() => leads.id)
+    .notNull(),
+  operatorId: uuid("operator_id")
+    .references(() => operators.id)
+    .notNull(),
+  agentId: uuid("agent_id").references(() => agents.id),
+  status: text("status").default("IN_PROGRESS").notNull(),
+  niche: text("niche"),
+  siteType: siteTypeEnum("site_type"),
+  structuredBrief: jsonb("structured_brief").default({}).notNull(),
+  transcriptVaultRef: text("transcript_vault_ref"),
+  uploadedAssets: jsonb("uploaded_assets").default([]).notNull(),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  approvedAt: timestamp("approved_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 // Generated Assets (v2)
-export const generatedAssets = pgTable('generated_assets', {
-  id:                   uuid('id').primaryKey().defaultRandom(),
-  projectId:            uuid('project_id').references(() => projects.id, { onDelete: 'cascade' }).notNull(),
-  assetType:            text('asset_type').notNull(),
-  provider:             text('provider').notNull(),
-  storageUrl:           text('storage_url').notNull(),
-  promptUsed:           text('prompt_used'),
-  resolution:           text('resolution'),
-  format:               text('format').default('webp').notNull(),
-  synthIdPresent:       boolean('synth_id_present').default(false).notNull(),
-  magicBytesValidated:  boolean('magic_bytes_validated').default(true).notNull(),
-  generationCostUsd:    numeric('generation_cost_usd', { precision: 8, scale: 4 }),
-  createdAt:            timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+export const generatedAssets = pgTable("generated_assets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id")
+    .references(() => projects.id, { onDelete: "cascade" })
+    .notNull(),
+  assetType: text("asset_type").notNull(),
+  provider: text("provider").notNull(),
+  storageUrl: text("storage_url").notNull(),
+  promptUsed: text("prompt_used"),
+  resolution: text("resolution"),
+  format: text("format").default("webp").notNull(),
+  synthIdPresent: boolean("synth_id_present").default(false).notNull(),
+  magicBytesValidated: boolean("magic_bytes_validated").default(true).notNull(),
+  generationCostUsd: numeric("generation_cost_usd", { precision: 8, scale: 4 }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 // Token Usage Log (v2)
-export const tokenUsageLog = pgTable('token_usage_log', {
-  id:               uuid('id').primaryKey().defaultRandom(),
-  agentId:          uuid('agent_id').references(() => agents.id).notNull(),
-  subAgentId:       uuid('sub_agent_id').references(() => subAgents.id),
-  projectId:        uuid('project_id').references(() => projects.id),
-  leadId:           uuid('lead_id').references(() => leads.id),
-  provider:         llmProviderEnum('provider').notNull(),
-  model:            text('model').notNull(),
-  promptTokens:     integer('prompt_tokens').default(0).notNull(),
-  completionTokens: integer('completion_tokens').default(0).notNull(),
-  totalTokens:      integer('total_tokens').default(0).notNull(),
-  costUsd:          numeric('cost_usd', { precision: 10, scale: 6 }).default('0').notNull(),
-  taskType:         text('task_type'),
-  createdAt:        timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+export const tokenUsageLog = pgTable("token_usage_log", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  agentId: uuid("agent_id")
+    .references(() => agents.id)
+    .notNull(),
+  subAgentId: uuid("sub_agent_id").references(() => subAgents.id),
+  projectId: uuid("project_id").references(() => projects.id),
+  leadId: uuid("lead_id").references(() => leads.id),
+  provider: llmProviderEnum("provider").notNull(),
+  model: text("model").notNull(),
+  promptTokens: integer("prompt_tokens").default(0).notNull(),
+  completionTokens: integer("completion_tokens").default(0).notNull(),
+  totalTokens: integer("total_tokens").default(0).notNull(),
+  costUsd: numeric("cost_usd", { precision: 10, scale: 6 })
+    .default("0")
+    .notNull(),
+  taskType: text("task_type"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 ```
 
@@ -5190,7 +5642,7 @@ from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
 import uvicorn
 
-app = FastAPI(title="AgentePro Runtime", version="2.0.0")
+app = FastAPI(title="Hefesto Runtime", version="2.0.0")
 
 class AgentRunRequest(BaseModel):
     agent_id: str
@@ -5243,7 +5695,7 @@ import time
 logger = structlog.get_logger()
 
 class BaseSubAgent(ABC):
-    """Classe base para todos os sub-agentes do AgentePro."""
+    """Classe base para todos os sub-agentes do Hefesto."""
 
     persona: str        # Ex: 'builder'
     role: str           # Ex: 'COPYWRITER'
@@ -5579,7 +6031,10 @@ CREATE TABLE payment_webhooks (
 ```typescript
 // domain/payment/PaymentPort.ts (para v2)
 interface PaymentPort {
-  createCheckout(deal: Deal, options: CheckoutOptions): Promise<CheckoutSession>;
+  createCheckout(
+    deal: Deal,
+    options: CheckoutOptions,
+  ): Promise<CheckoutSession>;
   getPaymentStatus(paymentId: string): Promise<PaymentStatus>;
   processWebhook(payload: unknown, signature: string): Promise<PaymentEvent>;
   refund(paymentId: string, reason: string): Promise<RefundResult>;
@@ -5603,51 +6058,61 @@ O sistema foi projetado para que adicionar um novo agente primario (ex: Agente d
 ## Checklist: Adicionar Agente de Trafego Pago
 
 ### 1. Domain
+
 - [ ] Adicionar 'TRAFFIC' ao enum agent_persona (migration)
 - [ ] Criar domain events: CampaignCreated, CampaignPublished, CampaignPaused
 - [ ] Criar aggregate: Campaign com status, budget, platform
 
 ### 2. Database
+
 - [ ] Migration: adicionar 'TRAFFIC' ao enum agent_persona
 - [ ] Tabela campaigns: id, project_id, platform, status, budget_cents, metrics JSONB
 - [ ] Indices relevantes
 
 ### 3. Application
+
 - [ ] CreateCampaignCommand + Handler
 - [ ] PauseCampaignCommand + Handler
 - [ ] GetCampaignMetricsQuery + Handler
 
 ### 4. Infrastructure
+
 - [ ] GoogleAdsAdapter implements TrafficPort
 - [ ] MetaAdsAdapter implements TrafficPort
 - [ ] TrafficRouter (ACL, escolhe provider por config)
 
 ### 5. Agent Runtime
+
 - [ ] TrafficAgent extends BaseAgent
 - [ ] Sub-agentes: KeywordResearcher, AdWriter, BudgetOptimizer, ReportGenerator
 - [ ] Skills: google_ads_skill, meta_ads_skill, analytics_reader
 
 ### 6. API
+
 - [ ] /api/v1/campaigns (CRUD)
 - [ ] /api/v1/campaigns/:id/metrics
 - [ ] /api/v1/campaigns/:id/pause
 
 ### 7. n8n
+
 - [ ] Workflow: Traffic — Criacao de Campanha
 - [ ] Workflow: Traffic — Otimizacao Semanal
 - [ ] Workflow: Traffic — Relatorio Mensal
 
 ### 8. Testes
+
 - [ ] Unit tests para Campaign aggregate
 - [ ] BDD scenarios para criacao e pausa de campanha
 - [ ] Mock dos adapters Google Ads e Meta Ads
 
 ### 9. Observabilidade
+
 - [ ] Metrica: campaign_spend_total{platform, campaign_id}
 - [ ] Metrica: campaign_conversions_total{platform}
 - [ ] Alerta: campaign_budget_exhausted
 
 ### 10. Documentacao
+
 - [ ] Seccao no PRD: Agente de Trafego Pago
 - [ ] Runbook: Pausa de emergencia de campanha
 - [ ] Glossario: novos termos de trafego
@@ -5699,22 +6164,22 @@ POS-ENTREGA
 // Calculo automatico no Cost Dashboard
 interface UnitEconomics {
   // Por site entregue
-  revenueBrl: number;             // Receita media por site
-  cogUsd: number;                 // Custo de tokens + APIs
-  cogBrl: number;                 // COG em BRL
-  grossMarginPct: number;         // Margem bruta %
-  operationalCostBrl: number;     // Infra + VPS + subscricoes / volume mensal
-  netMarginPct: number;           // Margem liquida %
+  revenueBrl: number; // Receita media por site
+  cogUsd: number; // Custo de tokens + APIs
+  cogBrl: number; // COG em BRL
+  grossMarginPct: number; // Margem bruta %
+  operationalCostBrl: number; // Infra + VPS + subscricoes / volume mensal
+  netMarginPct: number; // Margem liquida %
 
   // Por lead
-  costPerLeadUsd: number;         // Custo de prospectar 1 lead
-  costPerQualifiedLead: number;   // Custo de lead com score >= 40
-  costPerSaleUsd: number;         // CAC (custo de aquisicao)
-  revenuePerLeadBrl: number;      // Receita / total de leads
+  costPerLeadUsd: number; // Custo de prospectar 1 lead
+  costPerQualifiedLead: number; // Custo de lead com score >= 40
+  costPerSaleUsd: number; // CAC (custo de aquisicao)
+  revenuePerLeadBrl: number; // Receita / total de leads
 
   // Eficiência
-  conversionRate: number;         // Leads → Clientes
-  leadsToHitBreakeven: number;    // Leads necessários para cobrir custo fixo
+  conversionRate: number; // Leads → Clientes
+  leadsToHitBreakeven: number; // Leads necessários para cobrir custo fixo
 }
 ```
 
@@ -5725,11 +6190,11 @@ interface UnitEconomics {
 ```bash
 #!/bin/bash
 # infra/scripts/setup.sh
-# Script de configuração do ambiente AgentePro do zero
+# Script de configuração do ambiente Hefesto do zero
 
 set -euo pipefail
 
-echo "=== AgentePro Setup v2 ==="
+echo "=== Hefesto Setup v2 ==="
 echo ""
 
 # 1. Verificar dependências
@@ -5755,7 +6220,7 @@ fi
 echo "3. Iniciando serviços de infraestrutura..."
 docker-compose up -d postgres redis chromadb
 echo "   Aguardando postgres ficar pronto..."
-until docker-compose exec postgres pg_isready -U agentepro >/dev/null 2>&1; do
+until docker-compose exec postgres pg_isready -U hefesto >/dev/null 2>&1; do
   sleep 2
 done
 echo "   ✅ PostgreSQL pronto"
@@ -5809,7 +6274,7 @@ echo ""
 echo "=== Setup Concluído! ==="
 echo ""
 echo "URLs de acesso:"
-echo "  Painel AgentePro: http://localhost:3000"
+echo "  Painel Hefesto: http://localhost:3000"
 echo "  API:              http://localhost:3001"
 echo "  n8n:              http://localhost:5678"
 echo "  Grafana:          http://localhost:3200"
@@ -5830,22 +6295,26 @@ echo "  5. Execute o primeiro teste de prospecção manual"
 ### 46.1 Polyglot Node.js + Python: Decisão Arquitetural
 
 O sistema usa dois runtimes distintos:
+
 - **Node.js/TypeScript**: API principal, banco, autenticação, HITL, CRM
 - **Python**: CrewAI, LiteLLM, agentes, sub-agentes
 
 Esta decisão tem prós e contras que o time deve conhecer:
 
 **Prós:**
+
 - CrewAI e LiteLLM são maturos em Python — melhores bibliotecas disponíveis
 - LangChain, ChromaDB, embeddings — ecossistema Python superior
 - Separação clara de responsabilidades: API vs Runtime de Agentes
 
 **Contras:**
+
 - Dois runtimes = dois Dockerfiles, dois deploys, mais complexidade ops
 - Comunicação via HTTP interno (latência ~1ms por chamada)
 - Dois conjuntos de dependências para manter
 
 **Mitigação:**
+
 - Contratos HTTP bem definidos (OpenAPI spec para a API interna)
 - Docker Compose garante rede interna (sem latência de rede externa)
 - Se escalar para muitos sites simultâneos: considerar LangChain.js para unificar
@@ -5874,8 +6343,8 @@ O sistema deve:
 
 1. Registrar `synth_id_present: true` em todos os assets do Nano Banana Pro
 2. Na entrega ao cliente, incluir no PDF:
-   *"As imagens do seu site foram geradas com auxílio de inteligência artificial
-   e contêm uma marca d'água digital (SynthID) para rastreabilidade."*
+   _"As imagens do seu site foram geradas com auxílio de inteligência artificial
+   e contêm uma marca d'água digital (SynthID) para rastreabilidade."_
 3. O cliente tem o direito de solicitar imagens próprias — o sistema aceita uploads
    no Briefing Agent como alternativa às imagens geradas
 4. Nunca usar imagens geradas por IA que contenham rostos reconhecíveis de pessoas reais
@@ -5892,13 +6361,12 @@ O sistema deve:
 
 ---
 
-_FIM DO PRD AGENTEPRO v2.0.0_
+_FIM DO PRD HEFESTO v2.0.0_
 
 _Documento gerado e revisado em: 2026-05-29_  
 _Versão: 2.0.0 | Seções: 46 | Status: Pronto para implementação_
 
 ---
-
 
 ---
 
@@ -5926,19 +6394,19 @@ O operador recebe notificações no Telegram com botões inline para aprovar, re
 class TelegramHITLBot {
   private buildApprovalMessage(approval: HITLApproval): string {
     const icons: Record<string, string> = {
-      SEND_EXTERNAL_MESSAGE: '📨',
-      SEND_PROPOSAL:         '📋',
-      APPROVE_MOCKUP:        '🎨',
-      APPROVE_STAGING:       '🌐',
-      DEPLOY_SITE:           '🚀',
+      SEND_EXTERNAL_MESSAGE: "📨",
+      SEND_PROPOSAL: "📋",
+      APPROVE_MOCKUP: "🎨",
+      APPROVE_STAGING: "🌐",
+      DEPLOY_SITE: "🚀",
     };
 
     return `
-${icons[approval.actionType] ?? '⚡'} *APROVAÇÃO NECESSÁRIA*
+${icons[approval.actionType] ?? "⚡"} *APROVAÇÃO NECESSÁRIA*
 
 *Tipo:* ${approval.actionType}
 *Contexto:* ${approval.contextType} #${approval.contextId.slice(0, 8)}
-*Expira em:* ${approval.expiresAt.toLocaleString('pt-BR')}
+*Expira em:* ${approval.expiresAt.toLocaleString("pt-BR")}
 
 *Preview:*
 \`\`\`json
@@ -5953,42 +6421,56 @@ _Clique para decidir:_
     return {
       inline_keyboard: [
         [
-          { text: '✅ APROVAR', callback_data: `hitl:approve:${approvalId}` },
-          { text: '❌ REJEITAR', callback_data: `hitl:reject:${approvalId}` },
+          { text: "✅ APROVAR", callback_data: `hitl:approve:${approvalId}` },
+          { text: "❌ REJEITAR", callback_data: `hitl:reject:${approvalId}` },
         ],
         [
-          { text: '✏️ EDITAR E APROVAR', callback_data: `hitl:edit:${approvalId}` },
-          { text: '🔍 VER COMPLETO', url: `${process.env.FRONTEND_URL}/hitl/${approvalId}` },
+          {
+            text: "✏️ EDITAR E APROVAR",
+            callback_data: `hitl:edit:${approvalId}`,
+          },
+          {
+            text: "🔍 VER COMPLETO",
+            url: `${process.env.FRONTEND_URL}/hitl/${approvalId}`,
+          },
         ],
       ],
     };
   }
 
   async handleCallbackQuery(query: TelegramCallbackQuery): Promise<void> {
-    const [prefix, action, approvalId] = query.data.split(':');
-    if (prefix !== 'hitl') return;
+    const [prefix, action, approvalId] = query.data.split(":");
+    if (prefix !== "hitl") return;
 
     switch (action) {
-      case 'approve':
+      case "approve":
         await this.api.post(`/api/v1/hitl/${approvalId}/approve`, {
-          note: 'Aprovado via Telegram',
+          note: "Aprovado via Telegram",
         });
-        await this.editMessage(query.message.chat.id, query.message.message_id,
-          '✅ *APROVADO* — Ação executada com sucesso.');
+        await this.editMessage(
+          query.message.chat.id,
+          query.message.message_id,
+          "✅ *APROVADO* — Ação executada com sucesso.",
+        );
         break;
 
-      case 'reject':
+      case "reject":
         await this.api.post(`/api/v1/hitl/${approvalId}/reject`, {
-          note: 'Rejeitado via Telegram',
+          note: "Rejeitado via Telegram",
         });
-        await this.editMessage(query.message.chat.id, query.message.message_id,
-          '❌ *REJEITADO* — Ação cancelada.');
+        await this.editMessage(
+          query.message.chat.id,
+          query.message.message_id,
+          "❌ *REJEITADO* — Ação cancelada.",
+        );
         break;
 
-      case 'edit':
+      case "edit":
         // Redirecionar para painel web para edição complexa
-        await this.answerCallbackQuery(query.id,
-          `Abra o painel para editar: ${process.env.FRONTEND_URL}/hitl/${approvalId}`);
+        await this.answerCallbackQuery(
+          query.id,
+          `Abra o painel para editar: ${process.env.FRONTEND_URL}/hitl/${approvalId}`,
+        );
         break;
     }
   }
@@ -6007,11 +6489,11 @@ class HITLTimeoutUseCase {
 
     for (const approval of expired) {
       // Marcar como EXPIRED
-      await this.hitlRepo.updateStatus(approval.id, 'EXPIRED');
+      await this.hitlRepo.updateStatus(approval.id, "EXPIRED");
 
       // Emitir evento para o Orchestrator
       await this.eventBus.publish({
-        eventType: 'HITLExpired',
+        eventType: "HITLExpired",
         aggregateId: approval.id,
         payload: {
           approvalId: approval.id,
@@ -6026,11 +6508,11 @@ class HITLTimeoutUseCase {
       await this.telegramHITL.sendMessage(
         process.env.TELEGRAM_OPERATOR_CHAT_ID!,
         `⏰ *HITL EXPIRADO*\n\nA aprovação para *${approval.actionType}* expirou sem decisão.\n` +
-        `O agente foi pausado automaticamente. Acesse o painel para retomar.`
+          `O agente foi pausado automaticamente. Acesse o painel para retomar.`,
       );
 
       // Registrar no audit log
-      await this.auditLog.record('HITL_EXPIRED', {
+      await this.auditLog.record("HITL_EXPIRED", {
         approvalId: approval.id,
         actionType: approval.actionType,
         expiredAt: new Date(),
@@ -6047,29 +6529,37 @@ class HITLTimeoutUseCase {
 
 class HITLPayloadMasker {
   mask(payload: Record<string, unknown>): Record<string, unknown> {
-    const PII_KEYS = ['email', 'phone', 'contactPhone', 'contactEmail',
-                      'cpf', 'cnpj', 'address', 'password'];
-    const PARTIAL_MASK_KEYS = ['contactName', 'businessName'];
+    const PII_KEYS = [
+      "email",
+      "phone",
+      "contactPhone",
+      "contactEmail",
+      "cpf",
+      "cnpj",
+      "address",
+      "password",
+    ];
+    const PARTIAL_MASK_KEYS = ["contactName", "businessName"];
 
     const masked = { ...payload };
 
     for (const key of PII_KEYS) {
       if (key in masked) {
-        masked[key] = '***REDACTED***';
+        masked[key] = "***REDACTED***";
       }
     }
 
     for (const key of PARTIAL_MASK_KEYS) {
-      if (key in masked && typeof masked[key] === 'string') {
+      if (key in masked && typeof masked[key] === "string") {
         const val = masked[key] as string;
         // Mostrar apenas primeiros 3 chars: "João" → "Joã***"
-        masked[key] = val.slice(0, 3) + '***';
+        masked[key] = val.slice(0, 3) + "***";
       }
     }
 
     // Mascarar mensagem de WhatsApp (exibir apenas preview)
-    if ('message' in masked && typeof masked.message === 'string') {
-      masked.message = (masked.message as string).slice(0, 150) + '...';
+    if ("message" in masked && typeof masked.message === "string") {
+      masked.message = (masked.message as string).slice(0, 150) + "...";
       masked.message_full_in_vault = true;
     }
 
@@ -6088,13 +6578,13 @@ class HITLPayloadMasker {
 // infrastructure/cache/CacheStrategy.ts
 
 enum CacheTTL {
-  MAPS_SEARCH_RESULT  = 86400,    // 24h — resultados do Google Maps
-  LEAD_SCORE          = 3600,     // 1h — score de qualificação
-  RAG_QUERY_RESULT    = 1800,     // 30min — resultados de RAG
-  AGENT_CONFIG        = 300,      // 5min — configuração de agente
-  TEMPLATE_LIST       = 3600,     // 1h — lista de templates
-  LIGHTHOUSE_SCORE    = 86400,    // 24h — score de site já entregue
-  CNPJ_VALIDATION     = 604800,   // 7 dias — CNPJ não muda frequentemente
+  MAPS_SEARCH_RESULT = 86400, // 24h — resultados do Google Maps
+  LEAD_SCORE = 3600, // 1h — score de qualificação
+  RAG_QUERY_RESULT = 1800, // 30min — resultados de RAG
+  AGENT_CONFIG = 300, // 5min — configuração de agente
+  TEMPLATE_LIST = 3600, // 1h — lista de templates
+  LIGHTHOUSE_SCORE = 86400, // 24h — score de site já entregue
+  CNPJ_VALIDATION = 604800, // 7 dias — CNPJ não muda frequentemente
 }
 
 class CacheService {
@@ -6123,7 +6613,7 @@ class CacheService {
 
   // Cache de validação CNPJ — dados governamentais mudam raramente
   cnpjKey(cnpj: string): string {
-    return `cnpj:${cnpj.replace(/\D/g, '')}`;
+    return `cnpj:${cnpj.replace(/\D/g, "")}`;
   }
 
   // Cache de RAG — mesmas queries recorrentes
@@ -6135,7 +6625,7 @@ class CacheService {
   private simpleHash(str: string): string {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
-      hash = ((hash << 5) - hash) + str.charCodeAt(i);
+      hash = (hash << 5) - hash + str.charCodeAt(i);
       hash |= 0;
     }
     return Math.abs(hash).toString(36);
@@ -6149,7 +6639,7 @@ class CacheService {
 # infra/pgbouncer/pgbouncer.ini
 
 [databases]
-agentepro = host=postgres port=5432 dbname=agentepro
+hefesto = host=postgres port=5432 dbname=hefesto
 
 [pgbouncer]
 listen_port = 6432
@@ -6172,9 +6662,9 @@ log_disconnections = 0
 ```typescript
 // infrastructure/queue/SubAgentQueue.ts
 
-import { Queue, Worker, Job } from 'bullmq';
+import { Queue, Worker, Job } from "bullmq";
 
-const SUB_AGENT_QUEUE = 'sub-agent-tasks';
+const SUB_AGENT_QUEUE = "sub-agent-tasks";
 
 // Producer (API)
 class SubAgentQueueProducer {
@@ -6185,7 +6675,7 @@ class SubAgentQueueProducer {
       connection: redis,
       defaultJobOptions: {
         attempts: 3,
-        backoff: { type: 'exponential', delay: 2000 },
+        backoff: { type: "exponential", delay: 2000 },
         removeOnComplete: 100,
         removeOnFail: 500,
       },
@@ -6199,22 +6689,22 @@ class SubAgentQueueProducer {
       {
         priority: this.getPriority(subAgentJob.role),
         // Agentes de entrega têm prioridade maior que prospecção
-      }
+      },
     );
     return job.id!;
   }
 
   private getPriority(role: string): number {
     const priorities: Record<string, number> = {
-      'NOTIFIER':          1,   // Mais alta — entrega ao cliente
-      'SEC_AUDITOR':       2,   // Segurança é crítica
-      'CODER':             3,
-      'CONV_HANDLER':      4,   // Negociação em andamento
-      'OUTREACH_WRITER':   5,
-      'COPYWRITER':        6,
-      'DESIGNER':          6,
-      'IMAGER':            6,
-      'PROSPECTOR':        10,  // Mais baixa — background task
+      NOTIFIER: 1, // Mais alta — entrega ao cliente
+      SEC_AUDITOR: 2, // Segurança é crítica
+      CODER: 3,
+      CONV_HANDLER: 4, // Negociação em andamento
+      OUTREACH_WRITER: 5,
+      COPYWRITER: 6,
+      DESIGNER: 6,
+      IMAGER: 6,
+      PROSPECTOR: 10, // Mais baixa — background task
     };
     return priorities[role] ?? 5;
   }
@@ -6236,21 +6726,24 @@ class SubAgentQueueWorker {
 
         // Jobs Python são despachados para o agent-runtime
         if (this.isPythonJob(role)) {
-          await fetch(`${process.env.AGENT_RUNTIME_URL}/agents/${persona}/sub-agents/${role}/run`, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-          });
+          await fetch(
+            `${process.env.AGENT_RUNTIME_URL}/agents/${persona}/sub-agents/${role}/run`,
+            {
+              method: "POST",
+              body: JSON.stringify(payload),
+            },
+          );
           return;
         }
 
         // Jobs TypeScript são executados aqui mesmo
         return await this.executeTypescriptJob(role, payload);
       },
-      { connection: redis, concurrency: 10 }
+      { connection: redis, concurrency: 10 },
     );
 
-    this.worker.on('failed', (job, err) => {
-      logger.error('sub_agent_job_failed', {
+    this.worker.on("failed", (job, err) => {
+      logger.error("sub_agent_job_failed", {
         jobId: job?.id,
         role: job?.data?.role,
         error: err.message,
@@ -6261,12 +6754,21 @@ class SubAgentQueueWorker {
 
   private isPythonJob(role: string): boolean {
     const pythonRoles = [
-      'PROSPECTOR', 'SITE_INSPECTOR', 'DATA_ENRICHER',
-      'OUTREACH_WRITER', 'CONV_HANDLER', 'PROPOSAL_WRITER',
-      'INTERVIEWER', 'BRIEF_EXTRACTOR',
-      'COPYWRITER', 'DESIGNER', 'IMAGER', 'CODER',
-      'SEC_AUDITOR', 'PERF_AUDITOR',
-      'TUTORIAL_GENERATOR',
+      "PROSPECTOR",
+      "SITE_INSPECTOR",
+      "DATA_ENRICHER",
+      "OUTREACH_WRITER",
+      "CONV_HANDLER",
+      "PROPOSAL_WRITER",
+      "INTERVIEWER",
+      "BRIEF_EXTRACTOR",
+      "COPYWRITER",
+      "DESIGNER",
+      "IMAGER",
+      "CODER",
+      "SEC_AUDITOR",
+      "PERF_AUDITOR",
+      "TUTORIAL_GENERATOR",
     ];
     return pythonRoles.includes(role);
   }
@@ -6280,9 +6782,12 @@ class SubAgentQueueWorker {
 ```typescript
 // tests/integration/setup.ts
 
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
-import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
-import { GenericContainer, StartedTestContainer } from 'testcontainers';
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from "@testcontainers/postgresql";
+import { RedisContainer, StartedRedisContainer } from "@testcontainers/redis";
+import { GenericContainer, StartedTestContainer } from "testcontainers";
 
 let postgres: StartedPostgreSqlContainer;
 let redis: StartedRedisContainer;
@@ -6290,17 +6795,17 @@ let chromadb: StartedTestContainer;
 
 beforeAll(async () => {
   // Postgres real para testes de integração
-  postgres = await new PostgreSqlContainer('postgres:16-alpine')
-    .withDatabase('agentepro_test')
-    .withUsername('test')
-    .withPassword('test')
+  postgres = await new PostgreSqlContainer("postgres:16-alpine")
+    .withDatabase("hefesto_test")
+    .withUsername("test")
+    .withPassword("test")
     .start();
 
   // Redis real para BullMQ e cache
-  redis = await new RedisContainer('redis:7-alpine').start();
+  redis = await new RedisContainer("redis:7-alpine").start();
 
   // ChromaDB real para RAG
-  chromadb = await new GenericContainer('chromadb/chroma:latest')
+  chromadb = await new GenericContainer("chromadb/chroma:latest")
     .withExposedPorts(8000)
     .start();
 
@@ -6312,7 +6817,7 @@ beforeAll(async () => {
   // Executar migrations no banco de teste
   await runMigrations(process.env.DATABASE_URL);
 
-  console.log('✅ Testcontainers iniciados');
+  console.log("✅ Testcontainers iniciados");
 }, 60000);
 
 afterAll(async () => {
@@ -6329,101 +6834,121 @@ beforeEach(async () => {
 ```typescript
 // tests/integration/hunter/lead_qualification.test.ts
 
-describe('Hunter: Qualificação de Lead via Google Maps', () => {
+describe("Hunter: Qualificação de Lead via Google Maps", () => {
   let mapsAdapterMock: jest.Mocked<GoogleMapsAdapter>;
   let mcpBrasilMock: jest.Mocked<MCPBrasilAdapter>;
 
   beforeEach(() => {
     // Mock dos serviços externos — nunca chamar APIs reais em testes
     mapsAdapterMock = {
-      searchLeads: jest.fn().mockResolvedValue([{
-        id: 'ChIJtest123',
-        displayName: { text: 'Bella Napoli Pizzaria' },
-        formattedAddress: 'Rua Teste, 123, Salvador, BA',
-        nationalPhoneNumber: '+55 71 99999-0000',
-        websiteUri: undefined,           // Sem site = lead quente
-        rating: 4.8,
-        userRatingCount: 234,
-      }]),
+      searchLeads: jest.fn().mockResolvedValue([
+        {
+          id: "ChIJtest123",
+          displayName: { text: "Bella Napoli Pizzaria" },
+          formattedAddress: "Rua Teste, 123, Salvador, BA",
+          nationalPhoneNumber: "+55 71 99999-0000",
+          websiteUri: undefined, // Sem site = lead quente
+          rating: 4.8,
+          userRatingCount: 234,
+        },
+      ]),
     } as any;
 
     mcpBrasilMock = {
       consultarCNPJ: jest.fn().mockResolvedValue({
-        cnpj: '12.345.678/0001-90',
-        situacaoCadastral: 'ATIVA',
-        dataAbertura: '2020-03-15',
-        nomeFantasia: 'Bella Napoli',
+        cnpj: "12.345.678/0001-90",
+        situacaoCadastral: "ATIVA",
+        dataAbertura: "2020-03-15",
+        nomeFantasia: "Bella Napoli",
       }),
     } as any;
   });
 
-  test('deve qualificar lead sem site com CNPJ ativo', async () => {
+  test("deve qualificar lead sem site com CNPJ ativo", async () => {
     const useCase = new QualifyLeadUseCase(
-      leadRepo, mapsAdapterMock, mcpBrasilMock, scoringService, hitlService
+      leadRepo,
+      mapsAdapterMock,
+      mcpBrasilMock,
+      scoringService,
+      hitlService,
     );
 
     const result = await useCase.execute({
-      category: 'restaurant',
-      region: 'Salvador, BA',
+      category: "restaurant",
+      region: "Salvador, BA",
       minScore: 40,
     });
 
     expect(result.qualifiedLeads).toHaveLength(1);
-    expect(result.qualifiedLeads[0].qualificationScore).toBeGreaterThanOrEqual(60);
-    expect(result.qualifiedLeads[0].enrichmentData.cnpjStatus).toBe('ATIVA');
+    expect(result.qualifiedLeads[0].qualificationScore).toBeGreaterThanOrEqual(
+      60,
+    );
+    expect(result.qualifiedLeads[0].enrichmentData.cnpjStatus).toBe("ATIVA");
     expect(result.qualifiedLeads[0].enrichmentData.hasWebsite).toBe(false);
 
     // Verificar que HITL foi criado
     const hitls = await hitlRepo.findPending(operatorId);
     expect(hitls).toHaveLength(1);
-    expect(hitls[0].actionType).toBe('APPROVE_LEAD_LIST');
+    expect(hitls[0].actionType).toBe("APPROVE_LEAD_LIST");
   });
 
-  test('deve bloquear lead com CNPJ suspenso', async () => {
+  test("deve bloquear lead com CNPJ suspenso", async () => {
     mcpBrasilMock.consultarCNPJ.mockResolvedValue({
-      cnpj: '12.345.678/0001-90',
-      situacaoCadastral: 'SUSPENSA',    // CNPJ suspenso
-      dataAbertura: '2020-03-15',
+      cnpj: "12.345.678/0001-90",
+      situacaoCadastral: "SUSPENSA", // CNPJ suspenso
+      dataAbertura: "2020-03-15",
     });
 
     const useCase = new QualifyLeadUseCase(
-      leadRepo, mapsAdapterMock, mcpBrasilMock, scoringService, hitlService
+      leadRepo,
+      mapsAdapterMock,
+      mcpBrasilMock,
+      scoringService,
+      hitlService,
     );
 
     const result = await useCase.execute({
-      category: 'restaurant', region: 'Salvador, BA', minScore: 40,
+      category: "restaurant",
+      region: "Salvador, BA",
+      minScore: 40,
     });
 
     // Lead bloqueado pela rule block_suspended_cnpj
     expect(result.qualifiedLeads).toHaveLength(0);
     expect(result.blockedLeads).toHaveLength(1);
-    expect(result.blockedLeads[0].blockReason).toBe('block_suspended_cnpj');
+    expect(result.blockedLeads[0].blockReason).toBe("block_suspended_cnpj");
 
     // Nenhum HITL criado para lead bloqueado
     const hitls = await hitlRepo.findPending(operatorId);
     expect(hitls).toHaveLength(0);
   });
 
-  test('deve deduplicar lead com mesmo Maps Place ID nos últimos 30 dias', async () => {
+  test("deve deduplicar lead com mesmo Maps Place ID nos últimos 30 dias", async () => {
     // Criar lead existente com mesmo place_id
     await leadRepo.create({
-      contactName: 'João',
-      source: 'GOOGLE_MAPS',
-      enrichmentData: { googleMapsPlaceId: 'ChIJtest123' },
+      contactName: "João",
+      source: "GOOGLE_MAPS",
+      enrichmentData: { googleMapsPlaceId: "ChIJtest123" },
       createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 dias atrás
     });
 
     const useCase = new QualifyLeadUseCase(
-      leadRepo, mapsAdapterMock, mcpBrasilMock, scoringService, hitlService
+      leadRepo,
+      mapsAdapterMock,
+      mcpBrasilMock,
+      scoringService,
+      hitlService,
     );
 
     const result = await useCase.execute({
-      category: 'restaurant', region: 'Salvador, BA', minScore: 40,
+      category: "restaurant",
+      region: "Salvador, BA",
+      minScore: 40,
     });
 
     // Lead ignorado por deduplicação
     expect(result.qualifiedLeads).toHaveLength(0);
-    expect(result.skippedLeads[0].skipReason).toBe('duplicate_within_30_days');
+    expect(result.skippedLeads[0].skipReason).toBe("duplicate_within_30_days");
   });
 });
 ```
@@ -6448,6 +6973,7 @@ describe('Hunter: Qualificação de Lead via Google Maps', () => {
 ## Passo 2: Configurar o LLM do Hunter
 
 O Hunter em si usa Gemini 3.5 Flash para ser rápido e econômico:
+
 - Provider: GEMINI
 - Modelo: gemini/gemini-3.5-flash
 - API Key: [sua chave Gemini]
@@ -6457,18 +6983,21 @@ O Hunter em si usa Gemini 3.5 Flash para ser rápido e econômico:
 ## Passo 3: Configurar Sub-agentes
 
 ### Sub-agente 1: PROSPECTOR
+
 - Role: PROSPECTOR
 - Provider: GEMINI | Modelo: gemini/gemini-3.5-flash
 - Execution Mode: PARALLEL | Parallel Group: 1
 - Max Retries: 2 | Timeout: 60s
 
 ### Sub-agente 2: SITE_INSPECTOR
+
 - Role: SITE_INSPECTOR
 - Provider: GEMINI | Modelo: gemini/gemini-3.5-flash
 - Execution Mode: PARALLEL | Parallel Group: 1 (mesmo grupo do PROSPECTOR)
 - Max Retries: 2 | Timeout: 30s
 
 ### Sub-agente 3: DATA_ENRICHER
+
 - Role: DATA_ENRICHER
 - Provider: OLLAMA | Modelo: llama3.2:3b (gratuito!)
 - Execution Mode: SEQUENTIAL
@@ -6477,6 +7006,7 @@ O Hunter em si usa Gemini 3.5 Flash para ser rápido e econômico:
 ## Passo 4: Adicionar Skills
 
 ### Skill: Google Maps Prospector
+
 - Tipo: external_database
 - Provider: google_maps
 - API Key: [sua chave Google Maps]
@@ -6485,18 +7015,21 @@ O Hunter em si usa Gemini 3.5 Flash para ser rápido e econômico:
 - Filtros: sem site, rating ≥ 3.5, reviews ≥ 10
 
 ### Skill: MCP Brasil
+
 - Tipo: external_database
 - Provider: mcp_brasil
 - URL: http://mcp-brasil:8000/mcp
 - Tools: brasilapi_consultar_cnpj, brasilapi_consultar_cep
 
 ## Passo 5: Configurar HITL
+
 - Timeout: 60 minutos
 - Canal de notificação: Telegram
 - Ações que requerem aprovação:
   ✅ APPROVE_LEAD_LIST (obrigatório)
 
 ## Passo 6: Configurar Prospecção
+
 - Acesse: Prospecção → Configuração
 - Defina:
   - Região: Salvador, BA (ou sua cidade)
@@ -6505,6 +7038,7 @@ O Hunter em si usa Gemini 3.5 Flash para ser rápido e econômico:
   - Horário de execução: 09:00 (dias úteis)
 
 ## Passo 7: Ativar e Testar
+
 1. Ative o agente (Status → ATIVO)
 2. Execute uma prospecção manual: Prospecção → Executar Agora
 3. Aguarde a notificação no Telegram
@@ -6544,6 +7078,7 @@ O sistema usa esses templates como base e o Claude Sonnet personaliza para cada 
 Acesse: Closer → Configurações → Precificação
 
 Defina:
+
 - Preço base: R$ 800 (padrão)
 - Multiplicador e-commerce: 2x
 - Adicional agendamento: R$ 250
@@ -6642,7 +7177,9 @@ NOTA: A 200 sites/mês, considere:
 
 ```markdown
 ## v2.0.0 — 2026-05-29 (versão atual)
+
 ### Adicionado
+
 - Agente Briefing (novo bounded context, 2 sub-agentes)
 - Agente Delivery (novo bounded context, 3 sub-agentes)
 - Agente Orchestrator com máquina de estados completa
@@ -6669,6 +7206,7 @@ NOTA: A 200 sites/mês, considere:
 - Matriz de Custos por cenário (seção 51)
 
 ### Modificado
+
 - system_prompt: limite expandido de 8.000 para 32.000 chars
 - agent_persona enum: adicionado BRIEFING e DELIVERY
 - llm_provider enum: adicionado GEMINI
@@ -6678,11 +7216,14 @@ NOTA: A 200 sites/mês, considere:
 - Cobertura de testes: security_tests agora 100% obrigatório no CI
 
 ### Removido
+
 - Replicate como provider de imagens (substituído por Nano Banana Pro)
 - nano-banana identificado como aplicação Google, não ferramenta independente
 
 ## v1.0.0 — 2026-04 (versão inicial)
+
 ### Contexto
+
 - Versão inicial do PRD com Hunter, Closer e Builder como agentes monolíticos
 - Sem sub-agentes, sem paralelismo, sem MediaGenerationService
 - Sem Google Maps, sem MCP Brasil, sem Cal.com
@@ -6707,6 +7248,7 @@ NOTA: A 200 sites/mês, considere:
 6. **Comunicar o time** via Telegram/Slack sobre mudanças críticas
 
 ## Critérios para Bump de Versão
+
 - MAJOR (x.0.0): mudança arquitetural significativa (ex: novo bounded context)
 - MINOR (x.y.0): nova feature ou agente (ex: novo sub-agente)
 - PATCH (x.y.z): correção de inconsistência, clarificação, typo
@@ -6720,6 +7262,7 @@ NOTA: A 200 sites/mês, considere:
 
 ```markdown
 ## LLM e IA
+
 - Anthropic API: https://docs.anthropic.com
 - Claude Design: https://support.claude.com/pt/articles/14604416-comece-com-claude-design
 - Gemini API (Nano Banana Pro): https://ai.google.dev/gemini-api/docs/imagen
@@ -6728,43 +7271,51 @@ NOTA: A 200 sites/mês, considere:
 - LangChain: https://python.langchain.com
 
 ## Infraestrutura
+
 - n8n: https://docs.n8n.io
 - ChromaDB: https://docs.trychroma.com
 - BullMQ: https://docs.bullmq.io
 - Ollama: https://ollama.com/library
 
 ## Mensageria
+
 - Evolution API: https://doc.evolution-api.com
 - Telegram Bot API: https://core.telegram.org/bots/api
 - Telegraf.js: https://telegraf.js.org
 
 ## Prospecção
+
 - Google Maps Places API (New): https://developers.google.com/maps/documentation/places/web-service/op-overview
 - MCP Brasil: https://github.com/Mcp-Brasil/mcp-brasil
 - Apollo.io API: https://apolloio.github.io/apollo-api-docs/
 
 ## Deploy
+
 - Vercel: https://vercel.com/docs
 - Cloudflare Pages: https://developers.cloudflare.com/pages
 - Render: https://render.com/docs
 
 ## Agendamento
+
 - Cal.com: https://cal.com/docs
 - Cal.com API: https://cal.com/docs/api-reference
 
 ## Segurança
+
 - OWASP Top 10: https://owasp.org/www-project-top-ten
 - OWASP ZAP: https://www.zaproxy.org
 - Argon2: https://github.com/ranisalt/node-argon2
 - LGPD: https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd
 
 ## Observabilidade
+
 - Prometheus: https://prometheus.io/docs
 - Grafana: https://grafana.com/docs
 - Jaeger: https://www.jaegertracing.io/docs
 - OpenTelemetry: https://opentelemetry.io/docs
 
 ## Entrega de Sites
+
 - Next.js 15: https://nextjs.org/docs
 - Tailwind CSS 4: https://tailwindcss.com/docs
 - Formspree: https://formspree.io/docs
@@ -6773,10 +7324,9 @@ NOTA: A 200 sites/mês, considere:
 
 ---
 
-_PRD AgentePro v2.0.0 — DOCUMENTO COMPLETO_
+_PRD Hefesto v2.0.0 — DOCUMENTO COMPLETO_
 _Total de seções: 53 | Status: Aprovado para Implementação_
 _Salvador, Bahia — 2026-05-29_
-
 
 ---
 
@@ -6792,20 +7342,20 @@ interface DashboardMetrics {
   // Pipeline atual
   leadsProspectedToday: number;
   leadsInNegotiation: number;
-  hitlPendingCount: number;           // Alerta vermelho se > 0
+  hitlPendingCount: number; // Alerta vermelho se > 0
   projectsInProgress: number;
   sitesDeliveredThisMonth: number;
 
   // Financeiro
   revenueThisMonthBrl: number;
   avgSitePriceThisMonth: number;
-  tokenCostThisMonthUsd: number;      // Custo real em LLM
-  marginPct: number;                  // Receita - Custo LLM / Receita
+  tokenCostThisMonthUsd: number; // Custo real em LLM
+  marginPct: number; // Receita - Custo LLM / Receita
 
   // Qualidade
   avgLighthouseScore: number;
-  qaFirstPassRate: number;            // % que passa no 1º ciclo de QA
-  avgDeliveryHours: number;           // Briefing → Entrega (média)
+  qaFirstPassRate: number; // % que passa no 1º ciclo de QA
+  avgDeliveryHours: number; // Briefing → Entrega (média)
 
   // Agentes
   agentsActive: number;
@@ -6887,16 +7437,16 @@ interface AgentEditorTabs {
 
 interface HITLQueueItem {
   id: string;
-  actionType: string;               // Ex: SEND_EXTERNAL_MESSAGE
-  contextType: string;              // Ex: LEAD
+  actionType: string; // Ex: SEND_EXTERNAL_MESSAGE
+  contextType: string; // Ex: LEAD
   contextId: string;
-  payloadPreview: Record<string, unknown>;  // PII mascarado
+  payloadPreview: Record<string, unknown>; // PII mascarado
   createdAt: Date;
   expiresAt: Date;
-  timeRemainingMinutes: number;     // Countdown visual
+  timeRemainingMinutes: number; // Countdown visual
   agentPersona: string;
   subAgentRole?: string;
-  leadName?: string;                // Para contexto rápido (mascarado)
+  leadName?: string; // Para contexto rápido (mascarado)
 }
 
 // Ações disponíveis inline (sem abrir modal para ações simples):
@@ -6919,12 +7469,12 @@ interface HITLQueueItem {
 interface ProjectTimeline {
   stages: Array<{
     name: string;
-    status: 'completed' | 'in_progress' | 'pending' | 'failed';
+    status: "completed" | "in_progress" | "pending" | "failed";
     startedAt?: Date;
     completedAt?: Date;
     durationMinutes?: number;
-    costUsd?: number;               // Custo de LLM nesta etapa
-    actions?: TimelineAction[];     // HITL tomadas, deploys, etc.
+    costUsd?: number; // Custo de LLM nesta etapa
+    actions?: TimelineAction[]; // HITL tomadas, deploys, etc.
   }>;
 
   // Estágios:
@@ -6957,9 +7507,10 @@ interface ProjectTimeline {
 Antes de qualquer deploy em produção, o operador deve executar esta checklist:
 
 ```markdown
-## Checklist de Segurança — AgentePro v2
+## Checklist de Segurança — Hefesto v2
 
 ### Autenticação
+
 - [ ] Argon2id configurado corretamente (memoryCost=65536, timeCost=3)
 - [ ] JWT usando RS256 (verificar: NÃO está usando HS256)
 - [ ] Refresh tokens sendo hasheados antes de armazenar
@@ -6967,6 +7518,7 @@ Antes de qualquer deploy em produção, o operador deve executar esta checklist:
 - [ ] Teste de anti-timing: diferença < 200ms entre user existente e não-existente
 
 ### Uploads e Geração de Imagens
+
 - [ ] Magic bytes validados em TODOS os uploads de arquivos
 - [ ] Magic bytes validados em imagens geradas pelo Nano Banana Pro e DALL-E
 - [ ] Tipos MIME na whitelist: jpeg, png, webp, svg, pdf (apenas)
@@ -6974,10 +7526,12 @@ Antes de qualquer deploy em produção, o operador deve executar esta checklist:
 - [ ] Teste de polyglot file (HTML+JPEG) sendo rejeitado
 
 ### SSRF
+
 - [ ] Lista de IPs bloqueados cobre: localhost, 127.x, 10.x, 172.16-31.x, 192.168.x
 - [ ] Validação de URL aplicada em: scraping skill, image_gen providers, web_search
 
 ### API
+
 - [ ] Todos os endpoints exigem autenticação (exceto /health e /auth/login)
 - [ ] Rate limiting geral aplicado (100 req/min)
 - [ ] Body size limit configurado (< 10MB para uploads)
@@ -6985,6 +7539,7 @@ Antes de qualquer deploy em produção, o operador deve executar esta checklist:
 - [ ] Headers de segurança HTTP presentes (CSP, HSTS, X-Frame-Options)
 
 ### Dados e PII
+
 - [ ] Transcrições de briefing armazenadas no vault (não no banco principal)
 - [ ] Payload HITL com PII mascarado antes de salvar em payloadPreview
 - [ ] Audit log append-only (RLS configurado: apenas INSERT)
@@ -6992,11 +7547,13 @@ Antes de qualquer deploy em produção, o operador deve executar esta checklist:
 - [ ] Conexão com banco usando TLS (ssl=require)
 
 ### HITL
+
 - [ ] Nenhum agente pode enviar mensagem externa sem HITL aprovado
 - [ ] Timeout de HITL está ativo (expiração automática)
 - [ ] Notificação de expiração enviada ao operador
 
 ### Infra
+
 - [ ] Portas internas do Docker NÃO expostas na internet (apenas 3000, 3001)
 - [ ] Redis com senha configurada
 - [ ] PostgreSQL sem senha vazia
@@ -7004,11 +7561,13 @@ Antes de qualquer deploy em produção, o operador deve executar esta checklist:
 - [ ] Evolution API com apikey configurada
 
 ### Logs
+
 - [ ] Nenhum dado PII nos logs estruturados (email, telefone, CNPJ)
 - [ ] Nenhuma API key nos logs (verificar LLM calls)
 - [ ] Correlation ID presente em todos os logs de uma request
 
 ### Dependências
+
 - [ ] `npm audit` sem vulnerabilidades críticas
 - [ ] `pip audit` sem vulnerabilidades críticas
 - [ ] Imagens Docker baseadas em alpine (menor superfície de ataque)
@@ -7017,7 +7576,6 @@ Antes de qualquer deploy em produção, o operador deve executar esta checklist:
 
 ---
 
-_PRD AgentePro v2.0.0 — VERSÃO FINAL COMPLETA_
+_PRD Hefesto v2.0.0 — VERSÃO FINAL COMPLETA_
 _53 seções de especificação + 2 seções finais de operação_
 _Total: 55 seções | >7.000 linhas | Pronto para implementação_
-

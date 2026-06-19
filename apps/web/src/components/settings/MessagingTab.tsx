@@ -143,7 +143,7 @@ export function MessagingTab() {
                 onChange={(e) =>
                   set("messaging.whatsapp.instance", e.target.value)
                 }
-                placeholder="agentepro"
+                placeholder="hefesto"
                 className="text-sm"
               />
             </div>
@@ -245,7 +245,7 @@ export function MessagingTab() {
                   onChange={(e) =>
                     set("messaging.email.from_name", e.target.value)
                   }
-                  placeholder="AgentePro"
+                  placeholder="Hefesto"
                   className="text-sm"
                 />
               </div>

@@ -1,6 +1,11 @@
-# Contribuindo para o ProspectFlow AI (AgentePro)
+# Contribuindo para o Hefesto
 
-Antes de tudo, muito obrigado por considerar contribuir para o ProspectFlow AI! São pessoas como você que tornam esta ferramenta incrível.
+Antes de tudo, muito obrigado por considerar contribuir para a forja! São pessoas como você que mantêm os Autômatos afiados.
+
+> Toda contribuição de UI, copy ou nomenclatura deve respeitar a identidade da
+> marca — leia [BRAND.md](BRAND.md) antes de escrever texto voltado ao usuário.
+> Para o mapa dos componentes (Fornalha, Autômatos, Bigorna, Mão do Artífice),
+> veja [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## 🚀 Começando
 
@@ -31,7 +36,7 @@ cp .env.example .env
 # Edite .env com suas credenciais locais (ver ENV.md para referência completa)
 
 # 5. Aplique migrations do banco
-npm run db:migrate -w @agentepro/api
+npm run db:migrate -w @hefesto/api
 
 # 6. (Opcional) Agent Runtime Python
 cd apps/agent-runtime && pip install -e ".[dev]"
@@ -97,8 +102,8 @@ Leia `CLAUDE.md` (seções 0-A e 0-B) para comandos completos e arquitetura deta
 
 ```bash
 npm run test                                  # todos os workspaces
-npm run test:unit -w @agentepro/api           # só domain (rápido, sem Docker)
-npm run test:integration -w @agentepro/api    # requer Docker (Testcontainers)
+npm run test:unit -w @hefesto/api           # só domain (rápido, sem Docker)
+npm run test:integration -w @hefesto/api    # requer Docker (Testcontainers)
 npx playwright test                           # E2E (dentro de apps/web)
 ```
 
@@ -127,7 +132,7 @@ Por favor, veja também nosso [SECURITY.md](SECURITY.md).
 
 ## ⚖️ Aviso Legal (Disclaimer)
 
-**Deixo bem claro e de forma legal que não me responsabilizo pela forma como este sistema será utilizado, tampouco pelos resultados gerados ou prejuízos advindos da sua utilização.** O AgentePro é fornecido "como está" (as-is), cabendo única e exclusivamente ao usuário a responsabilidade sobre suas implantações e integrações.
+**Deixo bem claro e de forma legal que não me responsabilizo pela forma como este sistema será utilizado, tampouco pelos resultados gerados ou prejuízos advindos da sua utilização.** O Hefesto é fornecido "como está" (as-is), cabendo única e exclusivamente ao usuário a responsabilidade sobre suas implantações e integrações.
 
 ---
 

@@ -1,7 +1,7 @@
 {
-  "title": "AgentePro — Agents & LLM",
-  "uid": "agentepro-agents",
-  "tags": ["agentepro", "agents", "llm"],
+  "title": "Hefesto — Agents & LLM",
+  "uid": "hefesto-agents",
+  "tags": ["hefesto", "agents", "llm"],
   "panels": [
     {
       "title": "Tokens Consumed (total)",
@@ -9,7 +9,7 @@
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
       "targets": [
         {
-          "expr": "sum(agentepro_agent_tokens_consumed_total)",
+          "expr": "sum(hefesto_agent_tokens_consumed_total)",
           "legendFormat": "Tokens"
         }
       ]
@@ -20,7 +20,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
       "targets": [
         {
-          "expr": "sum by (provider) (agentepro_llm_requests_total)",
+          "expr": "sum by (provider) (hefesto_llm_requests_total)",
           "legendFormat": "{{provider}}"
         }
       ]
@@ -31,7 +31,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
       "targets": [
         {
-          "expr": "rate(agentepro_agent_tokens_consumed_total[5m])",
+          "expr": "rate(hefesto_agent_tokens_consumed_total[5m])",
           "legendFormat": "{{persona}} / {{provider}}"
         }
       ]

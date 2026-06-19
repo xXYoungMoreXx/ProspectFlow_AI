@@ -1,14 +1,34 @@
-# AgentePro 🤖
+# Hefesto 🔨
+
+> **Você é o artífice. Os agentes são seus autômatos. A forja nunca para.**
+
+_Hefesto, o deus ferreiro, forjava autômatos de ouro que trabalhavam sozinhos.
+Você acende a forja uma vez — os **Autômatos** cuidam do resto: prospecção,
+contato, fechamento e entrega do serviço. Automação séria, código aberto, com
+você no controle do quanto quer intervir. Sem promessa de enriquecimento rápido._
+
+> 📖 **Identidade de marca:** [BRAND.md](BRAND.md) · **Arquitetura:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Setup detalhado:** [SETUP.md](SETUP.md) · **Lançamento:** [LAUNCH.md](LAUNCH.md)
 
 > **Status (2026-06-12):** Sprints S5–S11 + Agent Capability Studio entregues; correções E2E B1–B5 aplicadas
 > (deploy real Vercel/Netlify, mensageria outbound, prompts Builder 2026). MVP v1 funcional em localhost —
 > pendências para produção na seção [Limitações e Roadmap](#limitações-e-roadmap).
 > Branch de integração: `develop` → `main` via PR com CI obrigatório.
-> 📖 **Guia detalhado de configuração:** [SETUP.md](SETUP.md)
 
-> _"E se o seu melhor vendedor nunca dormisse, falasse todos os idiomas e qualificasse mil leads antes do seu café da manhã?"_ ☕
+---
 
-O **AgentePro** automatiza o ciclo completo de uma agência digital: da prospecção de leads ao site entregue ao cliente, com custo operacional de ~$1.59 USD por site e margem superior a 99%.
+## O que é a Forja?
+
+O **Hefesto** automatiza o ciclo completo de uma agência digital — da prospecção
+de leads ao site entregue ao cliente — com custo operacional de ~$1.59 USD por
+site e margem superior a 99%. Quatro peças, todas com nome no mito:
+
+- **A Fornalha** (`apps/api`) — o motor que orquestra, valida e enfileira o trabalho.
+- **Os Autômatos** (`apps/agent-runtime`) — os agentes de IA: Hunter, Closer,
+  Briefing, Builder, QA, Delivery.
+- **A Bigorna** (`apps/web`) — o painel onde você observa a forja e acompanha tudo.
+- **A Mão do Artífice** (HITL) — você aprova antes de cada envio externo ou deploy.
+
+> "A Fornalha processa. Os Autômatos agem. Você colhe."
 
 ---
 
@@ -237,7 +257,7 @@ npm run dev        # Apenas dev servers, sem subir infra (use quando Docker já 
 
 ```
 ──────────────────────────────────────────────────────────────────────
-  AgentePro — Verificação de Pré-Requisitos
+  Hefesto — Verificação de Pré-Requisitos
 ──────────────────────────────────────────────────────────────────────
 
 [1/7] Node.js
@@ -254,7 +274,7 @@ npm run dev        # Apenas dev servers, sem subir infra (use quando Docker já 
 [✔]    .env encontrado e carregado.
 
 [5/7] Variáveis obrigatórias
-[✔]    DATABASE_URL = postgresql://agentepro:...
+[✔]    DATABASE_URL = postgresql://hefesto:...
 [✔]    JWT_PRIVATE_KEY = -----BEGIN PRIVATE KE...
 
 [6/7] Provedores LLM
@@ -319,13 +339,13 @@ JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBIjANBg...\n-----END PUBLIC KEY--
 
 ```bash
 # Unitários de domínio — rápido, sem Docker
-npm run test:unit -w @agentepro/api
+npm run test:unit -w @hefesto/api
 
 # Integração com Testcontainers — requer Docker
-npm run test:integration -w @agentepro/api
+npm run test:integration -w @hefesto/api
 
 # Segurança (bypass, injection, autenticação)
-npm run test:security -w @agentepro/api
+npm run test:security -w @hefesto/api
 
 # Python — orchestrator, builder, agentes, LLM routing
 cd apps/agent-runtime && python -m pytest tests/ -v
@@ -382,15 +402,48 @@ scripts/
   init.js                 Inicializador (start | stop | restart | check | status)
 specs/                    Especificações por módulo (00–14)
 docs/
-  PRD_AgentePro_v2.md     Product Requirements Document (fonte da verdade)
+  PRD_Hefesto_v2.md     Product Requirements Document (fonte da verdade)
   adr/                    Architecture Decision Records
 ```
 
 ---
 
+## Tiers de poder (poder de forja)
+
+Modelo **open-core**: o núcleo é aberto e o "poder de forja" — quantos Autômatos
+trabalham em paralelo — escala por tier.
+
+| Tier             | Poder de forja                          | Para quem                               |
+| ---------------- | --------------------------------------- | --------------------------------------- |
+| **Forja Aberta** | 1 Autômato por vez · self-host completo | Quem quer rodar tudo na própria máquina |
+| **Bronze**       | Múltiplos Autômatos em paralelo         | Operador solo escalando o funil         |
+| **Ouro**         | Paralelismo ampliado + suporte          | Agência com volume                      |
+
+> O tier gratuito (Forja Aberta) já entrega o ciclo completo. Os tiers pagos
+> amplificam a escala — nunca destravam "a única forma de funcionar".
+> A definição de licença do núcleo está em aberto — ver [LAUNCH.md](LAUNCH.md).
+
+---
+
+## Conformidade (LGPD e outreach ético)
+
+O Hefesto foi desenhado para prospecção **ética**:
+
+- **Dados públicos / opt-in.** O Hunter trabalha com dados públicos (ex.: Google
+  Maps, CNPJ) — o produto **não** promove envio em massa nem listas compradas.
+- **A Mão do Artífice é obrigatória** antes de qualquer envio externo: você revisa
+  e aprova a abordagem. Nada sai da forja sem passar por um gate HITL configurável.
+- **LGPD.** Trate os dados de leads conforme a Lei 13.709/2018: base legal
+  adequada, finalidade clara, e canal de opt-out em toda comunicação. O e-mail de
+  exemplo em `content/email/` já inclui `{{unsubscribe_link}}`.
+- **Sem promessa de renda.** A comunicação posiciona o Hefesto como poder de
+  automação, jamais como esquema de enriquecimento.
+
+---
+
 ## Licença
 
-Copyright (c) 2026 AgentePro / ProspectFlow AI — Licença Proprietária de Uso Restrito.
+Copyright (c) 2026 Hefesto / Hefesto AI — Licença Proprietária de Uso Restrito.
 
 **Permitido:** Usar o sistema para automatizar as suas próprias vendas e prospecção de clientes.
 

@@ -9,7 +9,7 @@
 
 ## Contexto
 
-Os agentes do AgentePro precisam de conhecimento especializado que vai além do
+Os agentes do Hefesto precisam de conhecimento especializado que vai além do
 treinamento base dos LLMs:
 
 - **Hunter**: critérios de qualificação de leads por nicho/região, histórico de
@@ -141,7 +141,7 @@ Context7 é usado pelo Builder e QA para consultar documentação técnica atual
 de bibliotecas (não páginas de pricing):
 
 ```
-Casos de uso do Context7 no AgentePro:
+Casos de uso do Context7 no Hefesto:
   ✓ "Como configurar CSP no Next.js 15?" → Builder consulta docs do Next.js
   ✓ "API do Framer Motion 12 para scroll triggers" → Builder consulta docs do Framer
   ✓ "Parâmetros atuais da Vercel API para deploy" → Builder consulta docs da Vercel

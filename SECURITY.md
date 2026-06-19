@@ -1,6 +1,6 @@
 # Política de Segurança
 
-No AgentePro, a segurança é um pilar fundamental da nossa arquitetura. Empregamos um modelo Zero Trust, proteções estritas contra SSRF, validações avançadas de payloads e salvaguardas específicas para Inteligência Artificial.
+No Hefesto, a segurança é um pilar fundamental da nossa arquitetura. Empregamos um modelo Zero Trust, proteções estritas contra SSRF, validações avançadas de payloads e salvaguardas específicas para Inteligência Artificial.
 
 ## Versões Suportadas
 
@@ -11,7 +11,7 @@ No AgentePro, a segurança é um pilar fundamental da nossa arquitetura. Emprega
 
 ## Relatando uma Vulnerabilidade
 
-Se você descobrir uma vulnerabilidade de segurança dentro do AgentePro, por favor, entre em contato comigo imediatamente. A única forma de contato oficial deve ser meu email pessoal (**morekaik27@gmail.com**) ou Discord (**youngmore** / **YoungMore#1752**). Todas as vulnerabilidades de segurança serão prontamente abordadas.
+Se você descobrir uma vulnerabilidade de segurança dentro do Hefesto, por favor, entre em contato comigo imediatamente. A única forma de contato oficial deve ser meu email pessoal (**morekaik27@gmail.com**) ou Discord (**youngmore** / **YoungMore#1752**). Todas as vulnerabilidades de segurança serão prontamente abordadas.
 
 Por favor, inclua as seguintes informações no seu relato:
 
@@ -24,7 +24,7 @@ Por favor, inclua as seguintes informações no seu relato:
 
 Vulnerabilidades envolvendo o Agent Runtime (ex: LLM Jailbreaking, Prompt Injection contornando nossos filtros ou evasão de SSRF nas Skills de Python do CrewAI) são tratadas com severidade **CRÍTICA**. Por favor, relate-as imediatamente.
 
-Agradecemos o seu esforço em tornar o AgentePro mais seguro!
+Agradecemos o seu esforço em tornar o Hefesto mais seguro!
 
 ## ⚖️ Aviso Legal (Disclaimer)
 

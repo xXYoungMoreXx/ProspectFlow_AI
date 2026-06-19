@@ -3,7 +3,7 @@ import { z } from "zod";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { eq, and, desc } from "drizzle-orm";
 import * as schema from "../../infrastructure/db/schema.js";
-import type { ServiceType } from "@agentepro/shared-types";
+import type { ServiceType } from "@hefesto/shared-types";
 
 type LeadRow = typeof schema.leads.$inferSelect;
 

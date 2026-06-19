@@ -1,5 +1,5 @@
 /**
- * AgentePro — Inicializador Inteligente Multiplataforma
+ * Hefesto — Inicializador Inteligente Multiplataforma
  *
  * Uso:
  *   node scripts/init.js [comando]
@@ -158,7 +158,7 @@ function checkOptionalVars() {
 // CMD: check — valida todos os pré-requisitos sem iniciar nada
 // ─────────────────────────────────────────────────────────────────────────────
 async function cmdCheck() {
-  log.header("AgentePro — Verificação de Pré-Requisitos");
+  log.header("Hefesto — Verificação de Pré-Requisitos");
 
   const errors = { count: 0 };
 
@@ -257,7 +257,7 @@ async function cmdCheck() {
 // CMD: status — portas e containers em tempo real
 // ─────────────────────────────────────────────────────────────────────────────
 async function cmdStatus() {
-  log.header("AgentePro — Status do Sistema");
+  log.header("Hefesto — Status do Sistema");
 
   const ps = silent("docker", [
     "compose",
@@ -298,7 +298,7 @@ async function cmdStatus() {
 // CMD: stop — para containers com segurança
 // ─────────────────────────────────────────────────────────────────────────────
 function cmdStop() {
-  log.header("AgentePro — Encerrando o Sistema");
+  log.header("Hefesto — Encerrando o Sistema");
 
   log.step("1/2", "Parando dev servers...");
   log.info(
@@ -353,7 +353,7 @@ function generateAndSaveJwtKeys(envPath) {
 // CMD: start — fluxo completo de inicialização
 // ─────────────────────────────────────────────────────────────────────────────
 async function cmdStart() {
-  log.header("AgentePro — Inicializando o Sistema");
+  log.header("Hefesto — Inicializando o Sistema");
 
   // 1. Pré-requisitos
   log.step("1/6", "Verificando pré-requisitos essenciais...");
@@ -408,7 +408,7 @@ async function cmdStart() {
   // 4. Build pacotes compartilhados
   log.step("4/8", "Compilando pacotes compartilhados...");
   try {
-    run("npm", ["run", "build", "--workspace=@agentepro/shared-types"], {
+    run("npm", ["run", "build", "--workspace=@hefesto/shared-types"], {
       cwd: ROOT,
     });
     log.ok("Pacotes compartilhados compilados.");
@@ -461,10 +461,10 @@ async function cmdStart() {
     if (
       silent("docker", [
         "exec",
-        "agentepro-postgres",
+        "hefesto-postgres",
         "pg_isready",
         "-U",
-        "agentepro",
+        "hefesto",
       ]).ok
     ) {
       dbReady = true;
@@ -476,7 +476,7 @@ async function cmdStart() {
   console.log("");
   if (!dbReady) {
     log.fail(
-      "PostgreSQL não respondeu em 60s. Diagnóstico: docker logs agentepro-postgres",
+      "PostgreSQL não respondeu em 60s. Diagnóstico: docker logs hefesto-postgres",
     );
     process.exit(1);
   }
@@ -523,7 +523,7 @@ async function cmdStart() {
 // CMD: restart
 // ─────────────────────────────────────────────────────────────────────────────
 async function cmdRestart() {
-  log.header("AgentePro — Reiniciando o Sistema");
+  log.header("Hefesto — Reiniciando o Sistema");
   cmdStop();
   sleep(2000);
   await cmdStart();

@@ -1,7 +1,7 @@
 import { AggregateRoot } from "../shared/AggregateRoot.js";
 import { createDomainEvent } from "../shared/DomainEvent.js";
 import { ValidationError, ok, err, type Result } from "../shared/Result.js";
-import type { HITLStatus } from "@agentepro/shared-types";
+import type { HITLStatus } from "@hefesto/shared-types";
 import { HITLLevel } from "./HITLLevel.js";
 import { HITLActionType } from "./HITLActionType.js";
 

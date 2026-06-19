@@ -1,20 +1,20 @@
 asyncapi: 3.0.0
 info:
-  title: AgentePro Domain Events
+  title: Hefesto Domain Events
   version: 1.0.0
   description: >
-    Contratos dos Eventos de Domínio do AgentePro trafegados assincronamente (Redis/BullMQ).
+    Contratos dos Eventos de Domínio do Hefesto trafegados assincronamente (Redis/BullMQ).
     Esses eventos orquestram a comunicação desacoplada entre os Bounded Contexts.
 channels:
   domainEvents:
-    address: 'agentepro.domain.events'
+    address: "hefesto.domain.events"
     messages:
       LeadQualified:
-        $ref: '#/components/messages/LeadQualified'
+        $ref: "#/components/messages/LeadQualified"
       DealClosed:
-        $ref: '#/components/messages/DealClosed'
+        $ref: "#/components/messages/DealClosed"
       HitlApprovalRequested:
-        $ref: '#/components/messages/HitlApprovalRequested'
+        $ref: "#/components/messages/HitlApprovalRequested"
 
 components:
   messages:

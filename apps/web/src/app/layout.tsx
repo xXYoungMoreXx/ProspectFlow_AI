@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AgentePro — AI Sales & Delivery Platform",
+  title: "Hefesto — AI Sales & Delivery Platform",
   description:
     "Plataforma de agentes de IA para prospecção e entrega de serviços digitais com mínima intervenção humana.",
 };

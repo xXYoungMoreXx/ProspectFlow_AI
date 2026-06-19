@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { skillCatalog, agentSkills } from "../../infrastructure/db/schema.js";
 import { NotFoundError } from "../../domain/shared/Result.js";
-import type { ServiceType } from "@agentepro/shared-types";
+import type { ServiceType } from "@hefesto/shared-types";
 
 type Db = any;
 

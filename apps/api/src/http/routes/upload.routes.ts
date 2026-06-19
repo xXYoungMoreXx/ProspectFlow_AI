@@ -129,7 +129,7 @@ export async function uploadRoutes(app: FastifyInstance): Promise<void> {
         filename: data.filename,
         mimetype: type ? type.mime : data.mimetype,
         size: buffer.length,
-        url: `https://storage.agentepro.local/mock/${data.filename}`,
+        url: `https://storage.hefesto.local/mock/${data.filename}`,
       },
       meta: {
         requestId: request.requestId,

@@ -55,15 +55,15 @@ npm run format        # prettier --write em todo o repo
 ### API (`apps/api`, Fastify + Drizzle)
 
 ```bash
-npm run dev      -w @agentepro/api   # tsx watch src/server.ts
-npm run test     -w @agentepro/api   # vitest run (toda a suíte)
-npm run test:unit       -w @agentepro/api   # só src/domain
-npm run test:integration -w @agentepro/api  # usa Testcontainers (Docker obrigatório)
-npm run test:security    -w @agentepro/api  # tests/security/
-npm run test:watch       -w @agentepro/api
-npm run db:generate -w @agentepro/api   # drizzle-kit generate (gera migration do schema.ts)
-npm run db:migrate  -w @agentepro/api   # aplica migrations
-npm run db:studio   -w @agentepro/api   # Drizzle Studio
+npm run dev      -w @hefesto/api   # tsx watch src/server.ts
+npm run test     -w @hefesto/api   # vitest run (toda a suíte)
+npm run test:unit       -w @hefesto/api   # só src/domain
+npm run test:integration -w @hefesto/api  # usa Testcontainers (Docker obrigatório)
+npm run test:security    -w @hefesto/api  # tests/security/
+npm run test:watch       -w @hefesto/api
+npm run db:generate -w @hefesto/api   # drizzle-kit generate (gera migration do schema.ts)
+npm run db:migrate  -w @hefesto/api   # aplica migrations
+npm run db:studio   -w @hefesto/api   # Drizzle Studio
 ```
 
 Rodar **um único teste**: `npx vitest run path/to/file.test.ts -t "nome do it/describe"` (dentro de `apps/api`).
@@ -72,8 +72,8 @@ Configs Vitest separadas: `vitest.config.ts` (unit), `vitest.integration.config.
 ### Web (`apps/web`, Next.js 16 + React 19 + Tailwind 4)
 
 ```bash
-npm run dev  -w @agentepro/web   # next dev
-npm run build -w @agentepro/web
+npm run dev  -w @hefesto/web   # next dev
+npm run build -w @hefesto/web
 npx playwright test              # E2E (dentro de apps/web)
 ```
 
@@ -111,7 +111,7 @@ e a stack de observabilidade — Prometheus (9090), Grafana (3333), Jaeger (1668
 apps/api            Node.js/Fastify — API pública, regras de negócio, orquestração, fila
 apps/agent-runtime  Python/FastAPI  — runtime de agentes CrewAI (Hunter/Closer/Builder/QA)
 apps/web            Next.js         — frontend (App Router, React Query, Zustand)
-packages/shared-types  Tipos/enums/eventos TS compartilhados entre api e web (@agentepro/shared-types)
+packages/shared-types  Tipos/enums/eventos TS compartilhados entre api e web (@hefesto/shared-types)
 ```
 
 **Fluxo de uma tarefa de agente:** HTTP → `apps/api` valida (Zod) e enfileira na BullMQ (Redis) →
@@ -179,7 +179,7 @@ de ambiente; `TEST_STRATEGY.md`, a estratégia de testes; `docs/adr/`, decisões
 ## 1. IDENTIDADE DO PROJETO
 
 ```
-Projeto:       AgentePro
+Projeto:       Hefesto
 Descrição:     Plataforma de agentes de IA para prospecção e entrega de sites
 Stack API:     Node.js 22 LTS + TypeScript 5.5 + Fastify 5 + Drizzle ORM
 Stack Agents:  Python 3.12 + CrewAI + LiteLLM
@@ -776,7 +776,7 @@ import { z } from "zod";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { CreateLeadCommand } from "../../application/lead/CreateLeadUseCase";
 
-// Schema Zod — compartilhado com frontend via @agentepro/shared-types
+// Schema Zod — compartilhado com frontend via @hefesto/shared-types
 const CreateLeadSchema = z
   .object({
     contactName: z.string().min(2).max(100),

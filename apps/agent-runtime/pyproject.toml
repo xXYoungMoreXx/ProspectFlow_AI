@@ -1,7 +1,7 @@
 [project]
-name = "agentepro-runtime"
+name = "hefesto-runtime"
 version = "0.1.0"
-description = "AgentePro AI Agent Runtime — CrewAI orchestration for Hunter, Closer, Builder, and QA agents"
+description = "Hefesto AI Agent Runtime — CrewAI orchestration for Hunter, Closer, Builder, and QA agents"
 requires-python = ">=3.12"
 license = {text = "UNLICENSED"}
 

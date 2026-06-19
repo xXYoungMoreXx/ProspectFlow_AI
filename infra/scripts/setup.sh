@@ -2,7 +2,7 @@
 set -e
 
 echo "=========================================="
-echo " Starting ProspectFlow/AgentePro Infra"
+echo " Starting Hefesto/Hefesto Infra"
 echo "=========================================="
 
 # Ensure we are at the project root
@@ -15,7 +15,7 @@ docker compose -f infra/docker-compose.yml up -d
 # Wait for PostgreSQL
 echo "[2/4] Waiting for PostgreSQL..."
 RETRIES=30
-until docker exec $(docker compose -f infra/docker-compose.yml ps -q postgres 2>/dev/null || docker compose -f infra/docker-compose.yml ps -q db) pg_isready -U agentepro 2>/dev/null; do
+until docker exec $(docker compose -f infra/docker-compose.yml ps -q postgres 2>/dev/null || docker compose -f infra/docker-compose.yml ps -q db) pg_isready -U hefesto 2>/dev/null; do
   sleep 2
   RETRIES=$((RETRIES-1))
   if [ $RETRIES -le 0 ]; then

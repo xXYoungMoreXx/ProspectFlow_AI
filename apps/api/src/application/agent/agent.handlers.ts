@@ -11,7 +11,7 @@ import {
   err,
   type Result,
 } from "../../domain/shared/Result.js";
-import type { AgentPersona, LLMProvider } from "@agentepro/shared-types";
+import type { AgentPersona, LLMProvider } from "@hefesto/shared-types";
 import type { CompositeLLMRouter } from "../../infrastructure/llm/CompositeLLMRouter.js";
 
 // ── Commands ──────────────────────────────────────────────────────────────────

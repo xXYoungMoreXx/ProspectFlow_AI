@@ -89,7 +89,9 @@ export class SettingsService {
     for (const s of settings) {
       const validKeys = VALID_KEYS[s.category];
       if (validKeys && !validKeys.includes(s.key)) {
-        throw new Error(`Invalid setting key '${s.key}' for category '${s.category}'`);
+        throw new Error(
+          `Invalid setting key '${s.key}' for category '${s.category}'`,
+        );
       }
       // Auto-detect secrets
       if (SECRET_KEYS.has(s.key)) {
@@ -124,8 +126,14 @@ export class SettingsService {
     try {
       switch (service) {
         case "openai": {
-          const apiKey = await this.secretsProvider.getOptional("OPENAI_API_KEY");
-          if (!apiKey) return { service, success: false, message: "API Key not configured" };
+          const apiKey =
+            await this.secretsProvider.getOptional("OPENAI_API_KEY");
+          if (!apiKey)
+            return {
+              service,
+              success: false,
+              message: "API Key not configured",
+            };
           const res = await fetch("https://api.openai.com/v1/models", {
             headers: { Authorization: `Bearer ${apiKey}` },
             signal: AbortSignal.timeout(5000),
@@ -140,8 +148,14 @@ export class SettingsService {
         }
 
         case "anthropic": {
-          const apiKey = await this.secretsProvider.getOptional("ANTHROPIC_API_KEY");
-          if (!apiKey) return { service, success: false, message: "API Key not configured" };
+          const apiKey =
+            await this.secretsProvider.getOptional("ANTHROPIC_API_KEY");
+          if (!apiKey)
+            return {
+              service,
+              success: false,
+              message: "API Key not configured",
+            };
           const res = await fetch("https://api.anthropic.com/v1/messages", {
             method: "POST",
             headers: {
@@ -183,12 +197,24 @@ export class SettingsService {
         }
 
         case "telegram": {
-          const token = await this.secretsProvider.getOptional("TELEGRAM_BOT_TOKEN");
-          if (!token) return { service, success: false, message: "Bot Token not configured" };
-          const res = await fetch(`https://api.telegram.org/bot${token}/getMe`, {
-            signal: AbortSignal.timeout(5000),
-          });
-          const data = (await res.json()) as { ok: boolean; result?: { username: string } };
+          const token =
+            await this.secretsProvider.getOptional("TELEGRAM_BOT_TOKEN");
+          if (!token)
+            return {
+              service,
+              success: false,
+              message: "Bot Token not configured",
+            };
+          const res = await fetch(
+            `https://api.telegram.org/bot${token}/getMe`,
+            {
+              signal: AbortSignal.timeout(5000),
+            },
+          );
+          const data = (await res.json()) as {
+            ok: boolean;
+            result?: { username: string };
+          };
           const latencyMs = Math.round(performance.now() - start);
           return {
             service,
@@ -201,11 +227,17 @@ export class SettingsService {
         }
 
         case "whatsapp": {
-          const url = await this.secretsProvider.getOptional("EVOLUTION_API_URL");
-          const key = await this.secretsProvider.getOptional("EVOLUTION_API_KEY");
+          const url =
+            await this.secretsProvider.getOptional("EVOLUTION_API_URL");
+          const key =
+            await this.secretsProvider.getOptional("EVOLUTION_API_KEY");
           if (!url || !key)
-            return { service, success: false, message: "Evolution API not configured" };
-          const res = await fetch(`${url}/instance/connectionState/agentepro`, {
+            return {
+              service,
+              success: false,
+              message: "Evolution API not configured",
+            };
+          const res = await fetch(`${url}/instance/connectionState/hefesto`, {
             headers: { apikey: key },
             signal: AbortSignal.timeout(5000),
           });
@@ -219,8 +251,14 @@ export class SettingsService {
         }
 
         case "email": {
-          const apiKey = await this.secretsProvider.getOptional("BREVO_API_KEY");
-          if (!apiKey) return { service, success: false, message: "Brevo API Key not configured" };
+          const apiKey =
+            await this.secretsProvider.getOptional("BREVO_API_KEY");
+          if (!apiKey)
+            return {
+              service,
+              success: false,
+              message: "Brevo API Key not configured",
+            };
           const res = await fetch("https://api.brevo.com/v3/account", {
             headers: { "api-key": apiKey },
             signal: AbortSignal.timeout(5000),
@@ -251,7 +289,11 @@ export class SettingsService {
         }
 
         default:
-          return { service, success: false, message: `Unknown service: ${service}` };
+          return {
+            service,
+            success: false,
+            message: `Unknown service: ${service}`,
+          };
       }
     } catch (error) {
       const latencyMs = Math.round(performance.now() - start);
@@ -269,35 +311,83 @@ export class SettingsService {
     return {
       llm_providers: [
         { key: "OPENAI_API_KEY", isSecret: true, label: "OpenAI API Key" },
-        { key: "ANTHROPIC_API_KEY", isSecret: true, label: "Anthropic API Key" },
+        {
+          key: "ANTHROPIC_API_KEY",
+          isSecret: true,
+          label: "Anthropic API Key",
+        },
         { key: "GOOGLE_API_KEY", isSecret: true, label: "Google AI API Key" },
         { key: "GROQ_API_KEY", isSecret: true, label: "Groq API Key" },
         { key: "OLLAMA_BASE_URL", isSecret: false, label: "Ollama Base URL" },
-        { key: "DEFAULT_LLM_PROVIDER", isSecret: false, label: "Default LLM Provider" },
-        { key: "DEFAULT_LLM_MODEL", isSecret: false, label: "Default LLM Model" },
+        {
+          key: "DEFAULT_LLM_PROVIDER",
+          isSecret: false,
+          label: "Default LLM Provider",
+        },
+        {
+          key: "DEFAULT_LLM_MODEL",
+          isSecret: false,
+          label: "Default LLM Model",
+        },
       ],
       messaging: [
-        { key: "EVOLUTION_API_URL", isSecret: false, label: "Evolution API URL" },
-        { key: "EVOLUTION_API_KEY", isSecret: true, label: "Evolution API Key" },
+        {
+          key: "EVOLUTION_API_URL",
+          isSecret: false,
+          label: "Evolution API URL",
+        },
+        {
+          key: "EVOLUTION_API_KEY",
+          isSecret: true,
+          label: "Evolution API Key",
+        },
         { key: "WPP_INSTANCE", isSecret: false, label: "WhatsApp Instance" },
         { key: "BREVO_API_KEY", isSecret: true, label: "Brevo API Key" },
         { key: "EMAIL_FROM_NAME", isSecret: false, label: "Email From Name" },
-        { key: "EMAIL_FROM_ADDRESS", isSecret: false, label: "Email From Address" },
-        { key: "TELEGRAM_BOT_TOKEN", isSecret: true, label: "Telegram Bot Token" },
+        {
+          key: "EMAIL_FROM_ADDRESS",
+          isSecret: false,
+          label: "Email From Address",
+        },
+        {
+          key: "TELEGRAM_BOT_TOKEN",
+          isSecret: true,
+          label: "Telegram Bot Token",
+        },
         { key: "TELEGRAM_CHAT_ID", isSecret: false, label: "Telegram Chat ID" },
       ],
       integrations: [
-        { key: "TRANSPARENCIA_API_KEY", isSecret: true, label: "Transparência API Key" },
+        {
+          key: "TRANSPARENCIA_API_KEY",
+          isSecret: true,
+          label: "Transparência API Key",
+        },
         { key: "DATAJUD_API_KEY", isSecret: true, label: "DataJud API Key" },
-        { key: "META_ACCESS_TOKEN", isSecret: true, label: "Meta Access Token" },
+        {
+          key: "META_ACCESS_TOKEN",
+          isSecret: true,
+          label: "Meta Access Token",
+        },
         { key: "CHROMADB_URL", isSecret: false, label: "ChromaDB URL" },
         { key: "WEBHOOK_URL", isSecret: false, label: "Webhook URL" },
         { key: "WEBHOOK_SECRET", isSecret: true, label: "Webhook Secret" },
       ],
       system: [
-        { key: "HITL_DEFAULT_TIMEOUT_MINUTES", isSecret: false, label: "HITL Timeout (minutes)" },
-        { key: "MAX_BODY_SIZE", isSecret: false, label: "Max Body Size (bytes)" },
-        { key: "OLLAMA_GPU_ENABLED", isSecret: false, label: "Ollama GPU Enabled" },
+        {
+          key: "HITL_DEFAULT_TIMEOUT_MINUTES",
+          isSecret: false,
+          label: "HITL Timeout (minutes)",
+        },
+        {
+          key: "MAX_BODY_SIZE",
+          isSecret: false,
+          label: "Max Body Size (bytes)",
+        },
+        {
+          key: "OLLAMA_GPU_ENABLED",
+          isSecret: false,
+          label: "Ollama GPU Enabled",
+        },
       ],
     };
   }

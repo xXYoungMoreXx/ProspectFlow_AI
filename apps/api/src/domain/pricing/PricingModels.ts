@@ -31,7 +31,7 @@ export class ClientBriefing {
 
 /**
  * Value Object: OperationalCosts
- * Representa o custo base que o AgentePro terá para produzir o site.
+ * Representa o custo base que o Hefesto terá para produzir o site.
  */
 export class OperationalCosts {
   constructor(

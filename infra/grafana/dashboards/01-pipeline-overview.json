@@ -1,6 +1,6 @@
 {
-  "title": "AgentePro — Pipeline Overview",
-  "uid": "agentepro-pipeline",
+  "title": "Hefesto — Pipeline Overview",
+  "uid": "hefesto-pipeline",
   "schemaVersion": 39,
   "version": 1,
   "refresh": "30s",

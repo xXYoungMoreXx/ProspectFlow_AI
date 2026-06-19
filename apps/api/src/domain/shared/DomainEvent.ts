@@ -1,5 +1,5 @@
 import { ulid } from "ulid";
-import type { DomainEventBase } from "@agentepro/shared-types";
+import type { DomainEventBase } from "@hefesto/shared-types";
 
 /**
  * Base class for Domain Events.

@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: AgentePro API
+  title: Hefesto API
   version: 1.0.0
   description: >
     API REST para a plataforma de orquestração de Agentes Autônomos de IA.
@@ -27,28 +27,28 @@ paths:
                 password:
                   type: string
       responses:
-        '200':
+        "200":
           description: Sucesso (Retorna JWT)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '401':
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
           description: Erro genérico de credenciais
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorEnvelope'
+                $ref: "#/components/schemas/ErrorEnvelope"
   /agents:
     get:
       summary: Lista agentes do operador logado
       responses:
-        '200':
+        "200":
           description: Retorna array paginado de agentes
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentListResponse'
+                $ref: "#/components/schemas/AgentListResponse"
     post:
       summary: Cria um novo agente
       requestBody:
@@ -56,15 +56,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateAgentCommand'
+              $ref: "#/components/schemas/CreateAgentCommand"
       responses:
-        '201':
+        "201":
           description: Agente criado com sucesso
   /hitl/pending:
     get:
       summary: Busca todas as aprovações pendentes (HITL)
       responses:
-        '200':
+        "200":
           description: Sucesso
   /hitl/{id}/approve:
     post:
@@ -77,7 +77,7 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: Ação aprovada e despachada para o Agente
 components:
   schemas:
@@ -92,7 +92,7 @@ components:
             refreshToken:
               type: string
         meta:
-          $ref: '#/components/schemas/MetaBlock'
+          $ref: "#/components/schemas/MetaBlock"
     ErrorEnvelope:
       type: object
       properties:

@@ -11,7 +11,7 @@ import {
   GetLeadsHandler,
   GetLeadByIdHandler,
 } from "../../application/lead/lead.handlers.js";
-import type { LeadStatus } from "@agentepro/shared-types";
+import type { LeadStatus } from "@hefesto/shared-types";
 import { CheckOptOutHandler } from "../../application/lead/CheckOptOutHandler.js";
 import { z } from "zod";
 import { eq, and, desc } from "drizzle-orm";

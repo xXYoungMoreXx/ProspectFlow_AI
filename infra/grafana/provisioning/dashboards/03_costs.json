@@ -1,7 +1,7 @@
 {
-  "title": "AgentePro — Cost Tracking",
-  "uid": "agentepro-costs",
-  "tags": ["agentepro", "costs"],
+  "title": "Hefesto — Cost Tracking",
+  "uid": "hefesto-costs",
+  "tags": ["hefesto", "costs"],
   "panels": [
     {
       "title": "Lead Qualification Score Distribution",
@@ -9,7 +9,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "targets": [
         {
-          "expr": "agentepro_lead_qualification_score_bucket",
+          "expr": "hefesto_lead_qualification_score_bucket",
           "legendFormat": "Score"
         }
       ]
@@ -20,7 +20,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "targets": [
         {
-          "expr": "rate(agentepro_llm_requests_total{status='error'}[5m]) / rate(agentepro_llm_requests_total[5m])",
+          "expr": "rate(hefesto_llm_requests_total{status='error'}[5m]) / rate(hefesto_llm_requests_total[5m])",
           "legendFormat": "Error Rate {{provider}}"
         }
       ]

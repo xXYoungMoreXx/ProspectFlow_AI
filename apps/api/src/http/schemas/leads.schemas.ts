@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LeadSource, LeadStatus } from "@agentepro/shared-types";
+import { LeadSource, LeadStatus } from "@hefesto/shared-types";
 
 const leadSourceValues = Object.values(LeadSource) as [string, ...string[]];
 const leadStatusValues = Object.values(LeadStatus) as [string, ...string[]];

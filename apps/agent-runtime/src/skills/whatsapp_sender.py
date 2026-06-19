@@ -14,7 +14,7 @@ class WhatsAppSenderInput(BaseModel):
 
 class WhatsAppSenderTool(BaseTool):
     name: str = "whatsapp_sender"
-    description: str = "Envia uma mensagem de WhatsApp para um lead através da API central do AgentePro."
+    description: str = "Envia uma mensagem de WhatsApp para um lead através da API central do Hefesto."
     args_schema: type[BaseModel] = WhatsAppSenderInput
 
     def _run(self, phone: str, message: str) -> str:

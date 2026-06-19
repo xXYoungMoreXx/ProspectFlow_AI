@@ -1,14 +1,14 @@
-# SearXNG settings for AgentePro dev environment
+# SearXNG settings for Hefesto dev environment
 use_default_settings: true
 
 general:
   debug: false
-  instance_name: "AgentePro Search"
+  instance_name: "Hefesto Search"
 
 server:
   port: 8080
   bind_address: "0.0.0.0"
-  secret_key: "agentepro-searxng-dev-secret-key-change-in-prod"
+  secret_key: "hefesto-searxng-dev-secret-key-change-in-prod"
   base_url: false
 
 ui:

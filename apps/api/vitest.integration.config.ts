@@ -22,7 +22,7 @@ export default defineConfig({
     pool: "forks",
     poolOptions: { forks: { singleFork: true } },
     env: {
-      DATABASE_URL: "postgres://postgres:postgres@localhost:5432/agentepro",
+      DATABASE_URL: "postgres://postgres:postgres@localhost:5432/hefesto",
       REDIS_URL: "redis://localhost:6379",
       NODE_ENV: "test",
       JWT_PRIVATE_KEY:

@@ -21,23 +21,23 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   token:
     typeof window !== "undefined"
-      ? localStorage.getItem("agentepro_token")
+      ? localStorage.getItem("hefesto_token")
       : null,
   refreshToken:
     typeof window !== "undefined"
-      ? localStorage.getItem("agentepro_refresh_token")
+      ? localStorage.getItem("hefesto_refresh_token")
       : null,
   operatorEmail:
     typeof window !== "undefined"
-      ? localStorage.getItem("agentepro_email")
+      ? localStorage.getItem("hefesto_email")
       : null,
   organizationId:
     typeof window !== "undefined"
-      ? localStorage.getItem("agentepro_org_id")
+      ? localStorage.getItem("hefesto_org_id")
       : null,
   isAuthenticated:
     typeof window !== "undefined"
-      ? !!localStorage.getItem("agentepro_token")
+      ? !!localStorage.getItem("hefesto_token")
       : false,
 
   setAuth: (
@@ -46,11 +46,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     email: string,
     organizationId?: string,
   ) => {
-    localStorage.setItem("agentepro_token", token);
-    localStorage.setItem("agentepro_refresh_token", refreshToken);
-    localStorage.setItem("agentepro_email", email);
-    if (organizationId)
-      localStorage.setItem("agentepro_org_id", organizationId);
+    localStorage.setItem("hefesto_token", token);
+    localStorage.setItem("hefesto_refresh_token", refreshToken);
+    localStorage.setItem("hefesto_email", email);
+    if (organizationId) localStorage.setItem("hefesto_org_id", organizationId);
     set({
       token,
       refreshToken,
@@ -61,16 +60,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   updateToken: (token: string, refreshToken: string) => {
-    localStorage.setItem("agentepro_token", token);
-    localStorage.setItem("agentepro_refresh_token", refreshToken);
+    localStorage.setItem("hefesto_token", token);
+    localStorage.setItem("hefesto_refresh_token", refreshToken);
     set({ token, refreshToken });
   },
 
   logout: () => {
-    localStorage.removeItem("agentepro_token");
-    localStorage.removeItem("agentepro_refresh_token");
-    localStorage.removeItem("agentepro_email");
-    localStorage.removeItem("agentepro_org_id");
+    localStorage.removeItem("hefesto_token");
+    localStorage.removeItem("hefesto_refresh_token");
+    localStorage.removeItem("hefesto_email");
+    localStorage.removeItem("hefesto_org_id");
     set({
       token: null,
       refreshToken: null,

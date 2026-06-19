@@ -21,10 +21,10 @@
 
 ### Dois Bots Telegram — papéis distintos
 
-| Bot | Propósito | Destinatário | Auth |
-|---|---|---|---|
-| Bot 1 HITL | Notificações + aprovação inline | Operador | `TELEGRAM_HITL_BOT_TOKEN` |
-| Bot 2 Sales | Canal de vendas alternativo | Leads e clientes | `TELEGRAM_SALES_BOT_TOKEN` |
+| Bot         | Propósito                       | Destinatário     | Auth                       |
+| ----------- | ------------------------------- | ---------------- | -------------------------- |
+| Bot 1 HITL  | Notificações + aprovação inline | Operador         | `TELEGRAM_HITL_BOT_TOKEN`  |
+| Bot 2 Sales | Canal de vendas alternativo     | Leads e clientes | `TELEGRAM_SALES_BOT_TOKEN` |
 
 ---
 
@@ -35,7 +35,12 @@
 
 interface MessagingPort {
   sendText(to: string, text: string): Promise<MessageId>;
-  sendDocument(to: string, file: Buffer, filename: string, caption?: string): Promise<MessageId>;
+  sendDocument(
+    to: string,
+    file: Buffer,
+    filename: string,
+    caption?: string,
+  ): Promise<MessageId>;
   sendImage(to: string, imageUrl: string, caption?: string): Promise<MessageId>;
   listenWebhook(handler: MessageHandler): void;
   getDeliveryStatus(messageId: string): Promise<MessageStatus>;
@@ -45,10 +50,10 @@ type MessageHandler = (message: IncomingMessage) => Promise<void>;
 
 interface IncomingMessage {
   id: string;
-  from: string;        // número/chatId do remetente
+  from: string; // número/chatId do remetente
   text?: string;
   documentUrl?: string;
-  channel: 'WHATSAPP' | 'TELEGRAM';
+  channel: "WHATSAPP" | "TELEGRAM";
   timestamp: Date;
 }
 ```
@@ -73,11 +78,13 @@ class WhatsAppAdapter implements MessagingPort {
     const dayKey = `wpp:daily:${to}:${new Date().toISOString().slice(0, 10)}`;
     const count = await this.cache.increment(dayKey, 86400);
     if (count > this.MAX_MESSAGES_PER_DAY) {
-      throw new QuotaExceededError('WhatsApp', this.MAX_MESSAGES_PER_DAY);
+      throw new QuotaExceededError("WhatsApp", this.MAX_MESSAGES_PER_DAY);
     }
 
     // 2. Delay humanizado
-    const delay = this.MIN_DELAY_MS + Math.random() * (this.MAX_DELAY_MS - this.MIN_DELAY_MS);
+    const delay =
+      this.MIN_DELAY_MS +
+      Math.random() * (this.MAX_DELAY_MS - this.MIN_DELAY_MS);
     await sleep(delay);
 
     // 3. Typing indicator (simula digitação)
@@ -88,25 +95,25 @@ class WhatsAppAdapter implements MessagingPort {
     const response = await fetch(
       `${this.baseUrl}/message/sendText/${this.instanceName}`,
       {
-        method: 'POST',
-        headers: { apikey: this.apiKey, 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { apikey: this.apiKey, "Content-Type": "application/json" },
         body: JSON.stringify({ number: to, text }),
         signal: AbortSignal.timeout(15_000),
-      }
+      },
     );
 
     if (!response.ok) {
       const error = await response.text();
-      throw new ExternalServiceError('Evolution API', response.status, error);
+      throw new ExternalServiceError("Evolution API", response.status, error);
     }
 
     const data = await response.json();
 
     // 5. Audit log (sem o conteúdo da mensagem — PII)
-    await this.auditLog.record('WHATSAPP_MESSAGE_SENT', {
-      to: to.slice(0, 5) + '***', // mascarar número
+    await this.auditLog.record("WHATSAPP_MESSAGE_SENT", {
+      to: to.slice(0, 5) + "***", // mascarar número
       messageId: data.key.id,
-      channel: 'WHATSAPP',
+      channel: "WHATSAPP",
     });
 
     return new MessageId(data.key.id);
@@ -114,24 +121,24 @@ class WhatsAppAdapter implements MessagingPort {
 
   private async sendTypingIndicator(to: string): Promise<void> {
     await fetch(`${this.baseUrl}/chat/sendPresence/${this.instanceName}`, {
-      method: 'POST',
+      method: "POST",
       headers: { apikey: this.apiKey },
-      body: JSON.stringify({ number: to, presence: 'composing' }),
+      body: JSON.stringify({ number: to, presence: "composing" }),
     }).catch(() => {}); // Não falhar se indicator falhar
   }
 
   listenWebhook(handler: MessageHandler): void {
     // Registrar endpoint: POST /webhooks/whatsapp
     // Evolution API envia eventos para este endpoint
-    this.webhookRegistry.register('/webhooks/whatsapp', async (body) => {
-      if (body.event !== 'messages.upsert') return;
+    this.webhookRegistry.register("/webhooks/whatsapp", async (body) => {
+      if (body.event !== "messages.upsert") return;
       if (body.data.key.fromMe) return; // Ignorar mensagens enviadas por nós
 
       await handler({
         id: body.data.key.id,
-        from: body.data.key.remoteJid.replace('@s.whatsapp.net', ''),
+        from: body.data.key.remoteJid.replace("@s.whatsapp.net", ""),
         text: body.data.message?.conversation,
-        channel: 'WHATSAPP',
+        channel: "WHATSAPP",
         timestamp: new Date(body.date_time),
       });
     });
@@ -174,17 +181,21 @@ class TelegramHITLBot {
   async handlePendingCommand(chatId: string): Promise<void> {
     const pending = await this.hitlRepo.findPending();
     if (pending.length === 0) {
-      await this.sendMessage(chatId, '✅ Nenhuma aprovação pendente.');
+      await this.sendMessage(chatId, "✅ Nenhuma aprovação pendente.");
       return;
     }
 
     const list = pending
-      .map((h, i) => `${i + 1}. ${h.actionType} — expira em ${h.timeRemainingMinutes}min`)
-      .join('\n');
+      .map(
+        (h, i) =>
+          `${i + 1}. ${h.actionType} — expira em ${h.timeRemainingMinutes}min`,
+      )
+      .join("\n");
 
-    await this.sendMessage(chatId,
+    await this.sendMessage(
+      chatId,
       `📋 *${pending.length} aprovações pendentes:*\n\n${list}\n\n` +
-      `Acesse: ${env.FRONTEND_URL}/hitl`
+        `Acesse: ${env.FRONTEND_URL}/hitl`,
     );
   }
 
@@ -193,10 +204,10 @@ class TelegramHITLBot {
     await this.sendMessage(
       env.TELEGRAM_OPERATOR_CHAT_ID,
       `🚨 *ALERTA: WhatsApp possivelmente banido!*\n\n` +
-      `Instância: \`${instanceName}\`\n` +
-      `A Evolution API retornou aviso de conta.\n\n` +
-      `Ação: O canal foi trocado para Telegram automaticamente.\n` +
-      `Verifique o WhatsApp e o runbook de recuperação.`
+        `Instância: \`${instanceName}\`\n` +
+        `A Evolution API retornou aviso de conta.\n\n` +
+        `Ação: O canal foi trocado para Telegram automaticamente.\n` +
+        `Verifique o WhatsApp e o runbook de recuperação.`,
     );
   }
 }
@@ -214,34 +225,43 @@ class TelegramSalesBot implements MessagingPort {
     const response = await fetch(
       `https://api.telegram.org/bot${this.botToken}/sendMessage`,
       {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: chatId,
           text,
-          parse_mode: 'Markdown',
+          parse_mode: "Markdown",
         }),
         signal: AbortSignal.timeout(10_000),
-      }
+      },
     );
 
     const data = await response.json();
     if (!data.ok) {
-      throw new ExternalServiceError('Telegram API', data.error_code, data.description);
+      throw new ExternalServiceError(
+        "Telegram API",
+        data.error_code,
+        data.description,
+      );
     }
 
     return new MessageId(data.result.message_id.toString());
   }
 
-  async sendDocument(chatId: string, file: Buffer, filename: string, caption?: string): Promise<MessageId> {
+  async sendDocument(
+    chatId: string,
+    file: Buffer,
+    filename: string,
+    caption?: string,
+  ): Promise<MessageId> {
     const formData = new FormData();
-    formData.append('chat_id', chatId);
-    formData.append('document', new Blob([file]), filename);
-    if (caption) formData.append('caption', caption);
+    formData.append("chat_id", chatId);
+    formData.append("document", new Blob([file]), filename);
+    if (caption) formData.append("caption", caption);
 
     const response = await fetch(
       `https://api.telegram.org/bot${this.botToken}/sendDocument`,
-      { method: 'POST', body: formData, signal: AbortSignal.timeout(30_000) }
+      { method: "POST", body: formData, signal: AbortSignal.timeout(30_000) },
     );
 
     const data = await response.json();
@@ -250,7 +270,7 @@ class TelegramSalesBot implements MessagingPort {
 
   listenWebhook(handler: MessageHandler): void {
     // Webhook: POST /webhooks/telegram/sales
-    this.webhookRegistry.register('/webhooks/telegram/sales', async (body) => {
+    this.webhookRegistry.register("/webhooks/telegram/sales", async (body) => {
       const msg = body.message;
       if (!msg) return;
 
@@ -258,7 +278,7 @@ class TelegramSalesBot implements MessagingPort {
         id: msg.message_id.toString(),
         from: msg.chat.id.toString(),
         text: msg.text,
-        channel: 'TELEGRAM',
+        channel: "TELEGRAM",
         timestamp: new Date(msg.date * 1000),
       });
     });
@@ -282,11 +302,17 @@ class MessagingRouter {
 
   route(lead: Lead): MessagingPort {
     switch (lead.preferredChannel) {
-      case 'WHATSAPP': return this.whatsapp;
-      case 'TELEGRAM': return this.telegramSales;
-      case 'EMAIL':    return this.email;
+      case "WHATSAPP":
+        return this.whatsapp;
+      case "TELEGRAM":
+        return this.telegramSales;
+      case "EMAIL":
+        return this.email;
       default:
-        this.logger.warn({ channel: lead.preferredChannel }, 'unknown_channel_fallback_whatsapp');
+        this.logger.warn(
+          { channel: lead.preferredChannel },
+          "unknown_channel_fallback_whatsapp",
+        );
         return this.whatsapp;
     }
   }
@@ -294,7 +320,9 @@ class MessagingRouter {
   // Fallback quando WhatsApp está banido
   routeWithFallback(lead: Lead): MessagingPort {
     if (this.whatsappIsBanned) {
-      return lead.preferredChannel === 'EMAIL' ? this.email : this.telegramSales;
+      return lead.preferredChannel === "EMAIL"
+        ? this.email
+        : this.telegramSales;
     }
     return this.route(lead);
   }
@@ -313,17 +341,17 @@ class EmailAdapter implements MessagingPort {
   // Para mais volume: upgrade para plano Starter (~€25/mês)
 
   async sendText(to: string, text: string): Promise<MessageId> {
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
       headers: {
-        'accept': 'application/json',
-        'content-type': 'application/json',
-        'api-key': this.apiKey,
+        accept: "application/json",
+        "content-type": "application/json",
+        "api-key": this.apiKey,
       },
       body: JSON.stringify({
         sender: { email: env.OPERATOR_EMAIL, name: env.OPERATOR_NAME },
         to: [{ email: to }],
-        subject: 'Mensagem AgentePro',
+        subject: "Mensagem Hefesto",
         textContent: text,
       }),
     });
@@ -332,20 +360,27 @@ class EmailAdapter implements MessagingPort {
     return new MessageId(data.messageId ?? randomUUID());
   }
 
-  async sendDocument(to: string, file: Buffer, filename: string, caption?: string): Promise<MessageId> {
+  async sendDocument(
+    to: string,
+    file: Buffer,
+    filename: string,
+    caption?: string,
+  ): Promise<MessageId> {
     // Enviar PDF como anexo
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: { 'api-key': this.apiKey, 'content-type': 'application/json' },
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: { "api-key": this.apiKey, "content-type": "application/json" },
       body: JSON.stringify({
         sender: { email: env.OPERATOR_EMAIL, name: env.OPERATOR_NAME },
         to: [{ email: to }],
-        subject: caption ?? 'Documento AgentePro',
-        htmlContent: `<p>${caption ?? 'Segue o documento em anexo.'}</p>`,
-        attachment: [{
-          name: filename,
-          content: file.toString('base64'),
-        }],
+        subject: caption ?? "Documento Hefesto",
+        htmlContent: `<p>${caption ?? "Segue o documento em anexo."}</p>`,
+        attachment: [
+          {
+            name: filename,
+            content: file.toString("base64"),
+          },
+        ],
       }),
     });
 

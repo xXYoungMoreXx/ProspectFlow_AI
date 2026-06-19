@@ -8,7 +8,7 @@
 
 ## Problem Statement
 
-The ProspectFlow agents page is minimal: basic CRUD, no way to visually compose subagent workflows, no skills catalog, no MCP management per-agent. The prospecting menu captures only 9 Google Maps fields and has a single hardcoded qualification formula. There is no concept of which service to offer each lead.
+The Hefesto agents page is minimal: basic CRUD, no way to visually compose subagent workflows, no skills catalog, no MCP management per-agent. The prospecting menu captures only 9 Google Maps fields and has a single hardcoded qualification formula. There is no concept of which service to offer each lead.
 
 ---
 

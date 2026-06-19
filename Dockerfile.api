@@ -8,7 +8,7 @@ COPY package.json package-lock.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared-types/package.json ./packages/shared-types/
 # Minimal workspace-aware npm ci (only API + shared-types)
-RUN npm ci --workspace=@agentepro/api --workspace=@agentepro/shared-types --include-workspace-root
+RUN npm ci --workspace=@hefesto/api --workspace=@hefesto/shared-types --include-workspace-root
 
 # 2. Build shared-types + API
 FROM deps AS builder
@@ -17,7 +17,7 @@ COPY tsconfig.base.json ./
 COPY packages/shared-types ./packages/shared-types
 COPY apps/api ./apps/api
 COPY turbo.json ./
-RUN npx turbo run build --filter=@agentepro/api...
+RUN npx turbo run build --filter=@hefesto/api...
 
 # 3. Production runner — minimal image
 FROM base AS runner

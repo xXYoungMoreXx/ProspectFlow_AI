@@ -6,7 +6,7 @@
 
 ## Contexto
 
-O núcleo de aplicação do AgentePro, que lida com autenticação, CRM, e interface com os clientes e operadores, necessita de um backend robusto em Node.js para atuar como o principal servidor da API.
+O núcleo de aplicação do Hefesto, que lida com autenticação, CRM, e interface com os clientes e operadores, necessita de um backend robusto em Node.js para atuar como o principal servidor da API.
 
 ## Opções Consideradas
 

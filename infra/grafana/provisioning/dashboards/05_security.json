@@ -1,7 +1,7 @@
 {
-  "title": "AgentePro — Security",
-  "uid": "agentepro-security",
-  "tags": ["agentepro", "security"],
+  "title": "Hefesto — Security",
+  "uid": "hefesto-security",
+  "tags": ["hefesto", "security"],
   "panels": [
     {
       "title": "Auth Failures (rate)",
@@ -9,7 +9,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "targets": [
         {
-          "expr": "rate(agentepro_auth_failures_total[5m])",
+          "expr": "rate(hefesto_auth_failures_total[5m])",
           "legendFormat": "{{reason}}"
         }
       ],
@@ -24,7 +24,7 @@
       "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
       "targets": [
         {
-          "expr": "sum(increase(agentepro_ssrf_blocked_total[24h]))",
+          "expr": "sum(increase(hefesto_ssrf_blocked_total[24h]))",
           "legendFormat": "Blocked (24h)"
         }
       ]
@@ -35,7 +35,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
       "targets": [
         {
-          "expr": "rate(agentepro_invalid_upload_total[5m])",
+          "expr": "rate(hefesto_invalid_upload_total[5m])",
           "legendFormat": "{{reason}}"
         }
       ]

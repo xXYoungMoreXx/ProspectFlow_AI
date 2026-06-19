@@ -1,11 +1,11 @@
-﻿# AgentePro - Production Infrastructure
+﻿# Hefesto - Production Infrastructure
 # All secrets via environment variables - never hardcode credentials here.
 # Usage: docker compose -f infra/docker-compose.prod.yml up -d
 
 services:
   api:
-    image: ghcr.io/agentepro/api:${API_IMAGE_TAG:-latest}
-    container_name: agentepro-api
+    image: ghcr.io/hefesto/api:${API_IMAGE_TAG:-latest}
+    container_name: hefesto-api
     restart: always
     ports:
       - "127.0.0.1:3001:3001"
@@ -43,8 +43,8 @@ services:
       - proxy
 
   web:
-    image: ghcr.io/agentepro/web:${WEB_IMAGE_TAG:-latest}
-    container_name: agentepro-web
+    image: ghcr.io/hefesto/web:${WEB_IMAGE_TAG:-latest}
+    container_name: hefesto-web
     restart: always
     ports:
       - "127.0.0.1:3000:3000"
@@ -59,8 +59,8 @@ services:
       - proxy
 
   agent-runtime:
-    image: ghcr.io/agentepro/agent-runtime:${RUNTIME_IMAGE_TAG:-latest}
-    container_name: agentepro-agent-runtime
+    image: ghcr.io/hefesto/agent-runtime:${RUNTIME_IMAGE_TAG:-latest}
+    container_name: hefesto-agent-runtime
     restart: always
     ports:
       - "127.0.0.1:8001:8001"
@@ -88,18 +88,18 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: agentepro-postgres
+    container_name: hefesto-postgres
     restart: always
     ports:
       - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB:-agentepro}
+      POSTGRES_DB: ${POSTGRES_DB:-hefesto}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agentepro}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hefesto}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -108,7 +108,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: agentepro-redis
+    container_name: hefesto-redis
     restart: always
     ports:
       - "127.0.0.1:6379:6379"
@@ -125,7 +125,7 @@ services:
 
   chromadb:
     image: chromadb/chroma:0.5.20
-    container_name: agentepro-chromadb
+    container_name: hefesto-chromadb
     restart: always
     ports:
       - "127.0.0.1:8000:8000"
@@ -138,7 +138,7 @@ services:
 
   ollama:
     image: ollama/ollama:latest
-    container_name: agentepro-ollama
+    container_name: hefesto-ollama
     restart: always
     ports:
       - "127.0.0.1:11434:11434"
@@ -155,7 +155,7 @@ services:
 
   searxng:
     image: searxng/searxng:latest
-    container_name: agentepro-searxng
+    container_name: hefesto-searxng
     restart: always
     ports:
       - "127.0.0.1:8080:8080"
@@ -183,7 +183,7 @@ services:
 
   n8n:
     image: n8nio/n8n:latest
-    container_name: agentepro-n8n
+    container_name: hefesto-n8n
     restart: always
     ports:
       - "127.0.0.1:5678:5678"
@@ -211,7 +211,7 @@ services:
 
   prometheus:
     image: prom/prometheus:v2.53.0
-    container_name: agentepro-prometheus
+    container_name: hefesto-prometheus
     restart: always
     ports:
       - "127.0.0.1:9090:9090"
@@ -229,7 +229,7 @@ services:
 
   grafana:
     image: grafana/grafana:11.1.0
-    container_name: agentepro-grafana
+    container_name: hefesto-grafana
     restart: always
     ports:
       - "127.0.0.1:3333:3000"
@@ -250,7 +250,7 @@ services:
 
   jaeger:
     image: jaegertracing/all-in-one:1.60
-    container_name: agentepro-jaeger
+    container_name: hefesto-jaeger
     restart: always
     ports:
       - "127.0.0.1:16686:16686"
@@ -263,7 +263,7 @@ services:
 
   loki:
     image: grafana/loki:3.1.0
-    container_name: agentepro-loki
+    container_name: hefesto-loki
     restart: always
     ports:
       - "127.0.0.1:3100:3100"
@@ -276,7 +276,7 @@ services:
 
   promtail:
     image: grafana/promtail:3.1.0
-    container_name: agentepro-promtail
+    container_name: hefesto-promtail
     restart: always
     volumes:
       - ./promtail/config.yml:/etc/promtail/config.yml:ro

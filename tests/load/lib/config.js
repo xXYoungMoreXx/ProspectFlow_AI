@@ -1,7 +1,7 @@
 export const BASE_URL = __ENV.BASE_URL || "http://localhost:3001/api/v1";
 
 export const TEST_USER = {
-  email: __ENV.TEST_EMAIL || "admin@agentepro.local",
+  email: __ENV.TEST_EMAIL || "admin@hefesto.local",
   password: __ENV.TEST_PASSWORD || "Admin@123456",
 };
 

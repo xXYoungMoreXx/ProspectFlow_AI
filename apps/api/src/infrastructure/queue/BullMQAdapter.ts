@@ -1,6 +1,6 @@
 import { Queue, Worker, type Job } from "bullmq";
 import type { RedisOptions } from "ioredis";
-import type { DomainEventBase } from "@agentepro/shared-types";
+import type { DomainEventBase } from "@hefesto/shared-types";
 
 export interface QueueConfig {
   connection: RedisOptions;

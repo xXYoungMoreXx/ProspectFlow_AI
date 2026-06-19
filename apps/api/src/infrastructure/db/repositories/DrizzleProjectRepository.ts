@@ -11,7 +11,7 @@ import type {
   ProjectFilters,
   ProjectListResult,
 } from "../../../domain/project/ProjectRepository.js";
-import type { ProjectStatus } from "@agentepro/shared-types";
+import type { ProjectStatus } from "@hefesto/shared-types";
 
 export class DrizzleProjectRepository implements ProjectRepository {
   constructor(private readonly db: PostgresJsDatabase<typeof schema>) {}

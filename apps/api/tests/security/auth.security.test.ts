@@ -15,8 +15,8 @@ describe("Auth Security (S0-01 — SPEC-01)", () => {
   let rs256PrivateKey: Awaited<ReturnType<typeof importPKCS8>>;
   let validRS256Token: string;
 
-  const ISSUER = "agentepro.local";
-  const AUDIENCE = "agentepro-api";
+  const ISSUER = "hefesto.local";
+  const AUDIENCE = "hefesto-api";
 
   const mockAgentRepo = {
     save: vi.fn(),

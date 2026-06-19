@@ -11,7 +11,7 @@ import type {
   AgentPersona,
   AgentStatus,
   LLMProvider,
-} from "@agentepro/shared-types";
+} from "@hefesto/shared-types";
 
 export interface LLMConfiguration {
   readonly provider: LLMProvider;

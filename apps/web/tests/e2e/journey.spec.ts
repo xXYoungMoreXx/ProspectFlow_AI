@@ -163,7 +163,7 @@ test.describe("E2E Journey: Prospecting", () => {
     // Inject auth state
     await page.goto("/login");
     await page.evaluate(() => {
-      localStorage.setItem("agentepro_token", "mocked-jwt");
+      localStorage.setItem("hefesto_token", "mocked-jwt");
     });
 
     // Queue page shows prospected leads (via GET /prospecting/queue)
@@ -182,7 +182,7 @@ test.describe("E2E Journey: HITL Reject", () => {
   test("reject HITL action with a reason", async ({ page }) => {
     await page.goto("/login");
     await page.evaluate(() =>
-      localStorage.setItem("agentepro_token", "mocked-jwt"),
+      localStorage.setItem("hefesto_token", "mocked-jwt"),
     );
     await page.goto("/hitl");
 
