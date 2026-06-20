@@ -1,4 +1,4 @@
-FROM node:22-alpine AS base
+FROM node:22.22.3-alpine AS base
 ENV npm_config_loglevel=warn
 
 # 1. Install dependencies using the full monorepo structure
