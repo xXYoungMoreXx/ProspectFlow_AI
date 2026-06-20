@@ -24,6 +24,6 @@ A diferença entre automação que funciona e automação que assusta é essa: s
 
 Autonomia com controle não é contradição. É design.
 
-Hefesto é open source. Veja como implementamos isso:
+O código do Hefesto é aberto e auditável. Veja como implementamos isso:
 
 → github.com/xXYoungMoreXx/ProspectFlow_AI

@@ -12,12 +12,13 @@ medida que concluir.
 
 ## 1. Decisões pendentes (precisam de você)
 
-- [ ] **Licença vs. narrativa open source.** A narrativa de marca diz "open
-      source / open-core", mas o `LICENSE` atual é **"Proprietária de Uso Restrito"**.
-      Decida e alinhe: relicenciar o núcleo (ex.: MIT/Apache-2.0/BSL) e definir o que
-      fica nos tiers pagos, **ou** ajustar a copy para refletir "código-fonte aberto
-      para inspeção, uso restrito". Hoje os textos foram escritos no espírito
-      open-core — confirme antes do lançamento público.
+- [x] **Licença vs. narrativa open source.** _Resolvido (2026-06-18):_ manter o
+      `LICENSE` source-available não-comercial e **ajustar a narrativa** — em vez de
+      relicenciar para OSI. Os textos não devem usar o selo categórico "open source"
+      / "open-core" (que implica liberdade de revenda/SaaS, o que a licença proíbe).
+      Termo correto: **"código aberto e auditável"** (fonte pública, livre para usar
+      e modificar, inclusive nas suas operações) sob **licença de uso não-comercial**
+      (sem revenda nem SaaS de terceiros). README e `content/` alinhados.
 - [ ] **Domínio alvo** (ordem de preferência): `hefesto.dev` → `hefesto.app` →
       `usehefesto.com`. Verificar disponibilidade **antes** de divulgar.
 - [ ] **Handle social**: `@hefestoapp` ou similar disponível nas plataformas.

@@ -410,8 +410,9 @@ docs/
 
 ## Tiers de poder (poder de forja)
 
-Modelo **open-core**: o núcleo é aberto e o "poder de forja" — quantos Autômatos
-trabalham em paralelo — escala por tier.
+Modelo de **núcleo aberto e gratuito** (código-fonte público e auditável, sob
+licença de uso não-comercial): o núcleo é livre e o "poder de forja" — quantos
+Autômatos trabalham em paralelo — escala por tier.
 
 | Tier             | Poder de forja                          | Para quem                               |
 | ---------------- | --------------------------------------- | --------------------------------------- |
@@ -421,7 +422,7 @@ trabalham em paralelo — escala por tier.
 
 > O tier gratuito (Forja Aberta) já entrega o ciclo completo. Os tiers pagos
 > amplificam a escala — nunca destravam "a única forma de funcionar".
-> A definição de licença do núcleo está em aberto — ver [LAUNCH.md](LAUNCH.md).
+> Licença: código aberto e auditável sob uso não-comercial — ver [Licença](#licença).
 
 ---
 
@@ -443,8 +444,11 @@ O Hefesto foi desenhado para prospecção **ética**:
 
 ## Licença
 
-Copyright (c) 2026 Hefesto / Hefesto AI — Licença Proprietária de Uso Restrito.
+Copyright (c) 2026 Hefesto / Hefesto AI — Licença Hefesto de Uso Não-Comercial
+(código aberto e auditável, _source-available_). Não é uma licença OSI "open
+source": o código é público e livre para usar e modificar, mas a revenda do
+software é restrita. Ver [LICENSE](LICENSE).
 
-**Permitido:** Usar o sistema para automatizar as suas próprias vendas e prospecção de clientes.
+**Permitido:** Usar e modificar o sistema para automatizar as suas próprias vendas e prospecção de clientes — inclusive comercialmente, nas suas operações.
 
-**Proibido:** Vender, alugar, distribuir o código ou oferecê-lo como SaaS para terceiros sem autorização explícita e prévia.
+**Proibido:** Vender, alugar ou distribuir o software como produto, ou oferecê-lo como SaaS a terceiros, sem autorização explícita e prévia.

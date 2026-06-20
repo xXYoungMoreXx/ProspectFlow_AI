@@ -13,7 +13,7 @@ Isso significa que quando a forja abrir — você está na primeira leva.
 
 **O que é o Hefesto, em uma linha:**
 
-Uma plataforma open source que usa agentes de IA para prospectar clientes, fazer contato, fechar vendas e entregar serviços — de forma autônoma, com você no controle do quanto quer intervir.
+Uma plataforma de código aberto e auditável que usa agentes de IA para prospectar clientes, fazer contato, fechar vendas e entregar serviços — de forma autônoma, com você no controle do quanto quer intervir.
 
 ---
 

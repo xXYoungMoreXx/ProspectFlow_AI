@@ -15,7 +15,7 @@
 | 8s–14s    | Scroll lento na conversa de WhatsApp gerada pelo Autômato com o lead real                   | VO: "A mensagem foi personalizada com o nome da empresa, o nicho, e o serviço certo." |
 | 14s–20s   | Painel mostrando 3 outras conversas abertas em paralelo                                     | VO: "Enquanto isso acontecia, outros três Autômatos estavam trabalhando em paralelo." |
 | 20s–25s   | Cut para tela preta: "A Fornalha processa. Os Autômatos agem. Você colhe."                  | VO (mais lento): "Isso é o Hefesto."                                                  |
-| 25s–28s   | Logo Hefesto + URL na tela                                                                  | VO: "Open source. Link no perfil."                                                    |
+| 25s–28s   | Logo Hefesto + URL na tela                                                                  | VO: "Código aberto e auditável. Link no perfil."                                      |
 
 ---
 

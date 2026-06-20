@@ -14,7 +14,7 @@
 | 3s–7s     | Corte rápido: terminal rodando, agente iniciando — logs surgindo em tempo real               | VO: "Os Autômatos começam a trabalhar."                                           |
 | 7s–12s    | Split-screen: à esquerda, logs de prospecção; à direita, WhatsApp com proposta sendo enviada | VO: "Prospecção. Abordagem. Proposta. Tudo em paralelo."                          |
 | 12s–17s   | Corte de volta para talking head                                                             | VO: "Você não precisa estar presente. Pode intervir se quiser — mas não precisa." |
-| 17s–22s   | Tela do repositório GitHub, estrelas visíveis, código aberto                                 | VO: "Isso é open source. O código é público. A lógica é auditável."               |
+| 17s–22s   | Tela do repositório GitHub, estrelas visíveis, código aberto                                 | VO: "O código é público. A lógica é auditável. Sem caixa-preta."                  |
 | 22s–25s   | Tela preta. Texto animado: "Hefesto — a forja nunca para."                                   | Sem VO. Só o texto.                                                               |
 
 ---

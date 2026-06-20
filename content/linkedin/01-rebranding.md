@@ -20,7 +20,7 @@ A metáfora que guia tudo:
 
 "Você é o artífice. Os agentes são seus autômatos. A forja nunca para."
 
-O produto continua open source. O repositório continua público. O que muda é a clareza de propósito: Hefesto não é uma ferramenta de prospecção. É uma plataforma de automação com IA para renda passiva.
+O produto continua de código aberto. O repositório continua público. O que muda é a clareza de propósito: Hefesto não é uma ferramenta de prospecção. É uma plataforma de automação com IA para renda passiva.
 
 Se você acompanhou o ProspectFlow, continue aqui. Se chegou agora: bem-vindo à forja.
 
