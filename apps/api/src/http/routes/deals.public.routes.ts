@@ -3,7 +3,7 @@ import { RecordContractAcceptanceHandler } from "../../application/deal/RecordCo
 import { z } from "zod";
 
 const AcceptProposalSchema = z.object({
-  contractText: z.string(),
+  contractText: z.string().max(100000, "Contract text is too large (max 100k)"),
 });
 
 export async function publicDealRoutes(app: FastifyInstance): Promise<void> {
@@ -46,11 +46,7 @@ export async function publicDealRoutes(app: FastifyInstance): Promise<void> {
       });
     }
 
-    // WHY: o contract_notifier (Python) assina o link com API_TOKEN, que é o
-    // mesmo valor de INTERNAL_API_TOKEN — fallback garante validação coerente
-    // sem exigir um terceiro secret duplicado no .env.
-    const jwtSecret =
-      process.env["JWT_SECRET"] ?? process.env["INTERNAL_API_TOKEN"];
+    const jwtSecret = process.env["JWT_SECRET"];
     if (!jwtSecret) {
       return reply.status(500).send({
         errors: [

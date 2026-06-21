@@ -31,7 +31,18 @@ export class RecordContractAcceptanceHandler {
         return err(new ValidationError("Token does not match dealId"));
       }
 
-      // 2. Create Acceptance Domain Object
+      // 1.5 Payload Size Check (Defense in Depth)
+      if (input.contractText.length > 100000) {
+        return err(new ValidationError("Contract text is too large (max 100k)"));
+      }
+
+      // 2. Idempotency Check
+      const existing = await this.acceptanceRepository.findByDealId(input.dealId);
+      if (existing) {
+        return err(new ValidationError("This deal has already been accepted."));
+      }
+
+      // 3. Create Acceptance Domain Object
       // Using a random UUID since the route handler isn't generating it, or we could pass one
       const id = crypto.randomUUID();
       const acceptanceResult = ContractAcceptance.recordAcceptance({
