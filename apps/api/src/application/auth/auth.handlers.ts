@@ -237,8 +237,8 @@ export class ForgotPasswordHandler {
     const { token, tokenHash } = generateSecureToken();
 
     if (!operator || !operator.isActive) {
-      // VULN-003 Remediation: Perform dummy work
-      await hash(token, { ...ARGON2_OPTIONS, memoryCost: 2048, timeCost: 2 });
+      // VULN-006 Remediation: Perform dummy work (timing parity)
+      await hash(token, ARGON2_OPTIONS);
       return ok(undefined);
     }
 

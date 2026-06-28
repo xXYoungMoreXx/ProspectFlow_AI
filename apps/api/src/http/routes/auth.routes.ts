@@ -297,8 +297,18 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
-  app.post("/refresh", async (request, reply) => {
-    const parsed = RefreshSchema.safeParse(request.body);
+  app.post(
+    "/refresh",
+    {
+      config: {
+        rateLimit: {
+          max: 10,
+          timeWindow: "1 hour",
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = RefreshSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({
         errors: parsed.error.issues.map((i) => ({
