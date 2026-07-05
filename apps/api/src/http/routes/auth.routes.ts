@@ -22,12 +22,14 @@ import {
 import { authMiddleware } from "../middleware/auth.middleware.js";
 
 export async function authRoutes(app: FastifyInstance): Promise<void> {
+  const isTest = process.env["NODE_ENV"] === "test";
+
   app.post(
     "/register",
     {
       config: {
         rateLimit: {
-          max: 5,
+          max: isTest ? 1000 : 5,
           timeWindow: "1 hour",
         },
       },
@@ -77,7 +79,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     {
       config: {
         rateLimit: {
-          max: 5,
+          max: isTest ? 1000 : 5,
           timeWindow: "15 minutes",
         },
       },
@@ -124,7 +126,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     {
       config: {
         rateLimit: {
-          max: 3,
+          max: isTest ? 1000 : 3,
           timeWindow: "1 hour",
         },
       },
@@ -162,7 +164,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     {
       config: {
         rateLimit: {
-          max: 3,
+          max: isTest ? 1000 : 3,
           timeWindow: "1 hour",
         },
       },
@@ -200,7 +202,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     {
       config: {
         rateLimit: {
-          max: 5,
+          max: isTest ? 1000 : 5,
           timeWindow: "15 minutes",
         },
       },
@@ -251,7 +253,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     {
       config: {
         rateLimit: {
-          max: 5,
+          max: isTest ? 1000 : 5,
           timeWindow: "15 minutes",
         },
       },
@@ -297,8 +299,19 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
-  app.post("/refresh", async (request, reply) => {
-    const parsed = RefreshSchema.safeParse(request.body);
+  app.post(
+    "/refresh",
+    {
+      config: {
+        rateLimit: {
+          // Increase limit in test environment to prevent E2E failures
+          max: isTest ? 1000 : 10,
+          timeWindow: "1 hour",
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = RefreshSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({
         errors: parsed.error.issues.map((i) => ({

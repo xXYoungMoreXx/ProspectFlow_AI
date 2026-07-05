@@ -38,7 +38,10 @@ export const RegisterSchema = z
   });
 
 export const VerifyEmailSchema = z.object({
-  token: z.string().length(64, "Invalid token"),
+  token: z
+    .string()
+    .length(64, "Invalid token")
+    .regex(/^[0-9a-fA-F]{64}$/, "Invalid token format"),
 });
 
 export const ForgotPasswordSchema = z.object({
@@ -47,7 +50,10 @@ export const ForgotPasswordSchema = z.object({
 
 export const ResetPasswordSchema = z
   .object({
-    token: z.string().length(64, "Invalid token"),
+    token: z
+      .string()
+      .length(64, "Invalid token")
+      .regex(/^[0-9a-fA-F]{64}$/, "Invalid token format"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")

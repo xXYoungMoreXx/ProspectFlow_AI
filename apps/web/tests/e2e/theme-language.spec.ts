@@ -4,8 +4,25 @@ import { test, expect } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
   // Establish domain context, then inject auth before navigating to dashboard
   await page.goto("/login");
+
+  // Mock refresh to prevent logout loops
+  await page.route("**/api/v1/auth/refresh", async (route) => {
+    await route.fulfill({
+      json: {
+        data: {
+          accessToken: "mocked-jwt",
+          refreshToken: "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh",
+        },
+      },
+    });
+  });
+
   await page.evaluate(() => {
     localStorage.setItem("agentepro_token", "mocked-jwt");
+    localStorage.setItem(
+      "agentepro_refresh_token",
+      "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh",
+    );
     localStorage.setItem("agentepro_email", "operator@test.com");
   });
   await page.route("**/api/v1/agents", (route) =>

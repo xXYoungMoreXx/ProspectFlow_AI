@@ -5,13 +5,27 @@ test.describe("Agents Module E2E", () => {
     await page.goto("/login");
 
     // Mock API responses for login
+    await page.route("**/api/v1/auth/refresh", async (route) => {
+      await route.fulfill({
+        status: 200,
+        json: {
+          data: {
+            accessToken: "mocked-jwt-token",
+            refreshToken:
+              "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh-token",
+          },
+        },
+      });
+    });
+
     await page.route("**/api/v1/auth/login", async (route) => {
       await route.fulfill({
         status: 200,
         json: {
           data: {
             accessToken: "mocked-jwt-token",
-            refreshToken: "mocked-refresh-token",
+            refreshToken:
+              "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh-token",
           },
         },
       });

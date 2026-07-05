@@ -14,10 +14,24 @@ async function setupMocks(page: import("@playwright/test").Page) {
     }),
   );
 
+  await page.route("**/api/v1/auth/refresh", (route) =>
+    route.fulfill({
+      json: {
+        data: {
+          accessToken: "mocked-jwt",
+          refreshToken: "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh",
+        },
+      },
+    }),
+  );
+
   await page.route("**/api/v1/auth/login", (route) =>
     route.fulfill({
       json: {
-        data: { accessToken: "mocked-jwt", refreshToken: "mocked-refresh" },
+        data: {
+          accessToken: "mocked-jwt",
+          refreshToken: "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh",
+        },
       },
     }),
   );
@@ -164,6 +178,10 @@ test.describe("E2E Journey: Prospecting", () => {
     await page.goto("/login");
     await page.evaluate(() => {
       localStorage.setItem("agentepro_token", "mocked-jwt");
+      localStorage.setItem(
+        "agentepro_refresh_token",
+        "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh",
+      );
     });
 
     // Queue page shows prospected leads (via GET /prospecting/queue)
@@ -181,9 +199,13 @@ test.describe("E2E Journey: HITL Reject", () => {
 
   test("reject HITL action with a reason", async ({ page }) => {
     await page.goto("/login");
-    await page.evaluate(() =>
-      localStorage.setItem("agentepro_token", "mocked-jwt"),
-    );
+    await page.evaluate(() => {
+      localStorage.setItem("agentepro_token", "mocked-jwt");
+      localStorage.setItem(
+        "agentepro_refresh_token",
+        "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh",
+      );
+    });
     await page.goto("/hitl");
 
     await expect(page.getByText("Aprovar Lista de Leads")).toBeVisible();
