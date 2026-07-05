@@ -413,6 +413,13 @@ export class RefreshTokenHandler {
     const [tokenId] = rawRefreshToken.split(".");
     if (!tokenId) return err(new AuthenticationError());
 
+    // Prevent Postgres UUID syntax error (VULN-001 regression check)
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(tokenId)) {
+      return err(new AuthenticationError());
+    }
+
     const [token] = await this.db
       .select()
       .from(schema.refreshTokens)

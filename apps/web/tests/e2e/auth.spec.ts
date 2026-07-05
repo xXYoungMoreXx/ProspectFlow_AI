@@ -24,11 +24,23 @@ test.describe("Authentication", () => {
 
   test("should login successfully with valid credentials", async ({ page }) => {
     // Mock the API response
+    await page.route("**/api/v1/auth/refresh", async (route) => {
+      const json = {
+        data: {
+          accessToken: "mocked-jwt-token",
+          refreshToken:
+            "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh-token",
+        },
+      };
+      await route.fulfill({ json });
+    });
+
     await page.route("**/api/v1/auth/login", async (route) => {
       const json = {
         data: {
           accessToken: "mocked-jwt-token",
-          refreshToken: "mocked-refresh-token",
+          refreshToken:
+            "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh-token",
         },
       };
       await route.fulfill({ json });

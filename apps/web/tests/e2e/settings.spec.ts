@@ -16,12 +16,23 @@ async function setupAllMocks(page: Page) {
   });
 
   // Auth — used by loginViaUI
+  await page.route("**/api/v1/auth/refresh", async (route) => {
+    await route.fulfill({
+      json: {
+        data: {
+          accessToken: "mocked-jwt-token",
+          refreshToken: "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh",
+        },
+      },
+    });
+  });
+
   await page.route("**/api/v1/auth/login", async (route) => {
     await route.fulfill({
       json: {
         data: {
           accessToken: "mocked-jwt-token",
-          refreshToken: "mocked-refresh",
+          refreshToken: "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh",
         },
       },
     });

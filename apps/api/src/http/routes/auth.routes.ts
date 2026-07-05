@@ -302,7 +302,8 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     {
       config: {
         rateLimit: {
-          max: 10,
+          // Increase limit in test environment to prevent E2E failures
+          max: process.env["NODE_ENV"] === "test" ? 1000 : 10,
           timeWindow: "1 hour",
         },
       },

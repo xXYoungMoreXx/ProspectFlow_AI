@@ -14,10 +14,24 @@ async function setupMocks(page: import("@playwright/test").Page) {
     }),
   );
 
+  await page.route("**/api/v1/auth/refresh", (route) =>
+    route.fulfill({
+      json: {
+        data: {
+          accessToken: "mocked-jwt",
+          refreshToken: "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh",
+        },
+      },
+    }),
+  );
+
   await page.route("**/api/v1/auth/login", (route) =>
     route.fulfill({
       json: {
-        data: { accessToken: "mocked-jwt", refreshToken: "mocked-refresh" },
+        data: {
+          accessToken: "mocked-jwt",
+          refreshToken: "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh",
+        },
       },
     }),
   );

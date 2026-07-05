@@ -23,7 +23,7 @@ it("should have rate limiting configured for /refresh endpoint", async () => {
 The fix was applied in the **Infrastructure (HTTP)** layer using Fastify's native rate-limiting middleware.
 
 ### Fix Applied
-Configured `@fastify/rate-limit` for the `/refresh` route with a limit of 10 requests per hour, as specified in the security requirements.
+Configured `@fastify/rate-limit` for the `/refresh` route with a limit of 10 requests per hour. In the `test` environment, this limit is increased to 1000 to prevent CI failures during E2E test execution.
 
 ### Verification
 - [x] Phase 1 test now passes

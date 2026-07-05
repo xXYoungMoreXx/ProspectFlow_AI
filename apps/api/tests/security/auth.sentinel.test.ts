@@ -45,7 +45,8 @@ describe("Auth Security Audit (Sentinel)", () => {
           }),
         }),
       });
-      await handler.execute("ULIDID.RANDOMPART");
+      // Use a valid UUID to pass the format check
+      await handler.execute("eb24050a-5c12-42b7-873b-554471e98d1a.RANDOMPART");
       const limitCall = mockDb.select().from().where().limit.mock.calls[0][0];
       expect(limitCall).toBe(1);
     });
