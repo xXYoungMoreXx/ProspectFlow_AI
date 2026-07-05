@@ -3,9 +3,26 @@ import { test, expect, Page } from "@playwright/test";
 // Helper to login and set state
 async function loginAndSetState(page: Page) {
   await page.goto("/login");
+
+  // Mock refresh to prevent logout loops
+  await page.route("**/api/v1/auth/refresh", async (route) => {
+    await route.fulfill({
+      json: {
+        data: {
+          accessToken: "mocked-jwt-token",
+          refreshToken: "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh",
+        },
+      },
+    });
+  });
+
   // Inject state directly to bypass login screen quickly for these tests
   await page.evaluate(() => {
     localStorage.setItem("agentepro_token", "mocked-jwt-token");
+    localStorage.setItem(
+      "agentepro_refresh_token",
+      "eb24050a-5c12-42b7-873b-554471e98d1a.mocked-refresh",
+    );
     localStorage.setItem("agentepro_email", "operator@example.com");
   });
 }

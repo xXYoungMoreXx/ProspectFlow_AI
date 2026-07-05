@@ -232,7 +232,9 @@ test.describe("Settings Hub", () => {
     await keyInput.fill("sk-temporary");
     await expect(page.getByText(/não salvo/i)).toBeVisible();
 
-    await page.getByRole("button", { name: /descartar/i }).click();
+    const discardBtn = page.getByRole("button", { name: /descartar/i });
+    await discardBtn.scrollIntoViewIfNeeded();
+    await discardBtn.click();
     await expect(page.getByText(/não salvo/i)).not.toBeVisible();
   });
 
@@ -251,7 +253,9 @@ test.describe("Settings Hub", () => {
     const keyInput = page.locator('[id="openai-key"]');
     await keyInput.fill("sk-finalnewkey");
 
-    await page.getByRole("button", { name: /^salvar$/i }).click();
+    const saveBtn = page.getByRole("button", { name: /^salvar$/i });
+    await saveBtn.scrollIntoViewIfNeeded();
+    await saveBtn.click();
 
     // After successful save, pending bar disappears
     await expect(page.getByText(/não salvo/i)).not.toBeVisible({
@@ -265,6 +269,7 @@ test.describe("Settings Hub", () => {
   test("should display messaging channel cards", async ({ page }) => {
     await page.goto("/settings");
     await page.getByRole("tab", { name: /mensagens/i }).click();
+    await expect(page.locator('[id="webhook-url"]')).toBeHidden(); // Ensure we are NOT on integrations tab
 
     const title = (name: string) =>
       page.locator('[data-slot="card-title"]', { hasText: name }).first();
@@ -280,8 +285,8 @@ test.describe("Settings Hub", () => {
 
   test("should display integrations cards", async ({ page }) => {
     await page.goto("/settings");
-    await page.getByRole("tab", { name: /integra/i }).click({ force: true });
-    await page.waitForLoadState("domcontentloaded");
+    await page.getByRole("tab", { name: /integra/i }).click();
+    await expect(page.locator('[id="webhook-url"]')).toBeVisible();
 
     const title = (name: string) =>
       page.locator('[data-slot="card-title"]', { hasText: name }).first();
@@ -296,6 +301,7 @@ test.describe("Settings Hub", () => {
   test("should display system configuration cards", async ({ page }) => {
     await page.goto("/settings");
     await page.getByRole("tab", { name: /sistema/i }).click();
+    await expect(page.locator('[id="hitl-timeout"]')).toBeVisible();
 
     const title = (name: string | RegExp) =>
       page.locator('[data-slot="card-title"]', { hasText: name }).first();
@@ -310,6 +316,7 @@ test.describe("Settings Hub", () => {
   }) => {
     await page.goto("/settings");
     await page.getByRole("tab", { name: /sistema/i }).click();
+    await expect(page.getByRole("button", { name: /exportar json/i })).toBeVisible();
 
     await expect(
       page.getByRole("button", { name: /exportar json/i }),
@@ -324,6 +331,7 @@ test.describe("Settings Hub", () => {
     await page.getByRole("tab", { name: /sistema/i }).click();
 
     const timeoutInput = page.locator('[id="hitl-timeout"]');
+    await expect(timeoutInput).toBeVisible();
     await expect(timeoutInput).toHaveValue("60");
   });
 });
