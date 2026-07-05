@@ -142,30 +142,29 @@ export class VerifyEmailHandler {
   async execute(token: string): Promise<Result<void, Error>> {
     const tokenHash = createHash("sha256").update(token).digest("hex");
 
-    const [verification] = await this.db
-      .select()
-      .from(schema.emailVerifications)
-      .where(
-        and(
-          eq(schema.emailVerifications.tokenHash, tokenHash),
-          eq(schema.emailVerifications.type, "EMAIL_VERIFICATION"),
-        ),
-      )
-      .limit(1);
+    return await this.db.transaction(async (tx) => {
+      // VULN-011 Fix: Fetch within transaction with pessimistic lock to prevent race conditions
+      const [verification] = await tx
+        .select()
+        .from(schema.emailVerifications)
+        .where(
+          and(
+            eq(schema.emailVerifications.tokenHash, tokenHash),
+            eq(schema.emailVerifications.type, "EMAIL_VERIFICATION"),
+            eq(schema.emailVerifications.usedAt, null as unknown as Date),
+          ),
+        )
+        .limit(1)
+        .for("update");
 
-    if (
-      !verification ||
-      verification.usedAt ||
-      new Date() > verification.expiresAt
-    ) {
-      return err(new Error("Invalid or expired token"));
-    }
+      if (!verification || new Date() > verification.expiresAt) {
+        return err(new Error("Invalid or expired token"));
+      }
 
-    if (!verifyTokenHash(token, verification.tokenHash)) {
-      return err(new Error("Invalid token"));
-    }
+      if (!verifyTokenHash(token, verification.tokenHash)) {
+        return err(new Error("Invalid token"));
+      }
 
-    await this.db.transaction(async (tx) => {
       await tx
         .update(schema.operators)
         .set({ emailVerified: true })
@@ -175,9 +174,9 @@ export class VerifyEmailHandler {
         .update(schema.emailVerifications)
         .set({ usedAt: new Date() })
         .where(eq(schema.emailVerifications.id, verification.id));
-    });
 
-    return ok(undefined);
+      return ok(undefined);
+    });
   }
 }
 
@@ -238,7 +237,8 @@ export class ForgotPasswordHandler {
 
     if (!operator || !operator.isActive) {
       // VULN-003 Remediation: Perform dummy work
-      await hash(token, { ...ARGON2_OPTIONS, memoryCost: 2048, timeCost: 2 });
+      // VULN-010 Fix: Must match ARGON2_OPTIONS exactly to prevent timing leaks
+      await hash(token, ARGON2_OPTIONS);
       return ok(undefined);
     }
 
@@ -265,32 +265,31 @@ export class ResetPasswordHandler {
   async execute(token: string, password: string): Promise<Result<void, Error>> {
     const tokenHash = createHash("sha256").update(token).digest("hex");
 
-    const [verification] = await this.db
-      .select()
-      .from(schema.emailVerifications)
-      .where(
-        and(
-          eq(schema.emailVerifications.tokenHash, tokenHash),
-          eq(schema.emailVerifications.type, "PASSWORD_RESET"),
-        ),
-      )
-      .limit(1);
+    return await this.db.transaction(async (tx) => {
+      // VULN-011 Fix: Fetch within transaction with pessimistic lock to prevent race conditions
+      const [verification] = await tx
+        .select()
+        .from(schema.emailVerifications)
+        .where(
+          and(
+            eq(schema.emailVerifications.tokenHash, tokenHash),
+            eq(schema.emailVerifications.type, "PASSWORD_RESET"),
+            eq(schema.emailVerifications.usedAt, null as unknown as Date),
+          ),
+        )
+        .limit(1)
+        .for("update");
 
-    if (
-      !verification ||
-      verification.usedAt ||
-      new Date() > verification.expiresAt
-    ) {
-      return err(new Error("Invalid or expired token"));
-    }
+      if (!verification || new Date() > verification.expiresAt) {
+        return err(new Error("Invalid or expired token"));
+      }
 
-    if (!verifyTokenHash(token, verification.tokenHash)) {
-      return err(new Error("Invalid token"));
-    }
+      if (!verifyTokenHash(token, verification.tokenHash)) {
+        return err(new Error("Invalid token"));
+      }
 
-    const passwordHash = await hash(password, ARGON2_OPTIONS);
+      const passwordHash = await hash(password, ARGON2_OPTIONS);
 
-    await this.db.transaction(async (tx) => {
       await tx
         .update(schema.operators)
         .set({ passwordHash })
@@ -310,9 +309,9 @@ export class ResetPasswordHandler {
             eq(schema.refreshTokens.revokedAt, null as unknown as Date),
           ),
         );
-    });
 
-    return ok(undefined);
+      return ok(undefined);
+    });
   }
 }
 
@@ -518,7 +517,9 @@ export class DevLoginHandler {
     email: string,
     password: string,
   ): Promise<Result<AuthTokens, AuthenticationError>> {
-    if (process.env["NODE_ENV"] === "production") {
+    // VULN-014 Fix: Explicitly fail-secure by only allowing in dev or test.
+    const allowedEnvs = ["development", "test"];
+    if (!allowedEnvs.includes(process.env["NODE_ENV"] ?? "")) {
       return err(new AuthenticationError("Não disponível em produção"));
     }
 

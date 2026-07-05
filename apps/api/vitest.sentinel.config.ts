@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["tests/security/auth.sentinel.test.ts"],
+    include: ["tests/security/*.test.ts"],
     hookTimeout: 10000,
     testTimeout: 15000,
     env: {
