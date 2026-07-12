@@ -1,16 +1,19 @@
 import * as jose from "jose";
 import {
   ValidationError,
+  NotFoundError,
   ok,
   err,
   type Result,
 } from "../../domain/shared/Result.js";
 import { ContractAcceptance } from "../../domain/deal/ContractAcceptance.js";
 import type { ContractAcceptanceRepository } from "../../domain/deal/ContractAcceptanceRepository.js";
+import type { DealRepository } from "../../domain/deal/DealRepository.js";
 
 export class RecordContractAcceptanceHandler {
   constructor(
     private readonly acceptanceRepository: ContractAcceptanceRepository,
+    private readonly dealRepository: DealRepository,
     private readonly jwtSecret: string,
   ) {}
 
@@ -21,7 +24,7 @@ export class RecordContractAcceptanceHandler {
     userAgent: string;
     sessionId: string;
     contractText: string;
-  }): Promise<Result<void, ValidationError>> {
+  }): Promise<Result<void, ValidationError | NotFoundError>> {
     try {
       // 1. Validate JWT
       const secret = new TextEncoder().encode(this.jwtSecret);
@@ -31,8 +34,26 @@ export class RecordContractAcceptanceHandler {
         return err(new ValidationError("Token does not match dealId"));
       }
 
-      // 2. Create Acceptance Domain Object
-      // Using a random UUID since the route handler isn't generating it, or we could pass one
+      // 2. Check Idempotency (VULN-001)
+      const existing = await this.acceptanceRepository.findByDealId(
+        input.dealId,
+      );
+      if (existing) {
+        return err(new ValidationError("Deal already accepted"));
+      }
+
+      // 3. Validate Deal Status (VULN-002)
+      // Since this is a public route via token, we use an internal find method
+      const deal = await this.dealRepository.findByIdInternal(input.dealId);
+      if (!deal) return err(new NotFoundError("Deal", input.dealId));
+
+      if (deal.status !== "PROPOSED" && deal.status !== "NEGOTIATING") {
+        return err(
+          new ValidationError(`Invalid deal status for acceptance: ${deal.status}`),
+        );
+      }
+
+      // 4. Create Acceptance Domain Object
       const id = crypto.randomUUID();
       const acceptanceResult = ContractAcceptance.recordAcceptance({
         id,
@@ -49,7 +70,7 @@ export class RecordContractAcceptanceHandler {
 
       const acceptance = acceptanceResult.value;
 
-      // 3. Verify contract hash matches what was in the token
+      // 5. Verify contract hash matches what was in the token
       if (acceptance.contractHash !== payload["contractHash"]) {
         return err(
           new ValidationError(
@@ -58,7 +79,12 @@ export class RecordContractAcceptanceHandler {
         );
       }
 
-      // 4. Save to Repository (Append Only)
+      // 6. Transition Deal State & Save (Atomic via Domain)
+      const closeResult = deal.close();
+      if (closeResult.isErr()) return err(closeResult.error);
+
+      // 7. Save both to Persistence
+      await this.dealRepository.save(deal);
       await this.acceptanceRepository.save(acceptance);
 
       return ok(undefined);

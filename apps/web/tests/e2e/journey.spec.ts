@@ -17,7 +17,7 @@ async function setupMocks(page: import("@playwright/test").Page) {
   await page.route("**/api/v1/auth/login", (route) =>
     route.fulfill({
       json: {
-        data: { accessToken: "mocked-jwt", refreshToken: "mocked-refresh" },
+        data: { accessToken: "mocked-jwt", refreshToken: "550e8400-e29b-41d4-a716-446655440000.mocked" },
       },
     }),
   );

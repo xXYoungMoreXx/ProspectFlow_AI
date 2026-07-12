@@ -414,6 +414,19 @@ export class RefreshTokenHandler {
     const [tokenId] = rawRefreshToken.split(".");
     if (!tokenId) return err(new AuthenticationError());
 
+    // Anti-syntax error: Ensure tokenId is a valid UUID before DB query
+    // Prevents "invalid input syntax for type uuid" from crashing the handler
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(tokenId)) {
+      // Perform dummy work to match successful lookup timing
+      await verify(
+        "$argon2id$v=19$m=65536,t=3,p=4$dummysalt$dummyhash",
+        "dummy",
+      ).catch(() => {});
+      return err(new AuthenticationError());
+    }
+
     const [token] = await this.db
       .select()
       .from(schema.refreshTokens)
