@@ -60,6 +60,7 @@ export async function publicDealRoutes(app: FastifyInstance): Promise<void> {
     }
     const handler = new RecordContractAcceptanceHandler(
       app.container.contractAcceptanceRepo,
+      app.container.dealRepo,
       jwtSecret,
     );
 
