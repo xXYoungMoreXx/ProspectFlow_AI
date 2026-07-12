@@ -28,7 +28,7 @@ test.describe("Authentication", () => {
       const json = {
         data: {
           accessToken: "mocked-jwt-token",
-          refreshToken: "mocked-refresh-token",
+          refreshToken: "550e8400-e29b-41d4-a716-446655440003.mocked",
         },
       };
       await route.fulfill({ json });

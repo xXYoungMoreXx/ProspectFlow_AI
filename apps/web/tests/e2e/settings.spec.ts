@@ -21,7 +21,7 @@ async function setupAllMocks(page: Page) {
       json: {
         data: {
           accessToken: "mocked-jwt-token",
-          refreshToken: "mocked-refresh",
+          refreshToken: "550e8400-e29b-41d4-a716-446655440001.mocked",
         },
       },
     });

@@ -1,4 +1,4 @@
-## [VULN-002] Invalid State Acceptance in Deal Module
+## [VULN-006] Invalid State Acceptance in Deal Module
 
 | Field          | Value                              |
 |----------------|------------------------------------|

@@ -25,7 +25,7 @@ describe("Deal Security Audit (S1-03)", () => {
     vi.clearAllMocks();
   });
 
-  describe("VULN-001: Missing Idempotency in Contract Acceptance", () => {
+  describe("VULN-005: Missing Idempotency in Contract Acceptance", () => {
     it("should reject duplicate acceptances for the same deal", async () => {
       const dealId = "deal-123";
       const contractText = "Legal Terms";
@@ -58,7 +58,7 @@ describe("Deal Security Audit (S1-03)", () => {
     });
   });
 
-  describe("VULN-002: Invalid State Acceptance", () => {
+  describe("VULN-006: Invalid State Acceptance", () => {
     it("should reject acceptance if the deal is CANCELLED", async () => {
       const dealId = "deal-cancelled";
       const contractText = "Legal Terms";
@@ -96,7 +96,7 @@ describe("Deal Security Audit (S1-03)", () => {
     });
   });
 
-  describe("VULN-003: IDOR in Deal Handlers", () => {
+  describe("VULN-004: IDOR in Deal Handlers", () => {
     it("GetDealByIdHandler should return NotFound when operatorId does not match", async () => {
       const dealId = "deal-1";
       const ownerId = "operator-owner";

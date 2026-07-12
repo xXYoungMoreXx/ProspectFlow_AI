@@ -1,4 +1,4 @@
-## [VULN-001] Missing Idempotency in Contract Acceptance
+## [VULN-005] Missing Idempotency in Contract Acceptance
 
 | Field          | Value                              |
 |----------------|------------------------------------|
