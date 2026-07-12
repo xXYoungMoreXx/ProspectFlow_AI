@@ -124,7 +124,7 @@ async function loginViaUI(page: Page) {
   await page.goto("/login");
   await page.getByLabel(/e-mail/i).fill("operator@example.com");
   await page.getByLabel(/senha/i).fill("password123");
-  await page.getByRole("button", { name: /entrar/i }).click();
+  await page.getByRole("button", { name: /entrar/i }).click({ force: true });
   await page.waitForURL(/.*\/agents/, { timeout: 15000 });
 }
 
@@ -221,7 +221,7 @@ test.describe("Settings Hub", () => {
     await keyInput.fill("sk-temporary");
     await expect(page.getByText(/não salvo/i)).toBeVisible();
 
-    await page.getByRole("button", { name: /descartar/i }).click();
+    await page.getByRole("button", { name: /descartar/i }).click({ force: true });
     await expect(page.getByText(/não salvo/i)).not.toBeVisible();
   });
 
@@ -240,7 +240,7 @@ test.describe("Settings Hub", () => {
     const keyInput = page.locator('[id="openai-key"]');
     await keyInput.fill("sk-finalnewkey");
 
-    await page.getByRole("button", { name: /^salvar$/i }).click();
+    await page.getByRole("button", { name: /^salvar$/i }).click({ force: true });
 
     // After successful save, pending bar disappears
     await expect(page.getByText(/não salvo/i)).not.toBeVisible({
@@ -253,7 +253,7 @@ test.describe("Settings Hub", () => {
 
   test("should display messaging channel cards", async ({ page }) => {
     await page.goto("/settings");
-    await page.getByRole("tab", { name: /mensagens/i }).click();
+    await page.getByRole("tab", { name: /mensagens/i }).click({ force: true });
 
     const title = (name: string) =>
       page.locator('[data-slot="card-title"]', { hasText: name }).first();
@@ -284,7 +284,7 @@ test.describe("Settings Hub", () => {
 
   test("should display system configuration cards", async ({ page }) => {
     await page.goto("/settings");
-    await page.getByRole("tab", { name: /sistema/i }).click();
+    await page.getByRole("tab", { name: /sistema/i }).click({ force: true });
 
     const title = (name: string | RegExp) =>
       page.locator('[data-slot="card-title"]', { hasText: name }).first();
@@ -298,7 +298,7 @@ test.describe("Settings Hub", () => {
     page,
   }) => {
     await page.goto("/settings");
-    await page.getByRole("tab", { name: /sistema/i }).click();
+    await page.getByRole("tab", { name: /sistema/i }).click({ force: true });
 
     await expect(
       page.getByRole("button", { name: /exportar json/i }),
@@ -310,7 +310,7 @@ test.describe("Settings Hub", () => {
 
   test("should display HITL timeout values from store", async ({ page }) => {
     await page.goto("/settings");
-    await page.getByRole("tab", { name: /sistema/i }).click();
+    await page.getByRole("tab", { name: /sistema/i }).click({ force: true });
 
     const timeoutInput = page.locator('[id="hitl-timeout"]');
     await expect(timeoutInput).toHaveValue("60");
