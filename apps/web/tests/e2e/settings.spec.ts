@@ -27,6 +27,18 @@ async function setupAllMocks(page: Page) {
     });
   });
 
+  // Auth Refresh — prevents logout during E2E
+  await page.route("**/api/v1/auth/refresh", async (route) => {
+    await route.fulfill({
+      json: {
+        data: {
+          accessToken: "mocked-jwt-token-refreshed",
+          refreshToken: "550e8400-e29b-41d4-a716-446655440001.mocked",
+        },
+      },
+    });
+  });
+
   // Dashboard data needed after login redirect to /agents
   await page.route("**/api/v1/agents", async (route) => {
     await route.fulfill({ json: { data: [] } });
