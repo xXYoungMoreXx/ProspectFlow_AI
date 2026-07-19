@@ -4,12 +4,18 @@ import { MCPServer } from "../../domain/agent/MCPServer.js";
 import { NotFoundError } from "../../domain/shared/Result.js";
 
 type Db = any;
+type AgentRepo = any;
 
 export class AddMCPServerHandler {
-  constructor(private readonly database: Db) {}
+  constructor(
+    private readonly database: Db,
+    private readonly agentRepo: AgentRepo,
+  ) {}
 
   async execute(cmd: {
     agentId: string;
+    operatorId: string;
+    organizationId?: string;
     name: string;
     url: string;
     authType: "none" | "bearer" | "api_key";
@@ -17,6 +23,15 @@ export class AddMCPServerHandler {
     allowedTools?: string[];
     allowedSubAgentIds?: string[];
   }) {
+    const agent = await this.agentRepo.findById(
+      cmd.agentId,
+      cmd.operatorId,
+      cmd.organizationId ?? "org_mvp"
+    );
+    if (!agent) {
+      throw new NotFoundError("Agent", cmd.agentId);
+    }
+
     // Domain entity validates SSRF
     const server = MCPServer.create({
       ...cmd,
@@ -55,9 +70,26 @@ export class AddMCPServerHandler {
 }
 
 export class TestMCPServerHandler {
-  constructor(private readonly database: Db) {}
+  constructor(
+    private readonly database: Db,
+    private readonly agentRepo: AgentRepo,
+  ) {}
 
-  async execute(cmd: { mcpId: string; agentId: string }) {
+  async execute(cmd: {
+    mcpId: string;
+    agentId: string;
+    operatorId: string;
+    organizationId?: string;
+  }) {
+    const agent = await this.agentRepo.findById(
+      cmd.agentId,
+      cmd.operatorId,
+      cmd.organizationId ?? "org_mvp"
+    );
+    if (!agent) {
+      throw new NotFoundError("Agent", cmd.agentId);
+    }
+
     const [server] = (await this.database
       .select()
       .from(mcpServers)
