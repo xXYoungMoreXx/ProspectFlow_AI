@@ -975,6 +975,22 @@ export async function agentRoutes(app: FastifyInstance): Promise<void> {
   app.get<{ Params: { id: string } }>(
     "/:id/mcp-servers",
     async (request, reply) => {
+      const agent = await app.container.agentRepo.findById(
+        request.params.id,
+        request.operatorId,
+        request.organizationId
+      );
+      if (!agent) {
+        return reply.status(404).send({
+          errors: [
+            {
+              code: "NOT_FOUND",
+              message: "Agent not found",
+              requestId: request.requestId,
+            },
+          ],
+        });
+      }
       const rows = await app.container.db
         .select()
         .from(schema.mcpServers)
@@ -990,9 +1006,11 @@ export async function agentRoutes(app: FastifyInstance): Promise<void> {
     async (request, reply) => {
       const { AddMCPServerHandler } =
         await import("../../application/agent/mcp-server.handlers.js");
-      const handler = new AddMCPServerHandler(app.container.db);
+      const handler = new AddMCPServerHandler(app.container.db, app.container.agentRepo);
       const result = await handler.execute({
         agentId: request.params.id,
+        operatorId: request.operatorId,
+        organizationId: request.organizationId,
         ...(request.body as object),
       } as Parameters<InstanceType<typeof AddMCPServerHandler>["execute"]>[0]);
       return reply.status(201).send(result);
@@ -1005,11 +1023,13 @@ export async function agentRoutes(app: FastifyInstance): Promise<void> {
     async (request, reply) => {
       const { TestMCPServerHandler } =
         await import("../../application/agent/mcp-server.handlers.js");
-      const handler = new TestMCPServerHandler(app.container.db);
+      const handler = new TestMCPServerHandler(app.container.db, app.container.agentRepo);
       return reply.send(
         await handler.execute({
           agentId: request.params.id,
           mcpId: request.params.mcpId,
+          operatorId: request.operatorId,
+          organizationId: request.organizationId,
         }),
       );
     },
@@ -1026,8 +1046,10 @@ export async function agentRoutes(app: FastifyInstance): Promise<void> {
       const { GetWorkflowHandler } =
         await import("../../application/agent/workflow.handlers.js");
       return reply.send(
-        await new GetWorkflowHandler(app.container.db).execute({
+        await new GetWorkflowHandler(app.container.db, app.container.agentRepo).execute({
           agentId: request.params.id,
+          operatorId: request.operatorId,
+          organizationId: request.organizationId,
         }),
       );
     },
@@ -1039,10 +1061,12 @@ export async function agentRoutes(app: FastifyInstance): Promise<void> {
     async (request, reply) => {
       const { SaveWorkflowHandler } =
         await import("../../application/agent/workflow.handlers.js");
-      const result = await new SaveWorkflowHandler(app.container.db).execute({
+      const result = await new SaveWorkflowHandler(app.container.db, app.container.agentRepo).execute({
         agentId: request.params.id,
         workflow:
           request.body as import("../../domain/agent/WorkflowDefinition.js").WorkflowDefinition,
+        operatorId: request.operatorId,
+        organizationId: request.organizationId,
       });
       return reply.send(result);
     },

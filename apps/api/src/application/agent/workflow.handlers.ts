@@ -7,14 +7,32 @@ import {
   validateWorkflowDAG,
   type WorkflowDefinition,
 } from "../../domain/agent/WorkflowDefinition.js";
-import { ValidationError } from "../../domain/shared/Result.js";
+import { ValidationError, NotFoundError } from "../../domain/shared/Result.js";
 
 type Db = any;
+type AgentRepo = any;
 
 export class SaveWorkflowHandler {
-  constructor(private readonly database: Db) {}
+  constructor(
+    private readonly database: Db,
+    private readonly agentRepo: AgentRepo,
+  ) {}
 
-  async execute(cmd: { agentId: string; workflow: WorkflowDefinition }) {
+  async execute(cmd: {
+    agentId: string;
+    workflow: WorkflowDefinition;
+    operatorId: string;
+    organizationId?: string;
+  }) {
+    const agent = await this.agentRepo.findById(
+      cmd.agentId,
+      cmd.operatorId,
+      cmd.organizationId ?? "org_mvp"
+    );
+    if (!agent) {
+      throw new NotFoundError("Agent", cmd.agentId);
+    }
+
     validateWorkflowDAG(cmd.workflow);
 
     const subAgentIds = cmd.workflow.nodes.map((n) => n.subAgentId);
@@ -58,9 +76,25 @@ export class SaveWorkflowHandler {
 }
 
 export class GetWorkflowHandler {
-  constructor(private readonly database: Db) {}
+  constructor(
+    private readonly database: Db,
+    private readonly agentRepo: AgentRepo,
+  ) {}
 
-  async execute(cmd: { agentId: string }) {
+  async execute(cmd: {
+    agentId: string;
+    operatorId: string;
+    organizationId?: string;
+  }) {
+    const agent = await this.agentRepo.findById(
+      cmd.agentId,
+      cmd.operatorId,
+      cmd.organizationId ?? "org_mvp"
+    );
+    if (!agent) {
+      throw new NotFoundError("Agent", cmd.agentId);
+    }
+
     const [row] = (await this.database
       .select()
       .from(workflowDefinitions)
