@@ -30,9 +30,9 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: "npm"
@@ -47,7 +47,7 @@ jobs:
         run: npm audit --audit-level=high --omit=dev --json | tee npm-audit.json
         continue-on-error: false
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: "pip"
@@ -84,13 +84,13 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Full history — catch secrets in any commit
 
       # Pinned to exact version — never use @main (supply chain risk, OWASP A08)
       - name: TruffleHog Secret Scan
-        uses: trufflesecurity/trufflehog@v3.95.5
+        uses: trufflesecurity/trufflehog@v3.95.9
         with:
           extra_args: --only-verified
         continue-on-error: false
@@ -108,7 +108,7 @@ jobs:
     container:
       image: semgrep/semgrep
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # OWASP Top-10 rules + language-specific security rulesets
       - name: Run Semgrep
@@ -146,7 +146,7 @@ jobs:
       matrix:
         language: ["javascript-typescript", "python"]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
@@ -178,7 +178,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Build API image for scanning
         run: docker build -t agentepro-api:scan -f Dockerfile.api .
@@ -227,10 +227,10 @@ jobs:
     permissions:
       contents: write # Needed to attach SBOM to release
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # CycloneDX SBOM for npm — covers all workspaces
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: "npm"
@@ -241,7 +241,7 @@ jobs:
         # --ignore-npm-errors skips extraneous/invalid issues from transitive overrides
         run: npx @cyclonedx/cyclonedx-npm --output-file sbom-npm.json --output-format JSON --ignore-npm-errors || true
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -265,9 +265,9 @@ jobs:
     name: License Compliance
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: "npm"
@@ -282,7 +282,7 @@ jobs:
             --summary
         continue-on-error: false
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
